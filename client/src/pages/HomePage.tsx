@@ -1,28 +1,29 @@
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   ArrowRight,
-  BarChart2,
-  Calculator,
-  Code,
+  Check,
+  ChevronRight,
+  ExternalLink,
+  MapPin,
+  Shield,
+  TrendingUp,
+  Zap,
   Database,
-  DollarSign,
-  Home,
-  LineChart,
-  Settings,
+  BarChart3,
 } from "lucide-react";
-import PublicHeader from "@/components/PublicHeader";
-import PublicFooter from "@/components/PublicFooter";
+import { BackgroundPattern } from "@/components/background-pattern";
+import { RiskIndexShowcase } from "@/components/risk-index-showcase";
 
 export default function HomePage() {
   // Structured data for SEO
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Proply - Property Investment Intelligence Platform",
-    "description": "Transform complex real estate data into actionable strategic insights for professional investors through advanced technological integration.",
+    "name": "Proply - An Intelligence Layer for Real Estate",
+    "description": "AI-powered data tools for property buyers, agents, and insurers.",
     "url": "https://proply.com",
     "potentialAction": {
       "@type": "SearchAction",
@@ -31,393 +32,581 @@ export default function HomePage() {
     }
   };
 
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className="min-h-screen overflow-hidden">
+    <div className="flex min-h-screen flex-col">
       <Helmet>
-        <title>Proply - Property Investment Intelligence Platform | Real Estate Analytics</title>
-        <meta name="description" content="Transform complex real estate data into actionable strategic insights. Compare long-term vs Airbnb rental yields, analyze property investments, and make data-driven decisions." />
-        <meta name="keywords" content="property investment, real estate analytics, rental yield calculator, Airbnb analytics, property analysis, investment strategy" />
+        <title>Proply - An Intelligence Layer for Real Estate | Property Analytics</title>
+        <meta name="description" content="AI-powered data tools for property buyers, agents, and insurers. Make better property decisions with Proply's comprehensive intelligence solutions." />
+        <meta name="keywords" content="property intelligence, real estate analytics, risk index, property data, AI real estate, insurance risk" />
 
         {/* Open Graph tags for social sharing */}
-        <meta property="og:title" content="Proply - Property Investment Intelligence Platform" />
-        <meta property="og:description" content="Transform complex real estate data into actionable strategic insights for professional investors." />
+        <meta property="og:title" content="Proply - An Intelligence Layer for Real Estate" />
+        <meta property="og:description" content="AI-powered data tools for property buyers, agents, and insurers." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://proply.com" />
-        <meta property="og:image" content="/images/property-technology.png" />
+        <meta property="og:image" content="/property-technology.svg" />
 
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Proply - Property Investment Intelligence Platform" />
-        <meta name="twitter:description" content="Transform complex real estate data into actionable strategic insights for professional investors." />
-        <meta name="twitter:image" content="/images/property-technology.png" />
+        <meta name="twitter:title" content="Proply - An Intelligence Layer for Real Estate" />
+        <meta name="twitter:description" content="AI-powered data tools for property buyers, agents, and insurers." />
+        <meta name="twitter:image" content="/property-technology.svg" />
 
         {/* Add structured data */}
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
       </Helmet>
-      <PublicHeader />
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#114D9D] to-[#1BA3FF]">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#114D9D]/90 to-[#1BA3FF]/90" />
-        <div className="absolute inset-0 z-10">
-          <img
-            src="/images/property-technology.png"
-            alt="Property Technology"
-            className="w-full h-full object-cover opacity-75"
-          />
-        </div>
-
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 sm:py-40">
-          <div className="text-center space-y-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
-              Powerful Real Estate Investment
-              <br className="hidden sm:block" />
-              Data at Your Fingertips
-            </h1>
-            <p className="max-w-2xl mx-auto text-xl text-white/90">
-              We deliver you with data-driven insights for strategic
-              decision-making in real estate.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/register">Get Started</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="bg-white/10 text-white border-white hover:bg-white/20"
-                asChild
-              >
-                <Link href="/pricing">View Pricing</Link>
-              </Button>
-            </div>
+      {/* Navigation */}
+      <header className="sticky top-0 z-50 w-full border-b bg-white">
+        <div className="container flex h-16 items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center">
+            <img src="/proply-logo.svg" alt="Proply Logo" className="h-8 w-auto" />
+          </div>
+          <nav className="hidden md:flex items-center gap-8">
+            <Link href="#for-insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
+              For Insurers
+            </Link>
+            <Link href="#for-agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
+              For Agents
+            </Link>
+            <Link href="#for-buyers" className="text-sm font-medium hover:text-proply-blue transition-colors">
+              For Buyers
+            </Link>
+            <Link href="#contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
+              Contact
+            </Link>
+          </nav>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
+              Login
+            </Button>
+            <Button className="bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Rest of the sections with overflow fixes */}
-      <div className="overflow-hidden">
-        {/* SaaS Product Section */}
-        <section id="saas" className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900">
-                Property Analyzer
-              </h2>
-              <p className="mt-4 text-xl text-gray-600">
-                Comprehensive on-platform property analysis for investors and
-                professionals
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-              <Card>
-                <CardContent className="pt-6">
-                  <LineChart className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
-                  <p className="text-gray-600">
-                    Making investment decisions without accurate data and
-                    comprehensive analysis leads to missed opportunities and
-                    potential losses.
+      <main className="flex-1 relative">
+        {/* Background Pattern - positioned within main content to scroll with page */}
+        <div className="relative">
+          <BackgroundPattern />
+
+          {/* Hero Section */}
+          <section className="relative py-20 md:py-32 overflow-hidden">
+            <div className="container relative z-20">
+              <div className="grid gap-12 md:grid-cols-2 items-center">
+                <div className="max-w-2xl relative z-10">
+                  <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+                    <span className="text-black">An Intelligence Layer for</span>
+                    <span className="text-proply-blue block mt-2">Real Estate.</span>
+                  </h1>
+                  <p className="mt-6 text-xl text-gray-600 max-w-lg">
+                    AI-powered data tools for buyers, agents, and insurers.
                   </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">The Solution</h3>
-                  <p className="text-gray-600">
-                    Our platform provides detailed property analysis, market
-                    insights, and financial projections to guide your investment
-                    decisions.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <DollarSign className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Start Analyzing</h3>
-                  <div className="flex flex-col gap-4 mt-4">
-                    <Link href="/property-analyzer">
-                      <Button variant="outline" className="w-full">
-                        Learn More
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link href="/register">
-                      <Button className="w-full">
-                        Try Free Analysis
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
+                  <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                    <Button size="lg" className="bg-black text-white hover:bg-gray-800">
+                      Try a Report <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button size="lg" variant="outline" className="border-black text-black hover:bg-black/5">
+                      Book a Demo
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
 
-            {/* Targeted Property Analysis Section */}
-            <div className="mt-16 max-w-4xl mx-auto text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Comprehensive Analysis for Every Stakeholder
-              </h3>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                  <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                    For Property Investors
-                  </h4>
-                  <p className="text-gray-600">
-                    Make confident investment decisions with our detailed
-                    financial modeling and market analysis. Get instant insights
-                    into property potential, ROI calculations, and future value
-                    projections based on real market data.
-                  </p>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                  <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                    For Real Estate Professionals
-                  </h4>
-                  <p className="text-gray-600">
-                    Elevate your client service with professional-grade property
-                    analysis. Present compelling investment cases backed by
-                    comprehensive data and detailed financial projections.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="overflow-hidden">
-          {/* Rental Comparison Section */}
-          <section id="comparison" className="py-20 bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900">Rent Compare</h2>
-                <p className="mt-4 text-xl text-gray-600">
-                  Compare long-term vs short-term rental potential for your property
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <Home className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
-                    <p className="text-gray-600">
-                      Deciding between long-term rentals and Airbnb without clear
-                      data on potential returns and market dynamics.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <Calculator className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">The Solution</h3>
-                    <p className="text-gray-600">
-                      Side-by-side comparison of rental strategies with projected
-                      revenues, expenses, and ROI calculations.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <BarChart2 className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Start Comparing</h3>
-                    <div className="flex flex-col gap-4 mt-4">
-                      <Link href="/rent-compare">
-                        <Button variant="outline" className="w-full">
-                          Learn More
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Link href="/register">
-                        <Button className="w-full">
-                          Compare Now
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
+                  {/* Trust Bar */}
+                  <div className="mt-16 pt-8 border-t">
+                    <p className="text-sm font-medium text-gray-500 mb-4">TRUSTED BY</p>
+                    <div className="flex flex-wrap gap-8">
+                      <div className="h-10 w-36 bg-gray-100 flex items-center justify-center text-gray-800 font-medium rounded-md">
+                        Insurers
+                      </div>
+                      <div className="h-10 w-48 bg-gray-100 flex items-center justify-center text-gray-800 font-medium rounded-md">
+                        Real Estate Agents
+                      </div>
+                      <div className="h-10 w-36 bg-gray-100 flex items-center justify-center text-gray-800 font-medium rounded-md">
+                        Buyers & Sellers
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Targeted Airbnb Management Section */}
-              <div className="mt-16 max-w-4xl mx-auto text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                  Transform Your Airbnb Management Business
-                </h3>
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                      For Management Companies
-                    </h4>
-                    <p className="text-gray-600">
-                      Convert prospects into clients with confidence using our
-                      comprehensive data-driven analysis. Show potential clients
-                      exactly how much more they could earn with professional Airbnb
-                      management, backed by precise market data and revenue
-                      projections.
-                    </p>
                   </div>
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                      For Individual Hosts
-                    </h4>
-                    <p className="text-gray-600">
-                      Whether you're considering Airbnb hosting or already managing
-                      your property, get detailed insights into your property's true
-                      potential. Make informed decisions about your investment with
-                      actual market data, not guesswork.
-                    </p>
+                </div>
+
+                {/* This div is intentionally empty to maintain the grid layout */}
+                <div></div>
+              </div>
+            </div>
+
+            {/* Hero Image - positioned absolutely to cover most of the section */}
+            <div className="absolute top-[40%] right-0 transform -translate-y-1/2 h-full w-[90%] md:w-[85%] z-10">
+              <div className="relative h-full w-full">
+                <img
+                  src="/property-technology.svg"
+                  alt="AI Technology for Real Estate"
+                  className="object-contain object-right"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Pain Points Section */}
+          <section className="relative py-20 border-t">
+            <div className="container relative z-20">
+              <div className="grid gap-12 md:grid-cols-2 items-center">
+                <div className="max-w-2xl">
+                  <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
+                    Property decisions
+                    <span className="text-proply-blue block mt-2">are broken.</span>
+                  </h2>
+                  <p className="mt-6 text-xl text-gray-600 max-w-lg">
+                    The real estate and insurance industries lack the tools to make data-driven decisions.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    {
+                      title: "Unclear risk exposure",
+                      description: "Properties with hidden risks lead to costly insurance claims.",
+                      icon: Shield,
+                    },
+                    {
+                      title: "Wasted time on bad deals",
+                      description: "Hours spent researching properties that aren't worth it.",
+                      icon: TrendingUp,
+                    },
+                    {
+                      title: "No easy access to data",
+                      description: "Critical property information is scattered across sources.",
+                      icon: ExternalLink,
+                    },
+                    {
+                      title: "Legacy tools",
+                      description: "Outdated systems that are slow and difficult to use.",
+                      icon: MapPin,
+                    },
+                  ].map((item, i) => (
+                    <div key={i} className="border-l-2 border-proply-blue pl-4">
+                      <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-proply-blue">
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <h3 className="mb-1 text-lg font-bold">{item.title}</h3>
+                      <p className="text-sm text-gray-500">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Product Pillars */}
+          <section id="products" className="relative py-20 border-t">
+            <div className="container relative z-20">
+              <div className="grid gap-12 md:grid-cols-2 items-center">
+                <div className="max-w-2xl">
+                  <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
+                    The complete
+                    <span className="text-proply-blue block mt-2">solution.</span>
+                  </h2>
+                  <p className="mt-6 text-xl text-gray-600 max-w-lg">
+                    Our comprehensive suite of AI-powered property intelligence tools.
+                  </p>
+                </div>
+
+                {/* New visualization for the right side */}
+                <div className="relative">
+                  <div className="w-full max-w-md mx-auto md:ml-auto">
+                    <div className="relative bg-gradient-to-br from-proply-blue/80 to-proply-blue rounded-3xl p-8 text-white shadow-lg">
+                      <h3 className="text-2xl font-bold mb-6">AI-Powered Intelligence</h3>
+
+                      {/* Data flow visualization */}
+                      <div className="relative h-64 mb-6">
+                        {/* Data sources */}
+                        <div className="absolute top-0 left-0 bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                          <Database className="h-6 w-6 mb-2 mx-auto" />
+                          <div className="text-sm font-medium">Property Data</div>
+                        </div>
+
+                        <div className="absolute top-0 right-0 bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                          <BarChart3 className="h-6 w-6 mb-2 mx-auto" />
+                          <div className="text-sm font-medium">Market Trends</div>
+                        </div>
+
+                        <div className="absolute bottom-0 left-0 bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                          <MapPin className="h-6 w-6 mb-2 mx-auto" />
+                          <div className="text-sm font-medium">Location Data</div>
+                        </div>
+
+                        <div className="absolute bottom-0 right-0 bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                          <Shield className="h-6 w-6 mb-2 mx-auto" />
+                          <div className="text-sm font-medium">Risk Factors</div>
+                        </div>
+
+                        {/* Central AI processor */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full h-20 w-20 flex items-center justify-center shadow-lg">
+                          <Zap className="h-10 w-10 text-proply-blue" />
+                        </div>
+
+                        {/* Connection lines */}
+                        <svg
+                          className="absolute inset-0 w-full h-full"
+                          viewBox="0 0 400 300"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M80,60 L200,150"
+                            stroke="rgba(255,255,255,0.5)"
+                            strokeWidth="2"
+                            strokeDasharray="5,5"
+                          />
+                          <path
+                            d="M320,60 L200,150"
+                            stroke="rgba(255,255,255,0.5)"
+                            strokeWidth="2"
+                            strokeDasharray="5,5"
+                          />
+                          <path
+                            d="M80,240 L200,150"
+                            stroke="rgba(255,255,255,0.5)"
+                            strokeWidth="2"
+                            strokeDasharray="5,5"
+                          />
+                          <path
+                            d="M320,240 L200,150"
+                            stroke="rgba(255,255,255,0.5)"
+                            strokeWidth="2"
+                            strokeDasharray="5,5"
+                          />
+                        </svg>
+                      </div>
+
+                      <div className="text-center">
+                        <div className="font-medium mb-2">Proply's AI Core processes multiple data sources</div>
+                        <div className="text-sm text-white/80">
+                          Delivering actionable insights for property decisions
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reordered product layout with audience badges */}
+                <div className="mt-20 col-span-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                      {
+                        title: "Risk Index™",
+                        description: "Insurance-grade risk analysis for every property.",
+                        features: [
+                          "Flood, hail & climate risk",
+                          "Crime & fire risk assessment",
+                          "Comprehensive safety score",
+                        ],
+                        price: "Used by top insurers",
+                        cta: "View Demo",
+                        icon: Shield,
+                        audience: "For Insurers",
+                        id: "for-insurers",
+                      },
+                      {
+                        title: "Property Analyzer API™",
+                        description: "Real-time analysis for real estate platforms & agencies.",
+                        features: ["Enrich property listings", "Investment insights", "Plug-and-play for enterprise"],
+                        price: "Custom pricing for enterprise",
+                        cta: "Request Access",
+                        icon: ExternalLink,
+                        audience: "For Agents",
+                        id: "for-agents",
+                      },
+                      {
+                        title: "Deal Score™",
+                        description: "Smart, affordable reports for property buyers.",
+                        features: ["Rental yields & resale value", "Market comparisons", "Investment potential"],
+                        price: "R49/report, no login required",
+                        cta: "Try It Now",
+                        icon: TrendingUp,
+                        audience: "For Buyers",
+                        id: "for-buyers",
+                        link: "/dealscore",
+                      },
+                    ].map((product, i) => (
+                      <div
+                        key={i}
+                        id={product.id}
+                        className="group relative overflow-hidden border-t-2 border-proply-blue pt-6"
+                      >
+                        {/* Icon and Badge in same row */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-proply-blue">
+                            <product.icon className="h-6 w-6" />
+                          </div>
+                          <div className="px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-xs font-medium">
+                            {product.audience}
+                          </div>
+                        </div>
+
+                        <h3 className="mb-2 text-2xl font-bold">{product.title}</h3>
+                        <p className="mb-6 text-gray-500">{product.description}</p>
+                        <ul className="mb-6 space-y-2">
+                          {product.features.map((feature, j) => (
+                            <li key={j} className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-proply-blue" />
+                              <span className="text-sm">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="mb-6 text-sm font-medium text-gray-500">{product.price}</div>
+                        <Link href={product.link || "#"}>
+                          <Button className="w-full bg-black hover:bg-gray-800 text-white">
+                            {product.cta} <ChevronRight className="ml-1 h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* API Section */}
-          <section id="api" className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900">
-                  Property Analyzer (API)
+          {/* Live Demo Preview */}
+          <section id="demo" className="relative py-20 border-t">
+            <div className="container relative z-20">
+              <div className="mb-12">
+                <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
+                  See how Proply
+                  <span className="text-proply-blue block mt-2">makes decisions easier.</span>
                 </h2>
-                <p className="mt-4 text-xl text-gray-600">
-                  Enterprise-grade property analysis engine for your business
+                <p className="mt-6 text-xl text-gray-600 max-w-lg">
+                  Try our interactive demo to experience the power of property intelligence.
                 </p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <Settings className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
-                    <p className="text-gray-600">
-                      Real estate agencies need quick and accurate property analysis
-                      when uploading properties to the market to better assist their
-                      clients with transactions.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <Code className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">The Solution</h3>
-                    <p className="text-gray-600">
-                      Automatic property analysis reports generated instantly when
-                      you list properties, seamlessly integrated with your existing
-                      workflow.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <Database className="h-12 w-12 text-[#1BA3FF] mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Get API Access</h3>
-                    <div className="flex flex-col gap-4 mt-4">
-                      <Link href="/property-analyzer">
-                        <Button variant="outline" className="w-full">
-                          Learn More
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Link href="/pricing">
-                        <Button className="w-full">
-                          View Enterprise Plans
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
+
+              {/* Risk Index Showcase */}
+              <RiskIndexShowcase />
+            </div>
+          </section>
+
+          {/* Testimonials */}
+          <section id="testimonials" className="relative py-20 border-t">
+            <div className="container relative z-20">
+              <div className="grid gap-12 md:grid-cols-2 items-center">
+                <div className="max-w-2xl">
+                  <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
+                    Testimonials
+                    <span className="text-proply-blue block mt-2">we hope to have soon.</span>
+                  </h2>
+                  <p className="mt-6 text-xl text-gray-600 max-w-lg">
+                    We're new here, but here's what we imagine our future clients might say about us if they existed
+                    yet.
+                  </p>
+
+                  <div className="mt-10 grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-proply-blue">100,000+</div>
+                      <div className="mt-1 text-sm text-gray-500">Reports we aim to do monthly</div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-proply-blue">98%</div>
+                      <div className="mt-1 text-sm text-gray-500">Satisfaction goal</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-proply-blue">485</div>
+                      <div className="mt-1 text-sm text-gray-500">Coffees to make this site</div>
+                    </div>
+                  </div>
+                </div>
 
-              {/* Targeted API Integration Section */}
-              <div className="mt-16 max-w-4xl mx-auto text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                  Empower Your Real Estate Platform
-                </h3>
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                      For Real Estate Agencies
-                    </h4>
-                    <p className="text-gray-600">
-                      Streamline your property listing process with automatic
-                      analysis reports. Every time you upload a new property, our
-                      system generates comprehensive insights that help your agents
-                      close deals faster and provide more value to clients.
-                    </p>
-                  </div>
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h4 className="text-lg font-semibold text-[#1BA3FF] mb-3">
-                      For Property Platforms
-                    </h4>
-                    <p className="text-gray-600">
-                      Enhance your platform's value proposition with
-                      enterprise-grade property analysis. Our API seamlessly
-                      integrates with your existing systems to provide automatic,
-                      accurate property insights at scale.
-                    </p>
-                  </div>
+                <div className="space-y-6">
+                  {[
+                    {
+                      quote:
+                        "Proply completely revolutionized how we assess property risk! At least that's what we hope they'll say after they try our product.",
+                      author: "Future Client",
+                      role: "Insurance Company We're Courting",
+                    },
+                    {
+                      quote:
+                        "Our clients are making smarter decisions with confidence! Well, they will be once they start using our Deal Score feature.",
+                      author: "Potential Agent",
+                      role: "Real Estate Agency We'd Love to Work With",
+                    },
+                    {
+                      quote:
+                        "Integrating their API was so seamless, it was like it was made for us! This is the feedback we're designing for.",
+                      author: "Dream Customer",
+                      role: "Tech Company on Our Wishlist",
+                    },
+                  ].map((testimonial, i) => (
+                    <div key={i} className="border-l-2 border-proply-blue pl-6 py-2">
+                      <p className="mb-3 text-gray-700">"{testimonial.quote}"</p>
+                      <div>
+                        <div className="font-medium">{testimonial.author}</div>
+                        <div className="text-sm text-gray-500">{testimonial.role}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Trusted By Section */}
-          <section className="py-4">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid md:grid-cols-4 gap-8 items-center">
-                <div className="text-right">
-                  <h2 className="text-2xl font-bold text-gray-900">Trusted By:</h2>
+          {/* CTA Section */}
+          <section id="contact" className="relative py-20 border-t">
+            <div className="container relative z-20">
+              <div className="grid gap-12 md:grid-cols-2 items-center">
+                <div className="max-w-2xl">
+                  <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
+                    Get access to
+                    <span className="text-proply-blue block mt-2">South Africa's smartest property data.</span>
+                  </h2>
+                  <p className="mt-6 text-xl text-gray-600 max-w-lg">Schedule a call with our team to learn more.</p>
                 </div>
-                <img
-                  src="/images/partners/nox-properties.jpg"
-                  alt="Nox Properties"
-                  className="h-21 object-contain justify-self-center"
-                />
-                <img
-                  src="/images/partners/prospr-management.jpg"
-                  alt="Prospr Management"
-                  className="h-21 object-contain justify-self-center"
-                />
-                <img
-                  src="/images/partners/sothebys.jpg"
-                  alt="Sotheby's International Realty"
-                  className="h-21 object-contain justify-self-center"
-                />
-              </div>
-            </div>
-          </section>
 
-          {/* Final CTA Section */}
-          <section className="py-16 bg-[#1BA3FF]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Ready to Transform Your Property Investment Strategy?
-              </h2>
-              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-                Join industry leaders making data-driven decisions with Proply
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button size="lg" variant="secondary" asChild>
-                  <Link href="/register">Get Started Free</Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="bg-white/10 text-white border-white hover:bg-white/20"
-                  asChild
-                >
-                  <Link href="/contact">Contact Sales</Link>
-                </Button>
+                <div className="relative">
+                  <div className="w-full max-w-md mx-auto md:ml-auto">
+                    <div className="bg-white rounded-xl shadow-lg border p-8">
+                      <h3 className="text-xl font-bold mb-6 text-gray-900">Request Access</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <Input
+                            type="text"
+                            placeholder="Full Name"
+                            className="border-gray-200 focus-visible:ring-proply-blue"
+                          />
+                        </div>
+                        <div>
+                          <Input
+                            type="email"
+                            placeholder="Email Address"
+                            className="border-gray-200 focus-visible:ring-proply-blue"
+                          />
+                        </div>
+                        <div>
+                          <Input
+                            type="text"
+                            placeholder="Company"
+                            className="border-gray-200 focus-visible:ring-proply-blue"
+                          />
+                        </div>
+                        <div>
+                          <select className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-proply-blue">
+                            <option value="">I'm interested in...</option>
+                            <option value="deal-score">Deal Score</option>
+                            <option value="risk-index">Risk Index</option>
+                            <option value="property-api">Property Analyzer API</option>
+                          </select>
+                        </div>
+                        <Button className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white">
+                          Send Enquiry
+                        </Button>
+                        <div className="text-center text-xs text-gray-500">
+                          Or{" "}
+                          <Link href="#" className="text-proply-blue hover:underline">
+                            schedule a demo call
+                          </Link>{" "}
+                          with our team
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
         </div>
-      </div>
+      </main>
 
-      <PublicFooter />
+      {/* Footer - with solid background to hide pattern */}
+      <footer className="bg-white py-12 border-t relative z-30">
+        <div className="container">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <div className="flex items-center">
+                <img src="/proply-logo.svg" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
+              </div>
+              <p className="mt-4 text-sm text-gray-500">
+                The intelligence layer for the real estate and insurance industries.
+              </p>
+            </div>
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Products</h3>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li>
+                  <Link href="#for-insurers" className="hover:text-proply-blue">
+                    Risk Index
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#for-agents" className="hover:text-proply-blue">
+                    Property Analyzer API
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dealscore" className="hover:text-proply-blue">
+                    Deal Score
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Pricing
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Company</h3>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Careers
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Legal</h3>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Cookie Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-12 border-t pt-8 text-center text-sm text-gray-500">
+            <p>© {currentYear} Proply. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
