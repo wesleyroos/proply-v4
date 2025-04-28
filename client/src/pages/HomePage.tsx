@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,12 +36,15 @@ export default function HomePage() {
 
   const currentYear = new Date().getFullYear();
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Helmet>
         <title>Proply - An Intelligence Layer for Real Estate | Property Analytics</title>
         <meta name="description" content="AI-powered data tools for property buyers, agents, and insurers. Make better property decisions with Proply's comprehensive intelligence solutions." />
         <meta name="keywords" content="property intelligence, real estate analytics, risk index, property data, AI real estate, insurance risk" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
         {/* Open Graph tags for social sharing */}
         <meta property="og:title" content="Proply - An Intelligence Layer for Real Estate" />
@@ -68,6 +72,8 @@ export default function HomePage() {
           <div className="flex items-center">
             <img src="/proply-logo-auth.png" alt="Proply Logo" className="h-8 w-auto" />
           </div>
+          
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link href="#for-insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
               For Insurers
@@ -93,13 +99,76 @@ export default function HomePage() {
               Contact
             </Link>
           </nav>
+          
           <div className="flex items-center gap-4">
             <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
               Login
             </Button>
-            <Button className="bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
+            <Button className="hidden sm:flex bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
+            
+            {/* Mobile menu button */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-gray-700"
+            >
+              {mobileMenuOpen ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+        
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-t">
+            <div className="container py-4 space-y-3">
+              <Link href="#for-insurers" className="block py-2 text-sm font-medium hover:text-proply-blue">
+                For Insurers
+              </Link>
+              <Link href="#for-agents" className="block py-2 text-sm font-medium hover:text-proply-blue">
+                For Agents
+              </Link>
+              <Link href="#for-buyers" className="block py-2 text-sm font-medium hover:text-proply-blue">
+                For Buyers
+              </Link>
+              <div className="py-2">
+                <button className="flex items-center justify-between w-full text-sm font-medium hover:text-proply-blue" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const submenu = e.currentTarget.nextElementSibling;
+                          if (submenu) {
+                            submenu.classList.toggle('hidden');
+                          }
+                        }}>
+                  <span>Resources</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                <div className="hidden ml-4 mt-2 space-y-2">
+                  <Link href="/airbnb-yield-calculator" className="block py-2 pl-2 text-sm text-gray-700 border-l-2 border-gray-200 hover:border-proply-blue hover:text-proply-blue">
+                    Airbnb Yield Calculator
+                  </Link>
+                </div>
+              </div>
+              <Link href="#contact" className="block py-2 text-sm font-medium hover:text-proply-blue">
+                Contact
+              </Link>
+              <div className="pt-4 flex flex-col space-y-3">
+                <Button variant="outline" className="w-full justify-center border-black text-black hover:bg-black/5">
+                  Login
+                </Button>
+                <Button className="w-full justify-center bg-black hover:bg-gray-800 text-white">
+                  Book a Demo
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="flex-1 relative">
@@ -152,12 +221,12 @@ export default function HomePage() {
             </div>
 
             {/* Hero Image - positioned absolutely with no gap on the right */}
-            <div className="absolute top-[40%] right-0 transform -translate-y-1/2 h-full w-full z-10">
+            <div className="absolute top-[40%] right-0 transform -translate-y-1/2 h-full w-full z-10 pointer-events-none">
               <div className="relative h-full w-full flex justify-end">
                 <img
                   src="/images/property-technology.png"
                   alt="AI Technology for Real Estate"
-                  className="object-contain object-right h-full"
+                  className="object-contain object-right h-full max-h-[90vh] hidden sm:block"
                   style={{ position: 'absolute', right: 0 }}
                 />
               </div>
@@ -231,35 +300,35 @@ export default function HomePage() {
                 {/* New visualization for the right side - matching the screenshot */}
                 <div className="relative">
                   <div className="w-full max-w-md mx-auto md:ml-auto">
-                    <div className="relative bg-[#4299e1] rounded-3xl p-6 text-white shadow-lg">
-                      <h3 className="text-xl font-bold mb-6 text-center">AI-Powered Intelligence</h3>
+                    <div className="relative bg-[#4299e1] rounded-3xl p-4 sm:p-6 text-white shadow-lg">
+                      <h3 className="text-xl font-bold mb-4 sm:mb-6 text-center">AI-Powered Intelligence</h3>
 
-                      {/* Data flow visualization */}
+                      {/* Data flow visualization - with responsive adjustments */}
                       <div className="relative h-[280px]">
-                        {/* Data sources - evenly spaced around the center, with z-index to be above the lines */}
-                        <div className="absolute top-4 left-1/2 -translate-x-[170px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center z-10">
-                          <Database className="h-6 w-6 mb-2 mx-auto" />
-                          <div className="text-sm font-medium">Property Data</div>
+                        {/* Data sources - evenly spaced around the center, with adjustments for small screens */}
+                        <div className="absolute top-4 left-1/2 -translate-x-[120px] sm:-translate-x-[170px] bg-[#67b1ed] rounded-lg p-2 sm:p-3 w-[100px] sm:w-[140px] text-center z-10">
+                          <Database className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2 mx-auto" />
+                          <div className="text-xs sm:text-sm font-medium">Property Data</div>
                         </div>
 
-                        <div className="absolute top-4 left-1/2 translate-x-[30px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center z-10">
-                          <BarChart3 className="h-6 w-6 mb-2 mx-auto" />
-                          <div className="text-sm font-medium">Market Trends</div>
+                        <div className="absolute top-4 left-1/2 translate-x-[20px] sm:translate-x-[30px] bg-[#67b1ed] rounded-lg p-2 sm:p-3 w-[100px] sm:w-[140px] text-center z-10">
+                          <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2 mx-auto" />
+                          <div className="text-xs sm:text-sm font-medium">Market Trends</div>
                         </div>
 
-                        <div className="absolute bottom-4 left-1/2 -translate-x-[170px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center z-10">
-                          <MapPin className="h-6 w-6 mb-2 mx-auto" />
-                          <div className="text-sm font-medium">Location Data</div>
+                        <div className="absolute bottom-4 left-1/2 -translate-x-[120px] sm:-translate-x-[170px] bg-[#67b1ed] rounded-lg p-2 sm:p-3 w-[100px] sm:w-[140px] text-center z-10">
+                          <MapPin className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2 mx-auto" />
+                          <div className="text-xs sm:text-sm font-medium">Location Data</div>
                         </div>
 
-                        <div className="absolute bottom-4 left-1/2 translate-x-[30px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center z-10">
-                          <Shield className="h-6 w-6 mb-2 mx-auto" />
-                          <div className="text-sm font-medium">Risk Factors</div>
+                        <div className="absolute bottom-4 left-1/2 translate-x-[20px] sm:translate-x-[30px] bg-[#67b1ed] rounded-lg p-2 sm:p-3 w-[100px] sm:w-[140px] text-center z-10">
+                          <Shield className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2 mx-auto" />
+                          <div className="text-xs sm:text-sm font-medium">Risk Factors</div>
                         </div>
 
-                        {/* Central AI processor - with z-index to be on top */}
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full h-16 w-16 flex items-center justify-center z-20">
-                          <Zap className="h-8 w-8 text-[#4299e1]" />
+                        {/* Central AI processor - with z-index to be on top, responsive sizing */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center z-20">
+                          <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-[#4299e1]" />
                         </div>
 
                         {/* Connection lines - positioned at the back with z-index-0 */}
@@ -417,18 +486,18 @@ export default function HomePage() {
                     yet.
                   </p>
 
-                  <div className="mt-10 grid grid-cols-3 gap-4">
+                  <div className="mt-10 grid grid-cols-3 gap-2 sm:gap-4">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-proply-blue">100,000+</div>
-                      <div className="mt-1 text-sm text-gray-500">Reports we aim to do monthly</div>
+                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">100,000+</div>
+                      <div className="mt-1 text-xs sm:text-sm text-gray-500">Reports we aim to do monthly</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-proply-blue">98%</div>
-                      <div className="mt-1 text-sm text-gray-500">Satisfaction goal</div>
+                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">98%</div>
+                      <div className="mt-1 text-xs sm:text-sm text-gray-500">Satisfaction goal</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-proply-blue">485</div>
-                      <div className="mt-1 text-sm text-gray-500">Coffees to make this site</div>
+                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">485</div>
+                      <div className="mt-1 text-xs sm:text-sm text-gray-500">Coffees to make this site</div>
                     </div>
                   </div>
                 </div>
