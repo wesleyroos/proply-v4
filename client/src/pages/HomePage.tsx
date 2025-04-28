@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Check,
   ChevronRight,
+  ChevronDown,
   ExternalLink,
   MapPin,
   Shield,
@@ -77,6 +78,17 @@ export default function HomePage() {
             <Link href="#for-buyers" className="text-sm font-medium hover:text-proply-blue transition-colors">
               For Buyers
             </Link>
+            <div className="relative group">
+              <button className="text-sm font-medium hover:text-proply-blue transition-colors flex items-center gap-1">
+                Resources
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              <div className="absolute left-0 top-full mt-1 w-48 bg-white shadow-lg rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border">
+                <Link href="/airbnb-yield-calculator" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-proply-blue">
+                  Airbnb Yield Calculator
+                </Link>
+              </div>
+            </div>
             <Link href="#contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
               Contact
             </Link>
