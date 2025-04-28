@@ -46,13 +46,13 @@ export default function HomePage() {
         <meta property="og:description" content="AI-powered data tools for property buyers, agents, and insurers." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://proply.com" />
-        <meta property="og:image" content="/property-technology.svg" />
+        <meta property="og:image" content="/robot-hand.svg" />
 
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Proply - An Intelligence Layer for Real Estate" />
         <meta name="twitter:description" content="AI-powered data tools for property buyers, agents, and insurers." />
-        <meta name="twitter:image" content="/property-technology.svg" />
+        <meta name="twitter:image" content="/robot-hand.svg" />
 
         {/* Add structured data */}
         <script type="application/ld+json">
@@ -101,7 +101,8 @@ export default function HomePage() {
               <div className="grid gap-12 md:grid-cols-2 items-center">
                 <div className="max-w-2xl relative z-10">
                   <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-                    <span className="text-black">An Intelligence Layer for</span>
+                    <span className="text-black">An Intelligence</span>
+                    <span className="text-black block">Layer for</span>
                     <span className="text-proply-blue block mt-2">Real Estate.</span>
                   </h1>
                   <p className="mt-6 text-xl text-gray-600 max-w-lg">
@@ -142,7 +143,7 @@ export default function HomePage() {
             <div className="absolute top-[40%] right-0 transform -translate-y-1/2 h-full w-[90%] md:w-[85%] z-10">
               <div className="relative h-full w-full">
                 <img
-                  src="/property-technology.svg"
+                  src="/robot-hand.svg"
                   alt="AI Technology for Real Estate"
                   className="object-contain object-right"
                 />
