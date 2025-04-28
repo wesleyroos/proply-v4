@@ -101,9 +101,11 @@ export default function HomePage() {
           </nav>
           
           <div className="flex items-center gap-4">
-            <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
-              Login
-            </Button>
+            <Link href="/auth">
+              <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
+                Login/Register
+              </Button>
+            </Link>
             <Button className="hidden sm:flex bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
             
             {/* Mobile menu button */}
@@ -159,9 +161,11 @@ export default function HomePage() {
                 Contact
               </Link>
               <div className="pt-4 flex flex-col space-y-3">
-                <Button variant="outline" className="w-full justify-center border-black text-black hover:bg-black/5">
-                  Login
-                </Button>
+                <Link href="/auth" className="w-full">
+                  <Button variant="outline" className="w-full justify-center border-black text-black hover:bg-black/5">
+                    Login/Register
+                  </Button>
+                </Link>
                 <Button className="w-full justify-center bg-black hover:bg-gray-800 text-white">
                   Book a Demo
                 </Button>
