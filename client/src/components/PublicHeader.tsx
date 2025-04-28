@@ -1,134 +1,132 @@
 import { Link } from "wouter";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/use-user";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 
 export default function PublicHeader() {
   const { user } = useUser();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isMobile = useIsMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white z-50 border-b min-w-[320px]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/">
-              <img src="/proply-logo-1.png" alt="Proply" className="h-8 cursor-pointer" />
-            </Link>
-          </div>
-
-          {/* Mobile menu button */}
-          {isMobile && (
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+    <header className="sticky top-0 z-50 w-full border-b bg-white">
+      <div className="container flex h-16 items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center">
+          <Link href="/">
+            <img src="/proply-logo-auth.png" alt="Proply Logo" className="h-8 w-auto" />
+          </Link>
+        </div>
+        
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-8">
+          <Link href="#for-insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
+            For Insurers
+          </Link>
+          <Link href="#for-agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
+            For Agents
+          </Link>
+          <Link href="#for-buyers" className="text-sm font-medium hover:text-proply-blue transition-colors">
+            For Buyers
+          </Link>
+          <div className="relative group">
+            <button className="text-sm font-medium hover:text-proply-blue transition-colors flex items-center gap-1">
+              Resources
+              <ChevronDown className="h-4 w-4" />
             </button>
-          )}
-
-          {/* Navigation Links - Hidden on mobile unless menu is open */}
-          <div className={`${isMobile ? (isMenuOpen ? 'absolute top-16 left-0 right-0 bg-white border-b' : 'hidden') : 'flex'} ${isMobile ? 'flex-col p-4 space-y-2' : 'items-center gap-4'}`}>
-            <Link href="/">
-              <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Home</Button>
-            </Link>
-            <Link href="/property-analyzer">
-              <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Property Analyzer</Button>
-            </Link>
-            <Link href="/rent-compare">
-              <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Rent Compare</Button>
-            </Link>
-
-            {/* Resources Navigation Menu */}
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="p-4 w-[200px]">
-                      <Link href="/airbnb-yield-calculator">
-                        <NavigationMenuLink className="block p-2 hover:bg-accent rounded-md cursor-pointer">
-                          Yield Calculator
-                        </NavigationMenuLink>
-                      </Link>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
-
-            <Link href="/blog">
-              <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Blog</Button>
-            </Link>
-            <Link href="/pricing">
-              <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Pricing</Button>
-            </Link>
-            <Link href="/contact">
-              <Button variant="ghost" className={isMobile ? 'w-full justify-start' : ''}>Contact</Button>
-            </Link>
-
-            {/* Auth Buttons */}
-            {isMobile && (
-              <div className={`${isMobile ? 'flex flex-col space-y-2' : 'flex gap-4'}`}>
-                {user ? (
-                  <Link href="/dashboard">
-                    <Button className="bg-[#1BA3FF] hover:bg-[#114D9D] w-full">
-                      Go to Dashboard
-                    </Button>
-                  </Link>
-                ) : (
-                  <>
-                    <Link href="/login">
-                      <Button variant="ghost" className="w-full">Login</Button>
-                    </Link>
-                    <Link href="/register">
-                      <Button className="bg-[#1BA3FF] hover:bg-[#114D9D] w-full">
-                        Get Started
-                      </Button>
-                    </Link>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Auth Buttons - Only show on desktop */}
-          {!isMobile && (
-            <div className="flex gap-4">
-              {user ? (
-                <Link href="/dashboard">
-                  <Button className="bg-[#1BA3FF] hover:bg-[#114D9D]">
-                    Go to Dashboard
-                  </Button>
-                </Link>
-              ) : (
-                <>
-                  <Link href="/login">
-                    <Button variant="ghost">Login</Button>
-                  </Link>
-                  <Link href="/register">
-                    <Button className="bg-[#1BA3FF] hover:bg-[#114D9D]">
-                      Get Started
-                    </Button>
-                  </Link>
-                </>
-              )}
+            <div className="absolute left-0 top-full mt-1 w-48 bg-white shadow-lg rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border">
+              <Link href="/airbnb-yield-calculator" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-proply-blue">
+                Airbnb Yield Calculator
+              </Link>
             </div>
-          )}
+          </div>
+          <Link href="/blog" className="text-sm font-medium hover:text-proply-blue transition-colors">
+            Blog
+          </Link>
+          <Link href="#contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
+            Contact
+          </Link>
+        </nav>
+        
+        <div className="flex items-center gap-4">
+          <Link href="/login">
+            <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
+              Login/Register
+            </Button>
+          </Link>
+          <Button className="hidden sm:flex bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
+          
+          {/* Mobile menu button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-gray-700"
+          >
+            {mobileMenuOpen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
-    </nav>
+      
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white border-t">
+          <div className="container py-4 space-y-3">
+            <Link href="#for-insurers" className="block py-2 text-sm font-medium hover:text-proply-blue">
+              For Insurers
+            </Link>
+            <Link href="#for-agents" className="block py-2 text-sm font-medium hover:text-proply-blue">
+              For Agents
+            </Link>
+            <Link href="#for-buyers" className="block py-2 text-sm font-medium hover:text-proply-blue">
+              For Buyers
+            </Link>
+            <div className="py-2">
+              <button className="flex items-center justify-between w-full text-sm font-medium hover:text-proply-blue" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const submenu = e.currentTarget.nextElementSibling;
+                        if (submenu) {
+                          submenu.classList.toggle('hidden');
+                        }
+                      }}>
+                <span>Resources</span>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              <div className="hidden ml-4 mt-2 space-y-2">
+                <Link href="/airbnb-yield-calculator" className="block py-2 pl-2 text-sm text-gray-700 border-l-2 border-gray-200 hover:border-proply-blue hover:text-proply-blue">
+                  Airbnb Yield Calculator
+                </Link>
+              </div>
+            </div>
+            <Link href="/blog" className="block py-2 text-sm font-medium hover:text-proply-blue">
+              Blog
+            </Link>
+            <Link href="#contact" className="block py-2 text-sm font-medium hover:text-proply-blue">
+              Contact
+            </Link>
+            <div className="pt-4 flex flex-col space-y-3">
+              <Link href="/login" className="w-full">
+                <Button variant="outline" className="w-full justify-center border-black text-black hover:bg-black/5">
+                  Login/Register
+                </Button>
+              </Link>
+              <Button className="w-full justify-center bg-black hover:bg-gray-800 text-white">
+                Book a Demo
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }

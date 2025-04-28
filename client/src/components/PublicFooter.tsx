@@ -1,59 +1,106 @@
 import { Link } from "wouter";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ArrowRight, Mail } from "lucide-react";
 
 export default function PublicFooter() {
+  const currentYear = new Date().getFullYear();
+  
   return (
-    <footer className="bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
+    <footer className="border-t bg-white">
+      <div className="container py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pb-12 border-b">
           <div>
-            <img src="/proply-logo-1.png" alt="Proply" className="h-8 mb-4" />
-            <p className="text-gray-600 mb-4">
-              Empowering you with data-driven insights for strategic
-              decision-making in real estate.
+            <div className="mb-4">
+              <img src="/proply-logo-auth.png" alt="Proply Logo" className="h-8 w-auto" />
+            </div>
+            <p className="text-gray-600 mb-8 max-w-md">
+              AI-powered property intelligence for smarter real estate decisions. Trusted by insurers, agents, and property buyers.
             </p>
-            <p className="text-gray-600 mb-2">
-              Address: Innovation City, Darter Road, Longkloof Gardens, Cape Town, 8001
-            </p>
-            <p className="text-gray-600">
-              Email: hello@proply.co.za
-            </p>
+            <div className="space-y-2 text-gray-600">
+              <p className="flex gap-2 items-center">
+                <Mail className="h-4 w-4" />
+                <a href="mailto:hello@proply.co.za" className="hover:text-proply-blue">
+                  hello@proply.co.za
+                </a>
+              </p>
+              <p>
+                7 Darter Rd, Longkloof Gardens, Cape Town, 8001
+              </p>
+            </div>
           </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Product</h3>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li>
+                  <Link href="/property-analyzer" className="hover:text-proply-blue">
+                    Property Analyzer
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/rent-compare" className="hover:text-proply-blue">
+                    Rent Compare
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/deal-score" className="hover:text-proply-blue">
+                    Deal Score
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/risk-index" className="hover:text-proply-blue">
+                    Risk Index
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Company</h3>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li>
+                  <Link href="/about" className="hover:text-proply-blue">
+                    About
+                  </Link>
+                </li>
 
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Subscribe to Our Newsletter</h3>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#1BA3FF]"
-              />
-              <Button>Subscribe</Button>
+                <li>
+                  <Link href="/blog" className="hover:text-proply-blue">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Legal</h3>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-proply-blue">
+                    Cookie Policy
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-
-        <div className="border-t pt-8 text-sm text-gray-600">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <p>© 2024 Proply. All rights reserved.</p>
-            <div className="flex gap-4">
-              <Link href="/">Home</Link>
-              <span>|</span>
-              <Link href="/property-analyzer">Property Analyzer</Link>
-              <span>|</span>
-              <Link href="/rent-compare">Rent Compare</Link>
-              <span>|</span>
-              <Link href="/blog">Blog</Link>
-              <span>|</span>
-              <Link href="/pricing">Pricing</Link>
-              <span>|</span>
-              <Link href="/contact">Contact</Link>
-              <span>|</span>
-              <Link href="/privacy">Privacy Policy</Link>
-              <span>|</span>
-              <Link href="/terms">Terms of Service</Link>
-            </div>
-          </div>
+        <div className="mt-12 border-t pt-8 text-center text-sm text-gray-500">
+          <p>© {currentYear} Proply. All rights reserved.</p>
         </div>
       </div>
     </footer>
