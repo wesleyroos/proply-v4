@@ -101,7 +101,7 @@ export default function HomePage() {
           </nav>
           
           <div className="flex items-center gap-4">
-            <Link href="/auth">
+            <Link href="/login">
               <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
                 Login/Register
               </Button>
@@ -161,7 +161,7 @@ export default function HomePage() {
                 Contact
               </Link>
               <div className="pt-4 flex flex-col space-y-3">
-                <Link href="/auth" className="w-full">
+                <Link href="/login" className="w-full">
                   <Button variant="outline" className="w-full justify-center border-black text-black hover:bg-black/5">
                     Login/Register
                   </Button>
