@@ -292,7 +292,7 @@ export function RiskIndexShowcase() {
                       className="border-proply-blue text-proply-blue hover:bg-proply-blue/5"
                       onClick={() => setIsModalOpen(true)}
                     >
-                      Request Assessment
+                      Get Quote
                     </Button>
                   </>
                 )}
@@ -301,6 +301,40 @@ export function RiskIndexShowcase() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <div className="bg-gray-50 px-6 py-4 border-t">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-gray-500">
+            Risk assessment based on historical data, climate models, and local statistics
+          </p>
+          <Button className="bg-black hover:bg-gray-800 text-white" onClick={() => setIsModalOpen(true)}>
+            Full Risk Report
+          </Button>
+        </div>
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold mb-4">Get in touch</h3>
+            <p className="mb-4">
+              Our risk assessment experts are ready to help you understand your property's risk profile and recommend
+              the best insurance coverage options.
+            </p>
+            <p className="mb-6">
+              Book a demo with our team to see how Proply can help you make better property decisions.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+                Close
+              </Button>
+              <Button className="bg-proply-blue hover:bg-proply-blue/90">Book a Demo</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }
