@@ -43,6 +43,9 @@ export default function PublicHeader() {
               </Link>
             </div>
           </div>
+          <Link href="/pricing" className="text-sm font-medium hover:text-proply-blue transition-colors">
+            Pricing
+          </Link>
           <Link href="/blog" className="text-sm font-medium hover:text-proply-blue transition-colors">
             Blog
           </Link>
@@ -108,6 +111,9 @@ export default function PublicHeader() {
                 </Link>
               </div>
             </div>
+            <Link href="/pricing" className="block py-2 text-sm font-medium hover:text-proply-blue">
+              Pricing
+            </Link>
             <Link href="/blog" className="block py-2 text-sm font-medium hover:text-proply-blue">
               Blog
             </Link>

@@ -66,6 +66,11 @@ export default function PublicFooter() {
                 </li>
 
                 <li>
+                  <Link href="/pricing" className="hover:text-proply-blue">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
                   <Link href="/blog" className="hover:text-proply-blue">
                     Blog
                   </Link>
