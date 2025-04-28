@@ -65,7 +65,7 @@ export default function HomePage() {
         <div className="container flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <img src="/proply-logo.png" alt="Proply Logo" className="h-8 w-auto" />
+            <img src="/proply-logo-auth.png" alt="Proply Logo" className="h-8 w-auto" />
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <Link href="#for-insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
@@ -526,7 +526,7 @@ export default function HomePage() {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="flex items-center">
-                <img src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
+                <img src="/proply-logo-auth.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
               </div>
               <p className="mt-4 text-sm text-gray-500">
                 The intelligence layer for the real estate and insurance industries.
