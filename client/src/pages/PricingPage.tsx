@@ -22,6 +22,78 @@ export default function PricingPage() {
           </p>
         </div>
 
+        {/* Traditional SaaS Options Section */}
+        <div className="mb-16 max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-6">Free and Pro SaaS Options</h2>
+          <div className="bg-white p-8 rounded-xl shadow-sm">
+            <p className="text-gray-700 mb-4">
+              Create a profile to access our property analysis tools directly through our platform:
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-8 mt-6">
+              {/* Free Tier */}
+              <div className="border rounded-lg p-6">
+                <h3 className="text-xl font-semibold mb-3">Free</h3>
+                <p className="text-2xl font-bold mb-2">R0<span className="text-sm font-normal text-gray-600">/month</span></p>
+                <p className="text-gray-600 mb-4">Perfect for getting started</p>
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-500 shrink-0" />
+                    <span>Basic property analysis</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-500 shrink-0" />
+                    <span>3 analyses per month</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-500 shrink-0" />
+                    <span>Standard support</span>
+                  </li>
+                </ul>
+                <Button className="w-full mt-6 bg-black hover:bg-gray-800 text-white" asChild>
+                  <Link href="/register?plan=free">Get Started</Link>
+                </Button>
+              </div>
+              
+              {/* Pro Tier */}
+              <div className="border border-black rounded-lg p-6">
+                <h3 className="text-xl font-semibold mb-3">Pro</h3>
+                <p className="text-gray-700 mb-2">Contact for pricing</p>
+                <p className="text-gray-600 mb-4">For investors and property managers</p>
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-500 shrink-0" />
+                    <span>Advanced property analysis</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-500 shrink-0" />
+                    <span>Unlimited analyses</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-500 shrink-0" />
+                    <span>Priority support</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-500 shrink-0" />
+                    <span>Custom reports</span>
+                  </li>
+                </ul>
+                <Button className="w-full mt-6 bg-black hover:bg-gray-800 text-white" asChild>
+                  <Link href="/contact">Contact Sales</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Products Section Header */}
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold">Our Products</h2>
+          <p className="text-gray-600 mt-2 max-w-2xl mx-auto">
+            Choose the specific product that best fits your property intelligence needs
+          </p>
+        </div>
+        
         {/* Products Section */}
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
           {/* Risk Index */}
@@ -58,9 +130,6 @@ export default function PricingPage() {
 
           {/* Property Analyzer API */}
           <Card className="relative border-black">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-1 rounded-full text-sm">
-              Most Popular
-            </div>
             <CardHeader>
               <div className="mb-4 p-2 w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
                 <Database className="h-6 w-6 text-blue-600" />
