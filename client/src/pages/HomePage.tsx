@@ -224,23 +224,23 @@ export default function HomePage() {
 
                       {/* Data flow visualization */}
                       <div className="relative h-[280px]">
-                        {/* Data sources */}
-                        <div className="absolute top-0 left-10 bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
+                        {/* Data sources - evenly spaced around the center */}
+                        <div className="absolute top-4 left-1/2 -translate-x-[170px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
                           <Database className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Property Data</div>
                         </div>
 
-                        <div className="absolute top-0 right-10 bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
+                        <div className="absolute top-4 left-1/2 translate-x-[30px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
                           <BarChart3 className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Market Trends</div>
                         </div>
 
-                        <div className="absolute bottom-20 left-10 bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
+                        <div className="absolute bottom-4 left-1/2 -translate-x-[170px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
                           <MapPin className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Location Data</div>
                         </div>
 
-                        <div className="absolute bottom-20 right-10 bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
+                        <div className="absolute bottom-4 left-1/2 translate-x-[30px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
                           <Shield className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Risk Factors</div>
                         </div>
