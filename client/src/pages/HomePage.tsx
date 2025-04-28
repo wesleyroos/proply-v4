@@ -224,35 +224,35 @@ export default function HomePage() {
 
                       {/* Data flow visualization */}
                       <div className="relative h-[280px]">
-                        {/* Data sources - evenly spaced around the center */}
-                        <div className="absolute top-4 left-1/2 -translate-x-[170px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
+                        {/* Data sources - evenly spaced around the center, with z-index to be above the lines */}
+                        <div className="absolute top-4 left-1/2 -translate-x-[170px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center z-10">
                           <Database className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Property Data</div>
                         </div>
 
-                        <div className="absolute top-4 left-1/2 translate-x-[30px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
+                        <div className="absolute top-4 left-1/2 translate-x-[30px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center z-10">
                           <BarChart3 className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Market Trends</div>
                         </div>
 
-                        <div className="absolute bottom-4 left-1/2 -translate-x-[170px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
+                        <div className="absolute bottom-4 left-1/2 -translate-x-[170px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center z-10">
                           <MapPin className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Location Data</div>
                         </div>
 
-                        <div className="absolute bottom-4 left-1/2 translate-x-[30px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
+                        <div className="absolute bottom-4 left-1/2 translate-x-[30px] bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center z-10">
                           <Shield className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Risk Factors</div>
                         </div>
 
-                        {/* Central AI processor */}
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full h-16 w-16 flex items-center justify-center">
+                        {/* Central AI processor - with z-index to be on top */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full h-16 w-16 flex items-center justify-center z-20">
                           <Zap className="h-8 w-8 text-[#4299e1]" />
                         </div>
 
-                        {/* Connection lines */}
+                        {/* Connection lines - positioned at the back with z-index-0 */}
                         <svg
-                          className="absolute inset-0 w-full h-full pointer-events-none"
+                          className="absolute inset-0 w-full h-full pointer-events-none z-0"
                           viewBox="0 0 400 300"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
