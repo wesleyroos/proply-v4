@@ -412,11 +412,11 @@ export default function HomePage() {
                         description: "Smart, affordable reports for property buyers.",
                         features: ["Rental yields & resale value", "Market comparisons", "Investment potential"],
                         price: "R49/report, no login required",
-                        cta: "Try It Now",
+                        cta: "Coming Soon",
                         icon: TrendingUp,
                         audience: "For Buyers",
                         id: "for-buyers",
-                        link: "/dealscore",
+                        link: "#",
                       },
                     ].map((product, i) => (
                       <div
@@ -632,7 +632,7 @@ export default function HomePage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dealscore" className="hover:text-proply-blue">
+                  <Link href="#" className="hover:text-proply-blue">
                     Deal Score
                   </Link>
                 </li>
