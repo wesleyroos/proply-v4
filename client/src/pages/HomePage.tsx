@@ -216,43 +216,43 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                {/* New visualization for the right side */}
+                {/* New visualization for the right side - matching the screenshot */}
                 <div className="relative">
                   <div className="w-full max-w-md mx-auto md:ml-auto">
-                    <div className="relative bg-gradient-to-br from-proply-blue/80 to-proply-blue rounded-3xl p-8 text-white shadow-lg">
-                      <h3 className="text-2xl font-bold mb-6">AI-Powered Intelligence</h3>
+                    <div className="relative bg-[#4299e1] rounded-3xl p-6 text-white shadow-lg">
+                      <h3 className="text-xl font-bold mb-6 text-center">AI-Powered Intelligence</h3>
 
                       {/* Data flow visualization */}
-                      <div className="relative h-64 mb-6">
+                      <div className="relative h-[280px]">
                         {/* Data sources */}
-                        <div className="absolute top-0 left-0 bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                        <div className="absolute top-0 left-10 bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
                           <Database className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Property Data</div>
                         </div>
 
-                        <div className="absolute top-0 right-0 bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                        <div className="absolute top-0 right-10 bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
                           <BarChart3 className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Market Trends</div>
                         </div>
 
-                        <div className="absolute bottom-0 left-0 bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                        <div className="absolute bottom-20 left-10 bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
                           <MapPin className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Location Data</div>
                         </div>
 
-                        <div className="absolute bottom-0 right-0 bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                        <div className="absolute bottom-20 right-10 bg-[#67b1ed] rounded-lg p-3 w-[140px] text-center">
                           <Shield className="h-6 w-6 mb-2 mx-auto" />
                           <div className="text-sm font-medium">Risk Factors</div>
                         </div>
 
                         {/* Central AI processor */}
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full h-20 w-20 flex items-center justify-center shadow-lg">
-                          <Zap className="h-10 w-10 text-proply-blue" />
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full h-16 w-16 flex items-center justify-center">
+                          <Zap className="h-8 w-8 text-[#4299e1]" />
                         </div>
 
                         {/* Connection lines */}
                         <svg
-                          className="absolute inset-0 w-full h-full"
+                          className="absolute inset-0 w-full h-full pointer-events-none"
                           viewBox="0 0 400 300"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -260,33 +260,33 @@ export default function HomePage() {
                           <path
                             d="M80,60 L200,150"
                             stroke="rgba(255,255,255,0.5)"
-                            strokeWidth="2"
-                            strokeDasharray="5,5"
+                            strokeWidth="1"
+                            strokeDasharray="4,4"
                           />
                           <path
                             d="M320,60 L200,150"
                             stroke="rgba(255,255,255,0.5)"
-                            strokeWidth="2"
-                            strokeDasharray="5,5"
+                            strokeWidth="1"
+                            strokeDasharray="4,4"
                           />
                           <path
-                            d="M80,240 L200,150"
+                            d="M80,200 L200,150"
                             stroke="rgba(255,255,255,0.5)"
-                            strokeWidth="2"
-                            strokeDasharray="5,5"
+                            strokeWidth="1"
+                            strokeDasharray="4,4"
                           />
                           <path
-                            d="M320,240 L200,150"
+                            d="M320,200 L200,150"
                             stroke="rgba(255,255,255,0.5)"
-                            strokeWidth="2"
-                            strokeDasharray="5,5"
+                            strokeWidth="1"
+                            strokeDasharray="4,4"
                           />
                         </svg>
                       </div>
 
-                      <div className="text-center">
-                        <div className="font-medium mb-2">Proply's AI Core processes multiple data sources</div>
-                        <div className="text-sm text-white/80">
+                      <div className="text-center mt-8">
+                        <div className="font-medium mb-1">Proply's AI Core processes multiple data sources</div>
+                        <div className="text-sm text-white">
                           Delivering actionable insights for property decisions
                         </div>
                       </div>
