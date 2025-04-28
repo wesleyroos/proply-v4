@@ -58,7 +58,7 @@ export default function PricingPage() {
               {/* Pro Tier */}
               <div className="border border-black rounded-lg p-6">
                 <h3 className="text-xl font-semibold mb-3">Pro</h3>
-                <p className="text-gray-700 mb-2">Contact for pricing</p>
+                <p className="text-2xl font-bold mb-2">R2000<span className="text-sm font-normal text-gray-600">/month</span></p>
                 <p className="text-gray-600 mb-4">For investors and property managers</p>
                 <ul className="space-y-2">
                   <li className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 <Button className="w-full mt-6 bg-black hover:bg-gray-800 text-white" asChild>
-                  <Link href="/contact">Contact Sales</Link>
+                  <Link href="/register?plan=pro">Get Started</Link>
                 </Button>
               </div>
             </div>
