@@ -1,6 +1,5 @@
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +17,8 @@ import {
 } from "lucide-react";
 import { BackgroundPattern } from "@/components/background-pattern";
 import { RiskIndexShowcase } from "@/components/risk-index-showcase";
+import PublicHeader from "@/components/PublicHeader";
+import PublicFooter from "@/components/PublicFooter";
 
 export default function HomePage() {
   // Structured data for SEO
@@ -35,8 +36,6 @@ export default function HomePage() {
   };
 
   const currentYear = new Date().getFullYear();
-
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -65,127 +64,7 @@ export default function HomePage() {
         </script>
       </Helmet>
 
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white">
-        <div className="container flex h-16 items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <img src="/proply-logo-auth.png" alt="Proply Logo" className="h-8 w-auto" />
-          </div>
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="#for-insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              For Insurers
-            </Link>
-            <Link href="#for-agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              For Agents
-            </Link>
-            <Link href="#for-buyers" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              For Buyers
-            </Link>
-            <div className="relative group">
-              <button className="text-sm font-medium hover:text-proply-blue transition-colors flex items-center gap-1">
-                Resources
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              <div className="absolute left-0 top-full mt-1 w-48 bg-white shadow-lg rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border">
-                <Link href="/airbnb-yield-calculator" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-proply-blue">
-                  Airbnb Yield Calculator
-                </Link>
-              </div>
-            </div>
-            <Link href="/pricing" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              Pricing
-            </Link>
-            <Link href="/blog" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              Blog
-            </Link>
-            <Link href="#contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              Contact
-            </Link>
-          </nav>
-          
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
-                Login/Register
-              </Button>
-            </Link>
-            <Button className="hidden sm:flex bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
-            
-            {/* Mobile menu button */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-gray-700"
-            >
-              {mobileMenuOpen ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
-        </div>
-        
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t">
-            <div className="container py-4 space-y-3">
-              <Link href="#for-insurers" className="block py-2 text-sm font-medium hover:text-proply-blue">
-                For Insurers
-              </Link>
-              <Link href="#for-agents" className="block py-2 text-sm font-medium hover:text-proply-blue">
-                For Agents
-              </Link>
-              <Link href="#for-buyers" className="block py-2 text-sm font-medium hover:text-proply-blue">
-                For Buyers
-              </Link>
-              <div className="py-2">
-                <button className="flex items-center justify-between w-full text-sm font-medium hover:text-proply-blue" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          const submenu = e.currentTarget.nextElementSibling;
-                          if (submenu) {
-                            submenu.classList.toggle('hidden');
-                          }
-                        }}>
-                  <span>Resources</span>
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-                <div className="hidden ml-4 mt-2 space-y-2">
-                  <Link href="/airbnb-yield-calculator" className="block py-2 pl-2 text-sm text-gray-700 border-l-2 border-gray-200 hover:border-proply-blue hover:text-proply-blue">
-                    Airbnb Yield Calculator
-                  </Link>
-                </div>
-              </div>
-              <Link href="/pricing" className="block py-2 text-sm font-medium hover:text-proply-blue">
-                Pricing
-              </Link>
-              <Link href="/blog" className="block py-2 text-sm font-medium hover:text-proply-blue">
-                Blog
-              </Link>
-              <Link href="#contact" className="block py-2 text-sm font-medium hover:text-proply-blue">
-                Contact
-              </Link>
-              <div className="pt-4 flex flex-col space-y-3">
-                <Link href="/login" className="w-full">
-                  <Button variant="outline" className="w-full justify-center border-black text-black hover:bg-black/5">
-                    Login/Register
-                  </Button>
-                </Link>
-                <Button className="w-full justify-center bg-black hover:bg-gray-800 text-white">
-                  Book a Demo
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </header>
+      <PublicHeader />
 
       <main className="flex-1 relative">
         {/* Background Pattern - positioned within main content to scroll with page */}
@@ -618,96 +497,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer - with solid background to hide pattern */}
-      <footer className="bg-white py-12 border-t relative z-30">
-        <div className="container">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <div className="flex items-center">
-                <img src="/proply-logo-auth.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
-              </div>
-              <p className="mt-4 text-sm text-gray-500">
-                The intelligence layer for the real estate and insurance industries.
-              </p>
-              <p className="mt-2 text-sm text-gray-500">
-                Address: Innovation City, Darter Road, Longkloof Gardens, Cape Town, 8001
-              </p>
-              <p className="mt-2 text-sm text-gray-500">
-                Email: <a href="mailto:hello@proply.co.za" className="hover:text-proply-blue hover:underline">hello@proply.co.za</a>
-              </p>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-medium">Products</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="#for-insurers" className="hover:text-proply-blue">
-                    Risk Index
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#for-agents" className="hover:text-proply-blue">
-                    Property Analyzer API
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Deal Score
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Pricing
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-medium">Company</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    About
-                  </Link>
-                </li>
-
-                <li>
-                  <Link href="/blog" className="hover:text-proply-blue">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-medium">Legal</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Cookie Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 border-t pt-8 text-center text-sm text-gray-500">
-            <p>© {currentYear} Proply. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }
