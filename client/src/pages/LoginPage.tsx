@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/form";
 import { useUser } from "../hooks/use-user";
 import type { InsertUser } from "@db/schema";
+import PublicHeader from "@/components/PublicHeader";
+import PublicFooter from "@/components/PublicFooter";
 
 export default function LoginPage() {
   const { login } = useUser();
@@ -59,101 +61,97 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center px-4 py-8 sm:p-4">
-      <MobileNotice />
-      <div className="w-full max-w-[min(100%,24rem)] mb-8">
-        <Link href="/">
-          <img
-            src="/proply-logo-1.png"
-            alt="Proply"
-            className="h-12 mx-auto mb-8 cursor-pointer"
-          />
-        </Link>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center text-[#262626]">
-              Welcome Back
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(handleLogin)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="email"
-                          autoComplete="email"
-                          disabled={isLoading}
-                          required
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="password"
-                          autoComplete="current-password"
-                          disabled={isLoading}
-                          required
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-                  disabled={isLoading}
+    <div className="min-h-screen bg-white flex flex-col">
+      <PublicHeader />
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <MobileNotice />
+        <div className="w-full max-w-[min(100%,24rem)]">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center text-gray-900">
+                Welcome Back
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(handleLogin)}
+                  className="space-y-4"
                 >
-                  {isLoading ? "Logging in..." : "Login"}
-                </Button>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            autoComplete="email"
+                            disabled={isLoading}
+                            required
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <div className="space-y-2 text-center text-sm text-gray-600">
-                  <p>
-                    <Link href="/reset-password" className="text-[#1BA3FF] hover:underline">
-                      Forgot your password?
-                    </Link>
-                  </p>
-                  <p>
-                    Don't have an account?{" "}
-                    <Link href="/register" className="text-[#1BA3FF] hover:underline">
-                      Register
-                    </Link>
-                  </p>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="password"
+                            autoComplete="current-password"
+                            disabled={isLoading}
+                            required
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-black hover:bg-gray-800 text-white"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Logging in..." : "Login"}
+                  </Button>
+
+                  <div className="space-y-2 text-center text-sm text-gray-600">
+                    <p>
+                      <Link href="/reset-password" className="text-proply-blue hover:underline">
+                        Forgot your password?
+                      </Link>
+                    </p>
+                    <p>
+                      Don't have an account?{" "}
+                      <Link href="/register" className="text-proply-blue hover:underline">
+                        Register
+                      </Link>
+                    </p>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+      <PublicFooter />
     </div>
   );
 }

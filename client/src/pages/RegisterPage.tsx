@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUser } from "../hooks/use-user";
+import PublicHeader from "@/components/PublicHeader";
+import PublicFooter from "@/components/PublicFooter";
 
 interface ProfileFormData {
   firstName: string;
@@ -198,264 +200,260 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center px-4 py-8 sm:p-4">
-      <MobileNotice />
-      <div className="w-full max-w-[min(100%,24rem)] mb-8">
-        <Link href="/">
-          <img
-            src="/proply-logo-1.png"
-            alt="Proply"
-            className="h-12 mx-auto mb-8 cursor-pointer"
-          />
-        </Link>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center text-[#262626]">
-              {selectedPlan === 'pro' ? 'Get Started with Pro' : 'Get Started with Proply'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(handleRegister)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="plan"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Plan</FormLabel>
-                      <Select
-                        value={selectedPlan}
-                        onValueChange={(value) => {
-                          setSelectedPlan(value);
-                          field.onChange(value);
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your plan" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="free">Free Plan</SelectItem>
-                          <SelectItem value="pro">Pro Plan</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {selectedPlan === 'pro' && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Pro plan includes advanced features and unlimited analyses
-                        </p>
-                      )}
-                    </FormItem>
-                  )}
-                />
-
-                {selectedPlan === 'pro' && (
+    <div className="min-h-screen bg-white flex flex-col">
+      <PublicHeader />
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <MobileNotice />
+        <div className="w-full max-w-[min(100%,24rem)]">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center text-gray-900">
+                {selectedPlan === 'pro' ? 'Get Started with Pro' : 'Get Started with Proply'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(handleRegister)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={form.control}
-                    name="accessCode"
+                    name="plan"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Access Code</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Enter your access code (optional)"
-                            disabled={isLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="email"
-                          autoComplete="email"
-                          disabled={isLoading}
-                          required
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="userType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Account Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        disabled={isLoading}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select account type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="individual">Individual</SelectItem>
-                          <SelectItem value="company">Company</SelectItem>
-                          <SelectItem value="agent">Real Estate Agent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            autoComplete="given-name"
-                            disabled={isLoading}
-                            required
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            autoComplete="family-name"
-                            disabled={isLoading}
-                            required
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <div className="relative">
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type={showPassword ? "text" : "password"}
-                            autoComplete="new-password"
-                            disabled={isLoading}
-                            required
-                          />
-                        </FormControl>
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        <FormLabel>Plan</FormLabel>
+                        <Select
+                          value={selectedPlan}
+                          onValueChange={(value) => {
+                            setSelectedPlan(value);
+                            field.onChange(value);
+                          }}
                         >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your plan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="free">Free Plan</SelectItem>
+                            <SelectItem value="pro">Pro Plan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {selectedPlan === 'pro' && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Pro plan includes advanced features and unlimited analyses
+                          </p>
+                        )}
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <div className="relative">
+                  {selectedPlan === 'pro' && (
+                    <FormField
+                      control={form.control}
+                      name="accessCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Access Code</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Enter your access code (optional)"
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Address</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            type={showPassword ? "text" : "password"}
-                            autoComplete="new-password"
+                            type="email"
+                            autoComplete="email"
                             disabled={isLoading}
                             required
-                            className={field.value && form.getValues("password") ?
-                              field.value === form.getValues("password") ?
-                                "border-green-500 focus-visible:ring-green-500" :
-                                "border-red-500 focus-visible:ring-red-500" : ""}
                           />
                         </FormControl>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                          {field.value && form.getValues("password") && (
-                            <span className={`text-sm font-medium ${
-                              field.value === form.getValues("password") ?
-                                "text-green-500" : "text-red-500"
-                            }`}>
-                              {field.value === form.getValues("password") ? "✓" : "✗"}
-                            </span>
-                          )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="userType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Account Type</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select account type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="individual">Individual</SelectItem>
+                            <SelectItem value="company">Company</SelectItem>
+                            <SelectItem value="agent">Real Estate Agent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              autoComplete="given-name"
+                              disabled={isLoading}
+                              required
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              autoComplete="family-name"
+                              disabled={isLoading}
+                              required
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <div className="relative">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                              autoComplete="new-password"
+                              disabled={isLoading}
+                              required
+                            />
+                          </FormControl>
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                           >
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
                         </div>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <Button
-                  type="submit"
-                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Creating Account..." : (
-                    selectedPlan === 'pro' && !form.getValues('accessCode')
-                      ? "Continue to Payment"
-                      : "Create Account"
-                  )}
-                </Button>
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <div className="relative">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                              autoComplete="new-password"
+                              disabled={isLoading}
+                              required
+                              className={field.value && form.getValues("password") ?
+                                field.value === form.getValues("password") ?
+                                  "border-green-500 focus-visible:ring-green-500" :
+                                  "border-red-500 focus-visible:ring-red-500" : ""}
+                            />
+                          </FormControl>
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            {field.value && form.getValues("password") && (
+                              <span className={`text-sm font-medium ${
+                                field.value === form.getValues("password") ?
+                                  "text-green-500" : "text-red-500"
+                              }`}>
+                                {field.value === form.getValues("password") ? "✓" : "✗"}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <p className="text-center text-sm text-gray-600">
-                  Already have an account?{" "}
-                  <Link href="/login" className="text-[#1BA3FF] hover:underline">
-                    Login
-                  </Link>
-                </p>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                  <Button
+                    type="submit"
+                    className="w-full bg-black hover:bg-gray-800 text-white"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Creating Account..." : (
+                      selectedPlan === 'pro' && !form.getValues('accessCode')
+                        ? "Continue to Payment"
+                        : "Create Account"
+                    )}
+                  </Button>
+
+                  <p className="text-center text-sm text-gray-600">
+                    Already have an account?{" "}
+                    <Link href="/login" className="text-proply-blue hover:underline">
+                      Login
+                    </Link>
+                  </p>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+      <PublicFooter />
     </div>
   );
 }

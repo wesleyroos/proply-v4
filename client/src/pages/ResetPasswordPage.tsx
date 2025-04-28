@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import PublicHeader from "@/components/PublicHeader";
+import PublicFooter from "@/components/PublicFooter";
 
 const requestResetSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -127,97 +129,93 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-[400px]">
-        <Link href="/">
-          <img
-            src="/proply-logo-1.png"
-            alt="Proply"
-            className="h-12 mx-auto mb-8 cursor-pointer"
-          />
-        </Link>
+    <div className="min-h-screen bg-white flex flex-col">
+      <PublicHeader />
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-[400px]">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center text-gray-900">
+                {mode === "request" ? "Reset Password" : "Create New Password"}
+              </CardTitle>
+              <CardDescription className="text-center">
+                {mode === "request"
+                  ? "Enter your email address and we'll send you a password reset link."
+                  : "Please enter your new password below."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center text-[#262626]">
-              {mode === "request" ? "Reset Password" : "Create New Password"}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {mode === "request"
-                ? "Enter your email address and we'll send you a password reset link."
-                : "Please enter your new password below."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {mode === "request" ? (
-              <form onSubmit={handleRequestSubmit(onRequestSubmit)} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <Input
-                    type="email"
-                    {...registerRequest('email')}
-                    placeholder="Enter your email"
-                  />
-                  {requestErrors.email && (
-                    <p className="text-sm text-red-500 mt-1">{requestErrors.email.message}</p>
-                  )}
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Sending..." : "Send Reset Link"}
-                </Button>
-              </form>
-            ) : (
-              <form onSubmit={handleResetSubmit(onResetSubmit)} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">New Password</label>
-                  <Input
-                    type="password"
-                    {...registerReset('password')}
-                    placeholder="Enter new password"
-                  />
-                  {resetErrors.password && (
-                    <p className="text-sm text-red-500 mt-1">{resetErrors.password.message}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                  <Input
-                    type="password"
-                    {...registerReset('confirmPassword')}
-                    placeholder="Confirm new password"
-                  />
-                  {resetErrors.confirmPassword && (
-                    <p className="text-sm text-red-500 mt-1">{resetErrors.confirmPassword.message}</p>
-                  )}
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-[#1BA3FF] hover:bg-[#114D9D]"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Resetting..." : "Reset Password"}
-                </Button>
-              </form>
-            )}
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button variant="link" onClick={() => setLocation("/login")} className="text-[#1BA3FF]">
-              Back to Login
-            </Button>
-          </CardFooter>
-        </Card>
+              {mode === "request" ? (
+                <form onSubmit={handleRequestSubmit(onRequestSubmit)} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <Input
+                      type="email"
+                      {...registerRequest('email')}
+                      placeholder="Enter your email"
+                    />
+                    {requestErrors.email && (
+                      <p className="text-sm text-red-500 mt-1">{requestErrors.email.message}</p>
+                    )}
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-black hover:bg-gray-800 text-white"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Sending..." : "Send Reset Link"}
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleResetSubmit(onResetSubmit)} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">New Password</label>
+                    <Input
+                      type="password"
+                      {...registerReset('password')}
+                      placeholder="Enter new password"
+                    />
+                    {resetErrors.password && (
+                      <p className="text-sm text-red-500 mt-1">{resetErrors.password.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                    <Input
+                      type="password"
+                      {...registerReset('confirmPassword')}
+                      placeholder="Confirm new password"
+                    />
+                    {resetErrors.confirmPassword && (
+                      <p className="text-sm text-red-500 mt-1">{resetErrors.confirmPassword.message}</p>
+                    )}
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-black hover:bg-gray-800 text-white"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Resetting..." : "Reset Password"}
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-center">
+              <Button variant="link" onClick={() => setLocation("/login")} className="text-proply-blue">
+                Back to Login
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
+      <PublicFooter />
     </div>
   );
 }
