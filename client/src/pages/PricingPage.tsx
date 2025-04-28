@@ -15,10 +15,10 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Property Intelligence Solutions
+            Smart Property Data Solutions — Choose the Right Product for You
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose the product and plan that best suits your real estate investment needs
+            Whether you're an insurer, investor, or agency, Proply offers the right intelligence tools to power your property decisions.
           </p>
         </div>
 
@@ -32,7 +32,7 @@ export default function PricingPage() {
               </div>
               <CardTitle className="text-2xl font-bold">Risk Index</CardTitle>
               <CardDescription className="text-gray-600 mt-2">
-                AI-powered property risk assessment for safer investments
+                AI-powered risk scoring & insurance underwriting insights
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -67,7 +67,7 @@ export default function PricingPage() {
               </div>
               <CardTitle className="text-2xl font-bold">Property Analyzer API</CardTitle>
               <CardDescription className="text-gray-600 mt-2">
-                Integrate powerful property analysis into your platform
+                Full API for automated property investment analysis
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -102,7 +102,7 @@ export default function PricingPage() {
               </div>
               <CardTitle className="text-2xl font-bold">Deal Score</CardTitle>
               <CardDescription className="text-gray-600 mt-2">
-                Advanced deal evaluation and opportunity scoring
+                Fast, on-demand deal analysis for buyers & investors
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -121,7 +121,7 @@ export default function PricingPage() {
                 </li>
               </ul>
               <Button className="w-full bg-gray-300 text-gray-700 cursor-not-allowed" disabled>
-                Coming Soon
+                Buy Reports (Coming Soon)
                 <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
               <p className="text-xs text-center mt-2 text-gray-500">
@@ -131,148 +131,87 @@ export default function PricingPage() {
           </Card>
         </div>
 
-        {/* Usage Tiers Section */}
-        <div className="mt-20">
-          <h2 className="text-3xl font-bold text-center mb-12">Choose Your Plan</h2>
+        {/* How Pricing Works Section */}
+        <div className="mt-20 max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8">How Pricing Works</h2>
           
-          {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Free Tier */}
-            <Card className="relative">
-              <CardHeader>
-                <CardTitle>
-                  <h3 className="text-2xl font-bold">Basic</h3>
-                  <p className="text-sm font-normal text-gray-600 mt-2">
-                    Perfect for getting started
-                  </p>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-8">
-                  <p className="text-3xl font-bold">R0</p>
-                  <p className="text-sm text-gray-600">per month</p>
-                </div>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Basic property analysis</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>3 analyses per month</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Standard support</span>
-                  </li>
-                </ul>
-                <Button className="w-full mt-8 bg-black hover:bg-gray-800 text-white" asChild>
-                  <Link href="/register?plan=free">Get Started</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Pro Tier */}
-            <Card className="relative border-black">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-1 rounded-full text-sm">
-                Most Popular
+          <div className="bg-white p-8 rounded-xl shadow-sm">
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold mb-3">Enterprise Solutions</h3>
+              <p className="text-gray-700">
+                <strong>Risk Index & Property Analyzer API</strong> are priced according to enterprise needs, based on:
+              </p>
+              <ul className="mt-4 space-y-2 ml-6 list-disc text-gray-600">
+                <li>API usage volume</li>
+                <li>Integration complexity</li>
+                <li>Support requirements</li>
+                <li>Custom feature development</li>
+              </ul>
+              <p className="mt-4 text-gray-600">
+                Our team will create a custom pricing proposal based on your specific requirements.
+              </p>
+            </div>
+            
+            <div className="pt-6 border-t border-gray-200">
+              <h3 className="text-xl font-semibold mb-3">Deal Score - Simple Per-Report Pricing</h3>
+              <p className="text-gray-700">
+                <strong>Deal Score</strong> will follow a simple pay-per-report model:
+              </p>
+              <div className="mt-4 bg-gray-50 p-4 rounded-lg inline-block">
+                <span className="text-2xl font-bold">R49</span>
+                <span className="text-gray-600 ml-2">per report</span>
               </div>
-              <CardHeader>
-                <CardTitle>
-                  <h3 className="text-2xl font-bold">Pro</h3>
-                  <p className="text-sm font-normal text-gray-600 mt-2">
-                    For investors and property managers
-                  </p>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-8">
-                  <p className="text-lg text-gray-700">Contact for pricing</p>
-                </div>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Advanced property analysis</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Unlimited analyses</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Priority support</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Custom reports</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Market insights</span>
-                  </li>
-                </ul>
-                <Button
-                  className="w-full mt-8 bg-black hover:bg-gray-800 text-white"
-                  asChild
-                >
-                  <Link href="/contact">Contact Sales</Link>
-                </Button>
-              </CardContent>
-            </Card>
+              <p className="mt-4 text-gray-600">
+                Pay only for what you need with no subscription required.
+              </p>
+            </div>
+          </div>
+        </div>
 
-            {/* Enterprise/API Tier */}
-            <Card className="relative">
-              <CardHeader>
-                <CardTitle>
-                  <h3 className="text-2xl font-bold">Enterprise</h3>
-                  <p className="text-sm font-normal text-gray-600 mt-2">
-                    For real estate platforms
-                  </p>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-8">
-                  <p className="text-lg text-gray-700">Custom solution</p>
-                </div>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Full API access</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Automated analysis</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Custom integration</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Dedicated support</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>SLA guarantee</span>
-                  </li>
-                </ul>
-                <Button className="w-full mt-8 bg-black hover:bg-gray-800 text-white" asChild>
-                  <Link href="/contact">Contact Sales</Link>
-                </Button>
-              </CardContent>
-            </Card>
+        {/* FAQ Section */}
+        <div className="mt-20 max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+          
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-xl font-semibold mb-2">How is Proply priced?</h3>
+              <p className="text-gray-600">
+                Enterprise tools (Risk Index, Analyzer API) are priced based on usage and support needs. Deal Score is a simple pay-per-report model.
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-xl font-semibold mb-2">Who are your products for?</h3>
+              <p className="text-gray-600">
+                Insurers, real estate agencies, investors, mortgage originators, and property buyers.
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-xl font-semibold mb-2">Can I try before committing?</h3>
+              <p className="text-gray-600">
+                Contact us for a live demo or free trial consultation.
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-xl font-semibold mb-2">Where do I buy Deal Score reports?</h3>
+              <p className="text-gray-600">
+                You will be able to purchase reports at dealscore.co.za.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Contact Section */}
-        <div className="mt-24 bg-gray-100 rounded-xl p-8 max-w-4xl mx-auto">
+        <div className="mt-20 bg-gray-100 rounded-xl p-8 max-w-4xl mx-auto">
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Need a custom solution?</h2>
+            <h2 className="text-2xl font-bold mb-4">Ready to get started?</h2>
             <p className="text-gray-600 mb-6">
-              Our team can create a tailored package for your specific real estate investment needs.
+              Our team can help you choose the right product and create a tailored solution for your specific needs.
             </p>
             <Button className="bg-black hover:bg-gray-800 text-white px-8" asChild>
-              <Link href="/contact">Contact Our Sales Team</Link>
+              <Link href="/contact">Contact Our Team</Link>
             </Button>
           </div>
         </div>
