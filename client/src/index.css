@@ -198,3 +198,11 @@
 .data-points > div {
   animation: pulse 5s infinite;
 }
+
+/* Dotted background pattern for the InsurersPage */
+.bg-grid-white {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 25px 25px;
+}

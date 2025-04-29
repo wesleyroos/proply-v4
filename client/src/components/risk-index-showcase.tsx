@@ -92,6 +92,29 @@ export function RiskIndexShowcase() {
     }
   }
 
+  // Function to render recommendation buttons based on risk level
+  const renderRecommendationButtons = () => {
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant="outline"
+          className="border-proply-blue text-proply-blue hover:bg-proply-blue/5"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Request Assessment
+        </Button>
+        <Link href="/insurers">
+          <Button
+            variant="default"
+            className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
+          >
+            For Insurers
+          </Button>
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-md border overflow-hidden">
       {/* Header with search */}
@@ -254,54 +277,22 @@ export function RiskIndexShowcase() {
             <div className="mt-8 border-t pt-6">
               <h4 className="font-bold mb-3">Insurance Recommendations</h4>
               <div className="grid grid-cols-1 gap-4">
-                {property.riskLevel === "High" ? (
-                  <>
-                    <div className="flex items-center gap-2 bg-proply-blue/10 p-3 rounded-lg border border-proply-blue/20">
-                      <Shield className="h-5 w-5 text-proply-blue" />
-                      <span className="font-medium text-proply-blue">Premium Coverage Recommended</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="border-proply-blue text-proply-blue hover:bg-proply-blue/5"
-                      onClick={() => setIsModalOpen(true)}
-                    >
-                      Request Assessment
-                    </Button>
-                  </>
-                ) : property.riskLevel === "Medium" ? (
-                  <>
-                    <div className="flex items-center gap-2 bg-proply-blue/10 p-3 rounded-lg border border-proply-blue/20">
-                      <Shield className="h-5 w-5 text-proply-blue" />
-                      <span className="font-medium text-proply-blue">Standard Coverage Recommended</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="border-proply-blue text-proply-blue hover:bg-proply-blue/5"
-                      onClick={() => setIsModalOpen(true)}
-                    >
-                      Request Assessment
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2 bg-proply-blue/10 p-3 rounded-lg border border-proply-blue/20">
-                      <Shield className="h-5 w-5 text-proply-blue" />
-                      <span className="font-medium text-proply-blue">Basic Coverage Recommended</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="border-proply-blue text-proply-blue hover:bg-proply-blue/5"
-                      onClick={() => setIsModalOpen(true)}
-                    >
-                      Request Assessment
-                    </Button>
-                  </>
-                )}
+                <div className="flex items-center gap-2 bg-proply-blue/10 p-3 rounded-lg border border-proply-blue/20">
+                  <Shield className="h-5 w-5 text-proply-blue" />
+                  <span className="font-medium text-proply-blue">
+                    {property.riskLevel === "High" 
+                      ? "Premium Coverage Recommended" 
+                      : property.riskLevel === "Medium" 
+                        ? "Standard Coverage Recommended" 
+                        : "Basic Coverage Recommended"}
+                  </span>
+                </div>
+                {renderRecommendationButtons()}
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
