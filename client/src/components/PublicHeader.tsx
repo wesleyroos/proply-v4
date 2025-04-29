@@ -29,9 +29,10 @@ export default function PublicHeader() {
           <Link href="#for-agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
             For Agents
           </Link>
-          <Link href="#for-buyers" className="text-sm font-medium hover:text-proply-blue transition-colors">
-            For Buyers
-          </Link>
+          <div className="text-sm font-medium flex items-center">
+            <span>For Buyers</span>
+            <span className="ml-1.5 text-proply-blue">(coming soon)</span>
+          </div>
           <div className="relative group">
             <button className="text-sm font-medium hover:text-proply-blue transition-colors flex items-center gap-1">
               Resources
@@ -90,9 +91,10 @@ export default function PublicHeader() {
             <Link href="#for-agents" className="block py-2 text-sm font-medium hover:text-proply-blue">
               For Agents
             </Link>
-            <Link href="#for-buyers" className="block py-2 text-sm font-medium hover:text-proply-blue">
-              For Buyers
-            </Link>
+            <div className="block py-2 text-sm font-medium flex items-center">
+              <span>For Buyers</span>
+              <span className="ml-1.5 text-proply-blue">(coming soon)</span>
+            </div>
             <div className="py-2">
               <button className="flex items-center justify-between w-full text-sm font-medium hover:text-proply-blue" 
                       onClick={(e) => {

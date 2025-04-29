@@ -95,10 +95,9 @@ export default function PublicFooter() {
                     Agents
                   </Link>
                 </li>
-                <li>
-                  <Link href="#for-buyers" className="hover:text-proply-blue">
-                    Buyers
-                  </Link>
+                <li className="flex">
+                  <span className="hover:text-proply-blue">Buyers</span>
+                  <span className="ml-1.5 text-proply-blue">(coming soon)</span>
                 </li>
               </ul>
             </div>
