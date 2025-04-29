@@ -287,6 +287,7 @@ export default function HomePage() {
                         icon: Shield,
                         audience: "For Insurers",
                         id: "for-insurers",
+                        link: "/insurers",
                       },
                       {
                         title: "Property Analyzer API™",

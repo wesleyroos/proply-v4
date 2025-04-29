@@ -18,6 +18,7 @@ import PricingPage from "./pages/PricingPage";
 import BlogPage from "./pages/BlogPage";
 import PropertyAnalyzerProductPage from "./pages/PropertyAnalyzerProductPage";
 import RentComparePage from "./pages/RentComparePage";
+import InsurersPage from "./pages/InsurersPage";
 import DashboardPage from "./pages/DashboardPage";
 import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
 import MarketIntelligencePage from "./pages/MarketIntelligencePage";
@@ -220,6 +221,11 @@ function App() {
             <Route path="/momentum-risk-index" component={() => (
               <PageTransition>
                 <MomentumRiskIndexPage />
+              </PageTransition>
+            )} />
+            <Route path="/insurers" component={() => (
+              <PageTransition>
+                <InsurersPage />
               </PageTransition>
             )} />
 

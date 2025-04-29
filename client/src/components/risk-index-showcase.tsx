@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Shield, AlertTriangle, Droplets, Cloud, Zap, MapPin, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Link } from "wouter"
 
 export function RiskIndexShowcase() {
   const [activeProperty, setActiveProperty] = useState("property1")

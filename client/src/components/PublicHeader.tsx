@@ -23,7 +23,7 @@ export default function PublicHeader() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="#for-insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
+          <Link href="/insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
             For Insurers
           </Link>
           <Link href="#for-agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
@@ -84,7 +84,7 @@ export default function PublicHeader() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t">
           <div className="container py-4 space-y-3">
-            <Link href="#for-insurers" className="block py-2 text-sm font-medium hover:text-proply-blue">
+            <Link href="/insurers" className="block py-2 text-sm font-medium hover:text-proply-blue">
               For Insurers
             </Link>
             <Link href="#for-agents" className="block py-2 text-sm font-medium hover:text-proply-blue">

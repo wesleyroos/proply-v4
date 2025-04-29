@@ -30,7 +30,7 @@ export default function PublicFooter() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
             <div>
               <h3 className="mb-4 text-lg font-medium">Product</h3>
               <ul className="space-y-2 text-sm text-gray-500">
@@ -82,6 +82,27 @@ export default function PublicFooter() {
                 </li>
               </ul>
             </div>
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Solutions For</h3>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li>
+                  <Link href="/insurers" className="hover:text-proply-blue">
+                    Insurers
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#for-agents" className="hover:text-proply-blue">
+                    Agents
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#for-buyers" className="hover:text-proply-blue">
+                    Buyers
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
             <div>
               <h3 className="mb-4 text-lg font-medium">Legal</h3>
               <ul className="space-y-2 text-sm text-gray-500">
