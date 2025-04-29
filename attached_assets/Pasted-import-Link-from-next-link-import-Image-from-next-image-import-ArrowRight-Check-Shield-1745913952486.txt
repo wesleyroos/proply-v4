@@ -1,5 +1,5 @@
-import { Helmet } from "react-helmet";
-import { Link } from "wouter";
+import Link from "next/link"
+import Image from "next/image"
 import {
   ArrowRight,
   Check,
@@ -222,8 +222,7 @@ export default function InsurersPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
         {/* Problem Statement Section - Clear articulation of industry challenges */}
         <section className="py-20">
@@ -531,7 +530,7 @@ export default function InsurersPage() {
                   <p className="text-gray-600 mb-4">
                     Seamlessly integrate Risk Index™ into your existing underwriting systems.
                   </p>
-
+                  
                   <div className="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
                     <div className="flex items-center gap-2 mb-2 text-gray-400 text-xs">
                       <Code className="h-4 w-4" />
@@ -558,7 +557,7 @@ console.log(riskData.riskLevel); // "High"
 `}
                     </pre>
                   </div>
-
+                  
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center gap-2">
                       <Check className="h-5 w-5 text-proply-blue" />
@@ -581,7 +580,6 @@ console.log(riskData.riskLevel); // "High"
                 </div>
               </div>
             </div>
-          </div>
         </section>
 
         {/* Features Section - Detailed breakdown */}
