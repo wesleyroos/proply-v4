@@ -1,5 +1,7 @@
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
+import PublicHeader from "@/components/PublicHeader";
+import PublicFooter from "@/components/PublicFooter";
 import {
   ArrowRight,
   Check,
@@ -29,37 +31,12 @@ import { Input } from "@/components/ui/input"
 export default function InsurersPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white">
-        <div className="container flex h-16 items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/">
-              <Image src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
-            </Link>
-          </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/for-insurers" className="text-sm font-medium text-proply-blue transition-colors">
-              For Insurers
-            </Link>
-            <Link href="/for-agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              For Agents
-            </Link>
-            <Link href="/for-buyers" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              For Buyers
-            </Link>
-            <Link href="#contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              Contact
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
-              Login
-            </Button>
-            <Button className="bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
-          </div>
-        </div>
-      </header>
+      <Helmet>
+        <title>Risk Index™ for Insurers | Proply</title>
+        <meta name="description" content="AI-powered property risk assessment that transforms how insurers evaluate, price, and manage property risk." />
+      </Helmet>
+      
+      <PublicHeader />
 
       <main>
         {/* Hero Section - Problem-focused with clear value proposition */}
@@ -887,96 +864,7 @@ console.log(riskData.riskLevel); // "High"
         </section>
       </main>
 
-      {/* Footer */}
-
-      {/* Footer - with solid background to hide pattern */}
-      <footer className="bg-white py-12 border-t relative z-30">
-        <div className="container">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <div className="flex items-center">
-                <Image src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
-              </div>
-              <p className="mt-4 text-sm text-gray-500">
-                The intelligence layer for the real estate and insurance industries.
-              </p>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-medium">Products</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="/for-insurers" className="hover:text-proply-blue">
-                    Risk Index
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#for-agents" className="hover:text-proply-blue">
-                    Property Analyzer API
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dealscore" className="hover:text-proply-blue">
-                    Deal Score
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Pricing
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-medium">Company</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Careers
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-lg font-medium">Legal</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Cookie Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 border-t pt-8 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Proply. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   )
 }
