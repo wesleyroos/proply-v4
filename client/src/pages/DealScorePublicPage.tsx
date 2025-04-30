@@ -4764,6 +4764,8 @@ export default function DealScorePublicPage() {
                           },
                           body: JSON.stringify({
                             address: formData.address,
+                            propertyType: formData.propertyType || "apartment",
+                            luxuryRating: formData.luxuryRating,
                             publicAccess: true,
                             bypassAuth: true
                           }),

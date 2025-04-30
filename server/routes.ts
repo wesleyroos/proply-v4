@@ -78,7 +78,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/traffic-data" ||
       req.path === "/tomtom-test" ||
       req.path === "/address-validation/validate" ||
-      req.path === "/address-validation/autocomplete"
+      req.path === "/address-validation/autocomplete" ||
+      req.path === "/area-rate" // New public area rate endpoint
     ) {
       return next();
     }
@@ -1926,6 +1927,51 @@ export function registerRoutes(app: Express): Server {
   app.use('/api/address-validation', addressValidationRouter);
   app.use('/api/traffic-data', trafficDataRouter);
   app.use('/api/tomtom-test', tomtomTestRouter);
+  
+  // Public area rate endpoint that doesn't require authentication
+  app.post("/api/area-rate", async (req, res) => {
+    try {
+      const { address, propertyType = "apartment", publicAccess, bypassAuth, luxuryRating } = req.body;
+      
+      // Validate that this is actually a public request
+      if (!publicAccess && !bypassAuth) {
+        return res.status(401).json({
+          success: false,
+          error: "Unauthorized access to public endpoint"
+        });
+      }
+      
+      if (!address) {
+        return res.status(400).json({
+          success: false,
+          error: "Address is required"
+        });
+      }
+      
+      // Import the area rate service 
+      const { getAreaRate } = await import("./services/areaRateService");
+      
+      console.log(`Public area rate request for ${address} (${propertyType})`);
+      
+      // Get the area rate using the service
+      const areaRate = await getAreaRate(
+        address, 
+        propertyType, 
+        luxuryRating ? Number(luxuryRating) : undefined
+      );
+      
+      return res.json({
+        success: true,
+        areaRate
+      });
+    } catch (error) {
+      console.error("Error getting area rate:", error);
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
 
   // Add the calculate-deal-score endpoint
   app.post("/api/calculate-deal-score", async (req, res) => {
