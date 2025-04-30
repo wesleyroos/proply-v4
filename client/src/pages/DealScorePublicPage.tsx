@@ -4557,14 +4557,22 @@ export default function DealScorePublicPage() {
             {!showResult ? (
               <div className="mt-12 w-full max-w-[600px]">
                 <form onSubmit={handleInitialAddressSearch} className="flex flex-col items-center">
-                  <div className="relative w-full mb-2">
-                    <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <Input
-                      type="text"
-                      placeholder="Enter property address"
-                      className="pl-10 h-12 text-base"
+                  <div className="w-full mb-2">
+                    <AddressAutocomplete
+                      id="initial-address"
+                      name="initial-address"
+                      label=""
+                      placeholder="Enter the property address"
                       value={initialAddressInput}
-                      onChange={(e) => setInitialAddressInput(e.target.value)}
+                      onChange={(value) => setInitialAddressInput(value)}
+                      onAddressValidated={(addressData) => {
+                        console.log("Address validated:", addressData);
+                        // Auto-populate with formatted address for better consistency
+                        if (addressData.validationStatus === "valid") {
+                          setInitialAddressInput(addressData.formattedAddress);
+                        }
+                      }}
+                      className="h-12 text-base"
                     />
                   </div>
                   
