@@ -33,6 +33,8 @@ import {
   Car,
   Package2,
   Star,
+  Search,
+  X,
 } from "lucide-react";
 import AddressAutocomplete, {
   ValidatedAddressData,
@@ -4454,7 +4456,30 @@ export default function DealScorePublicPage() {
     );
   };
 
-  // No need for inline component anymore as we're using the imported one
+  // State for property details dialog
+  const [showPropertyDetailsModal, setShowPropertyDetailsModal] = useState(false);
+  const [initialAddressInput, setInitialAddressInput] = useState("");
+  
+  // Handler for initial address search
+  const handleInitialAddressSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (initialAddressInput.trim().length > 0) {
+      // Set the address in the form data
+      setFormData(prev => ({
+        ...prev,
+        address: initialAddressInput
+      }));
+      
+      // Show the property details modal
+      setShowPropertyDetailsModal(true);
+    }
+  };
+
+  // Handler for the "Get Deal Score" button in the modal
+  const handleGetDealScore = () => {
+    setShowPropertyDetailsModal(false);
+    handleSubmit(new Event('submit') as any); // Cast as any to avoid type issues
+  };
 
   return (
     <>
@@ -4518,52 +4543,60 @@ export default function DealScorePublicPage() {
         <div className="flex-1 relative z-10 flex flex-col items-center justify-center pt-8">
           <div className="container flex flex-col items-center px-2 py-8 text-center md:py-16 lg:py-24 max-w-[1600px]">
             <div className="w-full max-w-[1400px] space-y-4">
-              <h1 className="text-3xl font-bold sm:text-4xl md:text5xl lg:text-6xl">
-                Proply Deal Score™
+              <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
+                <span className="text-gray-900">Make Smarter</span>
+                <br />
+                <span className="text-blue-500">Property Decisions</span>
               </h1>
               <p className="mx-auto max-w-[800px] text-muted-foreground md:text-xl">
-                Get an instant deal score based on market data, area rates, and
-                rental yields.
+                Get instant property analysis, market comparisons, and investment 
+                insights with our Deal Score™ technology.
               </p>
             </div>
 
-            <Card
-              className={`mx-auto mt-12 w-full ${showResult ? "max-w-[1200px]" : "max-w-[600px]"} bg-background rounded-lg p-6`}
-            >
-              <h1 className="text-3xl font-bold mb-8 text-center">
-                Proply Deal Score™
-              </h1>
-
-              <button
-                type="button"
-                onClick={fillDemoData}
-                className="fixed bottom-4 right-4 opacity-0"
-              >
-                Fill Demo Data
-              </button>
-
-              {!showResult ? (
-                <form onSubmit={handleSubmit}>
-                  {renderStepCounter()}
-                  {renderFormStep()}
-
-                  <div className="flex justify-end mt-6">
-                    <Button type="submit" className="ml-auto">
-                      {isCalculating ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Calculating...
-                        </>
-                      ) : (
-                        <>
-                          Calculate Deal Score
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
+            {!showResult ? (
+              <div className="mt-12 w-full max-w-[600px]">
+                <form onSubmit={handleInitialAddressSearch} className="flex flex-col items-center">
+                  <div className="relative w-full mb-2">
+                    <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder="Enter property address"
+                      className="pl-10 h-12 text-base"
+                      value={initialAddressInput}
+                      onChange={(e) => setInitialAddressInput(e.target.value)}
+                    />
                   </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="mt-4 bg-blue-500 hover:bg-blue-600 h-12 px-8 text-white"
+                  >
+                    <MapPin className="mr-2 h-5 w-5" />
+                    Analyze Property
+                  </Button>
+                  
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Get your comprehensive property analysis in under 2 minutes
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={fillDemoData}
+                    className="fixed bottom-4 right-4 opacity-0"
+                  >
+                    Fill Demo Data
+                  </button>
                 </form>
-              ) : (
+              </div>
+            ) : (
+              <Card
+                className="mx-auto mt-12 w-full max-w-[1200px] bg-background rounded-lg p-6"
+              >
+                <h1 className="text-3xl font-bold mb-8 text-center">
+                  Proply Deal Score™
+                </h1>
+                
                 <div className="space-y-6">
                   {/* Render the comprehensive report */}
                   {renderComprehensiveReport()}
@@ -4616,11 +4649,166 @@ export default function DealScorePublicPage() {
                     </Button>
                   </div>
                 </div>
-              )}
-            </Card>
+              </Card>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Property Details Modal Dialog */}
+      <Dialog open={showPropertyDetailsModal} onOpenChange={setShowPropertyDetailsModal}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Property Details</DialogTitle>
+            <DialogDescription>
+              Please provide additional details about the property to calculate an accurate Deal Score™
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="modal-purchase-price" className="mb-1 block">Asking Price</Label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <span className="text-muted-foreground">R</span>
+                  </div>
+                  <Input
+                    id="modal-purchase-price"
+                    placeholder="3500000"
+                    className="pl-7"
+                    value={formData.purchasePrice}
+                    onChange={(e) => handleInputChange("purchasePrice", e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="modal-property-size" className="mb-1 block">Property Size</Label>
+                <div className="relative">
+                  <Input
+                    id="modal-property-size"
+                    placeholder="85"
+                    className="pr-10"
+                    value={formData.size}
+                    onChange={(e) => handleInputChange("size", e.target.value)}
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <span className="text-muted-foreground">m²</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="modal-bedrooms" className="mb-1 block">Bedrooms</Label>
+                <Select 
+                  value={formData.bedrooms}
+                  onValueChange={(value) => handleInputChange("bedrooms", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select bedrooms" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">Studio</SelectItem>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                    <SelectItem value="5">5+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="modal-bathrooms" className="mb-1 block">Bathrooms</Label>
+                <Select 
+                  value={formData.bathrooms}
+                  onValueChange={(value) => handleInputChange("bathrooms", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select bathrooms" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="modal-parking" className="mb-1 block">Parking Spaces</Label>
+                <Select 
+                  value={formData.parking}
+                  onValueChange={(value) => handleInputChange("parking", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select parking" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">None</SelectItem>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="modal-property-type" className="mb-1 block">Property Type</Label>
+                <Select 
+                  value={formData.propertyType}
+                  onValueChange={(value) => handleInputChange("propertyType", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="apartment">Apartment</SelectItem>
+                    <SelectItem value="house">House</SelectItem>
+                    <SelectItem value="townhouse">Townhouse</SelectItem>
+                    <SelectItem value="villa">Villa</SelectItem>
+                    <SelectItem value="cottage">Cottage</SelectItem>
+                    <SelectItem value="studio">Studio</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="modal-property-condition" className="mb-1 block">Property Condition</Label>
+                <Select 
+                  value={formData.propertyCondition}
+                  onValueChange={(value) => handleInputChange("propertyCondition", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="fair">Fair</SelectItem>
+                    <SelectItem value="poor">Poor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPropertyDetailsModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleGetDealScore} className="bg-blue-500 hover:bg-blue-600 text-white">
+              Get Deal Score
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
         <DialogContent className="sm:max-w-[425px]">
