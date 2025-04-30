@@ -4764,7 +4764,8 @@ export default function DealScorePublicPage() {
                           },
                           body: JSON.stringify({
                             address: formData.address,
-                            bypassAuth: true,
+                            publicAccess: true,
+                            bypassAuth: true
                           }),
                         });
                         
