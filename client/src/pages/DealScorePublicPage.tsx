@@ -4700,6 +4700,133 @@ export default function DealScorePublicPage() {
               </div>
             </div>
             
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="relative">
+                <Label htmlFor="modal-area-rate" className="mb-1 block">
+                  Area Rate per m²
+                  <span className="ml-1 inline-block">
+                    <Info
+                      className="h-4 w-4 text-muted-foreground cursor-help"
+                      onClick={() =>
+                        toast({
+                          title: "Area Rate Information",
+                          description: "This is the average price per square meter for properties in this area. Click 'Find Area Rate' if you're not sure.",
+                        })
+                      }
+                    />
+                  </span>
+                </Label>
+                <div className="relative flex w-full max-w-sm items-center space-x-2">
+                  <div className="relative flex-grow">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <span className="text-muted-foreground">R</span>
+                    </div>
+                    <Input
+                      id="modal-area-rate"
+                      placeholder="0"
+                      className="pl-7"
+                      value={formData.areaRate}
+                      onChange={(e) => handleInputChange("areaRate", e.target.value)}
+                    />
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="whitespace-nowrap"
+                    onClick={async () => {
+                      if (!formData.address) {
+                        toast({
+                          title: "Missing Address",
+                          description: "Please enter a property address first",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      setAreaRateStatus("loading");
+                      setShowAreaRateDialog(true);
+                      
+                      try {
+                        const response = await fetch("/api/area-rate", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            address: formData.address,
+                            bypassAuth: true,
+                          }),
+                        });
+                        
+                        if (!response.ok) {
+                          throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.success && data.areaRate) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            areaRate: data.areaRate.toString(),
+                          }));
+                          setAreaRateStatus("success");
+                          
+                          setTimeout(() => {
+                            setShowAreaRateDialog(false);
+                          }, 1000);
+                        } else {
+                          throw new Error(data.error || "Failed to fetch area rate");
+                        }
+                      } catch (error) {
+                        console.error("Error fetching area rate:", error);
+                        setAreaRateStatus("error");
+                        setAreaRateError(
+                          error instanceof Error
+                            ? error.message
+                            : "Unknown error occurred"
+                        );
+                      }
+                    }}
+                  >
+                    Find Area Rate
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <Label htmlFor="modal-luxury-rating" className="mb-1 block">Luxury Rating</Label>
+                <div className="rounded-md border border-border p-2">
+                  <div className="mb-2 space-y-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Basic</span>
+                      <span>Premium</span>
+                    </div>
+                  </div>
+                  <Slider
+                    id="modal-luxury-rating"
+                    defaultValue={[Number(formData.luxuryRating)]}
+                    min={1}
+                    max={5}
+                    step={1}
+                    onValueChange={(value) =>
+                      handleInputChange("luxuryRating", value[0].toString())
+                    }
+                  />
+                  <div className="mt-1">
+                    <div className="flex justify-between text-xs">
+                      <span>1</span>
+                      <span>2</span>
+                      <span>3</span>
+                      <span>4</span>
+                      <span>5</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="modal-bedrooms" className="mb-1 block">Bedrooms</Label>
