@@ -47,7 +47,7 @@ export default function AgentsPage() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/">
-              <Image src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
+              <img src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
             </Link>
           </div>
           <nav className="hidden md:flex items-center gap-8">
@@ -641,118 +641,78 @@ export default function AgentsPage() {
             </div>
           </div>
         </section>
-
-        {/* Social Proof */}
-        <section className="py-12 border-t bg-gray-50">
-          <div className="container">
-            <div className="text-center mb-8">
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Trusted By Leading Real Estate Agencies
-              </p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-8 md:gap-16">
-              <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">RealtyGroup</div>
-              </div>
-              <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">PropertyPro</div>
-              </div>
-              <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">InvestHomes</div>
-              </div>
-              <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">PremierEstates</div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white py-12 border-t relative z-30">
+      <footer className="bg-gray-900 text-white py-16">
         <div className="container">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center">
-                <Image src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
-              </div>
-              <p className="mt-4 text-sm text-gray-500">
-                The intelligence layer for the real estate and insurance industries.
+              <img src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto mb-6" />
+              <p className="text-gray-400 mb-6">
+                Proply provides AI-powered property investment analysis tools for real estate professionals and investors.
               </p>
+              <div className="flex space-x-4">
+                {["twitter", "facebook", "instagram", "linkedin"].map((social) => (
+                  <a
+                    key={social}
+                    href={`#${social}`}
+                    className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition-colors"
+                  >
+                    <span className="sr-only">{social}</span>
+                    <div className="h-5 w-5 text-gray-300"></div>
+                  </a>
+                ))}
+              </div>
             </div>
+
             <div>
-              <h3 className="mb-4 text-lg font-medium">Products</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="/for-insurers" className="hover:text-proply-blue">
-                    Risk Index
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/for-agents" className="hover:text-proply-blue">
-                    Property Analyzer API
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dealscore" className="hover:text-proply-blue">
-                    Deal Score
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Pricing
-                  </Link>
-                </li>
+              <h3 className="font-semibold text-lg mb-4">Products</h3>
+              <ul className="space-y-3">
+                {["Property Analyzer API", "Risk Index", "Deal Score", "Market Intelligence"].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                      {item}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
+
             <div>
-              <h3 className="mb-4 text-lg font-medium">Company</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Careers
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Contact
-                  </Link>
-                </li>
+              <h3 className="font-semibold text-lg mb-4">Company</h3>
+              <ul className="space-y-3">
+                {["About Us", "Careers", "Blog", "Legal", "Contact"].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                      {item}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
+
             <div>
-              <h3 className="mb-4 text-lg font-medium">Legal</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-proply-blue">
-                    Cookie Policy
-                  </Link>
-                </li>
+              <h3 className="font-semibold text-lg mb-4">Contact</h3>
+              <ul className="space-y-3 text-gray-400">
+                <li>21 Main Road</li>
+                <li>Cape Town, South Africa</li>
+                <li>info@proply.com</li>
+                <li>+27 21 123 4567</li>
               </ul>
             </div>
           </div>
-          <div className="mt-12 border-t pt-8 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Proply. All rights reserved.</p>
+
+          <div className="border-t border-gray-800 mt-12 pt-8 text-sm text-gray-500 flex justify-between">
+            <div>© {new Date().getFullYear()} Proply. All rights reserved.</div>
+            <div className="flex space-x-6">
+              <a href="#" className="hover:text-gray-300 transition-colors">
+                Privacy Policy
+              </a>
+              <a href="#" className="hover:text-gray-300 transition-colors">
+                Terms of Service
+              </a>
+            </div>
           </div>
         </div>
       </footer>
