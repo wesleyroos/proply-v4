@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Link } from "wouter"
+import { Helmet } from "react-helmet"
 import {
   ArrowRight,
   Check,
@@ -27,6 +28,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SampleReportModal } from "@/components/sample-report-modal"
+import PublicHeader from "@/components/PublicHeader"
+import PublicFooter from "@/components/PublicFooter"
 
 export default function AgentsPage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
@@ -41,42 +44,15 @@ export default function AgentsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white">
-        <div className="container flex h-16 items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/">
-              <img src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto" />
-            </Link>
-          </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/for-insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              For Insurers
-            </Link>
-            <Link href="/for-agents" className="text-sm font-medium text-proply-blue transition-colors">
-              For Agents
-            </Link>
-            <div className="relative flex flex-col items-center">
-              <span className="text-sm font-medium text-gray-500 cursor-default">For Buyers</span>
-              <div className="absolute -bottom-4">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-proply-blue/10 text-proply-blue">
-                  Soon
-                </span>
-              </div>
-            </div>
-            <Link href="#contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
-              Contact
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
-              Login
-            </Button>
-            <Button className="bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
-          </div>
-        </div>
-      </header>
+      <Helmet>
+        <title>Property Analyzer API™ for Agents | Proply</title>
+        <meta 
+          name="description" 
+          content="Turn every listing into an investment opportunity with automated property analysis that helps you close deals faster."
+        />
+      </Helmet>
+      
+      <PublicHeader />
 
       <main>
         {/* Hero Section - Split design with angled divider */}
@@ -643,79 +619,7 @@ export default function AgentsPage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="container">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <img src="/proply-logo.png" alt="Proply Logo" width={120} height={40} className="h-8 w-auto mb-6" />
-              <p className="text-gray-400 mb-6">
-                Proply provides AI-powered property investment analysis tools for real estate professionals and investors.
-              </p>
-              <div className="flex space-x-4">
-                {["twitter", "facebook", "instagram", "linkedin"].map((social) => (
-                  <a
-                    key={social}
-                    href={`#${social}`}
-                    className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition-colors"
-                  >
-                    <span className="sr-only">{social}</span>
-                    <div className="h-5 w-5 text-gray-300"></div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-lg mb-4">Products</h3>
-              <ul className="space-y-3">
-                {["Property Analyzer API", "Risk Index", "Deal Score", "Market Intelligence"].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-lg mb-4">Company</h3>
-              <ul className="space-y-3">
-                {["About Us", "Careers", "Blog", "Legal", "Contact"].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-lg mb-4">Contact</h3>
-              <ul className="space-y-3 text-gray-400">
-                <li>21 Main Road</li>
-                <li>Cape Town, South Africa</li>
-                <li>info@proply.com</li>
-                <li>+27 21 123 4567</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 mt-12 pt-8 text-sm text-gray-500 flex justify-between">
-            <div>© {new Date().getFullYear()} Proply. All rights reserved.</div>
-            <div className="flex space-x-6">
-              <a href="#" className="hover:text-gray-300 transition-colors">
-                Privacy Policy
-              </a>
-              <a href="#" className="hover:text-gray-300 transition-colors">
-                Terms of Service
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
 
       {/* Sample Report Modal */}
       <SampleReportModal isOpen={isReportModalOpen} onClose={closeReportModal} />
