@@ -91,7 +91,7 @@ export default function PublicFooter() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/for-agents" className="hover:text-proply-blue">
+                  <Link href="/agents" className="hover:text-proply-blue">
                     Agents
                   </Link>
                 </li>

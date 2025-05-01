@@ -229,7 +229,7 @@ function App() {
                 <InsurersPage />
               </PageTransition>
             )} />
-            <Route path="/for-agents" component={() => (
+            <Route path="/agents" component={() => (
               <PageTransition>
                 <AgentsPage />
               </PageTransition>

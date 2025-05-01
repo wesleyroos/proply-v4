@@ -26,7 +26,7 @@ export default function PublicHeader() {
           <Link href="/insurers" className="text-sm font-medium hover:text-proply-blue transition-colors">
             For Insurers
           </Link>
-          <Link href="/for-agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
+          <Link href="/agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
             For Agents
           </Link>
           <div className="text-sm font-medium flex items-center">
@@ -88,7 +88,7 @@ export default function PublicHeader() {
             <Link href="/insurers" className="block py-2 text-sm font-medium hover:text-proply-blue">
               For Insurers
             </Link>
-            <Link href="/for-agents" className="block py-2 text-sm font-medium hover:text-proply-blue">
+            <Link href="/agents" className="block py-2 text-sm font-medium hover:text-proply-blue">
               For Agents
             </Link>
             <div className="block py-2 text-sm font-medium flex items-center">
