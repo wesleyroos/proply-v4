@@ -520,14 +520,13 @@ export default function AgentsPage() {
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">PropData Integration</h3>
                         <p className="text-gray-600 mb-6">
-                          The simplest way to get started. Connect your PropData account and automatically generate
-                          reports for every listing.
+                          The simplest way to get started. Just inform PropData that you wish to use Proply, and we'll handle the rest.
                         </p>
 
                         <ul className="space-y-3 mb-6">
                           <li className="flex items-start gap-3">
                             <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700">One-click setup with your PropData account</span>
+                            <span className="text-gray-700">No account setup or configuration needed</span>
                           </li>
                           <li className="flex items-start gap-3">
                             <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
@@ -540,7 +539,7 @@ export default function AgentsPage() {
                         </ul>
 
                         <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
-                          Connect PropData <ArrowRight className="ml-2 h-4 w-4" />
+                          Contact PropData <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -553,19 +552,19 @@ export default function AgentsPage() {
                             <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
                               1
                             </div>
-                            <span className="text-gray-700">Connect your PropData account through our dashboard</span>
+                            <span className="text-gray-700">Contact PropData and inform them you want to use Proply</span>
                           </li>
                           <li className="flex items-start gap-3">
                             <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
                               2
                             </div>
-                            <span className="text-gray-700">We automatically detect when you add new listings</span>
+                            <span className="text-gray-700">We set up the integration directly with PropData</span>
                           </li>
                           <li className="flex items-start gap-3">
                             <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
                               3
                             </div>
-                            <span className="text-gray-700">Investment reports are generated and sent to your email</span>
+                            <span className="text-gray-700">Investment reports are automatically generated for your listings</span>
                           </li>
                           <li className="flex items-start gap-3">
                             <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
