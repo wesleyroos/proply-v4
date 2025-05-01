@@ -714,31 +714,32 @@ export default function AgentsPage() {
               {/* Tab state management */}
               const [activeTab, setActiveTab] = useState("propdata");
 
-              <div className="flex flex-wrap border-b border-gray-200 mb-8">
-                <button 
-                  onClick={() => setActiveTab("propdata")}
-                  className={`px-6 py-3 text-sm font-medium ${
-                    activeTab === "propdata" 
-                      ? "text-proply-blue border-b-2 border-proply-blue"
-                      : "text-gray-500 hover:text-gray-900"
-                  }`}
-                >
-                  PropData Integration
-                </button>
-                <button 
-                  onClick={() => setActiveTab("direct")}
-                  className={`px-6 py-3 text-sm font-medium ${
-                    activeTab === "direct" 
-                      ? "text-proply-blue border-b-2 border-proply-blue"
-                      : "text-gray-500 hover:text-gray-900"
-                  }`}
-                >
-                  Direct API
-                </button>
-              </div>
+              <div>
+                <div className="flex flex-wrap border-b border-gray-200 mb-8">
+                  <button 
+                    onClick={() => setActiveTab("propdata")}
+                    className={`px-6 py-3 text-sm font-medium ${
+                      activeTab === "propdata" 
+                        ? "text-proply-blue border-b-2 border-proply-blue"
+                        : "text-gray-500 hover:text-gray-900"
+                    }`}
+                  >
+                    PropData Integration
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab("direct")}
+                    className={`px-6 py-3 text-sm font-medium ${
+                      activeTab === "direct" 
+                        ? "text-proply-blue border-b-2 border-proply-blue"
+                        : "text-gray-500 hover:text-gray-900"
+                    }`}
+                  >
+                    Direct API
+                  </button>
+                </div>
 
-              {/* Direct API Tab */}
-              {activeTab === "direct" && (
+                {/* Direct API Tab */}
+                {activeTab === "direct" && (
                 <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div className="grid md:grid-cols-2 gap-0">
                   <div className="p-8 bg-gray-50 flex items-center">
