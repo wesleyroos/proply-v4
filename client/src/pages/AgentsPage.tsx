@@ -308,7 +308,8 @@ export default function AgentsPage() {
                 Stand out from other agents
               </h2>
               <p className="mt-4 text-xl text-gray-600">
-                Transform every property listing into a compelling investment opportunity
+                Transform every property listing into a compelling investment
+                opportunity
               </p>
             </div>
 
@@ -323,7 +324,9 @@ export default function AgentsPage() {
                     Close deals faster with instant investment insights
                   </h3>
                   <p className="text-lg text-gray-600 mb-6">
-                    Stop manually calculating investment returns. Our API instantly generates comprehensive reports that answer the most common investor questions before they're even asked.
+                    Stop manually calculating investment returns. Our API
+                    instantly generates comprehensive reports that answer the
+                    most common investor questions before they're even asked.
                   </p>
 
                   <div className="space-y-4">
@@ -480,28 +483,31 @@ export default function AgentsPage() {
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
                 <Code className="h-4 w-4 mr-2" /> FLEXIBLE INTEGRATION
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Choose your integration method</h2>
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">
+                Choose your integration method
+              </h2>
               <p className="mt-4 text-xl text-gray-600">
-                Multiple ways to connect with our API, from simple no-code options to advanced integrations
+                Multiple ways to connect with our API, from simple no-code
+                options to advanced integrations
               </p>
             </div>
 
             <div className="max-w-4xl mx-auto">
               <div className="flex flex-wrap border-b border-gray-200 mb-8">
-                <button 
+                <button
                   onClick={() => setActiveTab("propdata")}
                   className={`px-6 py-3 text-sm font-medium ${
-                    activeTab === "propdata" 
+                    activeTab === "propdata"
                       ? "text-proply-blue border-b-2 border-proply-blue"
                       : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
                   PropData Integration
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab("direct")}
                   className={`px-6 py-3 text-sm font-medium ${
-                    activeTab === "direct" 
+                    activeTab === "direct"
                       ? "text-proply-blue border-b-2 border-proply-blue"
                       : "text-gray-500 hover:text-gray-900"
                   }`}
@@ -518,60 +524,82 @@ export default function AgentsPage() {
                         <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium mb-4">
                           EASIEST OPTION
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4">PropData Integration</h3>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                          PropData Integration
+                        </h3>
                         <p className="text-gray-600 mb-6">
-                          The simplest way to get started. Just inform PropData that you wish to use Proply, and we'll handle the rest.
+                          The simplest way to get started. Just inform PropData
+                          that you wish to use Proply, and we'll handle the
+                          rest.
                         </p>
 
                         <ul className="space-y-3 mb-6">
                           <li className="flex items-start gap-3">
                             <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700">No account setup or configuration needed</span>
+                            <span className="text-gray-700">
+                              No account setup or configuration needed
+                            </span>
                           </li>
                           <li className="flex items-start gap-3">
                             <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700">Works with your existing listings</span>
+                            <span className="text-gray-700">
+                              Works with your existing listings
+                            </span>
                           </li>
                           <li className="flex items-start gap-3">
                             <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700">No technical knowledge required</span>
+                            <span className="text-gray-700">
+                              No technical knowledge required
+                            </span>
                           </li>
                         </ul>
 
                         <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
-                          Contact PropData <ArrowRight className="ml-2 h-4 w-4" />
+                          Contact PropData{" "}
+                          <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>
 
                     <div className="p-8 flex items-center">
                       <div>
-                        <h4 className="font-bold text-gray-900 mb-4">How it works</h4>
+                        <h4 className="font-bold text-gray-900 mb-4">
+                          How it works
+                        </h4>
                         <ol className="space-y-4">
                           <li className="flex items-start gap-3">
                             <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
                               1
                             </div>
-                            <span className="text-gray-700">Contact PropData and inform them you want to use Proply</span>
+                            <span className="text-gray-700">
+                              Contact PropData and inform them you want to use
+                              Proply
+                            </span>
                           </li>
                           <li className="flex items-start gap-3">
                             <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
                               2
                             </div>
-                            <span className="text-gray-700">We set up the integration directly with PropData</span>
+                            <span className="text-gray-700">
+                              We set up the integration directly with PropData
+                            </span>
                           </li>
                           <li className="flex items-start gap-3">
                             <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
                               3
                             </div>
-                            <span className="text-gray-700">Investment reports are automatically generated for your listings</span>
+                            <span className="text-gray-700">
+                              Investment reports are automatically generated for
+                              your listings and sent to your inbox
+                            </span>
                           </li>
                           <li className="flex items-start gap-3">
                             <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
                               4
                             </div>
                             <span className="text-gray-700">
-                              Share reports with clients or embed them on your listings
+                              Share reports with clients or embed them on your
+                              listings
                             </span>
                           </li>
                         </ol>
@@ -593,7 +621,9 @@ export default function AgentsPage() {
                           Direct API Access
                         </h3>
                         <p className="text-gray-600 mb-6">
-                          Full control over the integration process. Connect directly to our API endpoints for maximum flexibility and customization.
+                          Full control over the integration process. Connect
+                          directly to our API endpoints for maximum flexibility
+                          and customization.
                         </p>
 
                         <ul className="space-y-3 mb-6">
@@ -618,7 +648,8 @@ export default function AgentsPage() {
                         </ul>
 
                         <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
-                          Request API Access <ArrowRight className="ml-2 h-4 w-4" />
+                          Request API Access{" "}
+                          <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -630,7 +661,7 @@ export default function AgentsPage() {
                         </h4>
                         <div className="bg-gray-900 rounded-lg p-4 mb-6">
                           <pre className="text-sm text-gray-100 font-mono overflow-auto">
-{`// Generate investment analysis
+                            {`// Generate investment analysis
 const response = await fetch('api/analyze', {
   method: 'POST',
   headers: {
@@ -672,7 +703,8 @@ console.log(analysis);`}
                               3
                             </div>
                             <span className="text-gray-700">
-                              Start generating investment reports programmatically
+                              Start generating investment reports
+                              programmatically
                             </span>
                           </div>
                         </div>
@@ -771,8 +803,12 @@ console.log(analysis);`}
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
                 <DollarSign className="h-4 w-4 mr-2" /> PRICING
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Simple, transparent pricing</h2>
-              <p className="mt-4 text-xl text-gray-600">No subscriptions or hidden fees. Only pay for what you use.</p>
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">
+                Simple, transparent pricing
+              </h2>
+              <p className="mt-4 text-xl text-gray-600">
+                No subscriptions or hidden fees. Only pay for what you use.
+              </p>
             </div>
 
             <div className="max-w-lg mx-auto">
@@ -782,10 +818,14 @@ console.log(analysis);`}
                     USAGE-BASED PRICING
                   </div>
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-5xl font-bold text-gray-900">R200</span>
+                    <span className="text-5xl font-bold text-gray-900">
+                      R200
+                    </span>
                     <span className="text-xl text-gray-500">per report</span>
                   </div>
-                  <p className="text-gray-600 mb-8">Only pay for the reports you generate</p>
+                  <p className="text-gray-600 mb-8">
+                    Only pay for the reports you generate
+                  </p>
 
                   <div className="space-y-4 mb-8">
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -794,25 +834,35 @@ console.log(analysis);`}
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Contract length</span>
-                      <span className="font-medium text-gray-900">No contract</span>
+                      <span className="font-medium text-gray-900">
+                        No contract
+                      </span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Volume discounts</span>
-                      <span className="font-medium text-gray-900">Available</span>
+                      <span className="font-medium text-gray-900">
+                        Available
+                      </span>
                     </div>
                   </div>
 
-                  <Button size="lg" className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white">
+                  <Button
+                    size="lg"
+                    className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
+                  >
                     Request API Access
                   </Button>
 
                   <div className="mt-6 text-sm text-gray-500">
-                    Volume discounts available for agencies with high listing volumes
+                    Volume discounts available for agencies with high listing
+                    volumes
                   </div>
                 </div>
 
                 <div className="bg-gray-50 p-8 border-t border-gray-200">
-                  <h4 className="font-bold text-gray-900 mb-4">What's included:</h4>
+                  <h4 className="font-bold text-gray-900 mb-4">
+                    What's included:
+                  </h4>
                   <ul className="space-y-3">
                     {[
                       "Comprehensive investment analysis",
@@ -842,13 +892,19 @@ console.log(analysis);`}
             <div className="max-w-4xl mx-auto">
               <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Ready to transform your listings?</h2>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+                    Ready to transform your listings?
+                  </h2>
                   <p className="text-xl text-blue-100 mb-8">
-                    Join forward-thinking agents who are using Property Analyzer API™ to close deals faster and stand
-                    out in a competitive market.
+                    Join forward-thinking agents who are using Property Analyzer
+                    API™ to close deals faster and stand out in a competitive
+                    market.
                   </p>
                   <div className="space-y-4">
-                    <Button size="lg" className="w-full bg-white hover:bg-gray-100 text-proply-blue">
+                    <Button
+                      size="lg"
+                      className="w-full bg-white hover:bg-gray-100 text-proply-blue"
+                    >
                       Request API Access <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                     <Button
@@ -862,7 +918,9 @@ console.log(analysis);`}
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <h3 className="text-xl font-bold mb-6 text-white">Contact Our Team</h3>
+                  <h3 className="text-xl font-bold mb-6 text-white">
+                    Contact Our Team
+                  </h3>
                   <div className="space-y-4">
                     <div>
                       <Input
@@ -893,11 +951,13 @@ console.log(analysis);`}
                       />
                     </div>
                     <Button className="w-full bg-white hover:bg-gray-100 text-proply-blue">
-                      Request Information <MessageSquare className="ml-2 h-4 w-4" />
+                      Request Information{" "}
+                      <MessageSquare className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
                   <div className="mt-4 text-center text-sm text-blue-200">
-                    We'll respond within 24 hours to schedule a personalized demo.
+                    We'll respond within 24 hours to schedule a personalized
+                    demo.
                   </div>
                 </div>
               </div>
@@ -915,16 +975,24 @@ console.log(analysis);`}
             </div>
             <div className="flex flex-wrap justify-center gap-8 md:gap-16">
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">RealtyGroup</div>
+                <div className="text-gray-400 font-semibold text-lg">
+                  RealtyGroup
+                </div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">PropertyPro</div>
+                <div className="text-gray-400 font-semibold text-lg">
+                  PropertyPro
+                </div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">InvestHomes</div>
+                <div className="text-gray-400 font-semibold text-lg">
+                  InvestHomes
+                </div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">PremierEstates</div>
+                <div className="text-gray-400 font-semibold text-lg">
+                  PremierEstates
+                </div>
               </div>
             </div>
           </div>
@@ -934,7 +1002,10 @@ console.log(analysis);`}
       <PublicFooter />
 
       {/* Sample Report Modal */}
-      <SampleReportModal isOpen={isReportModalOpen} onClose={closeReportModal} />
+      <SampleReportModal
+        isOpen={isReportModalOpen}
+        onClose={closeReportModal}
+      />
     </div>
   );
 }

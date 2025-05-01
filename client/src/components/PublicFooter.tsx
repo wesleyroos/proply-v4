@@ -30,32 +30,7 @@ export default function PublicFooter() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
-            <div>
-              <h3 className="mb-4 text-lg font-medium">Product</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>
-                  <Link href="/property-analyzer" className="hover:text-proply-blue">
-                    Property Analyzer
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/rent-compare" className="hover:text-proply-blue">
-                    Rent Compare
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/deal-score" className="hover:text-proply-blue">
-                    Deal Score
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/risk-index" className="hover:text-proply-blue">
-                    Risk Index
-                  </Link>
-                </li>
-              </ul>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div>
               <h3 className="mb-4 text-lg font-medium">Company</h3>
               <ul className="space-y-2 text-sm text-gray-500">
