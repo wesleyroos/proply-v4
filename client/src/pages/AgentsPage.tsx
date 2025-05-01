@@ -720,6 +720,106 @@ export default function AgentsPage() {
                 </button>
               </div>
 
+              {/* Direct API Tab */}
+              <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                <div className="grid md:grid-cols-2 gap-0">
+                  <div className="p-8 bg-gray-50 flex items-center">
+                    <div>
+                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-xs font-medium mb-4">
+                        ADVANCED INTEGRATION
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                        Direct API Access
+                      </h3>
+                      <p className="text-gray-600 mb-6">
+                        Full control over the integration process. Connect directly to our API endpoints for maximum flexibility and customization.
+                      </p>
+
+                      <ul className="space-y-3 mb-6">
+                        <li className="flex items-start gap-3">
+                          <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-gray-700">
+                            RESTful API with comprehensive documentation
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-gray-700">
+                            Webhooks for real-time updates
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-gray-700">
+                            Custom integration options
+                          </span>
+                        </li>
+                      </ul>
+
+                      <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
+                        Request API Access <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-8 flex items-center">
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-4">
+                        Sample API Request
+                      </h4>
+                      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+                        <pre className="text-sm text-gray-100 font-mono">
+{`// Generate investment analysis
+const response = await fetch('api/analyze', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    address: '123 Main St',
+    price: 2500000,
+    bedrooms: 3,
+    type: 'apartment'
+  })
+});
+
+const analysis = await response.json();
+console.log(analysis);`}
+                        </pre>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-3">
+                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                            1
+                          </div>
+                          <span className="text-gray-700">
+                            Request your API credentials through our dashboard
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                            2
+                          </div>
+                          <span className="text-gray-700">
+                            Integrate the API endpoints into your application
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                            3
+                          </div>
+                          <span className="text-gray-700">
+                            Start generating investment reports programmatically
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* PropData Integration Tab */}
               <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 <div className="grid md:grid-cols-2 gap-0">
