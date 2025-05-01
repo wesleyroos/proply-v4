@@ -44,6 +44,7 @@ import RiskIndexPage from "./pages/RiskIndexPage";
 import HollardRiskIndexPage from "./pages/HollardRiskIndexPage";
 import KingPriceRiskIndexPage from "./pages/KingPriceRiskIndexPage";
 import MomentumRiskIndexPage from "./pages/MomentumRiskIndexPage";
+import AgentsPage from "./pages/AgentsPage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -226,6 +227,11 @@ function App() {
             <Route path="/insurers" component={() => (
               <PageTransition>
                 <InsurersPage />
+              </PageTransition>
+            )} />
+            <Route path="/for-agents" component={() => (
+              <PageTransition>
+                <AgentsPage />
               </PageTransition>
             )} />
 

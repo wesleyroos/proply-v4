@@ -206,3 +206,8 @@
     linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size: 25px 25px;
 }
+
+/* Clipped background for the AgentsPage */
+.clip-path-polygon-\[0_0\,_100\%_0\,_100\%_100\%\,_15\%_100\%\] {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 15% 100%);
+}
