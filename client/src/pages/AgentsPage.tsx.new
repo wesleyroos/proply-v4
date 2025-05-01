@@ -300,303 +300,83 @@ export default function AgentsPage() {
         {/* Benefits Section - Alternating layout */}
         <section className="py-24">
           <div className="container">
-            <div className="text-center max-w-3xl mx-auto mb-20">
+            <div className="text-center max-w-3xl mx-auto mb-16">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
-                <CheckCircle className="h-4 w-4 mr-2" /> BENEFITS
+                <Lightbulb className="h-4 w-4 mr-2" /> WHY AGENTS LOVE US
               </div>
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900">
-                Why agents love us
+                Stand out from other agents
               </h2>
               <p className="mt-4 text-xl text-gray-600">
-                Transform your listings into powerful sales tools with zero
-                extra work
+                Transform every property listing into a compelling investment opportunity
               </p>
             </div>
 
             <div className="space-y-24">
               {/* Benefit 1 */}
               <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="order-2 md:order-1">
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-600 text-sm font-medium mb-4">
-                    STAND OUT FROM COMPETITORS
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                    Differentiate your listings
-                  </h3>
-                  <p className="text-xl text-gray-600 mb-8">
-                    In a sea of similar listings, be the only agent offering
-                    comprehensive investment insights that help buyers make
-                    confident decisions.
-                  </p>
-
-                  <ul className="space-y-4">
-                    {[
-                      "Showcase rental yields and ROI projections",
-                      "Highlight investment potential with data",
-                      "Provide market comparisons and value analysis",
-                    ].map((item, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <div className="mt-1 h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 text-green-600" />
-                        </div>
-                        <span className="text-gray-700">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="order-1 md:order-2">
-                  <div className="relative">
-                    <div className="absolute -top-6 -left-6 w-24 h-24 bg-green-100 rounded-full opacity-30 blur-xl"></div>
-                    <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="grid grid-cols-2 gap-px bg-gray-100">
-                        <div className="bg-white p-4">
-                          <div className="text-xs text-gray-500 mb-1">
-                            Standard Listing
-                          </div>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-gray-400" />
-                              <span className="text-gray-600">
-                                Basic property details
-                              </span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-gray-400" />
-                              <span className="text-gray-600">
-                                Photos and floor plans
-                              </span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-gray-400" />
-                              <span className="text-gray-600">
-                                Location information
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-                        <div className="bg-white p-4">
-                          <div className="text-xs text-green-600 font-medium mb-1">
-                            Your Enhanced Listing
-                          </div>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-600" />
-                              <span className="text-gray-900 font-medium">
-                                Everything in standard listing
-                              </span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-600" />
-                              <span className="text-gray-900 font-medium">
-                                Rental yield analysis
-                              </span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-600" />
-                              <span className="text-gray-900 font-medium">
-                                ROI projections
-                              </span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-600" />
-                              <span className="text-gray-900 font-medium">
-                                Market value assessment
-                              </span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-600" />
-                              <span className="text-gray-900 font-medium">
-                                Investment recommendations
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div className="p-4 bg-gray-50 text-center">
-                        <span className="text-sm text-gray-600">
-                          <span className="font-medium text-green-600">
-                            78%
-                          </span>{" "}
-                          of buyers prefer listings with investment data
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Benefit 2 */}
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="order-2">
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-4">
-                    SAVE TIME, CLOSE FASTER
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                    Automate investment analysis
-                  </h3>
-                  <p className="text-xl text-gray-600 mb-8">
-                    Stop spending hours creating manual reports. Our API
-                    generates comprehensive investment analyses in seconds,
-                    automatically.
-                  </p>
-
-                  <ul className="space-y-4">
-                    {[
-                      "Reports generate in under 2 minutes",
-                      "Low/no manual data entry or calculations",
-                      "Always up-to-date with current market data",
-                    ].map((item, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <div className="mt-1 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 text-blue-600" />
-                        </div>
-                        <span className="text-gray-700">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="order-1">
-                  <div className="relative">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-blue-100 rounded-full opacity-30 blur-xl"></div>
-                    <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="p-6 border-b border-gray-100">
-                        <div className="flex items-center gap-3">
-                          <Clock className="h-5 w-5 text-blue-600" />
-                          <h4 className="font-bold text-gray-900">
-                            Time Comparison
-                          </h4>
-                        </div>
-                      </div>
-
-                      <div className="p-6">
-                        <div className="space-y-6">
-                          <div>
-                            <div className="flex justify-between text-sm mb-2">
-                              <span className="text-gray-600">
-                                Manual Analysis
-                              </span>
-                              <span className="font-medium text-gray-900">
-                                3-4 days
-                              </span>
-                            </div>
-                            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gray-400"
-                                style={{ width: "100%" }}
-                              ></div>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-sm mb-2">
-                              <span className="text-gray-600">
-                                With Property Analyzer API™
-                              </span>
-                              <span className="font-medium text-blue-600">
-                                2 minutes
-                              </span>
-                            </div>
-                            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-blue-600"
-                                style={{ width: "1%" }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
-                          <div className="flex items-start gap-3">
-                            <Lightbulb className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm text-gray-700">
-                                <span className="font-medium">
-                                  Save 99.9% of your time
-                                </span>{" "}
-                                while providing more comprehensive investment
-                                insights to your clients.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Benefit 3 */}
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="order-2 md:order-1">
+                <div>
                   <div className="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-600 text-sm font-medium mb-4">
-                    BUILD TRUST WITH BUYERS
+                    <Clock className="h-4 w-4 mr-2" /> SAVE TIME
                   </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                    Answer tough questions with confidence
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                    Close deals faster with instant investment insights
                   </h3>
-                  <p className="text-xl text-gray-600 mb-8">
-                    When buyers ask about ROI, rental yields, or fair value,
-                    you'll have data-backed answers ready instantly.
+                  <p className="text-lg text-gray-600 mb-6">
+                    Stop manually calculating investment returns. Our API instantly generates comprehensive reports that answer the most common investor questions before they're even asked.
                   </p>
 
-                  <ul className="space-y-4">
+                  <div className="space-y-4">
                     {[
-                      "Justify asking prices with market comparisons",
-                      "Show potential returns with rental yield data",
-                      "Demonstrate long-term value with ROI projections",
+                      "Automated analysis of each property's investment potential",
+                      "Detailed ROI calculations that investor buyers need",
+                      "White-labeled reports that showcase your expertise",
                     ].map((item, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <div className="mt-1 h-5 w-5 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 text-amber-600" />
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="mt-1 h-5 w-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-3 w-3" />
                         </div>
                         <span className="text-gray-700">{item}</span>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
 
-                <div className="order-1 md:order-2">
-                  <div className="relative">
-                    <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-amber-100 rounded-full opacity-30 blur-xl"></div>
-                    <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="p-6 border-b border-gray-100">
-                        <div className="flex items-center gap-3">
-                          <MessageSquare className="h-5 w-5 text-amber-600" />
-                          <h4 className="font-bold text-gray-900">
-                            Common Buyer Questions
-                          </h4>
-                        </div>
-                      </div>
+                <div className="relative bg-gray-100 rounded-2xl p-8 md:p-12">
+                  <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div className="p-4 border-b border-gray-100">
+                      <h4 className="font-medium text-gray-900">
+                        Common Investor Questions - Instantly Answered
+                      </h4>
+                    </div>
 
-                      <div className="divide-y divide-gray-100">
-                        {[
-                          {
-                            question: "Is this property fairly priced?",
-                            answer:
-                              "Our market analysis shows it's 5% below similar properties in the area, making it a good value.",
-                          },
-                          {
-                            question: "What rental income could I expect?",
-                            answer:
-                              "Based on current market rates, you could expect R15,000/month, giving a 7.2% yield.",
-                          },
-                          {
-                            question: "Is this a good investment?",
-                            answer:
-                              "With a projected 5-year ROI of 32% and above-average rental yield, it's a strong investment opportunity.",
-                          },
-                        ].map((item, i) => (
-                          <div key={i} className="p-4">
-                            <div className="font-medium text-gray-900 mb-1">
-                              {item.question}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {item.answer}
-                            </div>
+                    <div className="divide-y divide-gray-100">
+                      {[
+                        {
+                          question: "Is this property fairly priced?",
+                          answer:
+                            "Our market analysis shows it's 5% below similar properties in the area, making it a good value.",
+                        },
+                        {
+                          question: "What rental income could I expect?",
+                          answer:
+                            "Based on current market rates, you could expect R15,000/month, giving a 7.2% yield.",
+                        },
+                        {
+                          question: "Is this a good investment?",
+                          answer:
+                            "With a projected 5-year ROI of 32% and above-average rental yield, it's a strong investment opportunity.",
+                        },
+                      ].map((item, i) => (
+                        <div key={i} className="p-4">
+                          <div className="font-medium text-gray-900 mb-1">
+                            {item.question}
                           </div>
-                        ))}
-                      </div>
+                          <div className="text-sm text-gray-600">
+                            {item.answer}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -671,25 +451,23 @@ export default function AgentsPage() {
                   className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-colors"
                 >
                   <div
-                    className={`mb-4 flex h-12 w-12 items-center justify-center rounded-full ${feature.color}`}
+                    className={`w-12 h-12 rounded-full ${feature.color} flex items-center justify-center mb-4`}
                   >
                     <feature.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mb-2 text-xl font-bold text-white">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-300 text-sm">{feature.description}</p>
+                  <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
+                  <p className="text-gray-400">{feature.description}</p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-12 text-center">
+            <div className="flex justify-center mt-12">
               <Button
                 size="lg"
-                className="bg-white hover:bg-gray-100 text-gray-900"
+                className="bg-white text-gray-900 hover:bg-gray-100"
                 onClick={openReportModal}
               >
-                View Sample Report <ArrowRight className="ml-2 h-4 w-4" />
+                View Sample Report <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -868,12 +646,8 @@ export default function AgentsPage() {
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
                 <DollarSign className="h-4 w-4 mr-2" /> PRICING
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">
-                Simple, transparent pricing
-              </h2>
-              <p className="mt-4 text-xl text-gray-600">
-                No subscriptions or hidden fees. Only pay for what you use.
-              </p>
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Simple, transparent pricing</h2>
+              <p className="mt-4 text-xl text-gray-600">No subscriptions or hidden fees. Only pay for what you use.</p>
             </div>
 
             <div className="max-w-lg mx-auto">
@@ -883,14 +657,10 @@ export default function AgentsPage() {
                     USAGE-BASED PRICING
                   </div>
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-5xl font-bold text-gray-900">
-                      R200
-                    </span>
+                    <span className="text-5xl font-bold text-gray-900">R200</span>
                     <span className="text-xl text-gray-500">per report</span>
                   </div>
-                  <p className="text-gray-600 mb-8">
-                    Only pay for the reports you generate
-                  </p>
+                  <p className="text-gray-600 mb-8">Only pay for the reports you generate</p>
 
                   <div className="space-y-4 mb-8">
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -899,35 +669,25 @@ export default function AgentsPage() {
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Contract length</span>
-                      <span className="font-medium text-gray-900">
-                        No contract
-                      </span>
+                      <span className="font-medium text-gray-900">No contract</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Volume discounts</span>
-                      <span className="font-medium text-gray-900">
-                        Available
-                      </span>
+                      <span className="font-medium text-gray-900">Available</span>
                     </div>
                   </div>
 
-                  <Button
-                    size="lg"
-                    className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
-                  >
+                  <Button size="lg" className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white">
                     Request API Access
                   </Button>
 
                   <div className="mt-6 text-sm text-gray-500">
-                    Volume discounts available for agencies with high listing
-                    volumes
+                    Volume discounts available for agencies with high listing volumes
                   </div>
                 </div>
 
                 <div className="bg-gray-50 p-8 border-t border-gray-200">
-                  <h4 className="font-bold text-gray-900 mb-4">
-                    What's included:
-                  </h4>
+                  <h4 className="font-bold text-gray-900 mb-4">What's included:</h4>
                   <ul className="space-y-3">
                     {[
                       "Comprehensive investment analysis",
@@ -957,19 +717,13 @@ export default function AgentsPage() {
             <div className="max-w-4xl mx-auto">
               <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-                    Ready to transform your listings?
-                  </h2>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Ready to transform your listings?</h2>
                   <p className="text-xl text-blue-100 mb-8">
-                    Join forward-thinking agents who are using Property Analyzer
-                    API™ to close deals faster and stand out in a competitive
-                    market.
+                    Join forward-thinking agents who are using Property Analyzer API™ to close deals faster and stand
+                    out in a competitive market.
                   </p>
                   <div className="space-y-4">
-                    <Button
-                      size="lg"
-                      className="w-full bg-white hover:bg-gray-100 text-proply-blue"
-                    >
+                    <Button size="lg" className="w-full bg-white hover:bg-gray-100 text-proply-blue">
                       Request API Access <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                     <Button
@@ -983,9 +737,7 @@ export default function AgentsPage() {
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <h3 className="text-xl font-bold mb-6 text-white">
-                    Contact Our Team
-                  </h3>
+                  <h3 className="text-xl font-bold mb-6 text-white">Contact Our Team</h3>
                   <div className="space-y-4">
                     <div>
                       <Input
@@ -1016,13 +768,11 @@ export default function AgentsPage() {
                       />
                     </div>
                     <Button className="w-full bg-white hover:bg-gray-100 text-proply-blue">
-                      Request Information{" "}
-                      <MessageSquare className="ml-2 h-4 w-4" />
+                      Request Information <MessageSquare className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
                   <div className="mt-4 text-center text-sm text-blue-200">
-                    We'll respond within 24 hours to schedule a personalized
-                    demo.
+                    We'll respond within 24 hours to schedule a personalized demo.
                   </div>
                 </div>
               </div>
@@ -1040,24 +790,16 @@ export default function AgentsPage() {
             </div>
             <div className="flex flex-wrap justify-center gap-8 md:gap-16">
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">
-                  RealtyGroup
-                </div>
+                <div className="text-gray-400 font-semibold text-lg">RealtyGroup</div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">
-                  PropertyPro
-                </div>
+                <div className="text-gray-400 font-semibold text-lg">PropertyPro</div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">
-                  InvestHomes
-                </div>
+                <div className="text-gray-400 font-semibold text-lg">InvestHomes</div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">
-                  PremierEstates
-                </div>
+                <div className="text-gray-400 font-semibold text-lg">PremierEstates</div>
               </div>
             </div>
           </div>
@@ -1067,10 +809,7 @@ export default function AgentsPage() {
       <PublicFooter />
 
       {/* Sample Report Modal */}
-      <SampleReportModal
-        isOpen={isReportModalOpen}
-        onClose={closeReportModal}
-      />
+      <SampleReportModal isOpen={isReportModalOpen} onClose={closeReportModal} />
     </div>
   );
 }
