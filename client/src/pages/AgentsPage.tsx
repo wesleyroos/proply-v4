@@ -22,7 +22,7 @@ import {
   Upload,
   CheckCircle,
   Star,
-  Lightbulb,
+  Lightbulb
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -244,41 +244,41 @@ export default function AgentsPage() {
           </div>
         </section>
 
-        {/* Benefits Section - Alternating layout */}
+ {/* Benefits Section - Alternating layout */}
         <section className="py-24">
           <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-20">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
-                <Lightbulb className="h-4 w-4 mr-2" /> WHY AGENTS LOVE US
+                <CheckCircle className="h-4 w-4 mr-2" /> BENEFITS
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Benefits for real estate agents</h2>
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Why agents love our API</h2>
               <p className="mt-4 text-xl text-gray-600">
-                Turn every listing into a compelling investment opportunity with data-driven insights
+                Transform your listings into powerful sales tools with zero extra work
               </p>
             </div>
 
-            <div className="space-y-32">
+            <div className="space-y-24">
               {/* Benefit 1 */}
-              <div className="grid md:grid-cols-2 gap-16 items-center">
-                <div>
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
-                    <Clock className="h-4 w-4 mr-2" /> SAVE TIME
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="order-2 md:order-1">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-600 text-sm font-medium mb-4">
+                    STAND OUT FROM COMPETITORS
                   </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-6">Close deals 37% faster</h3>
-                  <p className="text-lg text-gray-600 mb-8">
-                    Stop manually gathering data for potential investors. Our API automatically analyzes every property
-                    listing and generates comprehensive investment reports instantly.
+                  <h3 className="text-3xl font-bold text-gray-900 mb-6">Differentiate your listings</h3>
+                  <p className="text-xl text-gray-600 mb-8">
+                    In a sea of similar listings, be the only agent offering comprehensive investment insights that help
+                    buyers make confident decisions.
                   </p>
 
                   <ul className="space-y-4">
                     {[
-                      "Automatic generation for every listing",
-                      "No need to manually crunch numbers",
-                      "Instantly answer investor questions with confidence",
+                      "Showcase rental yields and ROI projections",
+                      "Highlight investment potential with data",
+                      "Provide market comparisons and value analysis",
                     ].map((item, i) => (
                       <li key={i} className="flex items-start gap-3">
-                        <div className="mt-1 h-5 w-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3" />
+                        <div className="mt-1 h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-3 w-3 text-green-600" />
                         </div>
                         <span className="text-gray-700">{item}</span>
                       </li>
@@ -286,77 +286,164 @@ export default function AgentsPage() {
                   </ul>
                 </div>
 
-                <div className="relative rounded-2xl overflow-hidden shadow-xl">
-                  <div className="aspect-video bg-gray-100">
-                    <img
-                      src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=500&q=80"
-                      alt="Agent discussing property with client"
-                      className="w-full h-full object-cover"
-                    />
+                <div className="order-1 md:order-2">
+                  <div className="relative">
+                    <div className="absolute -top-6 -left-6 w-24 h-24 bg-green-100 rounded-full opacity-30 blur-xl"></div>
+                    <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="grid grid-cols-2 gap-px bg-gray-100">
+                        <div className="bg-white p-4">
+                          <div className="text-xs text-gray-500 mb-1">Standard Listing</div>
+                          <ul className="space-y-2 text-sm">
+                            <li className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-gray-400" />
+                              <span className="text-gray-600">Basic property details</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-gray-400" />
+                              <span className="text-gray-600">Photos and floor plans</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-gray-400" />
+                              <span className="text-gray-600">Location information</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="bg-white p-4">
+                          <div className="text-xs text-green-600 font-medium mb-1">Your Enhanced Listing</div>
+                          <ul className="space-y-2 text-sm">
+                            <li className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" />
+                              <span className="text-gray-900 font-medium">Everything in standard listing</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" />
+                              <span className="text-gray-900 font-medium">Rental yield analysis</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" />
+                              <span className="text-gray-900 font-medium">ROI projections</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" />
+                              <span className="text-gray-900 font-medium">Market value assessment</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" />
+                              <span className="text-gray-900 font-medium">Investment recommendations</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-gray-50 text-center">
+                        <span className="text-sm text-gray-600">
+                          <span className="font-medium text-green-600">78%</span> of buyers prefer listings with
+                          investment data
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Benefit 2 */}
-              <div className="grid md:grid-cols-2 gap-16 items-center">
-                <div className="order-2 md:order-1 relative rounded-2xl overflow-hidden shadow-xl">
-                  <div className="aspect-video bg-gray-100">
-                    <img
-                      src="https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=500&q=80"
-                      alt="Property investment dashboard"
-                      className="w-full h-full object-cover"
-                    />
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="order-2">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-4">
+                    SAVE TIME, CLOSE FASTER
                   </div>
-                </div>
-
-                <div className="order-1 md:order-2">
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
-                    <DollarSign className="h-4 w-4 mr-2" /> INCREASE VALUE
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-6">Convert browsers into buyers</h3>
-                  <p className="text-lg text-gray-600 mb-8">
-                    Show potential buyers the true investment potential of each property with detailed ROI calculations,
-                    yield projections, and market comparisons.
+                  <h3 className="text-3xl font-bold text-gray-900 mb-6">Automate investment analysis</h3>
+                  <p className="text-xl text-gray-600 mb-8">
+                    Stop spending hours creating manual reports. Our API generates comprehensive investment analyses in
+                    seconds, automatically.
                   </p>
 
                   <ul className="space-y-4">
                     {[
-                      "Detailed rental yield projections",
-                      "Comprehensive 20-year ROI forecasts",
-                      "Market comparison data and price analysis",
+                      "Reports generate in under 3 seconds",
+                      "No manual data entry or calculations",
+                      "Always up-to-date with current market data",
                     ].map((item, i) => (
                       <li key={i} className="flex items-start gap-3">
-                        <div className="mt-1 h-5 w-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3" />
+                        <div className="mt-1 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-3 w-3 text-blue-600" />
                         </div>
                         <span className="text-gray-700">{item}</span>
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                <div className="order-1">
+                  <div className="relative">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-blue-100 rounded-full opacity-30 blur-xl"></div>
+                    <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="p-6 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <Clock className="h-5 w-5 text-blue-600" />
+                          <h4 className="font-bold text-gray-900">Time Comparison</h4>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        <div className="space-y-6">
+                          <div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-gray-600">Manual Analysis</span>
+                              <span className="font-medium text-gray-900">3-4 hours</span>
+                            </div>
+                            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-gray-400" style={{ width: "100%" }}></div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-gray-600">With Property Analyzer API™</span>
+                              <span className="font-medium text-blue-600">3 seconds</span>
+                            </div>
+                            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-blue-600" style={{ width: "1%" }}></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                          <div className="flex items-start gap-3">
+                            <Lightbulb className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Save 99.9% of your time</span> while providing more
+                                comprehensive investment insights to your clients.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Benefit 3 */}
-              <div className="grid md:grid-cols-2 gap-16 items-center">
-                <div>
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
-                    <BarChart3 className="h-4 w-4 mr-2" /> STAND OUT
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="order-2 md:order-1">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-600 text-sm font-medium mb-4">
+                    BUILD TRUST WITH BUYERS
                   </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-6">Differentiate from competitors</h3>
-                  <p className="text-lg text-gray-600 mb-8">
-                    Be the agent that offers more than just property details. Provide sophisticated investment analysis
-                    that positions you as the go-to expert for serious property investors.
+                  <h3 className="text-3xl font-bold text-gray-900 mb-6">Answer tough questions with confidence</h3>
+                  <p className="text-xl text-gray-600 mb-8">
+                    When buyers ask about ROI, rental yields, or fair value, you'll have data-backed answers ready
+                    instantly.
                   </p>
 
                   <ul className="space-y-4">
                     {[
-                      "White-labeled reports with your branding",
-                      "Position yourself as an investment expert",
-                      "Generate more referrals from impressed clients",
+                      "Justify asking prices with market comparisons",
+                      "Show potential returns with rental yield data",
+                      "Demonstrate long-term value with ROI projections",
                     ].map((item, i) => (
                       <li key={i} className="flex items-start gap-3">
-                        <div className="mt-1 h-5 w-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3" />
+                        <div className="mt-1 h-5 w-5 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-3 w-3 text-amber-600" />
                         </div>
                         <span className="text-gray-700">{item}</span>
                       </li>
@@ -364,13 +451,42 @@ export default function AgentsPage() {
                   </ul>
                 </div>
 
-                <div className="relative rounded-2xl overflow-hidden shadow-xl">
-                  <div className="aspect-video bg-gray-100">
-                    <img
-                      src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=500&q=80"
-                      alt="Professional real estate agent"
-                      className="w-full h-full object-cover"
-                    />
+                <div className="order-1 md:order-2">
+                  <div className="relative">
+                    <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-amber-100 rounded-full opacity-30 blur-xl"></div>
+                    <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="p-6 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <MessageSquare className="h-5 w-5 text-amber-600" />
+                          <h4 className="font-bold text-gray-900">Common Buyer Questions</h4>
+                        </div>
+                      </div>
+
+                      <div className="divide-y divide-gray-100">
+                        {[
+                          {
+                            question: "Is this property fairly priced?",
+                            answer:
+                              "Our market analysis shows it's 5% below similar properties in the area, making it a good value.",
+                          },
+                          {
+                            question: "What rental income could I expect?",
+                            answer:
+                              "Based on current market rates, you could expect R15,000/month, giving a 7.2% yield.",
+                          },
+                          {
+                            question: "Is this a good investment?",
+                            answer:
+                              "With a projected 5-year ROI of 32% and above-average rental yield, it's a strong investment opportunity.",
+                          },
+                        ].map((item, i) => (
+                          <div key={i} className="p-4">
+                            <div className="font-medium text-gray-900 mb-1">{item.question}</div>
+                            <div className="text-sm text-gray-600">{item.answer}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
