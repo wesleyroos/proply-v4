@@ -718,9 +718,6 @@ export default function AgentsPage() {
                 <button className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-900">
                   Direct API
                 </button>
-                <button className="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-900">
-                  White-Label Reports
-                </button>
               </div>
 
               {/* PropData Integration Tab */}
