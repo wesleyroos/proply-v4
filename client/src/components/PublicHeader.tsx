@@ -50,7 +50,7 @@ export default function PublicHeader() {
           <Link href="/blog" className="text-sm font-medium hover:text-proply-blue transition-colors">
             Blog
           </Link>
-          <Link href="#contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
+          <Link href="/contact" className="text-sm font-medium hover:text-proply-blue transition-colors">
             Contact
           </Link>
         </nav>
@@ -119,7 +119,7 @@ export default function PublicHeader() {
             <Link href="/blog" className="block py-2 text-sm font-medium hover:text-proply-blue">
               Blog
             </Link>
-            <Link href="#contact" className="block py-2 text-sm font-medium hover:text-proply-blue">
+            <Link href="/contact" className="block py-2 text-sm font-medium hover:text-proply-blue">
               Contact
             </Link>
             <div className="pt-4 flex flex-col space-y-3">
