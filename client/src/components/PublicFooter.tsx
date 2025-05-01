@@ -30,7 +30,7 @@ export default function PublicFooter() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
             <div>
               <h3 className="mb-4 text-lg font-medium">Company</h3>
               <ul className="space-y-2 text-sm text-gray-500">
@@ -73,6 +73,22 @@ export default function PublicFooter() {
                 <li className="flex">
                   <span className="hover:text-proply-blue">Buyers</span>
                   <span className="ml-1.5 text-proply-blue">(coming soon)</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="mb-4 text-lg font-medium">Tools</h3>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li>
+                  <Link href="/rent-compare" className="hover:text-proply-blue">
+                    Rent Compare
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/airbnb-yield-calculator" className="hover:text-proply-blue">
+                    Airbnb Yield Calculator
+                  </Link>
                 </li>
               </ul>
             </div>
