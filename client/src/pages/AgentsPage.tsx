@@ -473,89 +473,215 @@ export default function AgentsPage() {
           </div>
         </section>
 
-        {/* Integration Options - Simplified */}
+        {/* Integration Options - Tabs */}
         <section className="py-24">
           <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-proply-blue/10 text-proply-blue text-sm font-medium mb-4">
                 <Code className="h-4 w-4 mr-2" /> FLEXIBLE INTEGRATION
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Easy to integrate</h2>
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Choose your integration method</h2>
               <p className="mt-4 text-xl text-gray-600">
                 Multiple ways to connect with our API, from simple no-code options to advanced integrations
               </p>
             </div>
 
             <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                <div className="grid md:grid-cols-2 gap-0">
-                  <div className="p-8 bg-gray-50 flex items-center">
-                    <div>
-                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium mb-4">
-                        EASIEST OPTION
+              <div className="flex flex-wrap border-b border-gray-200 mb-8">
+                <button 
+                  onClick={() => setActiveTab("propdata")}
+                  className={`px-6 py-3 text-sm font-medium ${
+                    activeTab === "propdata" 
+                      ? "text-proply-blue border-b-2 border-proply-blue"
+                      : "text-gray-500 hover:text-gray-900"
+                  }`}
+                >
+                  PropData Integration
+                </button>
+                <button 
+                  onClick={() => setActiveTab("direct")}
+                  className={`px-6 py-3 text-sm font-medium ${
+                    activeTab === "direct" 
+                      ? "text-proply-blue border-b-2 border-proply-blue"
+                      : "text-gray-500 hover:text-gray-900"
+                  }`}
+                >
+                  Direct API
+                </button>
+              </div>
+
+              {activeTab === "propdata" && (
+                <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                  <div className="grid md:grid-cols-2 gap-0">
+                    <div className="p-8 bg-gray-50 flex items-center">
+                      <div>
+                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium mb-4">
+                          EASIEST OPTION
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">PropData Integration</h3>
+                        <p className="text-gray-600 mb-6">
+                          The simplest way to get started. Connect your PropData account and automatically generate
+                          reports for every listing.
+                        </p>
+
+                        <ul className="space-y-3 mb-6">
+                          <li className="flex items-start gap-3">
+                            <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-700">One-click setup with your PropData account</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-700">Works with your existing listings</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-700">No technical knowledge required</span>
+                          </li>
+                        </ul>
+
+                        <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
+                          Connect PropData <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                       </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-4">PropData Integration</h3>
-                      <p className="text-gray-600 mb-6">
-                        The simplest way to get started. Connect your PropData account and automatically generate
-                        reports for every listing.
-                      </p>
-
-                      <ul className="space-y-3 mb-6">
-                        <li className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-gray-700">One-click setup with your PropData account</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-gray-700">Works with your existing listings</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-gray-700">No technical knowledge required</span>
-                        </li>
-                      </ul>
-
-                      <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
-                        Connect PropData <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
                     </div>
-                  </div>
 
-                  <div className="p-8 flex items-center">
-                    <div>
-                      <h4 className="font-bold text-gray-900 mb-4">How it works</h4>
-                      <ol className="space-y-4">
-                        <li className="flex items-start gap-3">
-                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
-                            1
-                          </div>
-                          <span className="text-gray-700">Connect your PropData account through our dashboard</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
-                            2
-                          </div>
-                          <span className="text-gray-700">We automatically detect when you add new listings</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
-                            3
-                          </div>
-                          <span className="text-gray-700">Investment reports are generated and sent to your email</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
-                            4
-                          </div>
-                          <span className="text-gray-700">
-                            Share reports with clients or embed them on your listings
-                          </span>
-                        </li>
-                      </ol>
+                    <div className="p-8 flex items-center">
+                      <div>
+                        <h4 className="font-bold text-gray-900 mb-4">How it works</h4>
+                        <ol className="space-y-4">
+                          <li className="flex items-start gap-3">
+                            <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                              1
+                            </div>
+                            <span className="text-gray-700">Connect your PropData account through our dashboard</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                              2
+                            </div>
+                            <span className="text-gray-700">We automatically detect when you add new listings</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                              3
+                            </div>
+                            <span className="text-gray-700">Investment reports are generated and sent to your email</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                              4
+                            </div>
+                            <span className="text-gray-700">
+                              Share reports with clients or embed them on your listings
+                            </span>
+                          </li>
+                        </ol>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {activeTab === "direct" && (
+                <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                  <div className="grid md:grid-cols-2 gap-0">
+                    <div className="p-8 bg-gray-50 flex items-center">
+                      <div>
+                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-xs font-medium mb-4">
+                          ADVANCED INTEGRATION
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                          Direct API Access
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                          Full control over the integration process. Connect directly to our API endpoints for maximum flexibility and customization.
+                        </p>
+
+                        <ul className="space-y-3 mb-6">
+                          <li className="flex items-start gap-3">
+                            <Check className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-700">
+                              RESTful API with comprehensive documentation
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <Check className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-700">
+                              Webhooks for real-time updates
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <Check className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-700">
+                              Custom integration options
+                            </span>
+                          </li>
+                        </ul>
+
+                        <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
+                          Request API Access <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="p-8 flex items-center">
+                      <div>
+                        <h4 className="font-bold text-gray-900 mb-4">
+                          Sample API Request
+                        </h4>
+                        <div className="bg-gray-900 rounded-lg p-4 mb-6">
+                          <pre className="text-sm text-gray-100 font-mono overflow-auto">
+{`// Generate investment analysis
+const response = await fetch('api/analyze', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    address: '123 Main St',
+    price: 2500000,
+    bedrooms: 3,
+    type: 'apartment'
+  })
+});
+
+const analysis = await response.json();
+console.log(analysis);`}
+                          </pre>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3">
+                            <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                              1
+                            </div>
+                            <span className="text-gray-700">
+                              Request your API credentials through our dashboard
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                              2
+                            </div>
+                            <span className="text-gray-700">
+                              Integrate the API endpoints into your application
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm flex-shrink-0 mt-0.5">
+                              3
+                            </div>
+                            <span className="text-gray-700">
+                              Start generating investment reports programmatically
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
