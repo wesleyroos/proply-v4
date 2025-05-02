@@ -28,21 +28,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SampleReportModal } from "@/components/sample-report-modal";
 import { DemoRequestModal } from "@/components/DemoRequestModal";
 
 export default function AgentsPage() {
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("propdata");
-
-  const openReportModal = () => {
-    setIsReportModalOpen(true);
-  };
-
-  const closeReportModal = () => {
-    setIsReportModalOpen(false);
-  };
   
   const handleOpenDemoModal = () => {
     setIsDemoModalOpen(true);
@@ -96,27 +86,16 @@ export default function AgentsPage() {
                   >
                     Book a Demo <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                  <div className="relative group">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
-                      onClick={openReportModal}
-                    >
-                      See Sample Report
-                    </Button>
-                    <div className="absolute hidden group-hover:block mt-2 p-2 bg-white shadow-md rounded-md border border-gray-200 w-max">
-                      <Button 
-                        variant="link" 
-                        className="text-proply-blue"
-                        onClick={() => {
-                          window.location.href = "/api/download-property-analysis-pdf";
-                        }}
-                      >
-                        <Download className="mr-2 h-4 w-4" /> Download PDF directly
-                      </Button>
-                    </div>
-                  </div>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
+                    onClick={() => {
+                      window.location.href = "/api/download-property-analysis-pdf";
+                    }}
+                  >
+                    See Sample Report
+                  </Button>
                 </div>
 
                 <div className="mt-12 flex items-center gap-6">
@@ -229,7 +208,9 @@ export default function AgentsPage() {
                       <Button
                         size="sm"
                         className="bg-proply-blue hover:bg-proply-blue/90 text-white"
-                        onClick={openReportModal}
+                        onClick={() => {
+                          window.location.href = "/api/download-property-analysis-pdf";
+                        }}
                       >
                         View Full Report
                       </Button>
@@ -1030,12 +1011,6 @@ console.log(analysis);`}
       </main>
 
       <PublicFooter />
-
-      {/* Sample Report Modal */}
-      <SampleReportModal
-        isOpen={isReportModalOpen}
-        onClose={closeReportModal}
-      />
 
       {/* Demo Request Modal */}
       <DemoRequestModal
