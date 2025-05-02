@@ -765,7 +765,7 @@ console.log(analysis);`}
                 <div className="flex flex-col md:flex-row gap-8 items-center">
                   <div className="w-24 h-24 rounded-full bg-gray-200 flex-shrink-0 relative overflow-hidden">
                     <img 
-                      src="/real-estate-agent.jpg" 
+                      src="/agent-image.png" 
                       alt="Real estate professional" 
                       className="object-cover w-full h-full absolute inset-0"
                     />
