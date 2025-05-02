@@ -90,12 +90,18 @@ export default function InsurersPage() {
                     variant="outline"
                     className="bg-transparent border-white text-white hover:bg-white/10 hover:text-white"
                     onClick={() => {
-                      const a = document.createElement('a');
-                      a.href = '/Property Risk Assessment - Proply.pdf';
-                      a.download = 'Property Risk Assessment - Proply.pdf';
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
+                      fetch('/Property Risk Assessment - Proply.pdf')
+                        .then(response => response.blob())
+                        .then(blob => {
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'Property Risk Assessment - Proply.pdf';
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                          document.body.removeChild(a);
+                        });
                     }}
                   >
                     View Sample Report
@@ -205,12 +211,18 @@ export default function InsurersPage() {
                       size="sm" 
                       className="bg-proply-blue hover:bg-proply-blue/90 text-white"
                       onClick={() => {
-                        const a = document.createElement('a');
-                        a.href = '/Property Risk Assessment - Proply.pdf';
-                        a.download = 'Property Risk Assessment - Proply.pdf';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
+                        fetch('/Property Risk Assessment - Proply.pdf')
+                          .then(response => response.blob())
+                          .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'Property Risk Assessment - Proply.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                          });
                       }}
                     >
                       View Full Report
