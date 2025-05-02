@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
   DialogContent,
@@ -69,11 +70,19 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
     setIsSubmitting(true);
     
     try {
-      // In a real implementation, you would send the data to your backend
-      // await fetch('/api/demo-request', { method: 'POST', body: JSON.stringify(data) });
+      // Send the data to the backend API
+      const response = await fetch('/api/demo-request', { 
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data) 
+      });
       
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit demo request');
+      }
       
       setIsSuccess(true);
       
@@ -85,6 +94,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
       }, 2000);
     } catch (error) {
       console.error('Failed to submit demo request', error);
+      // Keep the form open so user can try again
     } finally {
       setIsSubmitting(false);
     }

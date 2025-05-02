@@ -30,6 +30,7 @@ import addressValidationRouter from './routes/address-validation';
 import trafficDataRouter from './routes/traffic-data';
 import tomtomTestRouter from './routes/tomtom-test';
 import { sendPasswordResetEmail } from './services/email';
+import { sendDemoRequestEmail } from './services/emailService';
 
 // Extend Express.User to include our schema
 declare global {
@@ -2010,6 +2011,47 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error calculating deal score:", error);
       res.status(500).json({ error: "Failed to calculate deal score" });
+    }
+  });
+
+  // Demo request endpoint
+  app.post("/api/demo-request", async (req, res) => {
+    try {
+      const { fullName, email, company, phoneNumber, product, message } = req.body;
+      
+      // Validate required fields
+      if (!fullName || !email || !company || !phoneNumber || !product) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      console.log("Processing demo request:", {
+        fullName,
+        email,
+        company,
+        product,
+      });
+      
+      // Send email notification
+      const success = await sendDemoRequestEmail({
+        fullName,
+        email,
+        company,
+        phoneNumber,
+        product,
+        message: message || "No additional message provided."
+      });
+      
+      if (success) {
+        res.json({ success: true, message: "Demo request submitted successfully" });
+      } else {
+        throw new Error("Failed to send email");
+      }
+    } catch (error) {
+      console.error("Error processing demo request:", error);
+      res.status(500).json({ 
+        error: "Failed to process demo request",
+        details: error instanceof Error ? error.message : undefined 
+      });
     }
   });
 

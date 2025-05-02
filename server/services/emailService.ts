@@ -46,7 +46,7 @@ export interface DemoRequestData {
 }
 
 export async function sendDemoRequestEmail(data: DemoRequestData): Promise<boolean> {
-  const adminEmail = 'admin@proply.com'; // Change to your admin email
+  const adminEmail = 'wesley@proply.co.za'; // Admin email
   
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -87,7 +87,7 @@ export async function sendDemoRequestEmail(data: DemoRequestData): Promise<boole
   
   return sendEmail({
     to: adminEmail,
-    from: 'noreply@proply.com', // Change to your verified sender
+    from: 'notifications@proply.co.za', // Verified sender
     subject: `Demo Request from ${data.fullName} - ${data.company}`,
     text: textContent,
     html: htmlContent,
