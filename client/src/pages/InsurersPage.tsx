@@ -89,6 +89,7 @@ export default function InsurersPage() {
                     size="lg"
                     variant="outline"
                     className="bg-transparent border-white text-white hover:bg-white/10 hover:text-white"
+                    onClick={() => window.open('/Property Risk Assessment - Proply.pdf', '_blank')}
                   >
                     View Sample Report
                   </Button>
@@ -193,7 +194,11 @@ export default function InsurersPage() {
                       <span className="text-gray-400">Recommended Premium Adjustment:</span>
                       <span className="ml-2 text-red-400 font-medium">+15%</span>
                     </div>
-                    <Button size="sm" className="bg-proply-blue hover:bg-proply-blue/90 text-white">
+                    <Button 
+                      size="sm" 
+                      className="bg-proply-blue hover:bg-proply-blue/90 text-white"
+                      onClick={() => window.open('/Property Risk Assessment - Proply.pdf', '_blank')}
+                    >
                       View Full Report
                     </Button>
                   </div>
@@ -397,7 +402,11 @@ export default function InsurersPage() {
 
             {/* CTA */}
             <div className="mt-16 text-center">
-              <Button size="lg" className="bg-proply-blue hover:bg-proply-blue/90 text-white">
+              <Button 
+                size="lg" 
+                className="bg-proply-blue hover:bg-proply-blue/90 text-white"
+                onClick={handleOpenDemoModal}
+              >
                 Schedule a Demo <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -486,7 +495,10 @@ export default function InsurersPage() {
                         <span className="text-gray-700">Export to PDF/CSV</span>
                       </li>
                     </ul>
-                    <Button className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300">
+                    <Button
+                      className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300"
+                      onClick={handleOpenDemoModal}
+                    >
                       Request Access <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </div>
@@ -566,7 +578,10 @@ console.log(riskData.riskLevel); // "High"
                     </li>
                   </ul>
                   <div className="mt-auto">
-                    <Button className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white">
+                    <Button 
+                      className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
+                      onClick={handleOpenDemoModal}
+                    >
                       Request API Access <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </div>
@@ -797,7 +812,11 @@ console.log(riskData.riskLevel); // "High"
                     claims, and optimize pricing.
                   </p>
                   <div className="space-y-4">
-                    <Button size="lg" className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white">
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
+                      onClick={handleOpenDemoModal}
+                    >
                       Schedule a Demo <Calendar className="ml-2 h-5 w-5" />
                     </Button>
                     <Button
