@@ -128,7 +128,7 @@ export default function AgentsPage() {
                           Analysis Results
                         </h3>
                         <p className="text-sm text-gray-500">
-                          Based on provided property details
+                          27 Leeuwen St, Cape Town City Centre
                         </p>
                       </div>
                     </div>
@@ -154,14 +154,6 @@ export default function AgentsPage() {
                           <div className="text-xs text-gray-500 mb-1">Loan Term</div>
                           <div className="text-base font-semibold">20 years</div>
                         </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">Monthly Bond Payment</div>
-                          <div className="text-base font-semibold">R34,136.77</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">Transfer Costs</div>
-                          <div className="text-base font-semibold">R243,256</div>
-                        </div>
                       </div>
                     </div>
 
@@ -169,42 +161,27 @@ export default function AgentsPage() {
                       <div>
                         <h4 className="text-base font-semibold mb-3 flex items-center">
                           <span className="inline-block h-2 w-2 bg-blue-400 rounded-full mr-2"></span>
-                          Short-Term Rental (Year 1)
+                          Short-Term
                         </h4>
                         <div className="text-xl font-bold text-gray-900 mb-1">
-                          R504,156.25
-                        </div>
-                        <div className="text-sm text-gray-600 mb-2">
-                          R42,013/month
+                          R42,013<span className="text-sm font-normal">/month</span>
                         </div>
                         <div className="text-sm font-medium text-green-600">
                           14.40% Gross Yield
                         </div>
-                        <div className="mt-3 text-xs text-gray-500 space-y-1">
-                          <div className="flex justify-between">
-                            <span>Nightly Rate:</span>
-                            <span className="font-medium">R2,500</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Occupancy:</span>
-                            <span className="font-medium">65%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Management Fee:</span>
-                            <span className="font-medium">20%</span>
+                        <div className="mt-2 text-xs text-gray-500">
+                          <div className="flex items-center">
+                            <span>R2,500/night · 65% Occupancy</span>
                           </div>
                         </div>
                       </div>
                       <div>
                         <h4 className="text-base font-semibold mb-3 flex items-center">
                           <span className="inline-block h-2 w-2 bg-purple-400 rounded-full mr-2"></span>
-                          Long-Term Rental (Year 1)
+                          Long-Term
                         </h4>
                         <div className="text-xl font-bold text-gray-900 mb-1">
-                          R294,246.58
-                        </div>
-                        <div className="text-sm text-gray-600 mb-2">
-                          R24,521/month
+                          R24,521<span className="text-sm font-normal">/month</span>
                         </div>
                         <div className="text-sm font-medium text-green-600">
                           8.41% Gross Yield
@@ -212,24 +189,15 @@ export default function AgentsPage() {
                       </div>
                     </div>
 
-                    <div className="mb-5">
-                      <h4 className="text-base font-semibold mb-2">Size and Rate/m²</h4>
+                    <div className="mb-4">
                       <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Monthly Bond Payment</div>
+                          <div className="text-base font-semibold">R34,136</div>
+                        </div>
                         <div>
                           <div className="text-xs text-gray-500 mb-1">Floor Area</div>
                           <div className="text-base font-semibold">85 m²</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">Current Property Rate/m²</div>
-                          <div className="text-base font-semibold">R41,176.47</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">Area Rate/m²</div>
-                          <div className="text-base font-semibold">R45,000</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">Rate/m² Difference</div>
-                          <div className="text-base font-semibold text-green-600">R3,823.53</div>
                         </div>
                       </div>
                     </div>
