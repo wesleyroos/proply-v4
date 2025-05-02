@@ -121,87 +121,120 @@ export default function AgentsPage() {
                 <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-proply-blue/20 rounded-full opacity-50 blur-xl"></div>
 
                 <div className="relative bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-                  <div className="p-6 border-b border-gray-100">
+                  <div className="p-5 border-b border-gray-100">
                     <div className="flex justify-between items-center">
                       <div>
                         <h3 className="font-bold text-lg">
-                          Investment Analysis
+                          Analysis Results
                         </h3>
                         <p className="text-sm text-gray-500">
-                          Automatically generated for your listings
+                          Based on provided property details
                         </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-10 w-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold">
-                          82
-                        </div>
-                        <span className="text-sm font-medium text-green-600">
-                          Good Deal
-                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6">
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-xs text-gray-500 mb-1">
-                          Rental Yield
+                  <div className="p-5">
+                    <div className="mb-5">
+                      <h4 className="text-base font-semibold mb-2">Deal Structure</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Purchase Price</div>
+                          <div className="text-base font-semibold">R3,500,000</div>
                         </div>
-                        <div className="text-lg font-semibold text-gray-900">
-                          7.2%
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Deposit (10%)</div>
+                          <div className="text-base font-semibold">R350,000</div>
                         </div>
-                        <div className="text-xs text-green-600">
-                          Above area average
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Interest Rate</div>
+                          <div className="text-base font-semibold">11.75%</div>
                         </div>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-xs text-gray-500 mb-1">
-                          ROI (5-Year)
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Loan Term</div>
+                          <div className="text-base font-semibold">20 years</div>
                         </div>
-                        <div className="text-lg font-semibold text-gray-900">
-                          32%
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Monthly Bond Payment</div>
+                          <div className="text-base font-semibold">R34,136.77</div>
                         </div>
-                        <div className="text-xs text-green-600">
-                          Strong growth potential
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 mb-6">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">
-                            Price vs. Market
-                          </span>
-                          <span className="font-medium text-amber-600">
-                            5% Above
-                          </span>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-amber-500"
-                            style={{ width: "65%" }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Break-even Rent</span>
-                          <span className="font-medium text-gray-900">
-                            R12,500/month
-                          </span>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-proply-blue"
-                            style={{ width: "78%" }}
-                          ></div>
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Transfer Costs</div>
+                          <div className="text-base font-semibold">R243,256</div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center">
+                    <div className="grid grid-cols-2 gap-5 mb-5">
+                      <div>
+                        <h4 className="text-base font-semibold mb-3 flex items-center">
+                          <span className="inline-block h-2 w-2 bg-blue-400 rounded-full mr-2"></span>
+                          Short-Term Rental (Year 1)
+                        </h4>
+                        <div className="text-xl font-bold text-gray-900 mb-1">
+                          R504,156.25
+                        </div>
+                        <div className="text-sm text-gray-600 mb-2">
+                          R42,013/month
+                        </div>
+                        <div className="text-sm font-medium text-green-600">
+                          14.40% Gross Yield
+                        </div>
+                        <div className="mt-3 text-xs text-gray-500 space-y-1">
+                          <div className="flex justify-between">
+                            <span>Nightly Rate:</span>
+                            <span className="font-medium">R2,500</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Occupancy:</span>
+                            <span className="font-medium">65%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Management Fee:</span>
+                            <span className="font-medium">20%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-base font-semibold mb-3 flex items-center">
+                          <span className="inline-block h-2 w-2 bg-purple-400 rounded-full mr-2"></span>
+                          Long-Term Rental (Year 1)
+                        </h4>
+                        <div className="text-xl font-bold text-gray-900 mb-1">
+                          R294,246.58
+                        </div>
+                        <div className="text-sm text-gray-600 mb-2">
+                          R24,521/month
+                        </div>
+                        <div className="text-sm font-medium text-green-600">
+                          8.41% Gross Yield
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mb-5">
+                      <h4 className="text-base font-semibold mb-2">Size and Rate/m²</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Floor Area</div>
+                          <div className="text-base font-semibold">85 m²</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Current Property Rate/m²</div>
+                          <div className="text-base font-semibold">R41,176.47</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Area Rate/m²</div>
+                          <div className="text-base font-semibold">R45,000</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Rate/m² Difference</div>
+                          <div className="text-base font-semibold text-green-600">R3,823.53</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-gray-100 pt-4">
                       <div className="text-xs text-gray-500">
                         Generated in 2.8 seconds
                       </div>
