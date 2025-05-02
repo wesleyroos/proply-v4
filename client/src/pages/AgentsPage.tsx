@@ -440,28 +440,28 @@ export default function AgentsPage() {
                   title: "Monthly Revenue",
                   description:
                     "Detailed monthly breakdown with seasonal rates, platform fees, and revenue projections.",
-                  icon: DollarSign,
+                  icon: Clock,
                   color: "bg-amber-500/10 text-amber-400",
                 },
                 {
                   title: "Cashflow Metrics",
                   description:
                     "Projected income, expenses, net operating income, bond repayments, and annual cashflow.",
-                  icon: BarChart3,
+                  icon: DollarSign,
                   color: "bg-red-500/10 text-red-400",
                 },
                 {
                   title: "Cashflow Projections",
                   description:
                     "Visual charts showing cashflow and cumulative returns over time for both letting strategies.",
-                  icon: LineChart,
+                  icon: TrendingUp,
                   color: "bg-indigo-500/10 text-indigo-400",
                 },
                 {
                   title: "Investment Metrics",
                   description:
                     "Key KPIs over time: yields, ROE, cap rate, cash on cash return, IRR, and net worth change.",
-                  icon: TrendingUp,
+                  icon: BarChart3,
                   color: "bg-teal-500/10 text-teal-400",
                 },
                 {
