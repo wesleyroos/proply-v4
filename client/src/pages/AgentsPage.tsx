@@ -765,11 +765,10 @@ console.log(analysis);`}
                 <div className="flex flex-col md:flex-row gap-8 items-center">
                   <div className="w-24 h-24 rounded-full bg-gray-200 flex-shrink-0 relative overflow-hidden">
                     <img 
-                      src="/agent-image.png" 
+                      src="/real-estate-agent.jpg" 
                       alt="Real estate professional" 
                       className="object-cover w-full h-full absolute inset-0"
                     />
-                    <div className="absolute top-0 right-0 bg-yellow-400 text-xs font-bold px-1 rounded-bl transform rotate-12">1st!</div>
                   </div>
                   <div>
                     <div className="flex mb-4 items-center">
