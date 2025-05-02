@@ -218,7 +218,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                   <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-proply-blue hover:bg-proply-blue/90" disabled={isSubmitting}>
+                  <Button type="submit" className="bg-black hover:bg-gray-800" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
