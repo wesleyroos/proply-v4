@@ -1,15 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Shield, AlertTriangle, Droplets, Cloud, Zap, MapPin, Search, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Link } from "wouter"
+import { useState } from "react";
+import {
+  Shield,
+  AlertTriangle,
+  Droplets,
+  Cloud,
+  Zap,
+  MapPin,
+  Search,
+  ArrowRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Link } from "wouter";
 import { DemoRequestModal } from "@/components/DemoRequestModal";
 
 export function RiskIndexShowcase() {
-  const [activeProperty, setActiveProperty] = useState("property1")
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [activeProperty, setActiveProperty] = useState("property1");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false); // Added state for demo modal
 
   // Sample property data
@@ -20,11 +29,46 @@ export function RiskIndexShowcase() {
       riskLevel: "Low",
       riskColor: "#4ade80",
       factors: [
-        { name: "Security", value: 21, max: 50, percent: 42, level: "Medium", color: "#fbbf24" },
-        { name: "Environmental", value: 21, max: 40, percent: 53, level: "Medium", color: "#fbbf24" },
-        { name: "Flood", value: 10, max: 10, percent: 100, level: "High", color: "#ef4444" },
-        { name: "Climate", value: 62, max: 270, percent: 23, level: "Low", color: "#4ade80" },
-        { name: "Hail", value: 10, max: 30, percent: 33, level: "Medium", color: "#fbbf24" },
+        {
+          name: "Security",
+          value: 21,
+          max: 50,
+          percent: 42,
+          level: "Medium",
+          color: "#fbbf24",
+        },
+        {
+          name: "Environmental",
+          value: 21,
+          max: 40,
+          percent: 53,
+          level: "Medium",
+          color: "#fbbf24",
+        },
+        {
+          name: "Flood",
+          value: 10,
+          max: 10,
+          percent: 100,
+          level: "High",
+          color: "#ef4444",
+        },
+        {
+          name: "Climate",
+          value: 62,
+          max: 270,
+          percent: 23,
+          level: "Low",
+          color: "#4ade80",
+        },
+        {
+          name: "Hail",
+          value: 10,
+          max: 30,
+          percent: 33,
+          level: "Medium",
+          color: "#fbbf24",
+        },
       ],
       insights: [
         "Property is in a flood-prone area - consider flood insurance",
@@ -38,11 +82,46 @@ export function RiskIndexShowcase() {
       riskLevel: "Medium",
       riskColor: "#fbbf24",
       factors: [
-        { name: "Security", value: 35, max: 50, percent: 70, level: "High", color: "#ef4444" },
-        { name: "Environmental", value: 12, max: 40, percent: 30, level: "Low", color: "#4ade80" },
-        { name: "Flood", value: 2, max: 10, percent: 20, level: "Low", color: "#4ade80" },
-        { name: "Climate", value: 170, max: 270, percent: 63, level: "Medium", color: "#fbbf24" },
-        { name: "Hail", value: 25, max: 30, percent: 83, level: "High", color: "#ef4444" },
+        {
+          name: "Security",
+          value: 35,
+          max: 50,
+          percent: 70,
+          level: "High",
+          color: "#ef4444",
+        },
+        {
+          name: "Environmental",
+          value: 12,
+          max: 40,
+          percent: 30,
+          level: "Low",
+          color: "#4ade80",
+        },
+        {
+          name: "Flood",
+          value: 2,
+          max: 10,
+          percent: 20,
+          level: "Low",
+          color: "#4ade80",
+        },
+        {
+          name: "Climate",
+          value: 170,
+          max: 270,
+          percent: 63,
+          level: "Medium",
+          color: "#fbbf24",
+        },
+        {
+          name: "Hail",
+          value: 25,
+          max: 30,
+          percent: 83,
+          level: "High",
+          color: "#ef4444",
+        },
       ],
       insights: [
         "High security risk area - enhanced security measures recommended",
@@ -56,11 +135,46 @@ export function RiskIndexShowcase() {
       riskLevel: "High",
       riskColor: "#ef4444",
       factors: [
-        { name: "Security", value: 20, max: 50, percent: 40, level: "Medium", color: "#fbbf24" },
-        { name: "Environmental", value: 32, max: 40, percent: 80, level: "High", color: "#ef4444" },
-        { name: "Flood", value: 9, max: 10, percent: 90, level: "High", color: "#ef4444" },
-        { name: "Climate", value: 210, max: 270, percent: 78, level: "High", color: "#ef4444" },
-        { name: "Hail", value: 8, max: 30, percent: 27, level: "Low", color: "#4ade80" },
+        {
+          name: "Security",
+          value: 20,
+          max: 50,
+          percent: 40,
+          level: "Medium",
+          color: "#fbbf24",
+        },
+        {
+          name: "Environmental",
+          value: 32,
+          max: 40,
+          percent: 80,
+          level: "High",
+          color: "#ef4444",
+        },
+        {
+          name: "Flood",
+          value: 9,
+          max: 10,
+          percent: 90,
+          level: "High",
+          color: "#ef4444",
+        },
+        {
+          name: "Climate",
+          value: 210,
+          max: 270,
+          percent: 78,
+          level: "High",
+          color: "#ef4444",
+        },
+        {
+          name: "Hail",
+          value: 8,
+          max: 30,
+          percent: 27,
+          level: "Low",
+          color: "#4ade80",
+        },
       ],
       insights: [
         "Coastal property with high flood and storm surge risk",
@@ -68,31 +182,37 @@ export function RiskIndexShowcase() {
         "Environmental hazards present - detailed assessment recommended",
       ],
     },
-  }
+  };
 
-  const property = properties[activeProperty as keyof typeof properties]
+  const property = properties[activeProperty as keyof typeof properties];
 
   // Calculate total risk score
-  const totalRiskValue = property.factors.reduce((sum, factor) => sum + factor.value, 0)
-  const totalRiskMax = property.factors.reduce((sum, factor) => sum + factor.max, 0)
+  const totalRiskValue = property.factors.reduce(
+    (sum, factor) => sum + factor.value,
+    0,
+  );
+  const totalRiskMax = property.factors.reduce(
+    (sum, factor) => sum + factor.max,
+    0,
+  );
 
   // Function to get icon for each risk factor
   const getFactorIcon = (name: string) => {
     switch (name) {
       case "Security":
-        return <Shield className="h-4 w-4" />
+        return <Shield className="h-4 w-4" />;
       case "Environmental":
-        return <AlertTriangle className="h-4 w-4" />
+        return <AlertTriangle className="h-4 w-4" />;
       case "Flood":
-        return <Droplets className="h-4 w-4" />
+        return <Droplets className="h-4 w-4" />;
       case "Climate":
-        return <Cloud className="h-4 w-4" />
+        return <Cloud className="h-4 w-4" />;
       case "Hail":
-        return <Zap className="h-4 w-4" />
+        return <Zap className="h-4 w-4" />;
       default:
-        return <Shield className="h-4 w-4" />
+        return <Shield className="h-4 w-4" />;
     }
-  }
+  };
 
   // Function to render recommendation buttons based on risk level
   const renderRecommendationButtons = () => {
@@ -110,12 +230,12 @@ export function RiskIndexShowcase() {
             variant="default"
             className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
           >
-            For Insurers
+            Find Out More
           </Button>
         </Link>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-md border overflow-hidden">
@@ -124,7 +244,9 @@ export function RiskIndexShowcase() {
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex-1">
             <h3 className="text-2xl font-bold mb-1">Proply Risk Index™</h3>
-            <p className="text-gray-500">Insurance-grade risk assessment for any property</p>
+            <p className="text-gray-500">
+              Insurance-grade risk assessment for any property
+            </p>
           </div>
           <div className="flex-1">
             <div className="relative">
@@ -148,7 +270,11 @@ export function RiskIndexShowcase() {
             variant={activeProperty === "property1" ? "default" : "outline"}
             size="sm"
             onClick={() => setActiveProperty("property1")}
-            className={activeProperty === "property1" ? "bg-proply-blue hover:bg-proply-blue/90" : ""}
+            className={
+              activeProperty === "property1"
+                ? "bg-proply-blue hover:bg-proply-blue/90"
+                : ""
+            }
           >
             <MapPin className="h-3 w-3 mr-1" /> Cape Town Property
           </Button>
@@ -156,7 +282,11 @@ export function RiskIndexShowcase() {
             variant={activeProperty === "property2" ? "default" : "outline"}
             size="sm"
             onClick={() => setActiveProperty("property2")}
-            className={activeProperty === "property2" ? "bg-proply-blue hover:bg-proply-blue/90" : ""}
+            className={
+              activeProperty === "property2"
+                ? "bg-proply-blue hover:bg-proply-blue/90"
+                : ""
+            }
           >
             <MapPin className="h-3 w-3 mr-1" /> Johannesburg Property
           </Button>
@@ -164,7 +294,11 @@ export function RiskIndexShowcase() {
             variant={activeProperty === "property3" ? "default" : "outline"}
             size="sm"
             onClick={() => setActiveProperty("property3")}
-            className={activeProperty === "property3" ? "bg-proply-blue hover:bg-proply-blue/90" : ""}
+            className={
+              activeProperty === "property3"
+                ? "bg-proply-blue hover:bg-proply-blue/90"
+                : ""
+            }
           >
             <MapPin className="h-3 w-3 mr-1" /> Durban Property
           </Button>
@@ -197,7 +331,10 @@ export function RiskIndexShowcase() {
                 {/* Percentage text */}
                 <div className="absolute inset-0 flex items-center justify-center flex-col">
                   <span className="text-5xl font-bold">{property.score}%</span>
-                  <span className="text-sm font-medium mt-1" style={{ color: property.riskColor }}>
+                  <span
+                    className="text-sm font-medium mt-1"
+                    style={{ color: property.riskColor }}
+                  >
                     {property.riskLevel} Risk
                   </span>
                 </div>
@@ -295,7 +432,10 @@ export function RiskIndexShowcase() {
           </div>
         </div>
       </div>
-      <DemoRequestModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
+      <DemoRequestModal
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+      />
     </div>
-  )
+  );
 }

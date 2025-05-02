@@ -570,56 +570,20 @@ export default function HomePage() {
 
                 <div className="relative">
                   <div className="w-full max-w-md mx-auto md:ml-auto">
-                    <div className="bg-white rounded-xl shadow-lg border p-8">
+                    <div className="bg-white rounded-xl shadow-lg border p-8 text-center">
                       <h3 className="text-xl font-bold mb-6 text-gray-900">
-                        Request Access
+                        Ready to explore our property data?
                       </h3>
-                      <div className="space-y-4">
-                        <div>
-                          <Input
-                            type="text"
-                            placeholder="Full Name"
-                            className="border-gray-200 focus-visible:ring-proply-blue"
-                          />
-                        </div>
-                        <div>
-                          <Input
-                            type="email"
-                            placeholder="Email Address"
-                            className="border-gray-200 focus-visible:ring-proply-blue"
-                          />
-                        </div>
-                        <div>
-                          <Input
-                            type="text"
-                            placeholder="Company"
-                            className="border-gray-200 focus-visible:ring-proply-blue"
-                          />
-                        </div>
-                        <div>
-                          <select className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-proply-blue">
-                            <option value="">I'm interested in...</option>
-                            <option value="deal-score">Deal Score</option>
-                            <option value="risk-index">Risk Index</option>
-                            <option value="property-api">
-                              Property Analyzer API
-                            </option>
-                          </select>
-                        </div>
-                        <Button className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white">
-                          Send Enquiry
-                        </Button>
-                        <div className="text-center text-xs text-gray-500">
-                          Or{" "}
-                          <Link
-                            href="#"
-                            className="text-proply-blue hover:underline"
-                          >
-                            schedule a demo call
-                          </Link>{" "}
-                          with our team
-                        </div>
-                      </div>
+                      <p className="text-gray-600 mb-8">
+                        Schedule a personalized demo with our team to see how our AI-powered tools can transform your property decisions.
+                      </p>
+                      <Button 
+                        size="lg"
+                        className="bg-proply-blue hover:bg-proply-blue/90 text-white px-8"
+                        onClick={handleOpenDemoModal}
+                      >
+                        Book a Demo <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>
