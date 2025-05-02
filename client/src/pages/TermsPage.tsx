@@ -137,7 +137,18 @@ export default function TermsPage() {
             </section>
 
             <section className="mb-8">
-              <h2>9. Governing Law</h2>
+              <h2>9. Marketing and References</h2>
+              <p>
+                By creating an account on the Proply platform, you agree that Proply may, at its discretion,
+                state publicly that your company uses the Proply platform for marketing and promotional purposes.
+                Company affiliation may be determined based on your email address domain or information provided
+                during registration. If you wish to opt out of being referenced as a user of our platform,
+                please contact us using the information provided below.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2>10. Governing Law</h2>
               <p>
                 These Terms shall be governed by and construed in accordance with the laws of South Africa,
                 without regard to its conflict of law provisions. Any disputes relating to these Terms shall be
@@ -146,7 +157,7 @@ export default function TermsPage() {
             </section>
 
             <section className="mb-8">
-              <h2>10. Contact Information</h2>
+              <h2>11. Contact Information</h2>
               <p>
                 For questions about these terms, please contact us at:
                 <br />
