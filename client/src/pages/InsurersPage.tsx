@@ -703,16 +703,7 @@ console.log(riskData.riskLevel); // "High"
               ))}
             </div>
 
-            {/* CTA */}
-            <div className="mt-16 text-center">
-              <Button 
-                size="lg" 
-                className="bg-proply-blue hover:bg-proply-blue/90 text-white"
-                onClick={handleOpenDemoModal}
-              >
-                Download Feature Sheet <Download className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+
           </div>
         </section>
 
@@ -815,77 +806,21 @@ console.log(riskData.riskLevel); // "High"
         {/* CTA Section - Strong final conversion point */}
         <section className="py-20 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
           <div className="container">
-            <div className="max-w-4xl mx-auto">
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                    Ready to transform your property risk assessment?
-                  </h2>
-                  <p className="text-xl text-gray-300 mb-8">
-                    Join leading insurers who are using Risk Index™ to make smarter underwriting decisions, reduce
-                    claims, and optimize pricing.
-                  </p>
-                  <div className="space-y-4">
-                    <Button 
-                      size="lg" 
-                      className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
-                      onClick={handleOpenDemoModal}
-                    >
-                      Schedule a Demo <Calendar className="ml-2 h-5 w-5" />
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="w-full bg-transparent border-white text-white hover:bg-white/10 hover:text-white"
-                      onClick={handleOpenDemoModal}
-                    >
-                      Download Information Pack <Download className="ml-2 h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                  <h3 className="text-xl font-bold mb-6">Contact Our Team</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <Input
-                        type="text"
-                        placeholder="Full Name"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="email"
-                        placeholder="Work Email"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="text"
-                        placeholder="Company"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="tel"
-                        placeholder="Phone Number"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <Button 
-                      className="w-full bg-white hover:bg-white/90 text-slate-900"
-                      onClick={handleOpenDemoModal}
-                    >
-                      Request Information <MessageSquare className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="mt-4 text-center text-sm text-gray-400">
-                    We'll respond within 24 hours to schedule a personalized demo.
-                  </div>
-                </div>
-              </div>
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                Ready to transform your property risk assessment?
+              </h2>
+              <p className="text-xl text-gray-300 mb-8">
+                Join leading insurers who are using Risk Index™ to make smarter underwriting decisions, reduce
+                claims, and optimize pricing.
+              </p>
+              <Button 
+                size="lg" 
+                className="bg-proply-blue hover:bg-proply-blue/90 text-white px-8"
+                onClick={handleOpenDemoModal}
+              >
+                Schedule a Demo <Calendar className="ml-2 h-5 w-5" />
+              </Button>
             </div>
           </div>
         </section>
