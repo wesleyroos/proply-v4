@@ -89,7 +89,14 @@ export default function InsurersPage() {
                     size="lg"
                     variant="outline"
                     className="bg-transparent border-white text-white hover:bg-white/10 hover:text-white"
-                    onClick={() => window.open('/Property Risk Assessment - Proply.pdf', '_blank')}
+                    onClick={() => {
+                      const a = document.createElement('a');
+                      a.href = '/Property Risk Assessment - Proply.pdf';
+                      a.download = 'Property Risk Assessment - Proply.pdf';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                    }}
                   >
                     View Sample Report
                   </Button>
@@ -197,7 +204,14 @@ export default function InsurersPage() {
                     <Button 
                       size="sm" 
                       className="bg-proply-blue hover:bg-proply-blue/90 text-white"
-                      onClick={() => window.open('/Property Risk Assessment - Proply.pdf', '_blank')}
+                      onClick={() => {
+                        const a = document.createElement('a');
+                        a.href = '/Property Risk Assessment - Proply.pdf';
+                        a.download = 'Property Risk Assessment - Proply.pdf';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                      }}
                     >
                       View Full Report
                     </Button>
