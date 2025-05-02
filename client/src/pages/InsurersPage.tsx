@@ -25,18 +25,18 @@ import {
   Calendar,
   MessageSquare,
   Code,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function InsurersPage() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  
+
   const handleOpenDemoModal = () => {
     setIsDemoModalOpen(true);
   };
-  
+
   const handleCloseDemoModal = () => {
     setIsDemoModalOpen(false);
   };
@@ -44,9 +44,12 @@ export default function InsurersPage() {
     <div className="min-h-screen bg-white">
       <Helmet>
         <title>Risk Index™ for Insurers | Proply</title>
-        <meta name="description" content="AI-powered property risk assessment that transforms how insurers evaluate, price, and manage property risk." />
+        <meta
+          name="description"
+          content="AI-powered property risk assessment that transforms how insurers evaluate, price, and manage property risk."
+        />
       </Helmet>
-      
+
       <PublicHeader />
 
       <main>
@@ -55,8 +58,18 @@ export default function InsurersPage() {
           <div className="absolute inset-0 opacity-10">
             <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.5" />
+                <pattern
+                  id="grid-pattern"
+                  width="40"
+                  height="40"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M 40 0 L 0 0 0 40"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="0.5"
+                  />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#grid-pattern)" />
@@ -71,15 +84,18 @@ export default function InsurersPage() {
                 </div>
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
                   <span className="text-white">Property risk assessment</span>
-                  <span className="text-proply-blue block mt-2">reimagined with AI.</span>
+                  <span className="text-proply-blue block mt-2">
+                    reimagined with AI.
+                  </span>
                 </h1>
                 <p className="mt-6 text-xl text-gray-300 max-w-lg">
-                  Reduce claims, optimize pricing, and make smarter underwriting decisions with comprehensive,
-                  AI-powered property risk intelligence.
+                  Reduce claims, optimize pricing, and make smarter underwriting
+                  decisions with comprehensive, AI-powered property risk
+                  intelligence.
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="bg-proply-blue hover:bg-proply-blue/90 text-white"
                     onClick={handleOpenDemoModal}
                   >
@@ -90,7 +106,7 @@ export default function InsurersPage() {
                     variant="outline"
                     className="bg-transparent border-white text-white hover:bg-white/10 hover:text-white"
                     onClick={() => {
-                      window.location.href = '/api/download-pdf';
+                      window.location.href = "/api/download-pdf";
                     }}
                   >
                     View Sample Report
@@ -99,18 +115,10 @@ export default function InsurersPage() {
 
                 {/* Trust Indicators */}
                 <div className="mt-12 pt-6 border-t border-white/10">
-                  <p className="text-sm font-medium text-gray-400 mb-4">TRUSTED BY LEADING INSURERS</p>
-                  <div className="flex flex-wrap gap-6">
-                    <div className="h-8 bg-white/10 px-4 flex items-center justify-center text-white/80 font-medium rounded-md">
-                      InsureCorp
-                    </div>
-                    <div className="h-8 bg-white/10 px-4 flex items-center justify-center text-white/80 font-medium rounded-md">
-                      SafeGuard
-                    </div>
-                    <div className="h-8 bg-white/10 px-4 flex items-center justify-center text-white/80 font-medium rounded-md">
-                      RiskShield
-                    </div>
-                  </div>
+                  <p className="text-sm font-medium text-gray-400 mb-4">
+                    SOON TO BE TRUSTED BY LEADING INSURERS
+                  </p>
+                  
                 </div>
               </div>
 
@@ -120,13 +128,17 @@ export default function InsurersPage() {
                   <div className="flex justify-between items-center mb-6">
                     <div>
                       <h3 className="text-xl font-bold">Risk Index™ Report</h3>
-                      <p className="text-sm text-gray-400">123 Waterfront Drive, Cape Town</p>
+                      <p className="text-sm text-gray-400">
+                        123 Waterfront Drive, Cape Town
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="h-12 w-12 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">
                         72
                       </div>
-                      <span className="font-medium text-red-400">High Risk</span>
+                      <span className="font-medium text-red-400">
+                        High Risk
+                      </span>
                     </div>
                   </div>
 
@@ -138,10 +150,15 @@ export default function InsurersPage() {
                           <AlertTriangle className="h-3.5 w-3.5 mr-1.5 text-red-400" />
                           <span>Flood Risk</span>
                         </span>
-                        <span className="font-medium text-red-400">High (90%)</span>
+                        <span className="font-medium text-red-400">
+                          High (90%)
+                        </span>
                       </div>
                       <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-red-500" style={{ width: "90%" }}></div>
+                        <div
+                          className="h-full bg-red-500"
+                          style={{ width: "90%" }}
+                        ></div>
                       </div>
                     </div>
                     <div>
@@ -150,10 +167,15 @@ export default function InsurersPage() {
                           <AlertTriangle className="h-3.5 w-3.5 mr-1.5 text-amber-400" />
                           <span>Climate Risk</span>
                         </span>
-                        <span className="font-medium text-amber-400">Medium (65%)</span>
+                        <span className="font-medium text-amber-400">
+                          Medium (65%)
+                        </span>
                       </div>
                       <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-500" style={{ width: "65%" }}></div>
+                        <div
+                          className="h-full bg-amber-500"
+                          style={{ width: "65%" }}
+                        ></div>
                       </div>
                     </div>
                     <div>
@@ -162,10 +184,15 @@ export default function InsurersPage() {
                           <AlertTriangle className="h-3.5 w-3.5 mr-1.5 text-green-400" />
                           <span>Security Risk</span>
                         </span>
-                        <span className="font-medium text-green-400">Low (25%)</span>
+                        <span className="font-medium text-green-400">
+                          Low (25%)
+                        </span>
                       </div>
                       <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-green-500" style={{ width: "25%" }}></div>
+                        <div
+                          className="h-full bg-green-500"
+                          style={{ width: "25%" }}
+                        ></div>
                       </div>
                     </div>
                   </div>
@@ -180,27 +207,37 @@ export default function InsurersPage() {
                         <div className="min-w-[16px] h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] mt-0.5">
                           !
                         </div>
-                        <span>Property is in a high-risk flood zone with historical flooding events</span>
+                        <span>
+                          Property is in a high-risk flood zone with historical
+                          flooding events
+                        </span>
                       </li>
                       <li className="flex items-start gap-2">
                         <div className="min-w-[16px] h-4 flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] mt-0.5">
                           !
                         </div>
-                        <span>Climate change models predict increased storm severity in this area</span>
+                        <span>
+                          Climate change models predict increased storm severity
+                          in this area
+                        </span>
                       </li>
                     </ul>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <div className="text-sm">
-                      <span className="text-gray-400">Recommended Premium Adjustment:</span>
-                      <span className="ml-2 text-red-400 font-medium">+15%</span>
+                      <span className="text-gray-400">
+                        Recommended Premium Adjustment:
+                      </span>
+                      <span className="ml-2 text-red-400 font-medium">
+                        +15%
+                      </span>
                     </div>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="bg-proply-blue hover:bg-proply-blue/90 text-white"
                       onClick={() => {
-                        window.location.href = '/api/download-pdf';
+                        window.location.href = "/api/download-pdf";
                       }}
                     >
                       View Full Report
@@ -231,10 +268,12 @@ export default function InsurersPage() {
           <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900">
-                The <span className="text-proply-blue">problem</span> with property risk assessment
+                The <span className="text-proply-blue">problem</span> with
+                property risk assessment
               </h2>
               <p className="mt-6 text-xl text-gray-600">
-                Insurance companies are making critical decisions based on outdated, incomplete, or siloed data.
+                Insurance companies are making critical decisions based on
+                outdated, incomplete, or siloed data.
               </p>
             </div>
 
@@ -246,7 +285,8 @@ export default function InsurersPage() {
                     "Outdated risk models lead to mispriced premiums, resulting in either lost business or excessive claims.",
                   icon: BarChart3,
                   stat: "43%",
-                  statDesc: "of insurers report significant premium pricing challenges",
+                  statDesc:
+                    "of insurers report significant premium pricing challenges",
                 },
                 {
                   title: "Slow, Manual Processes",
@@ -254,7 +294,8 @@ export default function InsurersPage() {
                     "Traditional property assessments are time-consuming, expensive, and often inconsistent.",
                   icon: Clock,
                   stat: "5-7 days",
-                  statDesc: "average time for traditional property risk assessment",
+                  statDesc:
+                    "average time for traditional property risk assessment",
                 },
                 {
                   title: "Siloed Data Sources",
@@ -262,7 +303,8 @@ export default function InsurersPage() {
                     "Critical risk data is scattered across multiple sources, making comprehensive assessment difficult.",
                   icon: Database,
                   stat: "12+",
-                  statDesc: "separate data sources typically needed for complete assessment",
+                  statDesc:
+                    "separate data sources typically needed for complete assessment",
                 },
               ].map((item, i) => (
                 <div
@@ -272,10 +314,14 @@ export default function InsurersPage() {
                   <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
                     <item.icon className="h-7 w-7" />
                   </div>
-                  <h3 className="mb-3 text-xl font-bold text-gray-900">{item.title}</h3>
+                  <h3 className="mb-3 text-xl font-bold text-gray-900">
+                    {item.title}
+                  </h3>
                   <p className="mb-6 text-gray-600">{item.description}</p>
                   <div className="pt-6 border-t border-gray-200">
-                    <div className="text-2xl font-bold text-gray-900">{item.stat}</div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {item.stat}
+                    </div>
                     <div className="text-sm text-gray-500">{item.statDesc}</div>
                   </div>
                 </div>
@@ -293,7 +339,9 @@ export default function InsurersPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
                       <XCircle className="h-6 w-6" />
                     </div>
-                    <h4 className="text-xl font-bold text-gray-900">Traditional Approach</h4>
+                    <h4 className="text-xl font-bold text-gray-900">
+                      Traditional Approach
+                    </h4>
                   </div>
                   <ul className="space-y-4">
                     {[
@@ -316,12 +364,14 @@ export default function InsurersPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-proply-blue/10 text-proply-blue">
                       <CheckCircle2 className="h-6 w-6" />
                     </div>
-                    <h4 className="text-xl font-bold text-gray-900">Proply Risk Index™</h4>
+                    <h4 className="text-xl font-bold text-gray-900">
+                      Proply Risk Index™
+                    </h4>
                   </div>
                   <ul className="space-y-4">
                     {[
                       "Instant AI-powered risk assessment in seconds",
-                      "17+ data sources including real-time climate data",
+                      "Multiple data sources including real-time climate data",
                       "Consistent, objective scoring across all properties",
                       "Fraction of the cost of traditional assessments",
                       "Predictive risk modeling for future events",
@@ -347,11 +397,12 @@ export default function InsurersPage() {
                 <Sparkles className="h-4 w-4 mr-2" /> The Solution
               </div>
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900">
-                Introducing <span className="text-proply-blue">Risk Index™</span>
+                Introducing{" "}
+                <span className="text-proply-blue">Risk Index™</span>
               </h2>
               <p className="mt-6 text-xl text-gray-600">
-                AI-powered property risk assessment that transforms how insurers evaluate, price, and manage property
-                risk.
+                AI-powered property risk assessment that transforms how insurers
+                evaluate, price, and manage property risk.
               </p>
             </div>
 
@@ -367,17 +418,19 @@ export default function InsurersPage() {
                 {
                   title: "AI-Powered Insights",
                   description:
-                    "Our algorithms analyze 17+ data sources to provide actionable insights for underwriting decisions.",
+                    "Our algorithms analyze multiple data sources to provide actionable insights for underwriting decisions.",
                   icon: Zap,
                 },
                 {
                   title: "Real-Time Assessment",
-                  description: "Generate detailed property risk reports in seconds, not days or weeks.",
+                  description:
+                    "Generate detailed property risk reports in seconds, not days or weeks.",
                   icon: Clock,
                 },
                 {
                   title: "Predictive Modeling",
-                  description: "Anticipate future risks with climate change projections and evolving risk factors.",
+                  description:
+                    "Anticipate future risks with climate change projections and evolving risk factors.",
                   icon: LineChart,
                 },
                 {
@@ -388,7 +441,8 @@ export default function InsurersPage() {
                 },
                 {
                   title: "API Integration",
-                  description: "Seamlessly integrate with your existing systems through our robust API.",
+                  description:
+                    "Seamlessly integrate with your existing systems through our robust API.",
                   icon: Database,
                 },
               ].map((item, i) => (
@@ -397,7 +451,9 @@ export default function InsurersPage() {
                     <item.icon className="h-7 w-7" />
                   </div>
                   <div>
-                    <h3 className="mb-3 text-xl font-bold text-gray-900">{item.title}</h3>
+                    <h3 className="mb-3 text-xl font-bold text-gray-900">
+                      {item.title}
+                    </h3>
                     <p className="text-gray-600">{item.description}</p>
                   </div>
                 </div>
@@ -406,8 +462,8 @@ export default function InsurersPage() {
 
             {/* CTA */}
             <div className="mt-16 text-center">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-proply-blue hover:bg-proply-blue/90 text-white"
                 onClick={handleOpenDemoModal}
               >
@@ -425,7 +481,8 @@ export default function InsurersPage() {
                 How <span className="text-proply-blue">Risk Index™</span> Works
               </h2>
               <p className="mt-6 text-xl text-gray-600">
-                Our advanced AI platform delivers comprehensive risk assessment in three simple steps.
+                Our advanced AI platform delivers comprehensive risk assessment
+                in three simple steps.
               </p>
             </div>
 
@@ -445,7 +502,7 @@ export default function InsurersPage() {
                   {
                     title: "AI Risk Analysis",
                     description:
-                      "Our algorithms instantly analyze 17+ data sources including climate, flood, fire, and security risks.",
+                      "Our algorithms instantly analyze multiple data sources including climate, flood, fire, and security risks.",
                     icon: Zap,
                     step: "02",
                   },
@@ -465,8 +522,12 @@ export default function InsurersPage() {
                       <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-proply-blue/10 text-proply-blue mx-auto">
                         <item.icon className="h-8 w-8" />
                       </div>
-                      <h3 className="mb-4 text-xl font-bold text-center text-gray-900">{item.title}</h3>
-                      <p className="text-gray-600 text-center">{item.description}</p>
+                      <h3 className="mb-4 text-xl font-bold text-center text-gray-900">
+                        {item.title}
+                      </h3>
+                      <p className="text-gray-600 text-center">
+                        {item.description}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -475,24 +536,33 @@ export default function InsurersPage() {
 
             {/* Integration Options */}
             <div className="mt-20 bg-gray-50 rounded-2xl p-8 border border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Flexible Integration Options</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+                Flexible Integration Options
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column - Stacked Cards */}
                 <div className="space-y-8">
                   {/* Web Dashboard Option */}
                   <div className="bg-white rounded-xl p-6 border border-gray-200">
-                    <h4 className="text-xl font-bold text-gray-900 mb-3">Web Dashboard</h4>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">
+                      Web Dashboard
+                    </h4>
                     <p className="text-gray-600 mb-6">
-                      Access our intuitive web platform to analyze individual properties or small portfolios.
+                      Access our intuitive web platform to analyze individual
+                      properties or small portfolios.
                     </p>
                     <ul className="space-y-3 mb-6">
                       <li className="flex items-center gap-2">
                         <Check className="h-5 w-5 text-proply-blue" />
-                        <span className="text-gray-700">User-friendly interface</span>
+                        <span className="text-gray-700">
+                          User-friendly interface
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="h-5 w-5 text-proply-blue" />
-                        <span className="text-gray-700">Instant risk reports</span>
+                        <span className="text-gray-700">
+                          Instant risk reports
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="h-5 w-5 text-proply-blue" />
@@ -509,14 +579,19 @@ export default function InsurersPage() {
 
                   {/* Bulk Processing Option */}
                   <div className="bg-white rounded-xl p-6 border border-gray-200">
-                    <h4 className="text-xl font-bold text-gray-900 mb-3">Bulk Processing</h4>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">
+                      Bulk Processing
+                    </h4>
                     <p className="text-gray-600 mb-6">
-                      Analyze your entire portfolio with our high-volume processing solution.
+                      Analyze your entire portfolio with our high-volume
+                      processing solution.
                     </p>
                     <ul className="space-y-3 mb-6">
                       <li className="flex items-center gap-2">
                         <Check className="h-5 w-5 text-proply-blue" />
-                        <span className="text-gray-700">Millions of properties</span>
+                        <span className="text-gray-700">
+                          Millions of properties
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="h-5 w-5 text-proply-blue" />
@@ -524,7 +599,9 @@ export default function InsurersPage() {
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="h-5 w-5 text-proply-blue" />
-                        <span className="text-gray-700">Risk concentration analysis</span>
+                        <span className="text-gray-700">
+                          Risk concentration analysis
+                        </span>
                       </li>
                     </ul>
                     <Button
@@ -538,9 +615,12 @@ export default function InsurersPage() {
 
                 {/* Right Column - API Integration */}
                 <div className="bg-white rounded-xl p-6 border border-proply-blue shadow-lg flex flex-col">
-                  <h4 className="text-xl font-bold text-gray-900 mb-3">API Integration</h4>
+                  <h4 className="text-xl font-bold text-gray-900 mb-3">
+                    API Integration
+                  </h4>
                   <p className="text-gray-600 mb-4">
-                    Seamlessly integrate Risk Index™ into your existing underwriting systems.
+                    Seamlessly integrate Risk Index™ into your existing
+                    underwriting systems.
                   </p>
 
                   <div className="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
@@ -549,7 +629,7 @@ export default function InsurersPage() {
                       <span>Example API Request</span>
                     </div>
                     <pre className="text-xs text-gray-100 font-mono">
-{`// Fetch risk assessment for a property
+                      {`// Fetch risk assessment for a property
 const response = await fetch('https://api.proply.co.za/v1/risk-index', {
   method: 'POST',
   headers: {
@@ -577,7 +657,9 @@ console.log(riskData.riskLevel); // "High"
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-5 w-5 text-proply-blue" />
-                      <span className="text-gray-700">Webhook notifications</span>
+                      <span className="text-gray-700">
+                        Webhook notifications
+                      </span>
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-5 w-5 text-proply-blue" />
@@ -585,11 +667,12 @@ console.log(riskData.riskLevel); // "High"
                     </li>
                   </ul>
                   <div className="mt-auto">
-                    <Button 
+                    <Button
                       className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
                       onClick={handleOpenDemoModal}
                     >
-                      Request API Access <ChevronRight className="ml-1 h-4 w-4" />
+                      Request API Access{" "}
+                      <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -603,10 +686,12 @@ console.log(riskData.riskLevel); // "High"
           <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl md:text-5xl font-bold">
-                Comprehensive <span className="text-proply-blue">Risk Analysis</span>
+                Comprehensive{" "}
+                <span className="text-proply-blue">Risk Analysis</span>
               </h2>
               <p className="mt-6 text-xl text-gray-300">
-                Our Risk Index™ evaluates properties across multiple risk dimensions.
+                Our Risk Index™ evaluates properties across multiple risk
+                dimensions.
               </p>
             </div>
 
@@ -685,15 +770,25 @@ console.log(riskData.riskLevel); // "High"
                   icon: AlertTriangle,
                 },
               ].map((feature, i) => (
-                <div key={i} className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <div
+                  key={i}
+                  className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10"
+                >
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-proply-blue/20 text-proply-blue">
                     <feature.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mb-2 text-xl font-bold text-white">{feature.title}</h3>
-                  <p className="mb-6 text-gray-300 text-sm">{feature.description}</p>
+                  <h3 className="mb-2 text-xl font-bold text-white">
+                    {feature.title}
+                  </h3>
+                  <p className="mb-6 text-gray-300 text-sm">
+                    {feature.description}
+                  </p>
                   <ul className="space-y-2">
                     {feature.features.map((item, j) => (
-                      <li key={j} className="flex items-center gap-2 text-sm text-gray-300">
+                      <li
+                        key={j}
+                        className="flex items-center gap-2 text-sm text-gray-300"
+                      >
                         <Check className="h-4 w-4 text-proply-blue" />
                         <span>{item}</span>
                       </li>
@@ -702,8 +797,6 @@ console.log(riskData.riskLevel); // "High"
                 </div>
               ))}
             </div>
-
-
           </div>
         </section>
 
@@ -713,11 +806,13 @@ console.log(riskData.riskLevel); // "High"
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900">
                 Success <span className="text-proply-blue">Stories</span>{" "}
-                <span className="text-lg font-normal text-gray-500">(Coming Soon)</span>
+                <span className="text-lg font-normal text-gray-500">
+                  (Coming Soon)
+                </span>
               </h2>
               <p className="mt-6 text-xl text-gray-600">
-                We're new, but here's what we expect our future clients will say about transforming their risk
-                assessment with Proply.
+                We're new, but here's what we expect our future clients will say
+                about transforming their risk assessment with Proply.
               </p>
             </div>
 
@@ -739,35 +834,53 @@ console.log(riskData.riskLevel); // "High"
                   description:
                     "A regional property insurer will use Risk Index™ to refine their pricing model. By incorporating our comprehensive risk data, they'll be able to offer more competitive rates to low-risk properties while appropriately pricing high-risk properties. We're confident of it!",
                   stats: [
-                    { value: "18%", label: "Projected policy retention increase" },
-                    { value: "31%", label: "Expected improvement in loss ratio" },
+                    {
+                      value: "18%",
+                      label: "Projected policy retention increase",
+                    },
+                    {
+                      value: "31%",
+                      label: "Expected improvement in loss ratio",
+                    },
                     { value: "R8.2M", label: "Potential additional revenue" },
                   ],
                   logo: "YourCompany Ltd.",
                 },
               ].map((study, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                <div
+                  key={i}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden"
+                >
                   <div className="p-8">
                     <div className="flex justify-between items-start mb-6">
-                      <h3 className="text-2xl font-bold text-gray-900">{study.title}</h3>
-                      <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-700 font-medium">{study.logo}</div>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {study.title}
+                      </h3>
+                      <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-700 font-medium">
+                        {study.logo}
+                      </div>
                     </div>
                     <p className="text-gray-600 mb-8">{study.description}</p>
                     <div className="grid grid-cols-3 gap-4">
                       {study.stats.map((stat, j) => (
                         <div key={j} className="text-center">
-                          <div className="text-2xl font-bold text-proply-blue">{stat.value}</div>
-                          <div className="text-sm text-gray-500">{stat.label}</div>
+                          <div className="text-2xl font-bold text-proply-blue">
+                            {stat.value}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {stat.label}
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
                   <div className="border-t border-gray-200 p-4 bg-gray-50">
-                    <Button 
+                    <Button
                       className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300"
                       onClick={handleOpenDemoModal}
                     >
-                      Be Our First Success Story <ChevronRight className="ml-1 h-4 w-4" />
+                      Be Our First Success Story{" "}
+                      <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -785,15 +898,19 @@ console.log(riskData.riskLevel); // "High"
                 </div>
                 <div>
                   <blockquote className="text-xl text-gray-700 italic mb-4">
-                    "Proply's Risk Index will transform how we assess property risk. What used to take days will take
-                    seconds, and the insights will be more comprehensive than anything we had before. It's going to be a
-                    game-changer for our underwriting process."
+                    "Proply's Risk Index will transform how we assess property
+                    risk. What used to take days will take seconds, and the
+                    insights will be more comprehensive than anything we had
+                    before. It's going to be a game-changer for our underwriting
+                    process."
                   </blockquote>
                   <div className="font-bold text-gray-900">Your Name Here</div>
-                  <div className="text-sm text-gray-500">Chief Underwriting Officer, Your Company</div>
+                  <div className="text-sm text-gray-500">
+                    Chief Underwriting Officer, Your Company
+                  </div>
                   <div className="mt-4 text-sm text-gray-500 italic">
-                    We're new, but we're confident our technology will deliver these results. Want to be our first
-                    success story?
+                    We're new, but we're confident our technology will deliver
+                    these results. Want to be our first success story?
                   </div>
                 </div>
               </div>
@@ -811,11 +928,11 @@ console.log(riskData.riskLevel); // "High"
                 Ready to transform your property risk assessment?
               </h2>
               <p className="text-xl text-gray-300 mb-8">
-                Join leading insurers who are using Risk Index™ to make smarter underwriting decisions, reduce
-                claims, and optimize pricing.
+                Join leading insurers who are using Risk Index™ to make smarter
+                underwriting decisions, reduce claims, and optimize pricing.
               </p>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-proply-blue hover:bg-proply-blue/90 text-white px-8"
                 onClick={handleOpenDemoModal}
               >
@@ -835,13 +952,19 @@ console.log(riskData.riskLevel); // "High"
             </div>
             <div className="flex flex-wrap justify-center gap-8 md:gap-16">
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">GeoTerra Image</div>
+                <div className="text-gray-400 font-semibold text-lg">
+                  GeoTerra Image
+                </div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">Weather Guard</div>
+                <div className="text-gray-400 font-semibold text-lg">
+                  Weather Guard
+                </div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">Knowledge Factory</div>
+                <div className="text-gray-400 font-semibold text-lg">
+                  Knowledge Factory
+                </div>
               </div>
             </div>
           </div>
@@ -849,12 +972,12 @@ console.log(riskData.riskLevel); // "High"
       </main>
 
       <PublicFooter />
-      
+
       {/* Demo Request Modal */}
       <DemoRequestModal
         isOpen={isDemoModalOpen}
         onClose={handleCloseDemoModal}
       />
     </div>
-  )
+  );
 }
