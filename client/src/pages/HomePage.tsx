@@ -24,29 +24,30 @@ import { DemoRequestModal } from "@/components/DemoRequestModal";
 
 export default function HomePage() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  
+
   // Handle opening the demo request modal
   const handleOpenDemoModal = () => {
     setIsDemoModalOpen(true);
   };
-  
+
   // Handle closing the demo request modal
   const handleCloseDemoModal = () => {
     setIsDemoModalOpen(false);
   };
-  
+
   // Structured data for SEO
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Proply - An Intelligence Layer for Real Estate",
-    "description": "AI-powered data tools for property buyers, agents, and insurers.",
-    "url": "https://proply.com",
-    "potentialAction": {
+    name: "Proply - An Intelligence Layer for Real Estate",
+    description:
+      "AI-powered data tools for property buyers, agents, and insurers.",
+    url: "https://proply.com",
+    potentialAction: {
       "@type": "SearchAction",
-      "target": "{search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
+      target: "{search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
   };
 
   const currentYear = new Date().getFullYear();
@@ -54,22 +55,42 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Helmet>
-        <title>Proply - An Intelligence Layer for Real Estate | Property Analytics</title>
-        <meta name="description" content="AI-powered data tools for property buyers, agents, and insurers. Make better property decisions with Proply's comprehensive intelligence solutions." />
-        <meta name="keywords" content="property intelligence, real estate analytics, risk index, property data, AI real estate, insurance risk" />
+        <title>
+          Proply - An Intelligence Layer for Real Estate | Property Analytics
+        </title>
+        <meta
+          name="description"
+          content="AI-powered data tools for property buyers, agents, and insurers. Make better property decisions with Proply's comprehensive intelligence solutions."
+        />
+        <meta
+          name="keywords"
+          content="property intelligence, real estate analytics, risk index, property data, AI real estate, insurance risk"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
         {/* Open Graph tags for social sharing */}
-        <meta property="og:title" content="Proply - An Intelligence Layer for Real Estate" />
-        <meta property="og:description" content="AI-powered data tools for property buyers, agents, and insurers." />
+        <meta
+          property="og:title"
+          content="Proply - An Intelligence Layer for Real Estate"
+        />
+        <meta
+          property="og:description"
+          content="AI-powered data tools for property buyers, agents, and insurers."
+        />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://proply.com" />
         <meta property="og:image" content="/images/property-technology.png" />
 
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Proply - An Intelligence Layer for Real Estate" />
-        <meta name="twitter:description" content="AI-powered data tools for property buyers, agents, and insurers." />
+        <meta
+          name="twitter:title"
+          content="Proply - An Intelligence Layer for Real Estate"
+        />
+        <meta
+          name="twitter:description"
+          content="AI-powered data tools for property buyers, agents, and insurers."
+        />
         <meta name="twitter:image" content="/images/property-technology.png" />
 
         {/* Add structured data */}
@@ -93,27 +114,29 @@ export default function HomePage() {
                   <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
                     <span className="text-black">An Intelligence</span>
                     <span className="text-black block">Layer for</span>
-                    <span className="text-proply-blue block mt-2">Real Estate.</span>
+                    <span className="text-proply-blue block mt-2">
+                      Real Estate.
+                    </span>
                   </h1>
                   <p className="mt-6 text-xl text-gray-600 max-w-lg">
                     AI-powered data tools for buyers, agents, and insurers.
                   </p>
                   <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                    <Button 
-                      size="lg" 
+                    <Button
+                      size="lg"
                       className="bg-black text-white hover:bg-gray-800"
                       onClick={() => {
-                        const demoSection = document.getElementById('demo');
+                        const demoSection = document.getElementById("demo");
                         if (demoSection) {
-                          demoSection.scrollIntoView({ behavior: 'smooth' });
+                          demoSection.scrollIntoView({ behavior: "smooth" });
                         }
                       }}
                     >
                       Try a Report <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                    <Button 
-                      size="lg" 
-                      variant="outline" 
+                    <Button
+                      size="lg"
+                      variant="outline"
                       className="border-black text-black hover:bg-black/5"
                       onClick={handleOpenDemoModal}
                     >
@@ -123,7 +146,9 @@ export default function HomePage() {
 
                   {/* Trust Bar */}
                   <div className="mt-16 pt-8 border-t">
-                    <p className="text-sm font-medium text-gray-500 mb-4">TRUSTED BY</p>
+                    <p className="text-sm font-medium text-gray-500 mb-4">
+                      TRUSTED BY
+                    </p>
                     <div className="flex flex-wrap gap-8">
                       <div className="h-10 w-36 bg-gray-100 flex items-center justify-center text-gray-800 font-medium rounded-md">
                         Insurers
@@ -150,7 +175,7 @@ export default function HomePage() {
                   src="/images/property-technology.png"
                   alt="AI Technology for Real Estate"
                   className="object-contain object-right h-full max-h-[90vh] hidden sm:block"
-                  style={{ position: 'absolute', right: 0 }}
+                  style={{ position: "absolute", right: 0 }}
                 />
               </div>
             </div>
@@ -163,10 +188,13 @@ export default function HomePage() {
                 <div className="max-w-2xl">
                   <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
                     Property decisions
-                    <span className="text-proply-blue block mt-2">are broken.</span>
+                    <span className="text-proply-blue block mt-2">
+                      are broken.
+                    </span>
                   </h2>
                   <p className="mt-6 text-xl text-gray-600 max-w-lg">
-                    The real estate and insurance industries lack the tools to make data-driven decisions.
+                    The real estate and insurance industries lack the tools to
+                    make data-driven decisions.
                   </p>
                 </div>
 
@@ -174,22 +202,26 @@ export default function HomePage() {
                   {[
                     {
                       title: "Unclear risk exposure",
-                      description: "Properties with hidden risks lead to costly insurance claims.",
+                      description:
+                        "Properties with hidden risks lead to costly insurance claims.",
                       icon: Shield,
                     },
                     {
                       title: "Wasted time on bad deals",
-                      description: "Hours spent researching properties that aren't worth it.",
+                      description:
+                        "Hours spent researching properties that aren't worth it.",
                       icon: TrendingUp,
                     },
                     {
                       title: "No easy access to data",
-                      description: "Critical property information is scattered across sources.",
+                      description:
+                        "Critical property information is scattered across sources.",
                       icon: ExternalLink,
                     },
                     {
                       title: "Legacy tools",
-                      description: "Outdated systems that are slow and difficult to use.",
+                      description:
+                        "Outdated systems that are slow and difficult to use.",
                       icon: MapPin,
                     },
                   ].map((item, i) => (
@@ -198,7 +230,9 @@ export default function HomePage() {
                         <item.icon className="h-5 w-5" />
                       </div>
                       <h3 className="mb-1 text-lg font-bold">{item.title}</h3>
-                      <p className="text-sm text-gray-500">{item.description}</p>
+                      <p className="text-sm text-gray-500">
+                        {item.description}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -213,10 +247,13 @@ export default function HomePage() {
                 <div className="max-w-2xl">
                   <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
                     The complete
-                    <span className="text-proply-blue block mt-2">solution.</span>
+                    <span className="text-proply-blue block mt-2">
+                      solution.
+                    </span>
                   </h2>
                   <p className="mt-6 text-xl text-gray-600 max-w-lg">
-                    Our comprehensive suite of AI-powered property intelligence tools.
+                    Our comprehensive suite of AI-powered property intelligence
+                    tools.
                   </p>
                 </div>
 
@@ -224,29 +261,39 @@ export default function HomePage() {
                 <div className="relative">
                   <div className="w-full max-w-md mx-auto md:ml-auto">
                     <div className="relative bg-[#4299e1] rounded-3xl p-4 sm:p-6 text-white shadow-lg">
-                      <h3 className="text-xl font-bold mb-4 sm:mb-6 text-center">AI-Powered Intelligence</h3>
+                      <h3 className="text-xl font-bold mb-4 sm:mb-6 text-center">
+                        AI-Powered Intelligence
+                      </h3>
 
                       {/* Data flow visualization - with responsive adjustments */}
                       <div className="relative h-[280px]">
                         {/* Data sources - evenly spaced around the center, with adjustments for small screens */}
                         <div className="absolute top-4 left-1/2 -translate-x-[120px] sm:-translate-x-[170px] bg-[#67b1ed] rounded-lg p-2 sm:p-3 w-[100px] sm:w-[140px] text-center z-10">
                           <Database className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2 mx-auto" />
-                          <div className="text-xs sm:text-sm font-medium">Property Data</div>
+                          <div className="text-xs sm:text-sm font-medium">
+                            Property Data
+                          </div>
                         </div>
 
                         <div className="absolute top-4 left-1/2 translate-x-[20px] sm:translate-x-[30px] bg-[#67b1ed] rounded-lg p-2 sm:p-3 w-[100px] sm:w-[140px] text-center z-10">
                           <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2 mx-auto" />
-                          <div className="text-xs sm:text-sm font-medium">Market Trends</div>
+                          <div className="text-xs sm:text-sm font-medium">
+                            Market Trends
+                          </div>
                         </div>
 
                         <div className="absolute bottom-4 left-1/2 -translate-x-[120px] sm:-translate-x-[170px] bg-[#67b1ed] rounded-lg p-2 sm:p-3 w-[100px] sm:w-[140px] text-center z-10">
                           <MapPin className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2 mx-auto" />
-                          <div className="text-xs sm:text-sm font-medium">Location Data</div>
+                          <div className="text-xs sm:text-sm font-medium">
+                            Location Data
+                          </div>
                         </div>
 
                         <div className="absolute bottom-4 left-1/2 translate-x-[20px] sm:translate-x-[30px] bg-[#67b1ed] rounded-lg p-2 sm:p-3 w-[100px] sm:w-[140px] text-center z-10">
                           <Shield className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2 mx-auto" />
-                          <div className="text-xs sm:text-sm font-medium">Risk Factors</div>
+                          <div className="text-xs sm:text-sm font-medium">
+                            Risk Factors
+                          </div>
                         </div>
 
                         {/* Central AI processor - with z-index to be on top, responsive sizing */}
@@ -289,7 +336,9 @@ export default function HomePage() {
                       </div>
 
                       <div className="text-center mt-8">
-                        <div className="font-medium mb-1">Proply's AI Core processes multiple data sources</div>
+                        <div className="font-medium mb-1">
+                          Proply's AI Core processes multiple data sources
+                        </div>
                         <div className="text-sm text-white">
                           Delivering actionable insights for property decisions
                         </div>
@@ -304,14 +353,15 @@ export default function HomePage() {
                     {[
                       {
                         title: "Risk Index™",
-                        description: "Insurance-grade risk analysis for every property.",
+                        description:
+                          "Insurance-grade risk analysis for every property.",
                         features: [
                           "Flood, hail & climate risk",
                           "Crime & fire risk assessment",
                           "Comprehensive safety score",
                         ],
                         price: "Used by top insurers",
-                        cta: "View Demo",
+                        cta: "Find Out More",
                         icon: Shield,
                         audience: "For Insurers",
                         id: "for-insurers",
@@ -319,18 +369,29 @@ export default function HomePage() {
                       },
                       {
                         title: "Property Analyzer API™",
-                        description: "Real-time analysis for real estate platforms & agencies.",
-                        features: ["Enrich property listings", "Investment insights", "Plug-and-play for enterprise"],
+                        description:
+                          "Real-time analysis for real estate platforms & agencies.",
+                        features: [
+                          "Enrich property listings",
+                          "Investment insights",
+                          "Plug-and-play for enterprise",
+                        ],
                         price: "Custom pricing for enterprise",
-                        cta: "Request Access",
+                        cta: "Find Out More",
                         icon: ExternalLink,
                         audience: "For Agents",
                         id: "for-agents",
+                        link: "/agents",
                       },
                       {
                         title: "Deal Score™",
-                        description: "Smart, affordable reports for property buyers.",
-                        features: ["Rental yields & resale value", "Market comparisons", "Investment potential"],
+                        description:
+                          "Smart, affordable reports for property buyers.",
+                        features: [
+                          "Rental yields & resale value",
+                          "Market comparisons",
+                          "Investment potential",
+                        ],
                         price: "R49/report, no login required",
                         cta: "Coming Soon",
                         icon: TrendingUp,
@@ -354,8 +415,12 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        <h3 className="mb-2 text-2xl font-bold">{product.title}</h3>
-                        <p className="mb-6 text-gray-500">{product.description}</p>
+                        <h3 className="mb-2 text-2xl font-bold">
+                          {product.title}
+                        </h3>
+                        <p className="mb-6 text-gray-500">
+                          {product.description}
+                        </p>
                         <ul className="mb-6 space-y-2">
                           {product.features.map((feature, j) => (
                             <li key={j} className="flex items-center gap-2">
@@ -364,10 +429,13 @@ export default function HomePage() {
                             </li>
                           ))}
                         </ul>
-                        <div className="mb-6 text-sm font-medium text-gray-500">{product.price}</div>
+                        <div className="mb-6 text-sm font-medium text-gray-500">
+                          {product.price}
+                        </div>
                         <Link href={product.link || "#"}>
                           <Button className="w-full bg-black hover:bg-gray-800 text-white">
-                            {product.cta} <ChevronRight className="ml-1 h-4 w-4" />
+                            {product.cta}{" "}
+                            <ChevronRight className="ml-1 h-4 w-4" />
                           </Button>
                         </Link>
                       </div>
@@ -384,10 +452,13 @@ export default function HomePage() {
               <div className="mb-12">
                 <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
                   See how Proply
-                  <span className="text-proply-blue block mt-2">makes decisions easier.</span>
+                  <span className="text-proply-blue block mt-2">
+                    makes decisions easier.
+                  </span>
                 </h2>
                 <p className="mt-6 text-xl text-gray-600 max-w-lg">
-                  Try our interactive demo to experience the power of property intelligence.
+                  Try our interactive demo to experience the power of property
+                  intelligence.
                 </p>
               </div>
 
@@ -403,25 +474,39 @@ export default function HomePage() {
                 <div className="max-w-2xl">
                   <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
                     Testimonials
-                    <span className="text-proply-blue block mt-2">we hope to have soon.</span>
+                    <span className="text-proply-blue block mt-2">
+                      we hope to have soon.
+                    </span>
                   </h2>
                   <p className="mt-6 text-xl text-gray-600 max-w-lg">
-                    We're new here, but here's what we imagine our future clients might say about us if they existed
-                    yet.
+                    We're new here, but here's what we imagine our future
+                    clients might say about us if they existed yet.
                   </p>
 
                   <div className="mt-10 grid grid-cols-3 gap-2 sm:gap-4">
                     <div className="text-center">
-                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">100,000+</div>
-                      <div className="mt-1 text-xs sm:text-sm text-gray-500">Reports we aim to do monthly</div>
+                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">
+                        100,000+
+                      </div>
+                      <div className="mt-1 text-xs sm:text-sm text-gray-500">
+                        Reports we aim to do monthly
+                      </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">98%</div>
-                      <div className="mt-1 text-xs sm:text-sm text-gray-500">Satisfaction goal</div>
+                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">
+                        98%
+                      </div>
+                      <div className="mt-1 text-xs sm:text-sm text-gray-500">
+                        Satisfaction goal
+                      </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">485</div>
-                      <div className="mt-1 text-xs sm:text-sm text-gray-500">Coffees to make this site</div>
+                      <div className="text-2xl sm:text-4xl font-bold text-proply-blue">
+                        485
+                      </div>
+                      <div className="mt-1 text-xs sm:text-sm text-gray-500">
+                        Coffees to make this site
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -447,11 +532,18 @@ export default function HomePage() {
                       role: "Tech Company on Our Wishlist",
                     },
                   ].map((testimonial, i) => (
-                    <div key={i} className="border-l-2 border-proply-blue pl-6 py-2">
-                      <p className="mb-3 text-gray-700">"{testimonial.quote}"</p>
+                    <div
+                      key={i}
+                      className="border-l-2 border-proply-blue pl-6 py-2"
+                    >
+                      <p className="mb-3 text-gray-700">
+                        "{testimonial.quote}"
+                      </p>
                       <div>
                         <div className="font-medium">{testimonial.author}</div>
-                        <div className="text-sm text-gray-500">{testimonial.role}</div>
+                        <div className="text-sm text-gray-500">
+                          {testimonial.role}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -467,15 +559,21 @@ export default function HomePage() {
                 <div className="max-w-2xl">
                   <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
                     Get access to
-                    <span className="text-proply-blue block mt-2">South Africa's smartest property data.</span>
+                    <span className="text-proply-blue block mt-2">
+                      South Africa's smartest property data.
+                    </span>
                   </h2>
-                  <p className="mt-6 text-xl text-gray-600 max-w-lg">Schedule a call with our team to learn more.</p>
+                  <p className="mt-6 text-xl text-gray-600 max-w-lg">
+                    Schedule a call with our team to learn more.
+                  </p>
                 </div>
 
                 <div className="relative">
                   <div className="w-full max-w-md mx-auto md:ml-auto">
                     <div className="bg-white rounded-xl shadow-lg border p-8">
-                      <h3 className="text-xl font-bold mb-6 text-gray-900">Request Access</h3>
+                      <h3 className="text-xl font-bold mb-6 text-gray-900">
+                        Request Access
+                      </h3>
                       <div className="space-y-4">
                         <div>
                           <Input
@@ -503,7 +601,9 @@ export default function HomePage() {
                             <option value="">I'm interested in...</option>
                             <option value="deal-score">Deal Score</option>
                             <option value="risk-index">Risk Index</option>
-                            <option value="property-api">Property Analyzer API</option>
+                            <option value="property-api">
+                              Property Analyzer API
+                            </option>
                           </select>
                         </div>
                         <Button className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white">
@@ -511,7 +611,10 @@ export default function HomePage() {
                         </Button>
                         <div className="text-center text-xs text-gray-500">
                           Or{" "}
-                          <Link href="#" className="text-proply-blue hover:underline">
+                          <Link
+                            href="#"
+                            className="text-proply-blue hover:underline"
+                          >
                             schedule a demo call
                           </Link>{" "}
                           with our team
@@ -527,9 +630,12 @@ export default function HomePage() {
       </main>
 
       <PublicFooter />
-      
+
       {/* Demo Request Modal */}
-      <DemoRequestModal isOpen={isDemoModalOpen} onClose={handleCloseDemoModal} />
+      <DemoRequestModal
+        isOpen={isDemoModalOpen}
+        onClose={handleCloseDemoModal}
+      />
     </div>
   );
 }
