@@ -53,6 +53,7 @@ interface DemoRequestModalProps {
 export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const { toast } = useToast();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -84,16 +85,29 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
         throw new Error(errorData.error || 'Failed to submit demo request');
       }
       
+      // Show success state and toast notification
       setIsSuccess(true);
+      
+      toast({
+        title: "Demo request submitted",
+        description: "We'll be in touch with you soon to schedule your personalized demo.",
+        variant: "default",
+      });
       
       // Reset form after success
       setTimeout(() => {
         setIsSuccess(false);
         form.reset();
         onClose();
-      }, 2000);
+      }, 3000);
     } catch (error) {
       console.error('Failed to submit demo request', error);
+      // Display error message to user
+      toast({
+        title: "Failed to submit request",
+        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
       // Keep the form open so user can try again
     } finally {
       setIsSubmitting(false);
