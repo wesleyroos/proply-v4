@@ -41,8 +41,8 @@ export default function PublicFooter() {
               <h3 className="mb-4 text-lg font-medium">Company</h3>
               <ul className="space-y-2 text-sm text-gray-500">
                 <li>
-                  <Link href="/about" className="hover:text-proply-blue">
-                    About
+                  <Link href="/" className="hover:text-proply-blue">
+                    Home
                   </Link>
                 </li>
 
