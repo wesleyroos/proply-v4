@@ -62,11 +62,19 @@ export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
   
-  // PDF download route
+  // PDF download routes
   app.get('/api/download-pdf', (req, res) => {
     const filePath = process.cwd() + '/public/Property Risk Assessment - Proply.pdf';
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="Property Risk Assessment - Proply.pdf"');
+    res.sendFile(filePath);
+  });
+  
+  // Agent sample report PDF download route
+  app.get('/api/download-property-analysis-pdf', (req, res) => {
+    const filePath = process.cwd() + '/public/27_Leeuwen_St__Cape_Town_City_Centre__8001_analysis (23).pdf';
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="Investment Analysis - 27 Leeuwen St.pdf"');
     res.sendFile(filePath);
   });
 
@@ -91,7 +99,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/address-validation/autocomplete" ||
       req.path === "/area-rate" || // New public area rate endpoint
       req.path === "/demo-request" || // Demo request endpoint
-      req.path === "/download-pdf" // PDF download endpoint
+      req.path === "/download-pdf" || // PDF download endpoint
+      req.path === "/download-property-analysis-pdf" // Property analysis PDF download endpoint
     ) {
       return next();
     }
