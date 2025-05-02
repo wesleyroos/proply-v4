@@ -1,7 +1,9 @@
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
+import { useState } from "react";
 import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
+import { DemoRequestModal } from "@/components/DemoRequestModal";
 import {
   ArrowRight,
   Check,
@@ -29,6 +31,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 export default function InsurersPage() {
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  
+  const handleOpenDemoModal = () => {
+    setIsDemoModalOpen(true);
+  };
+  
+  const handleCloseDemoModal = () => {
+    setIsDemoModalOpen(false);
+  };
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
@@ -67,7 +78,11 @@ export default function InsurersPage() {
                   AI-powered property risk intelligence.
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="bg-proply-blue hover:bg-proply-blue/90 text-white">
+                  <Button 
+                    size="lg" 
+                    className="bg-proply-blue hover:bg-proply-blue/90 text-white"
+                    onClick={handleOpenDemoModal}
+                  >
                     Book a Demo <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <Button
