@@ -23,6 +23,7 @@ import {
   CheckCircle,
   Star,
   Lightbulb,
+  Download,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -95,14 +96,27 @@ export default function AgentsPage() {
                   >
                     Book a Demo <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
-                    onClick={openReportModal}
-                  >
-                    See Sample Report
-                  </Button>
+                  <div className="relative group">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
+                      onClick={openReportModal}
+                    >
+                      See Sample Report
+                    </Button>
+                    <div className="absolute hidden group-hover:block mt-2 p-2 bg-white shadow-md rounded-md border border-gray-200 w-max">
+                      <Button 
+                        variant="link" 
+                        className="text-proply-blue"
+                        onClick={() => {
+                          window.location.href = "/api/download-property-analysis-pdf";
+                        }}
+                      >
+                        <Download className="mr-2 h-4 w-4" /> Download PDF directly
+                      </Button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-12 flex items-center gap-6">
