@@ -523,7 +523,10 @@ export default function InsurersPage() {
                         <span className="text-gray-700">Risk concentration analysis</span>
                       </li>
                     </ul>
-                    <Button className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300">
+                    <Button
+                      className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300"
+                      onClick={handleOpenDemoModal}
+                    >
                       Learn More <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </div>
@@ -698,7 +701,11 @@ console.log(riskData.riskLevel); // "High"
 
             {/* CTA */}
             <div className="mt-16 text-center">
-              <Button size="lg" className="bg-proply-blue hover:bg-proply-blue/90 text-white">
+              <Button 
+                size="lg" 
+                className="bg-proply-blue hover:bg-proply-blue/90 text-white"
+                onClick={handleOpenDemoModal}
+              >
                 Download Feature Sheet <Download className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -761,7 +768,10 @@ console.log(riskData.riskLevel); // "High"
                     </div>
                   </div>
                   <div className="border-t border-gray-200 p-4 bg-gray-50">
-                    <Button className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300">
+                    <Button 
+                      className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300"
+                      onClick={handleOpenDemoModal}
+                    >
                       Be Our First Success Story <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </div>
@@ -823,6 +833,7 @@ console.log(riskData.riskLevel); // "High"
                       size="lg"
                       variant="outline"
                       className="w-full bg-transparent border-white text-white hover:bg-white/10 hover:text-white"
+                      onClick={handleOpenDemoModal}
                     >
                       Download Information Pack <Download className="ml-2 h-5 w-5" />
                     </Button>
@@ -859,7 +870,10 @@ console.log(riskData.riskLevel); // "High"
                         className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                       />
                     </div>
-                    <Button className="w-full bg-white hover:bg-white/90 text-slate-900">
+                    <Button 
+                      className="w-full bg-white hover:bg-white/90 text-slate-900"
+                      onClick={handleOpenDemoModal}
+                    >
                       Request Information <MessageSquare className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
