@@ -1,14 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { Shield, AlertTriangle, Droplets, Cloud, Zap, MapPin, Search } from "lucide-react"
+import { Shield, AlertTriangle, Droplets, Cloud, Zap, MapPin, Search, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Link } from "wouter"
+import { DemoRequestModal } from "@/components/DemoRequestModal";
 
 export function RiskIndexShowcase() {
   const [activeProperty, setActiveProperty] = useState("property1")
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false); // Added state for demo modal
 
   // Sample property data
   const properties = {
@@ -99,7 +101,7 @@ export function RiskIndexShowcase() {
         <Button
           variant="outline"
           className="border-proply-blue text-proply-blue hover:bg-proply-blue/5"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsDemoModalOpen(true)} // Updated to open demo modal
         >
           Request Assessment
         </Button>
@@ -280,10 +282,10 @@ export function RiskIndexShowcase() {
                 <div className="flex items-center gap-2 bg-proply-blue/10 p-3 rounded-lg border border-proply-blue/20">
                   <Shield className="h-5 w-5 text-proply-blue" />
                   <span className="font-medium text-proply-blue">
-                    {property.riskLevel === "High" 
-                      ? "Premium Coverage Recommended" 
-                      : property.riskLevel === "Medium" 
-                        ? "Standard Coverage Recommended" 
+                    {property.riskLevel === "High"
+                      ? "Premium Coverage Recommended"
+                      : property.riskLevel === "Medium"
+                        ? "Standard Coverage Recommended"
                         : "Basic Coverage Recommended"}
                   </span>
                 </div>
@@ -293,6 +295,7 @@ export function RiskIndexShowcase() {
           </div>
         </div>
       </div>
+      <DemoRequestModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </div>
   )
 }
