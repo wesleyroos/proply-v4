@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
+import path from "path";
 import {
   properties,
   propertyAnalyzerResults,
@@ -60,6 +61,14 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
+  
+  // PDF download route
+  app.get('/api/download-pdf', (req, res) => {
+    const filePath = process.cwd() + '/public/Property Risk Assessment - Proply.pdf';
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="Property Risk Assessment - Proply.pdf"');
+    res.sendFile(filePath);
+  });
 
   // Require authentication for all /api routes except login/register
   app.use("/api", (req, res, next) => {
@@ -81,7 +90,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/address-validation/validate" ||
       req.path === "/address-validation/autocomplete" ||
       req.path === "/area-rate" || // New public area rate endpoint
-      req.path === "/demo-request" // Demo request endpoint
+      req.path === "/demo-request" || // Demo request endpoint
+      req.path === "/download-pdf" // PDF download endpoint
     ) {
       return next();
     }
