@@ -24,17 +24,17 @@ import { DemoRequestModal } from "@/components/DemoRequestModal";
 
 export default function HomePage() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-
+  
   // Handle opening the demo request modal
   const handleOpenDemoModal = () => {
     setIsDemoModalOpen(true);
   };
-
+  
   // Handle closing the demo request modal
   const handleCloseDemoModal = () => {
     setIsDemoModalOpen(false);
   };
-
+  
   // Structured data for SEO
   const structuredData = {
     "@context": "https://schema.org",
@@ -367,15 +367,7 @@ export default function HomePage() {
                         <div className="mb-6 text-sm font-medium text-gray-500">{product.price}</div>
                         <Link href={product.link || "#"}>
                           <Button className="w-full bg-black hover:bg-gray-800 text-white">
-                            {product.cta === "Request Access" ? (
-                              <>
-                                <Link href="/agents">
-                                  Request API Access <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                              </>
-                            ) : (
-                              <>{product.cta} <ChevronRight className="ml-1 h-4 w-4" /></>
-                            )}
+                            {product.cta} <ChevronRight className="ml-1 h-4 w-4" />
                           </Button>
                         </Link>
                       </div>
@@ -535,7 +527,7 @@ export default function HomePage() {
       </main>
 
       <PublicFooter />
-
+      
       {/* Demo Request Modal */}
       <DemoRequestModal isOpen={isDemoModalOpen} onClose={handleCloseDemoModal} />
     </div>
