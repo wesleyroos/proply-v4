@@ -579,8 +579,11 @@ export default function AgentsPage() {
                           </li>
                         </ul>
 
-                        <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
-                          Contact PropData{" "}
+                        <Button 
+                          className="bg-proply-blue hover:bg-proply-blue/90 text-white"
+                          onClick={handleOpenDemoModal}
+                        >
+                          Get the ball rolling{" "}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
@@ -597,8 +600,7 @@ export default function AgentsPage() {
                               1
                             </div>
                             <span className="text-gray-700">
-                              Contact PropData and inform them you want to use
-                              Proply
+                              Book a demo with our team to get started
                             </span>
                           </li>
                           <li className="flex items-start gap-3">
