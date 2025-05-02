@@ -113,7 +113,7 @@ export default function AgentsPage() {
                   </div>
                   <div className="text-sm text-gray-600">
                     Trusted by <span className="font-medium">500+</span> agents
-                    across South Africa
+                    across South Africa (we think)
                   </div>
                 </div>
               </div>
@@ -902,80 +902,33 @@ console.log(analysis);`}
         {/* CTA Section */}
         <section className="py-20 bg-proply-blue">
           <div className="container">
-            <div className="max-w-4xl mx-auto">
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-                    Ready to transform your listings?
-                  </h2>
-                  <p className="text-xl text-blue-100 mb-8">
-                    Join forward-thinking agents who are using Property Analyzer
-                    API™ to close deals faster and stand out in a competitive
-                    market.
-                  </p>
-                  <div className="space-y-4">
-                    <Button
-                      size="lg"
-                      className="w-full bg-white hover:bg-gray-100 text-proply-blue"
-                      onClick={handleOpenDemoModal}
-                    >
-                      Book a Demo <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="w-full bg-transparent border-white text-white hover:bg-white/10 hover:text-white"
-                      onClick={() => {
-                        window.location.href = "/api/download-property-analysis-pdf";
-                      }}
-                    >
-                      View Sample Report <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <h3 className="text-xl font-bold mb-6 text-white">
-                    Contact Our Team
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <Input
-                        type="text"
-                        placeholder="Full Name"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-blue-200"
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="email"
-                        placeholder="Work Email"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-blue-200"
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="text"
-                        placeholder="Agency Name"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-blue-200"
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="tel"
-                        placeholder="Phone Number"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-blue-200"
-                      />
-                    </div>
-                    <Button className="w-full bg-white hover:bg-gray-100 text-proply-blue">
-                      Request Information{" "}
-                      <MessageSquare className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="mt-4 text-center text-sm text-blue-200">
-                    We'll respond within 24 hours to schedule a personalized
-                    demo.
-                  </div>
-                </div>
+            <div className="max-w-2xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+                Ready to transform your listings?
+              </h2>
+              <p className="text-xl text-blue-100 mb-8">
+                Join forward-thinking agents who are using Property Analyzer
+                API™ to close deals faster and stand out in a competitive
+                market.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  className="bg-white hover:bg-gray-100 text-proply-blue"
+                  onClick={handleOpenDemoModal}
+                >
+                  Book a Demo <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-transparent border-white text-white hover:bg-white/10 hover:text-white"
+                  onClick={() => {
+                    window.location.href = "/api/download-property-analysis-pdf";
+                  }}
+                >
+                  View Sample Report <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </div>
             </div>
           </div>
@@ -992,22 +945,22 @@ console.log(analysis);`}
             <div className="flex flex-wrap justify-center gap-8 md:gap-16">
               <div className="flex items-center justify-center h-12">
                 <div className="text-gray-400 font-semibold text-lg">
-                  RealtyGroup
+                  Sothebys
                 </div>
               </div>
               <div className="flex items-center justify-center h-12">
                 <div className="text-gray-400 font-semibold text-lg">
-                  PropertyPro
+                  Nox Properties
                 </div>
               </div>
               <div className="flex items-center justify-center h-12">
                 <div className="text-gray-400 font-semibold text-lg">
-                  InvestHomes
+                  Revo Properties
                 </div>
               </div>
               <div className="flex items-center justify-center h-12">
                 <div className="text-gray-400 font-semibold text-lg">
-                  PremierEstates
+                  RSK Properties
                 </div>
               </div>
             </div>
