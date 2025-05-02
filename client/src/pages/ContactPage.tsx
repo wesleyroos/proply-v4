@@ -200,7 +200,9 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-lg mb-1">Address</h3>
                       <p className="text-gray-600">
-                        7 Darter Rd, Longkloof Gardens
+                        Innovation City
+                        <br />
+                        Darter Studios, Darter Road, Longkloof, Gardens
                         <br />
                         Cape Town, 8001
                       </p>
