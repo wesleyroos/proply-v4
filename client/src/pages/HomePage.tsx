@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
@@ -19,8 +20,21 @@ import { BackgroundPattern } from "@/components/background-pattern";
 import { RiskIndexShowcase } from "@/components/risk-index-showcase";
 import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
+import { DemoRequestModal } from "@/components/DemoRequestModal";
 
 export default function HomePage() {
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  
+  // Handle opening the demo request modal
+  const handleOpenDemoModal = () => {
+    setIsDemoModalOpen(true);
+  };
+  
+  // Handle closing the demo request modal
+  const handleCloseDemoModal = () => {
+    setIsDemoModalOpen(false);
+  };
+  
   // Structured data for SEO
   const structuredData = {
     "@context": "https://schema.org",
@@ -88,7 +102,12 @@ export default function HomePage() {
                     <Button size="lg" className="bg-black text-white hover:bg-gray-800">
                       Try a Report <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                    <Button size="lg" variant="outline" className="border-black text-black hover:bg-black/5">
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="border-black text-black hover:bg-black/5"
+                      onClick={handleOpenDemoModal}
+                    >
                       Book a Demo
                     </Button>
                   </div>
@@ -499,6 +518,9 @@ export default function HomePage() {
       </main>
 
       <PublicFooter />
+      
+      {/* Demo Request Modal */}
+      <DemoRequestModal isOpen={isDemoModalOpen} onClose={handleCloseDemoModal} />
     </div>
   );
 }
