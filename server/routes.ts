@@ -79,7 +79,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/tomtom-test" ||
       req.path === "/address-validation/validate" ||
       req.path === "/address-validation/autocomplete" ||
-      req.path === "/area-rate" // New public area rate endpoint
+      req.path === "/area-rate" || // New public area rate endpoint
+      req.path === "/demo-request" // Demo request endpoint
     ) {
       return next();
     }
