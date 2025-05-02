@@ -118,7 +118,6 @@ export default function InsurersPage() {
                   <p className="text-sm font-medium text-gray-400 mb-4">
                     SOON TO BE TRUSTED BY LEADING INSURERS
                   </p>
-                  
                 </div>
               </div>
 
@@ -255,7 +254,7 @@ export default function InsurersPage() {
                 <div className="absolute -bottom-6 -left-6 bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/10 shadow-lg">
                   <div className="flex items-center gap-2">
                     <Database className="h-4 w-4 text-proply-blue" />
-                    <span className="text-sm">Data sources: 17</span>
+                    <span className="text-sm">Multiple data sources</span>
                   </div>
                 </div>
               </div>

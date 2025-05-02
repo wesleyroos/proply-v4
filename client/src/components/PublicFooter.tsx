@@ -97,12 +97,12 @@ export default function PublicFooter() {
               <h3 className="mb-4 text-lg font-medium">Legal</h3>
               <ul className="space-y-2 text-sm text-gray-500">
                 <li>
-                  <Link href="#" className="hover:text-proply-blue">
+                  <Link href="/terms" className="hover:text-proply-blue">
                     Terms of Service
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-proply-blue">
+                  <Link href="/privacy" className="hover:text-proply-blue">
                     Privacy Policy
                   </Link>
                 </li>
