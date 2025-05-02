@@ -570,13 +570,10 @@ export default function HomePage() {
 
                 <div className="relative">
                   <div className="w-full max-w-md mx-auto md:ml-auto">
-                    <div className="bg-white rounded-xl shadow-lg border p-8 text-center">
+                    <div className="text-center">
                       <h3 className="text-xl font-bold mb-6 text-gray-900">
                         Ready to explore our property data?
                       </h3>
-                      <p className="text-gray-600 mb-8">
-                        Schedule a personalized demo with our team to see how our AI-powered tools can transform your property decisions.
-                      </p>
                       <Button 
                         size="lg"
                         className="bg-proply-blue hover:bg-proply-blue/90 text-white px-8"
