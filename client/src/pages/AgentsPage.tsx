@@ -756,7 +756,7 @@ console.log(analysis);`}
                 The early bird gets the... clients?
               </h2>
               <p className="mt-4 text-xl text-gray-600">
-                Meet our pioneering partner who's already creating a buzz in the Cape Town real estate scene
+                Our first partner agency is already creating a buzz in the Cape Town real estate scene
               </p>
             </div>
 
@@ -764,7 +764,9 @@ console.log(analysis);`}
               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 md:p-12">
                 <div className="flex flex-col md:flex-row gap-8 items-center">
                   <div className="w-24 h-24 rounded-full bg-gray-200 flex-shrink-0 relative overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center bg-proply-blue/10 text-proply-blue font-bold text-xl">CI</div>
+                    <div className="absolute inset-0 flex items-center justify-center bg-proply-blue/10 text-proply-blue font-bold text-xl">
+                      <Sparkles className="h-12 w-12 opacity-50" />
+                    </div>
                     <div className="absolute top-0 right-0 bg-yellow-400 text-xs font-bold px-1 rounded-bl transform rotate-12">1st!</div>
                   </div>
                   <div>
@@ -781,15 +783,15 @@ console.log(analysis);`}
                       "While everyone else is still showing ordinary listings, we're showing investment opportunities. 
                       Our clients think we hired a team of analysts. Little do they know it's just Proply working behind the scenes!"
                     </blockquote>
-                    <div className="font-bold text-gray-900">Jared S.</div>
-                    <div className="text-sm text-gray-500">
-                      Principal at Cape Invest Realty <span className="bg-proply-blue/10 text-proply-blue text-xs px-2 py-0.5 rounded-full ml-2">Pioneer Partner</span>
+                    <div className="text-sm text-gray-500 mt-2">
+                      <span className="bg-proply-blue/10 text-proply-blue text-xs px-2 py-0.5 rounded-full">Pioneer Partner</span>
+                      <span className="ml-2">Leading Cape Town Real Estate Agency</span>
                     </div>
 
                     <div className="mt-6 pt-6 border-t border-gray-100">
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-gray-700">
                         <p className="font-medium mb-1">Want to join the early adopters?</p>
-                        <p>Cape Invest Realty is already enjoying an unfair advantage in the market. Don't worry, there's still time to be among the first wave of agencies using this technology before your competitors catch on.</p>
+                        <p>Our first partner agency is already enjoying an unfair advantage in the market. Don't worry, there's still time to be among the first wave of agencies using this technology before your competitors catch on.</p>
                         <Button 
                           className="mt-3 bg-proply-blue hover:bg-proply-blue/90 text-white"
                           onClick={handleOpenDemoModal}
