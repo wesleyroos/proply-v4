@@ -825,26 +825,23 @@ console.log(riskData.riskLevel); // "High"
           </div>
         </section>
 
-        {/* Trust Indicators */}
+        {/* Partners Section */}
         <section className="py-12 bg-white border-t border-gray-200">
           <div className="container">
             <div className="text-center mb-8">
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Trusted By Leading Insurance Companies
+                Our Data & Technology Partners
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-8 md:gap-16">
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">InsureCorp</div>
+                <div className="text-gray-400 font-semibold text-lg">GeoTerra Image</div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">SafeGuard</div>
+                <div className="text-gray-400 font-semibold text-lg">Weather Guard</div>
               </div>
               <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">RiskShield</div>
-              </div>
-              <div className="flex items-center justify-center h-12">
-                <div className="text-gray-400 font-semibold text-lg">SecurePolicy</div>
+                <div className="text-gray-400 font-semibold text-lg">Knowledge Factory</div>
               </div>
             </div>
           </div>
