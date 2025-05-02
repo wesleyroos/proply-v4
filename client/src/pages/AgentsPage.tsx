@@ -28,9 +28,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SampleReportModal } from "@/components/sample-report-modal";
+import { DemoRequestModal } from "@/components/DemoRequestModal";
 
 export default function AgentsPage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("propdata");
 
   const openReportModal = () => {
@@ -39,6 +41,14 @@ export default function AgentsPage() {
 
   const closeReportModal = () => {
     setIsReportModalOpen(false);
+  };
+  
+  const handleOpenDemoModal = () => {
+    setIsDemoModalOpen(true);
+  };
+
+  const handleCloseDemoModal = () => {
+    setIsDemoModalOpen(false);
   };
 
   return (
@@ -81,8 +91,9 @@ export default function AgentsPage() {
                   <Button
                     size="lg"
                     className="bg-proply-blue hover:bg-proply-blue/90 text-white w-full sm:w-auto"
+                    onClick={handleOpenDemoModal}
                   >
-                    Request API Access <ArrowRight className="ml-2 h-4 w-4" />
+                    Book a Demo <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <Button
                     size="lg"
@@ -647,8 +658,11 @@ export default function AgentsPage() {
                           </li>
                         </ul>
 
-                        <Button className="bg-proply-blue hover:bg-proply-blue/90 text-white">
-                          Request API Access{" "}
+                        <Button 
+                          className="bg-proply-blue hover:bg-proply-blue/90 text-white"
+                          onClick={handleOpenDemoModal}
+                        >
+                          Book a Demo{" "}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
