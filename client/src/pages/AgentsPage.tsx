@@ -863,8 +863,9 @@ console.log(analysis);`}
                   <Button
                     size="lg"
                     className="w-full bg-proply-blue hover:bg-proply-blue/90 text-white"
+                    onClick={handleOpenDemoModal}
                   >
-                    Request API Access
+                    Book a Demo
                   </Button>
 
                   <div className="mt-6 text-sm text-gray-500">
@@ -918,8 +919,9 @@ console.log(analysis);`}
                     <Button
                       size="lg"
                       className="w-full bg-white hover:bg-gray-100 text-proply-blue"
+                      onClick={handleOpenDemoModal}
                     >
-                      Request API Access <ArrowRight className="ml-2 h-5 w-5" />
+                      Book a Demo <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                     <Button
                       size="lg"
@@ -1019,6 +1021,12 @@ console.log(analysis);`}
       <SampleReportModal
         isOpen={isReportModalOpen}
         onClose={closeReportModal}
+      />
+
+      {/* Demo Request Modal */}
+      <DemoRequestModal
+        isOpen={isDemoModalOpen}
+        onClose={handleCloseDemoModal}
       />
     </div>
   );
