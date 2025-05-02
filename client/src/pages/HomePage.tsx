@@ -99,7 +99,16 @@ export default function HomePage() {
                     AI-powered data tools for buyers, agents, and insurers.
                   </p>
                   <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                    <Button size="lg" className="bg-black text-white hover:bg-gray-800">
+                    <Button 
+                      size="lg" 
+                      className="bg-black text-white hover:bg-gray-800"
+                      onClick={() => {
+                        const demoSection = document.getElementById('demo');
+                        if (demoSection) {
+                          demoSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                    >
                       Try a Report <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                     <Button 
