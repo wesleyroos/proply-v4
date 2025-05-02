@@ -120,7 +120,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel className="font-medium text-gray-700">Full Name</FormLabel>
                         <FormControl>
                           <Input placeholder="Your full name" className="border-slate-300 focus:border-blue-400 transition-colors" {...field} />
                         </FormControl>
@@ -134,7 +134,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel className="font-medium text-gray-700">Email</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="you@company.com" className="border-slate-300 focus:border-blue-400 transition-colors" {...field} />
                         </FormControl>
@@ -150,7 +150,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                     name="company"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Company Name</FormLabel>
+                        <FormLabel className="font-medium text-gray-700">Company Name</FormLabel>
                         <FormControl>
                           <Input placeholder="Your company" className="border-slate-300 focus:border-blue-400 transition-colors" {...field} />
                         </FormControl>
@@ -164,7 +164,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                     name="phoneNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
+                        <FormLabel className="font-medium text-gray-700">Phone Number</FormLabel>
                         <FormControl>
                           <Input placeholder="Your phone number" className="border-slate-300 focus:border-blue-400 transition-colors" {...field} />
                         </FormControl>
@@ -179,10 +179,10 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                   name="product"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product of Interest</FormLabel>
+                      <FormLabel className="font-medium text-gray-700">Product of Interest</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-slate-300 focus:border-blue-400 transition-colors">
                             <SelectValue placeholder="Select a product" />
                           </SelectTrigger>
                         </FormControl>
@@ -205,7 +205,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>How can we help you?</FormLabel>
+                      <FormLabel className="font-medium text-gray-700">How can we help you?</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Tell us about your specific needs or questions..."
@@ -222,7 +222,11 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                   <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-black hover:bg-gray-800" disabled={isSubmitting}>
+                  <Button 
+                    type="submit" 
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm transition-all" 
+                    disabled={isSubmitting}
+                  >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -237,12 +241,23 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
             </Form>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+          <div className="flex flex-col items-center justify-center py-12 relative">
+            {/* Background decorative elements */}
+            <div className="absolute -top-6 -left-6 w-32 h-32 bg-gradient-to-br from-green-50 to-blue-50 rounded-full opacity-70 -z-10"></div>
+            <div className="absolute bottom-6 right-6 w-24 h-24 bg-gradient-to-tl from-blue-50 to-green-50 rounded-full opacity-50 -z-10"></div>
+            <div className="absolute top-1/3 right-12 w-6 h-6 bg-green-50 rounded-full opacity-60 -z-10"></div>
+            <div className="absolute top-2/3 left-10 w-8 h-8 bg-blue-50 rounded-full opacity-60 -z-10"></div>
+            
+            {/* Success animation */}
+            <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mb-8 shadow-sm">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-center mb-2">Request Submitted</h3>
-            <p className="text-center text-gray-600 max-w-md">
+            
+            <h3 className="text-2xl font-bold text-center mb-3 text-gray-800">Request Submitted</h3>
+            <div className="h-1 w-16 bg-gradient-to-r from-green-400 to-green-500 rounded-full mb-4"></div>
+            <p className="text-center text-gray-600 max-w-md leading-relaxed">
               Thank you for your interest! Our team will contact you within the next 24 hours to schedule your personalized demo.
             </p>
           </div>
