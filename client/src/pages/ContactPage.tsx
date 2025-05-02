@@ -14,7 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Phone, MapPin, MessageSquare, ArrowRight, Clock, CheckCircle2 } from "lucide-react";
+import { Mail, MapPin, MessageSquare, ArrowRight, Clock, CheckCircle2 } from "lucide-react";
+import { BackgroundPattern } from "@/components/background-pattern";
 import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
 
@@ -70,6 +71,7 @@ export default function ContactPage() {
       <div className="relative pt-24 pb-16 overflow-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-slate-50 -z-10"></div>
+        <BackgroundPattern />
         <div className="absolute top-20 right-20 w-72 h-72 bg-proply-blue/5 rounded-full blur-3xl -z-5"></div>
         <div className="absolute bottom-10 left-10 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl -z-5"></div>
         
@@ -217,17 +219,6 @@ export default function ContactPage() {
                         </a>
                       </p>
                       <p className="text-sm text-gray-500 mt-1">We aim to respond within 24 hours</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-5">
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-proply-blue/10 text-proply-blue">
-                      <Phone className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-1">Phone</h3>
-                      <p className="text-gray-600">+27 (0) 21 123 4567</p>
-                      <p className="text-sm text-gray-500 mt-1">Mon-Fri from 9am to 5pm SAST</p>
                     </div>
                   </div>
                 </div>
