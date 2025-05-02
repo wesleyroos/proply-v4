@@ -24,6 +24,8 @@ import {
   Star,
   Lightbulb,
   Download,
+  BadgeDollarSign,
+  LineChart,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -411,49 +413,63 @@ export default function AgentsPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-4 gap-6">
               {[
                 {
-                  title: "Rental Yield Analysis",
+                  title: "Property Overview",
                   description:
-                    "Detailed breakdown of potential rental income and yield compared to market averages.",
-                  icon: PercentCircle,
+                    "Address, purchase price, size, bedrooms, bathrooms, parking bays, and price per m² comparison.",
+                  icon: Home,
                   color: "bg-green-500/10 text-green-400",
                 },
                 {
-                  title: "ROI Projections",
+                  title: "Financial Overview",
                   description:
-                    "Comprehensive return on investment calculations showing short and long-term potential.",
-                  icon: TrendingUp,
+                    "Deposit, bond costs, transfer costs, monthly repayments, rates, levies, and monthly expenses.",
+                  icon: DollarSign,
                   color: "bg-blue-500/10 text-blue-400",
                 },
                 {
-                  title: "Market Value Assessment",
+                  title: "Rental Performance",
                   description:
-                    "Compare listing price against estimated market value based on recent comparable sales.",
-                  icon: BarChart3,
+                    "Short-term and long-term letting comparisons with nightly rates, occupancy, and gross yields.",
+                  icon: PercentCircle,
                   color: "bg-purple-500/10 text-purple-400",
                 },
                 {
-                  title: "Cash Flow Analysis",
+                  title: "Monthly Revenue",
                   description:
-                    "Detailed monthly and annual cash flow projections including all expenses and income.",
+                    "Detailed monthly breakdown with seasonal rates, platform fees, and revenue projections.",
                   icon: DollarSign,
                   color: "bg-amber-500/10 text-amber-400",
                 },
                 {
-                  title: "Neighborhood Insights",
+                  title: "Cashflow Metrics",
                   description:
-                    "Key data about the area including growth trends, amenities, and investment potential.",
-                  icon: Home,
+                    "Projected income, expenses, net operating income, bond repayments, and annual cashflow.",
+                  icon: BarChart3,
                   color: "bg-red-500/10 text-red-400",
                 },
                 {
-                  title: "Investment Recommendations",
+                  title: "Cashflow Projections",
                   description:
-                    "Clear, actionable insights to help buyers make informed decisions quickly.",
-                  icon: Sparkles,
+                    "Visual charts showing cashflow and cumulative returns over time for both letting strategies.",
+                  icon: LineChart,
                   color: "bg-indigo-500/10 text-indigo-400",
+                },
+                {
+                  title: "Investment Metrics",
+                  description:
+                    "Key KPIs over time: yields, ROE, cap rate, cash on cash return, IRR, and net worth change.",
+                  icon: TrendingUp,
+                  color: "bg-teal-500/10 text-teal-400",
+                },
+                {
+                  title: "Asset Growth & Equity",
+                  description:
+                    "Property appreciation, loan amortization, equity accumulation, and interest-to-principal ratio.",
+                  icon: Sparkles,
+                  color: "bg-orange-500/10 text-orange-400",
                 },
               ].map((feature, i) => (
                 <div
