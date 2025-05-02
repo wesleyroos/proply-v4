@@ -880,6 +880,12 @@ console.log(riskData.riskLevel); // "High"
       </main>
 
       <PublicFooter />
+      
+      {/* Demo Request Modal */}
+      <DemoRequestModal
+        isOpen={isDemoModalOpen}
+        onClose={handleCloseDemoModal}
+      />
     </div>
   )
 }
