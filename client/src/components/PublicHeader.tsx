@@ -6,10 +6,15 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
+import { DemoRequestModal } from "@/components/DemoRequestModal";
 
 export default function PublicHeader() {
   const { user } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  
+  const openDemoModal = () => setIsDemoModalOpen(true);
+  const closeDemoModal = () => setIsDemoModalOpen(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
@@ -61,7 +66,12 @@ export default function PublicHeader() {
               Login/Register
             </Button>
           </Link>
-          <Button className="hidden sm:flex bg-black hover:bg-gray-800 text-white">Book a Demo</Button>
+          <Button 
+            className="hidden sm:flex bg-black hover:bg-gray-800 text-white"
+            onClick={openDemoModal}
+          >
+            Book a Demo
+          </Button>
           
           {/* Mobile menu button */}
           <button 
