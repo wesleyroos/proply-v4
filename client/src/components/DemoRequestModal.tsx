@@ -99,14 +99,17 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[550px] overflow-hidden border-slate-200 bg-white/95 backdrop-blur-sm shadow-lg">
         {!isSuccess ? (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">Book a Personalized Demo</DialogTitle>
-              <DialogDescription className="text-base text-gray-600">
+            <DialogHeader className="pb-4 relative">
+              <div className="absolute -top-10 -left-10 w-32 h-32 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-70 -z-10"></div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-50 to-green-100 rounded-full opacity-50 -z-10"></div>
+              <DialogTitle className="text-2xl font-bold text-gray-800">Book a Personalized Demo</DialogTitle>
+              <DialogDescription className="text-base text-gray-600 mt-2">
                 Let us show you how Proply can help your business make smarter property investment decisions.
               </DialogDescription>
+              <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full mt-3"></div>
             </DialogHeader>
             
             <Form {...form}>
@@ -119,7 +122,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                       <FormItem>
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your full name" {...field} />
+                          <Input placeholder="Your full name" className="border-slate-300 focus:border-blue-400 transition-colors" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -133,7 +136,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="you@company.com" {...field} />
+                          <Input type="email" placeholder="you@company.com" className="border-slate-300 focus:border-blue-400 transition-colors" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -149,7 +152,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                       <FormItem>
                         <FormLabel>Company Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your company" {...field} />
+                          <Input placeholder="Your company" className="border-slate-300 focus:border-blue-400 transition-colors" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -163,7 +166,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your phone number" {...field} />
+                          <Input placeholder="Your phone number" className="border-slate-300 focus:border-blue-400 transition-colors" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -189,6 +192,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                           <SelectItem value="deal-score">Deal Score</SelectItem>
                           <SelectItem value="rent-compare">Rent Compare</SelectItem>
                           <SelectItem value="enterprise">Enterprise Solutions</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -205,7 +209,7 @@ export function DemoRequestModal({ isOpen, onClose }: DemoRequestModalProps) {
                       <FormControl>
                         <Textarea 
                           placeholder="Tell us about your specific needs or questions..."
-                          className="min-h-[100px]"
+                          className="min-h-[100px] border-slate-300 focus:border-blue-400 transition-colors"
                           {...field} 
                         />
                       </FormControl>
