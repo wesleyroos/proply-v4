@@ -1,0 +1,115 @@
+List Franchises
+HTTP Request
+GEThttps://staging.api-gw.propdata.net/branches/api/v1/franchises/
+
+Example Response
+{
+  "count": 0,
+  "next": "http://www.example.com",
+  "previous": "http://www.example.com",
+  "results": [
+    {
+      "id": 0,
+      "site": 0,
+      "branches": [],
+      "created": "2025-05-07T12:12:32.884Z",
+      "modified": "2025-05-07T12:12:32.884Z",
+      "deleted": "2025-05-07T12:12:32.884Z",
+      "uuid": "770bba28-9f80-4d40-9c51-6e022364af91",
+      "source_ref": "string",
+      "active": false,
+      "name": "string",
+      "legal_name": "string",
+      "franchisees": [],
+      "directors": [],
+      "principals": [],
+      "support_consultants": [],
+      "country_code": "string",
+      "telephone_number": "string",
+      "fax_number": "string",
+      "email": "user@example.com",
+      "physical_address": "string",
+      "postal_address": "string",
+      "location": -2147483648,
+      "blog_url": "http://www.example.com",
+      "website_url": "string",
+      "facebook_url": "http://www.example.com",
+      "twitter_url": "http://www.example.com",
+      "linkedin_url": "http://www.example.com",
+      "youtube_url": "http://www.example.com",
+      "pinterest_url": "http://www.example.com",
+      "instagram_url": "http://www.example.com",
+      "serviced_listing_types": [],
+      "serviced_business_types": [],
+      "gross_commission": -2147483648,
+      "franchise_fee_payable": false,
+      "stakeholder_company_registration_number": "string",
+      "stakeholder_vat_registration_number": "string",
+      "stakeholder_fidelity_fund_number": "string",
+      "stakeholder_bank_name": "string",
+      "stakeholder_bank_account_number": "string",
+      "stakeholder_bank_branch_code": "string",
+      "target_type": "string",
+      "number_of_people_canvassed": -2147483648,
+      "number_of_valuations": -2147483648,
+      "mandates_created": -2147483648,
+      "sole_mandates_created": -2147483648,
+      "property_matches_sent": -2147483648,
+      "viewings": -2147483648,
+      "show_houses": -2147483648,
+      "feedback_requests_sent": -2147483648,
+      "listings_sold": -2147483648,
+      "listings_created": -2147483648,
+      "listings_sold_value": "0.00",
+      "number_of_agents": -2147483648,
+      "awards": null,
+      "documents": [],
+      "search_vector": "string",
+      "statistics": 0,
+      "division": [],
+      "region": []
+    }
+  ]
+}
+Name	Description
+order_by
+
+string
+
+Which field to use when ordering the results.
+offset
+
+integer
+
+Offset for Pagination
+limit
+
+integer
+
+Page Size
+Responses
+200
+Name	Description
+count
+
+integer
+
+Count of results
+next
+
+string
+
+URL of next result set
+previous
+
+string
+
+URL of previous result set
+results
+
+array
+
+Array of ReadFranchise items
+403 You do not have permission to perform this action
+500 Internal server error
+503 This website is not active

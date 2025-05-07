@@ -1,0 +1,196 @@
+Fetch Listing Statistics
+HTTP Request
+GEThttps://staging.api-gw.propdata.net/listings/api/v1/statistics/{id}/
+
+Example Response
+{
+  "id": 0,
+  "site": 0,
+  "residential": "string",
+  "commercial": "string",
+  "project": "string",
+  "holiday": "string",
+  "listing_id": "string",
+  "created": "2025-05-07T12:15:13.732Z",
+  "modified": "2025-05-07T12:15:13.732Z",
+  "deleted": "2025-05-07T12:15:13.732Z",
+  "source_ref": "string",
+  "active_electronic_leads": -2147483648,
+  "active_telephonic_leads": -2147483648,
+  "active_whatsapp_leads": -2147483648,
+  "inactive_leads": -2147483648,
+  "new_property_alerts_sent": -2147483648,
+  "on_show_alerts_sent": -2147483648,
+  "price_reduced_alerts_sent": -2147483648,
+  "manual_alerts_sent": -2147483648,
+  "total_alerts_sent": -2147483648,
+  "times_viewed": -2147483648,
+  "social_traffic": -2147483648,
+  "hot_matches": -2147483648,
+  "warm_matches": -2147483648,
+  "cold_matches": -2147483648,
+  "showday_count": -2147483648,
+  "upcoming_showday_count": -2147483648,
+  "past_showday_count": -2147483648
+}
+Name	Description
+id
+required
+
+
+integer
+
+id of Record
+Responses
+200
+MetaStatisticSerializer
+
+Name	Description
+id
+
+integer
+
+ID
+site
+
+integer
+
+Site
+residential
+
+string
+
+Residential
+commercial
+
+string
+
+Commercial
+project
+
+string
+
+Project
+holiday
+
+string
+
+Holiday
+listing_id
+
+string
+
+Listing id
+created
+
+string
+
+Created
+modified
+
+string
+
+Modified
+deleted
+nullable
+
+
+string
+
+Deleted
+source_ref
+nullable
+
+
+string<= 100 characters
+
+Source ref
+active_electronic_leads
+
+integer
+
+Active electronic leads
+active_telephonic_leads
+
+integer
+
+Active telephonic leads
+active_whatsapp_leads
+
+integer
+
+Active whatsapp leads
+inactive_leads
+
+integer
+
+Inactive leads
+new_property_alerts_sent
+
+integer
+
+New property alerts sent
+on_show_alerts_sent
+
+integer
+
+On show alerts sent
+price_reduced_alerts_sent
+
+integer
+
+Price reduced alerts sent
+manual_alerts_sent
+
+integer
+
+Manual alerts sent
+total_alerts_sent
+
+integer
+
+Total alerts sent
+times_viewed
+
+integer
+
+Times viewed
+social_traffic
+
+integer
+
+Social traffic
+hot_matches
+
+integer
+
+Hot matches
+warm_matches
+
+integer
+
+Warm matches
+cold_matches
+
+integer
+
+Cold matches
+showday_count
+
+integer
+
+Showday count
+upcoming_showday_count
+
+integer
+
+Upcoming showday count
+past_showday_count
+
+integer
+
+Past showday count
+403 You do not have permission to perform this action
+404 Not found
+500 Internal server error
+503 This website is not active
