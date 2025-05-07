@@ -59,6 +59,15 @@ interface PropdataListing {
     city?: string;
     province?: string;
   };
+  features?: string[];
+  listingData?: any; // Raw PropData API response
+}
+
+interface ApiResponse {
+  total: number;
+  results: PropdataListing[];
+  next?: string;
+  previous?: string;
 }
 
 type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt';
@@ -79,13 +88,13 @@ export default function PropdataListingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Query to fetch PropData listings
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery<ApiResponse>({
     queryKey: ['/api/propdata/fetch-listings'],
     enabled: !!user?.isAdmin, // Only fetch if user is admin
   });
   
   // Extract listings from response
-  const listings = data?.results as PropdataListing[] || [];
+  const listings = data?.results || [];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-ZA', {
@@ -530,6 +539,13 @@ export default function PropdataListingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Property Detail Modal */}
+      <PropertyDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        property={selectedProperty}
+      />
     </div>
   );
 }
