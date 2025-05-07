@@ -15,7 +15,8 @@ import {
   Brain,
   ToggleLeft,
   BarChart2,
-  Target // Add this import for the Deal Score icon
+  Target, // Add this import for the Deal Score icon
+  Database, // Add this import for the PropData listings icon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -145,6 +146,17 @@ export default function Sidebar() {
               >
                 <Users className="h-5 w-5 text-white" />
                 {expanded && <span className="text-white">User Management</span>}
+              </Link>
+              <Link
+                href="/propdata-listings"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                  "hover:bg-white/10 text-white/80",
+                  location === "/propdata-listings" ? "bg-white/20 text-white" : ""
+                )}
+              >
+                <Database className="h-5 w-5 text-white" />
+                {expanded && <span className="text-white">PropData Listings</span>}
               </Link>
               <Link
                 href="/analytics"
