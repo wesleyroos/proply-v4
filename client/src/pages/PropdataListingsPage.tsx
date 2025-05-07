@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database } from "lucide-react";
+import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -29,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { format } from "date-fns";
+import PropertyDetailModal, { PropertyDetailListing } from "@/components/PropertyDetailModal";
 
 // Define PropData listing type based on database schema
 interface PropdataListing {
@@ -74,6 +75,8 @@ export default function PropdataListingsPage() {
   });
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>("all");
+  const [selectedProperty, setSelectedProperty] = useState<PropertyDetailListing | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Query to fetch PropData listings
   const { data, isLoading, error, refetch } = useQuery({
@@ -178,6 +181,18 @@ export default function PropdataListingsPage() {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+  
+  // Handle opening the property detail modal
+  const handleViewProperty = (property: PropdataListing) => {
+    // Convert PropdataListing to PropertyDetailListing
+    const detailProperty: PropertyDetailListing = {
+      ...property,
+      listingData: property.listingData || {},
+    };
+    
+    setSelectedProperty(detailProperty);
+    setIsModalOpen(true);
   };
 
   if (!user?.isAdmin) {
@@ -399,6 +414,7 @@ export default function PropdataListingsPage() {
                           <ArrowUpDown className="h-4 w-4" />
                         </div>
                       </TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -456,6 +472,17 @@ export default function PropdataListingsPage() {
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             {format(new Date(listing.createdAt), 'MMM d, yyyy')}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleViewProperty(listing)}
+                            className="flex items-center gap-1"
+                          >
+                            <Eye className="h-4 w-4" />
+                            View
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
