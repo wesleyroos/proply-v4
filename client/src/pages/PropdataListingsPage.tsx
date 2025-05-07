@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign } from "lucide-react";
+import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -76,10 +76,13 @@ export default function PropdataListingsPage() {
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>("all");
 
   // Query to fetch PropData listings
-  const { data: listings, isLoading, error, refetch } = useQuery<PropdataListing[]>({
-    queryKey: ['/api/propdata/listings'],
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['/api/propdata/fetch-listings'],
     enabled: !!user?.isAdmin, // Only fetch if user is admin
   });
+  
+  // Extract listings from response
+  const listings = data?.results as PropdataListing[] || [];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-ZA', {
@@ -203,10 +206,38 @@ export default function PropdataListingsPage() {
             View and manage property listings from PropData integration.
           </p>
         </div>
-        <Button onClick={() => refetch()} variant="outline" className="gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="space-x-2">
+          <Button onClick={() => refetch()} variant="outline" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/propdata/listings/sync', {
+                  method: 'POST',
+                  credentials: 'include',
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  alert(`Sync completed: ${result.message}`);
+                  refetch();
+                } else {
+                  alert('Failed to sync with PropData API: ' + (await response.text()));
+                }
+              } catch (error) {
+                console.error('Error syncing with PropData:', error);
+                alert('Failed to sync with PropData API. See console for details.');
+              }
+            }}
+            variant="default"
+            className="gap-2"
+          >
+            <Database className="h-4 w-4" />
+            Sync with PropData
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -272,7 +303,7 @@ export default function PropdataListingsPage() {
         <CardHeader>
           <CardTitle>Property Listings</CardTitle>
           <CardDescription>
-            {listings ? `${listings.length} total properties found` : 'Loading properties...'}
+            {data?.total ? `${data.total} total properties found (showing ${listings.length})` : 'Loading properties...'}
           </CardDescription>
         </CardHeader>
         <CardContent>
