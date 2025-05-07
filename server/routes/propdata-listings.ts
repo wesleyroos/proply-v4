@@ -30,22 +30,42 @@ router.post("/propdata/listings/sync", async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
+    // Parse request parameters
+    const forceFullSync = req.body.forceFullSync === true;
+    const maxPages = req.body.maxPages || 5; // Limit number of pages to sync (default 5)
+    const pageSize = req.body.pageSize || 100; // Number of listings per page (default 100)
+    
+    console.log(`PropData sync requested. Force full sync: ${forceFullSync}, Max pages: ${maxPages}, Page size: ${pageSize}`);
+
     // Create listings client instance
     const listingsClient = new ListingsClient();
     
-    // Get timestamp of most recent listing (for incremental sync)
-    const [latestListing] = await db
-      .select({ lastModified: propdataListings.lastModified })
-      .from(propdataListings)
-      .orderBy(desc(propdataListings.lastModified))
-      .limit(1);
+    // For incremental sync, get timestamp of most recent listing
+    let options: { 
+      limit: number;
+      modified_since?: Date;
+    } = { limit: pageSize };
     
-    // If we have a latest listing, use its timestamp for modified_since
-    const options = latestListing 
-      ? { modified_since: new Date(latestListing.lastModified) }
-      : {};
+    if (!forceFullSync) {
+      const [latestListing] = await db
+        .select({ lastModified: propdataListings.lastModified })
+        .from(propdataListings)
+        .orderBy(desc(propdataListings.lastModified))
+        .limit(1);
+      
+      if (latestListing) {
+        // Use modified_since for incremental sync
+        const modifiedSince = new Date(latestListing.lastModified);
+        console.log(`Using incremental sync with modified_since: ${modifiedSince.toISOString()}`);
+        options.modified_since = modifiedSince;
+      } else {
+        console.log("No existing listings found. Performing initial sync.");
+      }
+    } else {
+      console.log("Forced full sync requested. Ignoring modified_since parameter.");
+    }
     
-    // Fetch listings from PropData API
+    // Fetch first page of listings from PropData API
     const response = await listingsClient.fetchListings(options);
     
     // Track counts for response
@@ -71,8 +91,8 @@ router.post("/propdata/listings/sync", async (req, res) => {
           ].filter(Boolean).join(", "),
           price: listing.asking_price || 0,
           propertyType: listing.category || "Unknown",
-          bedrooms: listing.bedrooms || 0,
-          bathrooms: listing.bathrooms || 0,
+          bedrooms: parseFloat(listing.bedrooms) || 0,
+          bathrooms: parseFloat(listing.bathrooms) || 0,
           parkingSpaces: listing.garages || null,
           floorSize: listing.floor_area?.size || null,
           landSize: listing.erf_size?.size || null,

@@ -214,9 +214,17 @@ export default function PropdataListingsPage() {
           <Button
             onClick={async () => {
               try {
+                // Default incremental sync
                 const response = await fetch('/api/propdata/listings/sync', {
                   method: 'POST',
                   credentials: 'include',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    forceFullSync: false, 
+                    maxPages: 5
+                  }),
                 });
                 
                 if (response.ok) {
@@ -235,7 +243,45 @@ export default function PropdataListingsPage() {
             className="gap-2"
           >
             <Database className="h-4 w-4" />
-            Sync with PropData
+            Quick Sync
+          </Button>
+          
+          <Button
+            onClick={async () => {
+              if (!confirm("This will perform a full sync of ALL PropData listings, which may take some time. Continue?")) {
+                return;
+              }
+              
+              try {
+                const response = await fetch('/api/propdata/listings/sync', {
+                  method: 'POST',
+                  credentials: 'include',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    forceFullSync: true, 
+                    maxPages: 20
+                  }),
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  alert(`Full sync completed: ${result.message}`);
+                  refetch();
+                } else {
+                  alert('Failed to sync with PropData API: ' + (await response.text()));
+                }
+              } catch (error) {
+                console.error('Error syncing with PropData:', error);
+                alert('Failed to sync with PropData API. See console for details.');
+              }
+            }}
+            variant="outline"
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Full Sync
           </Button>
         </div>
       </div>
