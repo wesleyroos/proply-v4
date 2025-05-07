@@ -107,7 +107,11 @@ router.post("/propdata/listings/sync", async (req, res) => {
           images: listing.images?.map((img: any) => img.url) || [],
           agentId: listing.agent?.id?.toString() || null,
           agentPhone: listing.agent?.cell_number || null,
-          lastModified: new Date(listing.modified_at || new Date()),
+          // Use mandate_start_date as the original listing date when available
+          // Otherwise fall back to modified_at or current date
+          lastModified: listing.mandate_start_date 
+            ? new Date(listing.mandate_start_date) 
+            : new Date(listing.modified_at || new Date()),
           updatedAt: new Date(),
         };
 

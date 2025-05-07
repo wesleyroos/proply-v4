@@ -57,7 +57,10 @@ router.get("/propdata/fetch-listings", async (req, res) => {
         agentPhone: listing.agent?.cell_number || null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        lastModified: listing.modified_at ? new Date(listing.modified_at).toISOString() : new Date().toISOString(),
+        // Use mandate_start_date as the original listing date when available
+        lastModified: listing.mandate_start_date 
+          ? new Date(listing.mandate_start_date).toISOString() 
+          : (listing.modified_at ? new Date(listing.modified_at).toISOString() : new Date().toISOString()),
       };
     });
     
