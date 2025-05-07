@@ -31,6 +31,23 @@ export class ListingsClient extends BaseApiClient {
             const url = `/listings/api/v1/residential/${params.toString() ? `?${params.toString()}` : ''}`;
             console.log(`Fetching PropData listings: ${url}`);
             const response: AxiosResponse<PaginatedResponse<Listing>> = await this.axiosInstance.get(url);
+            
+            // Debug the first listing to understand the structure
+            if (response.data.results && response.data.results.length > 0) {
+                const firstListing = response.data.results[0];
+                console.log('First PropData listing structure:');
+                console.log(JSON.stringify(firstListing, null, 2));
+                
+                // Extract possible price fields for easy viewing
+                const priceFields = {};
+                Object.keys(firstListing).forEach(key => {
+                    if (key.toLowerCase().includes('price') || key.toLowerCase().includes('amount')) {
+                        priceFields[key] = firstListing[key];
+                    }
+                });
+                console.log('Price-related fields:', priceFields);
+            }
+            
             return response.data;
         } catch (error) {
             console.error('Failed to fetch listings:', error);
