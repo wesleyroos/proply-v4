@@ -89,10 +89,10 @@ router.post("/propdata/listings/sync", async (req, res) => {
             listing.lightstone_data?.township,
             listing.lightstone_data?.province
           ].filter(Boolean).join(", "),
-          price: parseFloat(listing.asking_price) || 0,
+          price: String(parseFloat(listing.price) || 0),
           propertyType: listing.category || "Unknown",
-          bedrooms: parseFloat(listing.bedrooms) || 0,
-          bathrooms: parseFloat(listing.bathrooms) || 0,
+          bedrooms: String(parseFloat(listing.bedrooms) || 0),
+          bathrooms: String(parseFloat(listing.bathrooms) || 0),
           parkingSpaces: listing.garages || null,
           floorSize: listing.floor_area?.size || null,
           landSize: listing.erf_size?.size || null,

@@ -39,10 +39,10 @@ export class ListingsClient extends BaseApiClient {
                 console.log(JSON.stringify(firstListing, null, 2));
                 
                 // Extract possible price fields for easy viewing
-                const priceFields = {};
+                const priceFields: Record<string, any> = {};
                 Object.keys(firstListing).forEach(key => {
                     if (key.toLowerCase().includes('price') || key.toLowerCase().includes('amount')) {
-                        priceFields[key] = firstListing[key];
+                        priceFields[key] = firstListing[key as keyof typeof firstListing];
                     }
                 });
                 console.log('Price-related fields:', priceFields);
