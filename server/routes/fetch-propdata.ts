@@ -22,7 +22,11 @@ router.get("/propdata/fetch-listings", async (req, res) => {
     console.log(`Fetching PropData listings with parameters: limit=${limit}, offset=${offset}, maxPages=${maxPages}`);
     
     // Fetch multiple pages of listings from PropData API
-    const options = { limit, offset };
+    const options = { 
+      limit, 
+      offset,
+      listing_type: 'For Sale' // Only fetch properties for sale, not rentals
+    };
     const response = await listingsClient.fetchMultiplePages(options, maxPages);
     
     // Transform the response for our frontend

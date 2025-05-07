@@ -27,6 +27,8 @@ export class ListingsClient extends BaseApiClient {
             if (options.offset !== undefined) params.append('offset', options.offset.toString());
             if (options.limit !== undefined) params.append('limit', options.limit.toString());
             if (options.modified_since) params.append('modified__gte', options.modified_since.toISOString());
+            // Filter by listing type ('For Sale' or 'To Let')
+            if (options.listing_type) params.append('listing_type', options.listing_type);
             
             const url = `/listings/api/v1/residential/${params.toString() ? `?${params.toString()}` : ''}`;
             console.log(`Fetching PropData listings: ${url}`);

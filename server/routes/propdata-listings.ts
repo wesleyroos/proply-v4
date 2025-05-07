@@ -44,7 +44,11 @@ router.post("/propdata/listings/sync", async (req, res) => {
     let options: { 
       limit: number;
       modified_since?: Date;
-    } = { limit: pageSize };
+      listing_type?: string;
+    } = { 
+      limit: pageSize,
+      listing_type: 'For Sale' // Only fetch properties for sale, not rentals
+    };
     
     if (!forceFullSync) {
       const [latestListing] = await db

@@ -39,8 +39,13 @@ async function syncPropDataListings() {
     
     // If we have a latest listing, use its timestamp for modified_since
     const options = latestListing 
-      ? { modified_since: new Date(latestListing.lastModified) }
-      : {};
+      ? { 
+          modified_since: new Date(latestListing.lastModified),
+          listing_type: 'For Sale' // Only fetch properties for sale, not rentals
+        }
+      : { 
+          listing_type: 'For Sale' // Only fetch properties for sale, not rentals
+        };
     
     // Fetch listings from PropData API
     console.log("Fetching listings from PropData API...");
