@@ -10,4 +10,5 @@ export interface PaginationOptions {
     limit?: number;
     order_by?: string;
     modified_since?: Date;
+    listing_type?: string; // 'For Sale' or 'To Let'
 } 
