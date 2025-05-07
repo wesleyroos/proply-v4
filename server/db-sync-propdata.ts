@@ -69,7 +69,7 @@ async function syncPropDataListings() {
             listing.lightstone_data?.township,
             listing.lightstone_data?.province
           ].filter(Boolean).join(", "),
-          price: listing.asking_price || 0,
+          price: parseFloat(listing.asking_price) || 0,
           propertyType: listing.property_type || "Unknown",
           bedrooms: parseFloat(listing.bedrooms) || 0,
           bathrooms: parseFloat(listing.bathrooms) || 0,

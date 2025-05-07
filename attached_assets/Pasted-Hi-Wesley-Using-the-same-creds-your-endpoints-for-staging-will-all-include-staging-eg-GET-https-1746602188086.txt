@@ -1,0 +1,279 @@
+Hi Wesley
+
+Using the same creds, your endpoints for staging will all include staging.
+
+eg: GET https://staging.api-gw.propdata.net/users/public-api/login/ 
+
+GEThttps://staging.api-gw.propdata.net/listings/api/v1/residential/
+
+
+Prop Data Logo	Dennis Lutge 
+Head of Client Service 
+Prop Data Internet Marketing
+Tel 031 266 0035 
+Email dennis@propdata.net
+www.propdata.net
+marketing banner
+
+On Tue, Apr 1, 2025 at 1:18 PM Wesley Roos <wesley@proply.co.za> wrote:
+Hi Dennis, 
+
+Great, I think api access to the staging environment will be very helpful. What are next steps to initiate that? 
+
+Best, 
+Wesley 
+
+Wesley Roos
+CEO & Founder
+BSc (Hons) in Property Studies
+mobilePhone
+072 484 9014
+emailAddress
+wesley@proply.co.za
+website
+app.proply.co.za
+address
+Darter Studios, Darter Road, Longkloof, Gardens, Cape Town, 8001
+
+
+
+
+On 01 Apr 2025, at 12:08, Dennis Lutge <dennis@propdata.net> wrote:
+
+Hi Wesley
+
+Well thanks and you?
+
+It is quite difficult to provide user access to the staging environment, I can provide API access to the staging environment and assist you by adding a listing. 
+
+
+<1743502237-Union.png>	Dennis Lutge 
+Head of Client Service 
+Prop Data Internet Marketing
+Tel 031 266 0035 
+Email dennis@propdata.net
+www.propdata.net
+<1743502237-march-poll.png>
+
+On Mon, Mar 31, 2025 at 8:24 PM Wesley Roos <wesley@proply.co.za> wrote:
+Hi Dennis, 
+
+I hope you are well. 
+
+We’re in the final stages of implementing our Property Analyser API product  (the product that pulls the Sothebys listing data into our platform for analysis). For testing purposes, I wanted to find out if it would be possible to get some kind of access to the demo/staging PropData platform for us to test/simulate the uploading of a new property by an agent, and then ingesting that into our analysis engine to generate the relevant investment report. 
+
+Please let me know what options we have available to us on this front. Happy to jump on a call if need be. 
+
+Best, 
+Wesley 
+
+Wesley Roos
+CEO & Founder
+BSc (Hons) in Property Studies
+mobilePhone
+072 484 9014
+emailAddress
+wesley@proply.co.za
+website
+app.proply.co.za
+address
+Darter Studios, Darter Road, Longkloof, Gardens, Cape Town, 8001
+
+
+
+
+On 04 Mar 2025, at 13:35, Dennis Lutge <dennis@propdata.net> wrote:
+
+Hi Chris
+
+Well thanks and you?
+
+No problem at all.
+
+If a client elects to feed to Propyl, Proply will have access to all listings for the client and/or branch/es.
+
+Let me know if you have any further questions.
+
+
+
+
+<1741088156-Union.png>	Dennis Lutge 
+Head of Client Service 
+Prop Data Internet Marketing
+Tel 031 266 0035 
+Email dennis@propdata.net
+www.propdata.net
+<1741088156-unregistered-agents.png>
+
+On Mon, Mar 3, 2025 at 8:21 PM chris@proply.co.za <chris@proply.co.za> wrote:
+Hi Dennis,
+
+I trust you are keeping well.
+
+Thank you for the links and guidance on how to consume the API. We can pull the listings and get the agent’s details via the users endpoint. 
+
+I am looking for further clarification in one regard. Will Proply be added as a portal, and should we only process listings where we are in the metadata portals?
+
+Regards,
+Chris Kieser
+082 456 4489
+
+Get Outlook for Mac
+From: Dennis Lutge <dennis@propdata.net>
+Date: Tuesday, 18 February 2025 at 12:25
+To: Wesley Roos <wesley@proply.co.za>
+Cc: Heather Sudding <heather@propdata.net>, chris@proply.co.za <chris@proply.co.za>
+Subject: Re: API Access - Sothebys ASB
+
+Hi Wesley and Chris
+
+Well thanks and you?
+
+I would first https://staging.api-docs.propdata.net/api/listings/listings-api_v1_residential_list
+
+Or If I wanted additional data I would use the mashup service, EG. https://staging.api-gw.propdata.net/mashup/api/v1/residential/?display_on_website=true&status__in=Active,Pending,listing_images,suburb,agent,branch&order_by=id&order_dir=desc
+
+Then once you have the ID's on your db, run https://staging.api-docs.propdata.net/api/listings/listings-api_v1_residential_read
+
+The mashup can be used when querying a specific listing too. Especially for data such as listing_images,suburb,agent
+
+
+<1739874337-Union.png>	Dennis Lutge 
+Head of Client Service 
+Prop Data Internet Marketing
+Tel 031 266 0035 
+Email dennis@propdata.net
+www.propdata.net
+<1739874337-poll-jan-2025.png>
+
+On Tue, Feb 18, 2025 at 12:07 PM Wesley Roos <wesley@proply.co.za> wrote:
+Hi Dennis, 
+
+I hope you are well! 
+
+We’ve been cleaning up shop a bit on our end hence the delay in turning this on. 
+
+Please meet Chris our interim CTO. Chris has some questions around the API integration. It isnt super clear how to find a particular listing and there didnt seem to be an obvious answer in the documentation. 
+
+Please could you assist Chris. Will let you two discuss. 
+
+Best, 
+Wesley 
+
+Wesley Roos
+CEO & Founder
+BSc (Hons) in Property Studies
+mobilePhone
++27 72 484 9014
+emailAddress
+wesley@proply.co.za
+website
+app.proply.co.za
+address
+Innovation City, Darter Road, Longkloof, Gardens, Cape Town, 8001
+
+
+
+
+
+
+
+On 13 Nov 2024, at 08:07, Dennis Lutge <dennis@propdata.net> wrote:
+
+Morning Wesley
+
+Well thanks and you?
+
+The listing structure can be found under the create endpoint on the docs, eg. https://staging.api-docs.propdata.net/api/listings/listings-api_v1_residential_create
+
+You would need to pull the listings into your environment and store them there, you can make a request as per the below example to get new and updated listings, this request can be run hourly.
+
+https://api-gw.propdata.net/listings/api/v1/residential/?modified__gte=2024-11-12T14:00:00%2B02:00
+
+To get the currently active listings you could make a request as below:
+
+https://api-gw.propdata.net/listings/api/v1/residential/?status__in=Active
+
+Or a similar mashup request as in my setup email.
+
+
+
+
+<1731478112-Union.png>	Dennis Lutge 
+Head of Client Service 
+Prop Data Internet Marketing
+Tel 031 266 0035 
+Email dennis@propdata.net
+www.propdata.net
+<1731478112-poll-messy-homes.png>
+
+On Wed, 13 Nov 2024, 06:50 Wesley Roos, <wesley@proply.co.za> wrote:
+Morning Dennis, 
+
+I hope you are well. 
+
+We’ve been going through your mail as well as the API documentation and I just want to make sure we on the same page. 
+
+For context, we’re in the process of creating an API for accepting the PropData property alerts, or in short, every time an agency that is under agreement with us uploads a property to the market via PropData, that listing info needs to get pushed to Proply. Could you please provide the structure of the listing data that is pushed, or direct me to the area in the documentation where it speaks to this. 
+
+There seems to be some confusion on our side about whether the listing data is pushed to to us or whether we need to call for it. 
+
+Thanks, 
+Wesley 
+
+Wesley Roos
+CEO & Founder
+BSc (Hons) in Property Studies
+mobilePhone
++27 72 484 9014
+emailAddress
+wesley@proply.co.za
+website
+app.proply.co.za
+address
+Innovation City, Darter Road, Longkloof, Gardens, Cape Town, 8001
+
+
+
+
+
+
+
+On 07 Nov 2024, at 11:53, Dennis Lutge <dennis@propdata.net> wrote:
+
+Hi Wesley
+
+Staging access has been added to: View residential and commercial listings.
+
+apiuser@proply.co.za   D18Sf3xPr0prYbzMQRJP449J
+
+* Please include a user-agent HEADER with your auth and further requests (proply).
+
+GET https://api-gw.propdata.net/users/public-api/login/
+
+Basic auth will provide a token that can be used for further requests. Please note that the token will expire after 30 mins. A new token can be requested which can be found in the Headers.
+
+GET https://api-gw.propdata.net/users/api/v1/renew-token/
+
+To view listings set to feed to your portal eg:
+
+GET https://api-gw.propdata.net/listings/api/v1/residential/
+
+You can use our mashup service to get metadata for listings, eg, listing images URLs
+
+GET https://api-gw.propdata.net/mashup/api/v1/residential/?meta_fields=listing_images,agent
+
+Important Notes
+All data needs to be stored on a server within your system infrastructure, do not display content using the API.
+Our location data can be found here, staging locations are different to production/ Production locations: https://manage.propdata.net/locations/2.csv
+
+Documentation https://staging.api-docs.propdata.net/
+
+Let me know if you have any questions. 
+
+<1730973243-Union.png>	Dennis Lutge 
+Head of Client Service 
+Prop Data Internet Marketing
+Tel 031 266 0035 
+Email dennis@propdata.net
+www.propdata.net

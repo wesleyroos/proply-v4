@@ -12,15 +12,18 @@ router.get("/propdata/fetch-listings", async (req, res) => {
     }
 
     // Parse pagination parameters
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
     const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+    const maxPages = req.query.maxPages ? parseInt(req.query.maxPages as string) : 3;
     
     // Create listings client instance
     const listingsClient = new ListingsClient();
     
-    // Fetch listings from PropData API
+    console.log(`Fetching PropData listings with parameters: limit=${limit}, offset=${offset}, maxPages=${maxPages}`);
+    
+    // Fetch multiple pages of listings from PropData API
     const options = { limit, offset };
-    const response = await listingsClient.fetchListings(options);
+    const response = await listingsClient.fetchMultiplePages(options, maxPages);
     
     // Transform the response for our frontend
     const listings = response.results.map(listing => {
@@ -35,7 +38,7 @@ router.get("/propdata/fetch-listings", async (req, res) => {
           listing.lightstone_data?.township,
           listing.lightstone_data?.province
         ].filter(Boolean).join(", "),
-        price: listing.asking_price || 0,
+        price: parseFloat(listing.asking_price) || 0,
         propertyType: listing.property_type || "Unknown",
         bedrooms: parseFloat(listing.bedrooms) || 0,
         bathrooms: parseFloat(listing.bathrooms) || 0,

@@ -15,6 +15,11 @@ interface Listing {
 }
 
 export class ListingsClient extends BaseApiClient {
+    /**
+     * Fetch listings with pagination
+     * @param options Pagination and filtering options
+     * @returns Paginated response with listings
+     */
     async fetchListings(options: PaginationOptions = {}): Promise<PaginatedResponse<Listing>> {
         try {
             const params = new URLSearchParams();
@@ -24,6 +29,7 @@ export class ListingsClient extends BaseApiClient {
             if (options.modified_since) params.append('modified__gte', options.modified_since.toISOString());
             
             const url = `/listings/api/v1/residential/${params.toString() ? `?${params.toString()}` : ''}`;
+            console.log(`Fetching PropData listings: ${url}`);
             const response: AxiosResponse<PaginatedResponse<Listing>> = await this.axiosInstance.get(url);
             return response.data;
         } catch (error) {
@@ -34,6 +40,54 @@ export class ListingsClient extends BaseApiClient {
                 previous: null,
                 results: []
             };
+        }
+    }
+    
+    /**
+     * Fetch multiple pages of listings and combine them
+     * @param options Pagination and filtering options
+     * @param maxPages Maximum number of pages to fetch (default: 5)
+     * @returns Combined paginated response with all listings
+     */
+    async fetchMultiplePages(options: PaginationOptions = {}, maxPages: number = 5): Promise<PaginatedResponse<Listing>> {
+        let currentPage = 1;
+        let offset = options.offset || 0;
+        const limit = options.limit || 100;
+        let hasMorePages = true;
+        
+        const combinedResponse: PaginatedResponse<Listing> = {
+            count: 0,
+            next: null,
+            previous: null,
+            results: []
+        };
+        
+        try {
+            while (hasMorePages && currentPage <= maxPages) {
+                console.log(`Fetching PropData listings page ${currentPage} of ${maxPages} (offset: ${offset}, limit: ${limit})`);
+                
+                const pageOptions = {
+                    ...options,
+                    offset,
+                    limit
+                };
+                
+                const pageResponse = await this.fetchListings(pageOptions);
+                combinedResponse.results = [...combinedResponse.results, ...pageResponse.results];
+                combinedResponse.count = pageResponse.count;
+                
+                if (pageResponse.next) {
+                    offset += limit;
+                    currentPage++;
+                } else {
+                    hasMorePages = false;
+                }
+            }
+            
+            return combinedResponse;
+        } catch (error) {
+            console.error('Failed to fetch multiple pages:', error);
+            return combinedResponse;
         }
     }
 
