@@ -91,7 +91,7 @@ export const propdataListings = pgTable("propdata_listings", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   propertyType: text("property_type").notNull(),
   bedrooms: decimal("bedrooms", { precision: 3, scale: 1 }).notNull(),
-  bathrooms: integer("bathrooms").notNull(),
+  bathrooms: decimal("bathrooms", { precision: 3, scale: 1 }).notNull(),
   parkingSpaces: integer("parking_spaces"),
   floorSize: integer("floor_size"), // in square meters
   landSize: integer("land_size"), // in square meters
