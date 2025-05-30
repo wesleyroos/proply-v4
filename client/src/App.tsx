@@ -45,6 +45,7 @@ import HollardRiskIndexPage from "./pages/HollardRiskIndexPage";
 import KingPriceRiskIndexPage from "./pages/KingPriceRiskIndexPage";
 import MomentumRiskIndexPage from "./pages/MomentumRiskIndexPage";
 import OnevapRiskIndexPage from "./pages/OnevapRiskIndexPage";
+import OnevapResidentialRiskIndexPage from "./pages/OnevapResidentialRiskIndexPage";
 import AgentsPage from "./pages/AgentsPage";
 import PropdataListingsPage from "./pages/PropdataListingsPage";
 
@@ -229,6 +230,11 @@ function App() {
             <Route path="/one-vap-risk-index" component={() => (
               <PageTransition>
                 <OnevapRiskIndexPage />
+              </PageTransition>
+            )} />
+            <Route path="/one-vap-residential-risk-index" component={() => (
+              <PageTransition>
+                <OnevapResidentialRiskIndexPage />
               </PageTransition>
             )} />
             <Route path="/insurers" component={() => (
