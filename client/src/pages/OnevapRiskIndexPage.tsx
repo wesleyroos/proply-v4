@@ -3461,7 +3461,7 @@ Based on this commercial risk assessment, we recommend a comprehensive business 
         {/* Download Report Button */}
         <div className="flex justify-center">
           <StaticPDFButton
-            pdfPath="/Property%20Risk%20Assessment%20-%20One%20Vap.pdf"
+            pdfPath="/static-assets/Property Risk Assessment - One Vap.pdf"
             className="bg-blue-500 hover:bg-blue-600 text-white w-full max-w-md h-10 py-2 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium"
             propertyAddress={riskResult?.propertyDetails?.address}
           >
