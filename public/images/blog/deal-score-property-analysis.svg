@@ -1,0 +1,24 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="600" fill="#1e40af"/>
+  <rect x="100" y="100" width="1000" height="400" fill="white" rx="8"/>
+  
+  <!-- Chart bars -->
+  <rect x="200" y="350" width="60" height="80" fill="#3b82f6"/>
+  <rect x="300" y="300" width="60" height="130" fill="#60a5fa"/>
+  <rect x="400" y="250" width="60" height="180" fill="#3b82f6"/>
+  <rect x="500" y="280" width="60" height="150" fill="#60a5fa"/>
+  <rect x="600" y="220" width="60" height="210" fill="#3b82f6"/>
+  
+  <!-- Property icon -->
+  <rect x="750" y="200" width="200" height="150" fill="#e5e7eb" rx="4"/>
+  <rect x="770" y="220" width="50" height="80" fill="#6b7280"/>
+  <rect x="840" y="220" width="50" height="80" fill="#6b7280"/>
+  <polygon points="750,200 850,150 950,200" fill="#374151"/>
+  
+  <!-- Deal Score indicator -->
+  <circle cx="900" cy="400" r="40" fill="#10b981"/>
+  <text x="900" y="410" text-anchor="middle" fill="white" font-family="Arial" font-size="24" font-weight="bold">85</text>
+  
+  <!-- Title -->
+  <text x="600" y="80" text-anchor="middle" fill="white" font-family="Arial" font-size="32" font-weight="bold">Property Deal Analysis</text>
+</svg>
