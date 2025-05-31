@@ -61,17 +61,31 @@ export default function PublicHeader() {
             </Link>
           </nav>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 lg:gap-4">
             <Link href="/login">
-              <Button variant="outline" className="hidden md:flex border-black text-black hover:bg-black/5">
+              <Button variant="outline" className="hidden lg:flex border-black text-black hover:bg-black/5">
                 Login/Register
               </Button>
             </Link>
             <Button 
-              className="hidden sm:flex bg-black hover:bg-gray-800 text-white"
+              className="hidden lg:flex bg-black hover:bg-gray-800 text-white"
               onClick={openDemoModal}
             >
               Book a Demo
+            </Button>
+            
+            {/* Compact buttons for medium screens */}
+            <Link href="/login" className="hidden md:block lg:hidden">
+              <Button variant="outline" size="sm" className="border-black text-black hover:bg-black/5">
+                Login
+              </Button>
+            </Link>
+            <Button 
+              size="sm"
+              className="hidden md:flex lg:hidden bg-black hover:bg-gray-800 text-white"
+              onClick={openDemoModal}
+            >
+              Book
             </Button>
             
             {/* Mobile menu button */}
