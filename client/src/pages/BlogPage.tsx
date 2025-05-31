@@ -403,22 +403,26 @@ function DealScoreBlogPost() {
             Let's talk rands and cents. A <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score report</a> costs just R89 – probably the cheapest line item in your entire home-buying journey. But that R89 can easily save you R150,000 or more. How? By preventing a bad deal or giving you ammo to negotiate a better price. Think of the Deal Score as a R89 insurance policy against overpaying.
           </p>
 
-          <h3>Why Deal Score is better than a CMA or Lightstone report</h3>
+          <h3>Why Deal Score is better than free agent reports or those expensive "industry standard" tools</h3>
 
           <p>
-            You might be thinking, "I can get a free CMA from an agent, or buy a Lightstone property report. Why do I need Deal Score?" CMAs (Comparative Market Analyses) and tools like Lightstone are indeed popular – but here's the issue: A typical CMA is prepared by an estate agent to estimate the home's value, usually by looking at a few recent sales. While it's useful, it's often biased or limited.
+            You might be thinking, "I can get a free CMA from an agent, or buy a property report from a big name brand. Why do I need Deal Score?" Sure, CMAs (Comparative Market Analyses) and those R100+ reports from household names are popular – but here's the thing: A typical CMA is prepared by an estate agent whose job is to sell properties, not save you money. While useful, it's often cherry-picked data dressed up to close a deal.
           </p>
 
           <p>
-            <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score</a> distills exactly what a buyer/investor needs into a simple metric and explanation. It's built specifically to answer, "Am I doing a good deal here?" in a way a CMA or generic report doesn't. With Deal Score, you don't need to interpret charts or guess which comps matter – the algorithm has done the heavy lifting.
+            Those expensive reports from the "industry leaders"? They're designed for professionals who love drowning in spreadsheets, not regular buyers who just want to know "Am I getting ripped off?" You end up paying premium prices for data dumps that leave you more confused than when you started.
           </p>
 
-          <div className="bg-blue-50 p-6 rounded-lg my-8">
-            <h3 className="text-xl font-semibold text-blue-900 mb-3">Ready to Score Your Next Property Deal?</h3>
-            <p className="text-blue-800 mb-4">
+          <p>
+            <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score</a> distills exactly what a buyer/investor needs into simple insights and explanations. It's built specifically to answer, "Am I doing a good deal here?" in plain English – not industry jargon. With Deal Score, you don't need to interpret charts or guess which comps matter – the algorithm has done the heavy lifting, and we present it in a way that actually makes sense.
+          </p>
+
+          <div className="bg-gray-50 p-6 rounded-lg my-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Ready to Score Your Next Property Deal?</h3>
+            <p className="text-gray-700 mb-4">
               Don't let emotions and guesswork cost you R150,000+. Get a data-driven Deal Score for just R89 and make confident property decisions backed by real market insights.
             </p>
-            <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+            <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="inline-block text-white px-6 py-3 rounded-lg hover:opacity-90 transition-colors" style={{backgroundColor: '#1BA3FF'}}>
               Get Your Deal Score →
             </a>
           </div>
