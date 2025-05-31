@@ -289,37 +289,37 @@ function DealScoreBlogPost() {
           <h2>What Is a Deal Score?</h2>
 
           <p>
-            How do we put an end to this expensive guesswork? The answer is a <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score</a> – a smart, data-driven rating for any property you're looking to buy. Think of a Deal Score like a credit score for your property deal: it crunches multiple factors and boils them down into an easy-to-understand grade or number.
+            How do we put an end to this expensive guesswork? The answer is a <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score</a> – a smart, data-driven rating for any property you're looking to buy. Think of a Deal Score like a credit score for your property deal: it crunches multiple factors and boils them down into an easy-to-understand sentence that every buyer wants to know - "This property is 23% above its estimated market value".
           </p>
 
           <p>
-            Instead of wading through dozens of data points yourself, you get a single "deal quality" score that tells you at a glance if the property is worth it, overpriced, or somewhere in between. It's objective, fact-based, and tailored to the specific home you're eyeing.
+            Instead of wading through dozens of data points yourself, you get a single insight that tells you at a glance if the property is worth it, overpriced, or somewhere in between. It's objective, fact-based, and tailored to the specific home you're eyeing.
           </p>
 
           <h3>A smart, data-driven rating for any property</h3>
 
           <p>
-            A Deal Score is not a random number – it's powered by actual data and analytics. Behind that simple score is a mini army of property information: recent sales in the area, the home's appraised value, potential rental income, neighborhood trends, and more. The tool looks at the property from an investor's perspective, evaluating how good of a deal it is at the asking price.
+            A Deal Score is not a random number – it's powered by actual data and analytics. Behind that simple insight is a mini army of property information: recent sales in the area, the home's estimated market value, potential rental income, neighborhood trends, and more. The tool looks at the property from an investor's perspective, evaluating how good of a deal it is at the asking price.
           </p>
 
-          <h3>What goes into the score</h3>
+          <h3>What goes into the analysis</h3>
 
           <p>
-            While the exact algorithm is proprietary, the score typically incorporates four key pillars of a property's investment potential:
+            While the exact algorithm is proprietary, the Deal Score analysis incorporates four key pillars of a property's investment potential:
           </p>
 
           <ol>
-            <li><strong>Value vs. Price:</strong> This looks at how the asking price compares to fair market value. It uses data from recent sales (comparative market analysis) to see if you're overpaying or getting a bargain.</li>
+            <li><strong>Market Value Assessment:</strong> This compares the asking price to estimated market value using recent sales data and comparative market analysis. Instead of guessing, you'll know exactly how the price stacks up - like "This property is priced 15% below market value" or "This asking price is 20% above comparable sales".</li>
             
-            <li><strong>Rental Yield:</strong> Even if you're buying to live in, rental yield is a great reality check on a property's financial performance. The Deal Score factors in what rent the property could fetch versus its price.</li>
+            <li><strong>Rental Yield Analysis:</strong> Even if you're buying to live in, rental yield provides crucial insight into a property's financial performance. The analysis shows what rent the property could realistically fetch and how this translates to return on investment.</li>
             
-            <li><strong>Area & Growth:</strong> Location, location, location – the Deal Score digs into area trends. Is the suburb growing in value year-on-year or stagnating? What's the average price per square meter in that street?</li>
+            <li><strong>Area Trends & Growth:</strong> Location fundamentals are crucial - the analysis examines suburb trends, price per square meter comparisons, and growth patterns. You'll understand whether you're buying in a rising or declining area.</li>
             
-            <li><strong>Demand & "Traffic":</strong> This is about how much interest the property is generating. For instance, if a listing has been sitting for 100 days with few enquiries, that's a red flag.</li>
+            <li><strong>Market Interest & Liquidity:</strong> This examines how much market interest the property is generating. Properties that have been listed for months with little interest often signal pricing or quality issues, while high-interest properties may indicate strong demand.</li>
           </ol>
 
           <p>
-            All these components are weighed and combined into your final Deal Score, typically on a scale (for example, 0 to 100 or 1 to 10). A higher score = better deal. For example, a Deal Score of 85/100 might mean "excellent deal – likely undervalued and high potential". A score of 50 might mean "average – fair price but nothing special". A low score, say 20/100, screams "poor deal – overpriced or risky".
+            All these components are analyzed and presented as clear, actionable insights. Instead of a confusing numerical score, you get direct answers like "This property appears to be fairly priced based on recent sales" or "Warning: This property is priced significantly above similar homes in the area." It's the clarity you need to make confident decisions.
           </p>
 
           <h2>Why It Matters — Especially in South Africa</h2>
