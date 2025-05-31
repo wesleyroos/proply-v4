@@ -35,7 +35,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden flex flex-col">
               <div className="relative h-48">
                 <img
-                  src="/static-assets/images/blog/Deal Score - Stop Guessing Hero Image.jpg"
+                  src="/static-assets/images/blog/Deal Score - Stop Guessing Hero 2.jpg"
                   alt="Property Deal Analysis"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -221,7 +221,7 @@ function DealScoreBlogPost() {
       <div className="relative h-[60vh] min-h-[400px]">
         <div className="absolute inset-0">
           <img
-            src="/static-assets/images/blog/Deal Score - Stop Guessing Hero Image.jpg"
+            src="/static-assets/images/blog/Deal Score - Stop Guessing Hero 2.jpg"
             alt="Property Deal Analysis and Scoring"
             className="w-full h-full object-cover"
           />
@@ -304,23 +304,72 @@ function DealScoreBlogPost() {
 
           <h3>What goes into the analysis</h3>
 
-          <p>
-            While the exact algorithm is proprietary, the Deal Score analysis incorporates four key pillars of a property's investment potential:
-          </p>
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Market Value Analysis</h4>
+              <p className="text-gray-700 mb-2">See how much a property's asking price is above or below its estimated market value, based on advanced algorithms and local sales data.</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <li>Estimated market value</li>
+                <li>Price difference percentage</li>
+                <li>Price per square meter comparison</li>
+              </ul>
+            </div>
 
-          <ol>
-            <li><strong>Market Value Assessment:</strong> This compares the asking price to estimated market value using recent sales data and comparative market analysis. Instead of guessing, you'll know exactly how the price stacks up - like "This property is priced 15% below market value" or "This asking price is 20% above comparable sales".</li>
-            
-            <li><strong>Rental Yield Analysis:</strong> Even if you're buying to live in, rental yield provides crucial insight into a property's financial performance. The analysis shows what rent the property could realistically fetch and how this translates to return on investment.</li>
-            
-            <li><strong>Area Trends & Growth:</strong> Location fundamentals are crucial - the analysis examines suburb trends, price per square meter comparisons, and growth patterns. You'll understand whether you're buying in a rising or declining area.</li>
-            
-            <li><strong>Market Interest & Liquidity:</strong> This examines how much market interest the property is generating. Properties that have been listed for months with little interest often signal pricing or quality issues, while high-interest properties may indicate strong demand.</li>
-          </ol>
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Rental Analysis</h4>
+              <p className="text-gray-700 mb-2">Access short-term and long-term rental projections powered by PriceLabs and Airbnb data to understand potential rental income.</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <li>Short-term rental projections</li>
+                <li>Long-term rental estimates</li>
+                <li>Occupancy rate analysis</li>
+                <li>Yield comparison insights</li>
+              </ul>
+            </div>
 
-          <p>
-            All these components are analyzed and presented as clear, actionable insights. Instead of a confusing numerical score, you get direct answers like "This property appears to be fairly priced based on recent sales" or "Warning: This property is priced significantly above similar homes in the area." It's the clarity you need to make confident decisions.
-          </p>
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Financing & Affordability</h4>
+              <p className="text-gray-700 mb-2">Understand your mortgage scenarios with bond payment calculations, interest rate sensitivity, and equity growth projections.</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <li>Monthly bond repayment calculations</li>
+                <li>Interest rate sensitivity analysis</li>
+                <li>Loan paydown visualization</li>
+                <li>Equity buildup projections</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Comparable Properties</h4>
+              <p className="text-gray-700 mb-2">Know if you're overpaying by comparing similar listings and recently sold properties in the area with detailed metrics.</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <li>Similar current listings</li>
+                <li>Recently sold properties</li>
+                <li>Price and size comparisons</li>
+                <li>Deal valuation insights</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Suburb Sentiment & Safety</h4>
+              <p className="text-gray-700 mb-2">Get AI-powered insights into neighborhood trends, investment potential, and safety metrics to understand the area.</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <li>Investment potential rating</li>
+                <li>Development activity analysis</li>
+                <li>Safety score and metrics</li>
+                <li>Area trend projections</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Services & Mobility</h4>
+              <p className="text-gray-700 mb-2">Analyze traffic patterns, delivery service availability, and mobility insights for a complete lifestyle picture.</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <li>Delivery service availability</li>
+                <li>Real-time traffic analysis</li>
+                <li>Historical traffic patterns</li>
+                <li>Commute time estimations</li>
+              </ul>
+            </div>
+          </div>
 
           <h2>Why It Matters — Especially in South Africa</h2>
 
