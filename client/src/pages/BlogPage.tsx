@@ -35,7 +35,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden flex flex-col">
               <div className="relative h-48">
                 <img
-                  src="/images/blog/deal-score-hero.jpg"
+                  src="/static-assets/images/blog/Deal Score - Stop Guessing Hero Image.jpg"
                   alt="Property Deal Analysis"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -221,7 +221,7 @@ function DealScoreBlogPost() {
       <div className="relative h-[60vh] min-h-[400px]">
         <div className="absolute inset-0">
           <img
-            src="/images/blog/deal-score-hero.jpg"
+            src="/static-assets/images/blog/Deal Score - Stop Guessing Hero Image.jpg"
             alt="Property Deal Analysis and Scoring"
             className="w-full h-full object-cover"
           />
