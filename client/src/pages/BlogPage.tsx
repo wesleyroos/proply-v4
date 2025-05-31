@@ -410,7 +410,7 @@ function DealScoreBlogPost() {
           </p>
 
           <p>
-            Those expensive reports from the "industry leaders"? They're designed for professionals who love drowning in spreadsheets, not regular buyers who just want to know "Am I getting ripped off?" You end up paying premium prices for data dumps that leave you more confused than when you started.
+            Traditional property reports focus on providing raw data - transfer histories, valuations, and basic comparisons. While this information has value, it leaves buyers asking "So what does this actually mean for my decision?" That's where Deal Score is fundamentally different. We don't just provide data; we provide insights backed by incredible data sources.
           </p>
 
           <p>
