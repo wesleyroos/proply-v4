@@ -35,7 +35,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden flex flex-col">
               <div className="relative h-48">
                 <img
-                  src="/images/blog/deal-score-property-analysis.svg"
+                  src="/images/blog/deal-score-hero.jpg"
                   alt="Property Deal Analysis"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -221,7 +221,7 @@ function DealScoreBlogPost() {
       <div className="relative h-[60vh] min-h-[400px]">
         <div className="absolute inset-0">
           <img
-            src="/images/blog/deal-score-property-analysis.svg"
+            src="/images/blog/deal-score-hero.jpg"
             alt="Property Deal Analysis and Scoring"
             className="w-full h-full object-cover"
           />
@@ -253,7 +253,7 @@ function DealScoreBlogPost() {
           </p>
 
           <p>
-            Enter the Deal Score. This simple idea is transforming how savvy buyers make decisions. Instead of winging it or hoping for the best, you can now measure a deal's quality with an affordable, data-driven report. Before you sign an offer to purchase or apply for a bond, you can know if you're getting a bargain or a bad deal. It's like having an expert investor whispering in your ear, "This one's worth it," or "Walk away." No more second-guessing or fear that you're overpaying – the Deal Score gives you hard evidence for peace of mind.
+            Enter the <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score</a>. This simple idea is transforming how savvy buyers make decisions. Instead of winging it or hoping for the best, you can now measure a deal's quality with an affordable, data-driven report. Before you sign an offer to purchase or apply for a bond, you can know if you're getting a bargain or a bad deal. It's like having an expert investor whispering in your ear, "This one's worth it," or "Walk away." No more second-guessing or fear that you're overpaying – the Deal Score gives you hard evidence for peace of mind.
           </p>
 
           <h2>Guessing is Costly — Here's the Hidden Risk of "Going With Your Gut"</h2>
@@ -289,7 +289,7 @@ function DealScoreBlogPost() {
           <h2>What Is a Deal Score?</h2>
 
           <p>
-            How do we put an end to this expensive guesswork? The answer is a Deal Score – a smart, data-driven rating for any property you're looking to buy. Think of a Deal Score like a credit score for your property deal: it crunches multiple factors and boils them down into an easy-to-understand grade or number.
+            How do we put an end to this expensive guesswork? The answer is a <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score</a> – a smart, data-driven rating for any property you're looking to buy. Think of a Deal Score like a credit score for your property deal: it crunches multiple factors and boils them down into an easy-to-understand grade or number.
           </p>
 
           <p>
@@ -351,7 +351,7 @@ function DealScoreBlogPost() {
           <h2>R89 vs R150,000 — What One Smart Report Can Save You</h2>
 
           <p>
-            Let's talk rands and cents. A Deal Score report costs just R89 – probably the cheapest line item in your entire home-buying journey. But that R89 can easily save you R150,000 or more. How? By preventing a bad deal or giving you ammo to negotiate a better price. Think of the Deal Score as a R89 insurance policy against overpaying.
+            Let's talk rands and cents. A <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score report</a> costs just R89 – probably the cheapest line item in your entire home-buying journey. But that R89 can easily save you R150,000 or more. How? By preventing a bad deal or giving you ammo to negotiate a better price. Think of the Deal Score as a R89 insurance policy against overpaying.
           </p>
 
           <h3>Why Deal Score is better than a CMA or Lightstone report</h3>
@@ -361,7 +361,7 @@ function DealScoreBlogPost() {
           </p>
 
           <p>
-            Deal Score distills exactly what a buyer/investor needs into a simple metric and explanation. It's built specifically to answer, "Am I doing a good deal here?" in a way a CMA or generic report doesn't. With Deal Score, you don't need to interpret charts or guess which comps matter – the algorithm has done the heavy lifting.
+            <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">Deal Score</a> distills exactly what a buyer/investor needs into a simple metric and explanation. It's built specifically to answer, "Am I doing a good deal here?" in a way a CMA or generic report doesn't. With Deal Score, you don't need to interpret charts or guess which comps matter – the algorithm has done the heavy lifting.
           </p>
 
           <div className="bg-blue-50 p-6 rounded-lg my-8">
@@ -369,7 +369,7 @@ function DealScoreBlogPost() {
             <p className="text-blue-800 mb-4">
               Don't let emotions and guesswork cost you R150,000+. Get a data-driven Deal Score for just R89 and make confident property decisions backed by real market insights.
             </p>
-            <a href="/property-analyzer" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+            <a href="https://dealscore.co.za" target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
               Get Your Deal Score →
             </a>
           </div>
