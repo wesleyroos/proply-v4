@@ -189,6 +189,14 @@ router.post("/propdata/listings/sync", async (req, res) => {
               hasListingImages: !!detailedListing.listing_images,
               listingImagesCount: Array.isArray(detailedListing.listing_images) ? detailedListing.listing_images.length : 0
             });
+            
+            // Log sample image data to understand structure
+            if (detailedListing.listing_images && Array.isArray(detailedListing.listing_images) && detailedListing.listing_images.length > 0) {
+              console.log(`Sample listing_images structure:`, detailedListing.listing_images.slice(0, 2));
+            }
+            if (detailedListing.header_images && Array.isArray(detailedListing.header_images) && detailedListing.header_images.length > 0) {
+              console.log(`Sample header_images structure:`, detailedListing.header_images.slice(0, 2));
+            }
           }
         }
 
@@ -274,6 +282,9 @@ router.post("/propdata/listings/sync", async (req, res) => {
                 });
               }
             }
+            
+            // Log the extracted images for debugging
+            console.log(`Extracted ${images.length} images for listing ${listing.id}:`, images.slice(0, 3));
             
             return images;
           })(),
