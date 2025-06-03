@@ -2092,7 +2092,7 @@ export function registerRoutes(app: Express): Server {
 
       // Check if valuation already exists for this property and user
       const existingValuation = await db.query.valuationReports.findFirst({
-        where: eq(valuationReports.propertyId, propertyId) && eq(valuationReports.userId, req.user.id)
+        where: and(eq(valuationReports.propertyId, propertyId), eq(valuationReports.userId, req.user.id))
       });
 
       if (existingValuation) {
@@ -2150,7 +2150,7 @@ export function registerRoutes(app: Express): Server {
       const { propertyId } = req.params;
       
       const valuation = await db.query.valuationReports.findFirst({
-        where: eq(valuationReports.propertyId, propertyId) && eq(valuationReports.userId, req.user.id)
+        where: and(eq(valuationReports.propertyId, propertyId), eq(valuationReports.userId, req.user.id))
       });
 
       if (valuation) {

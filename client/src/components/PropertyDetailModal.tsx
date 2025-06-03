@@ -93,11 +93,67 @@ export default function PropertyDetailModal({
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [valuationReport, setValuationReport] = useState<any>(null);
 
-  // Reset valuation report when property changes or modal closes
+  // Reset valuation report when property changes or modal closes, and load existing valuation
   useEffect(() => {
     setValuationReport(null);
     setActiveTab("overview");
+    
+    // Load existing valuation if property is available
+    if (property?.id && isOpen) {
+      loadExistingValuation(property.id.toString());
+    }
   }, [property?.id, isOpen]);
+
+  // Load existing valuation from database
+  const loadExistingValuation = async (propertyId: string) => {
+    try {
+      const response = await fetch(`/api/valuation-reports/${propertyId}`);
+      if (response.ok) {
+        const savedValuation = await response.json();
+        setValuationReport(savedValuation.valuationData);
+      }
+      // If 404, no existing valuation - that's fine
+    } catch (error) {
+      console.error("Error loading existing valuation:", error);
+    }
+  };
+
+  // Save valuation to database
+  const saveValuationToDatabase = async (valuationData: any) => {
+    if (!property) return;
+    
+    try {
+      const saveData = {
+        propertyId: property.id.toString(),
+        address: property.address,
+        price: property.price,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        floorSize: property.floorSize,
+        landSize: property.landSize,
+        propertyType: property.propertyType,
+        valuationData,
+        imagesAnalyzed: 10
+      };
+
+      const response = await fetch('/api/valuation-reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(saveData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save valuation: ${response.statusText}`);
+      }
+
+      console.log("Valuation saved to database successfully");
+    } catch (error) {
+      console.error("Error saving valuation to database:", error);
+    }
+  };
 
   // Get property images
   const getPropertyImages = () => {
@@ -224,6 +280,9 @@ export default function PropertyDetailModal({
       const report = await response.json();
       setValuationReport(report);
       setActiveTab('valuation'); // Switch to valuation tab
+      
+      // Save the valuation report to database
+      await saveValuationToDatabase(report);
     } catch (error) {
       console.error('Error generating valuation report:', error);
       alert('Failed to generate valuation report. Please try again.');
