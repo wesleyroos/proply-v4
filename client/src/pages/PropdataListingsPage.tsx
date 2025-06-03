@@ -46,6 +46,8 @@ interface PropdataListing {
   floorSize: number | null;
   landSize: number | null;
   agentId: string | null;
+  agentName: string | null;
+  agentEmail: string | null;
   agentPhone: string | null;
   listingDate: string | null; // When the property was actually listed by Sotheby's
   lastModified: string;
@@ -71,7 +73,7 @@ interface ApiResponse {
   previous?: string;
 }
 
-type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate';
+type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate' | 'agentName';
 type SortDirection = 'asc' | 'desc';
 
 export default function PropdataListingsPage() {
@@ -118,14 +120,26 @@ export default function PropdataListingsPage() {
   const sortData = (data: PropdataListing[]) => {
     return [...data].sort((a, b) => {
       const { field, direction } = sortConfig;
-      const aValue = a[field];
-      const bValue = b[field];
+      let aValue: any;
+      let bValue: any;
+      
+      // Handle special field mappings
+      if (field === 'agentName') {
+        aValue = a.agentName || '';
+        bValue = b.agentName || '';
+      } else if (field === 'listingDate') {
+        aValue = a.listingDate || a.createdAt;
+        bValue = b.listingDate || b.createdAt;
+      } else {
+        aValue = a[field];
+        bValue = b[field];
+      }
       
       let comparison = 0;
       
-      if (field === 'createdAt' || field === 'price' || field === 'bedrooms') {
+      if (field === 'createdAt' || field === 'listingDate' || field === 'price' || field === 'bedrooms') {
         // Numeric or date comparison
-        comparison = Number(aValue) - Number(bValue);
+        comparison = Number(new Date(aValue)) - Number(new Date(bValue));
       } else {
         // String comparison
         comparison = String(aValue).localeCompare(String(bValue));
@@ -425,6 +439,12 @@ export default function PropdataListingsPage() {
                           <ArrowUpDown className="h-4 w-4" />
                         </div>
                       </TableHead>
+                      <TableHead onClick={() => handleSort('agentName')} className="cursor-pointer">
+                        <div className="flex items-center gap-1">
+                          Agent
+                          <ArrowUpDown className="h-4 w-4" />
+                        </div>
+                      </TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -529,6 +549,20 @@ export default function PropdataListingsPage() {
                             {listing.listingDate 
                               ? format(new Date(listing.listingDate), 'MMM d, yyyy')
                               : format(new Date(listing.createdAt), 'MMM d, yyyy')}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {listing.agentName ? (
+                              <div>
+                                <div className="font-medium">{listing.agentName}</div>
+                                {listing.agentPhone && (
+                                  <div className="text-xs text-muted-foreground">{listing.agentPhone}</div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>

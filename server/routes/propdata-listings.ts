@@ -204,8 +204,10 @@ router.post("/propdata/listings/sync", async (req, res) => {
           features: listing.tags || listing.extras || listing.features || [],
           images: listing.images?.map((img: any) => typeof img === 'string' ? img : img.url) || 
                   listing.header_images || [],
-          agentId: listing.agent?.id?.toString() || null,
-          agentPhone: listing.agent?.phone || listing.agent?.cell_number || null,
+          agentId: listing.agent?.toString() || null,
+          agentName: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.full_name || null : null,
+          agentEmail: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.email || null : null,
+          agentPhone: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.mobile || null : null,
 
           // Use created field for listing date (when agent uploaded)
           // Fallback to modified if created not available
