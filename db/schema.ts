@@ -348,6 +348,37 @@ export const reportTrackingRelations = relations(reportTracking, ({ one }) => ({
   }),
 }));
 
+// AI Valuation Reports table
+export const valuationReports = pgTable("valuation_reports", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  propertyId: text("property_id").notNull(), // PropData property ID
+  address: text("address").notNull(),
+  price: decimal("price", { precision: 12, scale: 2 }),
+  bedrooms: integer("bedrooms"),
+  bathrooms: integer("bathrooms"),
+  floorSize: decimal("floor_size", { precision: 10, scale: 2 }),
+  landSize: decimal("land_size", { precision: 10, scale: 2 }),
+  propertyType: text("property_type"),
+  
+  // Valuation results as JSON
+  valuationData: jsonb("valuation_data").notNull(), // Stores the complete OpenAI response
+  
+  // Analysis metadata
+  imagesAnalyzed: integer("images_analyzed").default(0),
+  analysisModel: text("analysis_model").default("gpt-4o"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+});
+
+export const valuationReportsRelations = relations(valuationReports, ({ one }) => ({
+  user: one(users, {
+    fields: [valuationReports.userId],
+    references: [users.id],
+  }),
+}));
+
 
 // Add this to the relations section
 export const apiUsageRelations = relations(apiUsage, ({ one }) => ({

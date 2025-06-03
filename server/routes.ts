@@ -15,8 +15,9 @@ import {
   subscriptionHistory,
   invoices,
   passwordResetTokens,
+  valuationReports,
 } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
@@ -2077,6 +2078,89 @@ export function registerRoutes(app: Express): Server {
         error: "Failed to process demo request",
         details: error instanceof Error ? error.message : undefined 
       });
+    }
+  });
+
+  // Save valuation report
+  app.post("/api/valuation-reports", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { propertyId, address, price, bedrooms, bathrooms, floorSize, landSize, propertyType, valuationData, imagesAnalyzed } = req.body;
+
+      // Check if valuation already exists for this property and user
+      const existingValuation = await db.query.valuationReports.findFirst({
+        where: eq(valuationReports.propertyId, propertyId) && eq(valuationReports.userId, req.user.id)
+      });
+
+      if (existingValuation) {
+        // Update existing valuation
+        const [updatedValuation] = await db.update(valuationReports)
+          .set({
+            address,
+            price: price?.toString(),
+            bedrooms,
+            bathrooms,
+            floorSize: floorSize?.toString(),
+            landSize: landSize?.toString(),
+            propertyType,
+            valuationData,
+            imagesAnalyzed,
+            updatedAt: new Date()
+          })
+          .where(eq(valuationReports.id, existingValuation.id))
+          .returning();
+
+        res.json(updatedValuation);
+      } else {
+        // Create new valuation
+        const [newValuation] = await db.insert(valuationReports)
+          .values({
+            userId: req.user.id,
+            propertyId,
+            address,
+            price: price?.toString(),
+            bedrooms,
+            bathrooms,
+            floorSize: floorSize?.toString(),
+            landSize: landSize?.toString(),
+            propertyType,
+            valuationData,
+            imagesAnalyzed: imagesAnalyzed || 0
+          })
+          .returning();
+
+        res.json(newValuation);
+      }
+    } catch (error) {
+      console.error("Error saving valuation report:", error);
+      res.status(500).json({ error: "Failed to save valuation report" });
+    }
+  });
+
+  // Get valuation report for a property
+  app.get("/api/valuation-reports/:propertyId", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { propertyId } = req.params;
+      
+      const valuation = await db.query.valuationReports.findFirst({
+        where: eq(valuationReports.propertyId, propertyId) && eq(valuationReports.userId, req.user.id)
+      });
+
+      if (valuation) {
+        res.json(valuation);
+      } else {
+        res.status(404).json({ error: "Valuation not found" });
+      }
+    } catch (error) {
+      console.error("Error fetching valuation report:", error);
+      res.status(500).json({ error: "Failed to fetch valuation report" });
     }
   });
 

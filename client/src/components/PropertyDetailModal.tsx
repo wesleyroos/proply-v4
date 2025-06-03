@@ -93,6 +93,12 @@ export default function PropertyDetailModal({
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [valuationReport, setValuationReport] = useState<any>(null);
 
+  // Reset valuation report when property changes or modal closes
+  useEffect(() => {
+    setValuationReport(null);
+    setActiveTab("overview");
+  }, [property?.id, isOpen]);
+
   // Get property images
   const getPropertyImages = () => {
     if (!property) return [];
