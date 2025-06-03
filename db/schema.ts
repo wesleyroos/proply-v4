@@ -88,7 +88,7 @@ export const propdataListings = pgTable("propdata_listings", {
   status: text("status").notNull(), // Active, Pending, Processing, etc.
   listingData: jsonb("listing_data").notNull(), // Raw PropData listing data
   address: text("address").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  price: decimal("price", { precision: 12, scale: 2 }).notNull(),
   propertyType: text("property_type").notNull(),
   bedrooms: decimal("bedrooms", { precision: 3, scale: 1 }).notNull(),
   bathrooms: decimal("bathrooms", { precision: 3, scale: 1 }).notNull(),
