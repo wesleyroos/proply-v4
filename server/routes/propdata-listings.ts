@@ -239,7 +239,7 @@ router.get("/propdata/listings/debug", async (req, res) => {
           status: l.status
         }))
       };
-    } catch (error) {
+    } catch (error: any) {
       results.recentListings = { error: error instanceof Error ? error.message : 'Unknown error' };
     }
 
@@ -285,7 +285,7 @@ router.get("/propdata/listings/debug", async (req, res) => {
           }
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       results.allListings = { error: error instanceof Error ? error.message : 'Unknown error' };
     }
 
