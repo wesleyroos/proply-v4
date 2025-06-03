@@ -192,12 +192,12 @@ router.post("/propdata/listings/sync", async (req, res) => {
                 listingImagesCount: Array.isArray(detailedListing.listing_images) ? detailedListing.listing_images.length : 0
               });
               
-              // Log sample image data to understand structure
+              // Log sample image data to understand structure - full objects this time
               if (detailedListing.listing_images && Array.isArray(detailedListing.listing_images) && detailedListing.listing_images.length > 0) {
-                console.log(`Sample listing_images structure:`, detailedListing.listing_images.slice(0, 2));
+                console.log(`First complete listing_images object:`, JSON.stringify(detailedListing.listing_images[0], null, 2));
               }
               if (detailedListing.header_images && Array.isArray(detailedListing.header_images) && detailedListing.header_images.length > 0) {
-                console.log(`Sample header_images structure:`, detailedListing.header_images.slice(0, 2));
+                console.log(`First complete header_images object:`, JSON.stringify(detailedListing.header_images[0], null, 2));
               }
             }
           } catch (error) {
