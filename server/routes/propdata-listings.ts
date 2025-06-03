@@ -49,7 +49,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
     } = { 
       limit: pageSize,
       listing_type: 'For Sale', // Only fetch properties for sale, not rentals
-      order_by: '-modified_at' // Order by most recently modified first
+      order_by: '-modified' // Order by most recently modified first (PropData uses 'modified', not 'modified_at')
     };
     
     if (!forceFullSync) {
@@ -90,14 +90,33 @@ router.post("/propdata/listings/sync", async (req, res) => {
     // Log sample of returned listings for debugging
     if (response.results.length > 0) {
       const firstListing = response.results[0];
-      console.log(`Sample listing data:`, {
+      console.log(`Sample listing data structure:`, {
         id: firstListing.id,
+        // Date fields
+        created: firstListing.created,
+        modified: firstListing.modified,
         modified_at: firstListing.modified_at,
         mandate_start_date: firstListing.mandate_start_date,
-        address: firstListing.street_name,
+        // Address fields
+        street_number: firstListing.street_number,
+        street_name: firstListing.street_name,
+        suburb: firstListing.suburb,
+        city: firstListing.city,
+        region: firstListing.region,
+        // Price fields
+        asking_price: firstListing.asking_price,
         price: firstListing.price,
+        // Size fields
+        building_size: firstListing.building_size,
+        land_size: firstListing.land_size,
+        floor_area: firstListing.floor_area,
+        erf_size: firstListing.erf_size,
+        // Status
         status: firstListing.status
       });
+      
+      // Log all available fields for complete debugging
+      console.log('All available fields:', Object.keys(firstListing).sort());
     }
     
     // Process each listing, but only include Active properties
@@ -109,56 +128,56 @@ router.post("/propdata/listings/sync", async (req, res) => {
           continue;
         }
 
-        // Extract key fields from the listing with proper type conversion
+        // Extract key fields from the listing with proper PropData API field mapping
         const listingData = {
           propdataId: listing.id.toString(),
           agencyId: 1, // Default agency ID - replace with actual agency ID
           status: listing.status || "Active",
           listingData: listing, // Store full API response
+          // Build address from PropData fields: street_number + street_name, suburb, city, region
           address: [
             listing.street_number,
             listing.street_name,
-            listing.lightstone_data?.townName,
-            listing.lightstone_data?.township,
-            listing.lightstone_data?.province
+            listing.suburb,
+            listing.city,
+            listing.region
           ].filter(Boolean).join(", "),
-          price: (parseFloat(listing.price) || 0).toString(),
-          propertyType: listing.property_type || listing.category || "Unknown",
+          // Use asking_price as per PropData API documentation
+          price: (parseFloat(listing.asking_price || listing.price) || 0).toString(),
+          propertyType: listing.property_type || "Unknown",
           bedrooms: Math.floor(parseFloat(listing.bedrooms) || 0).toString(),
           bathrooms: Math.floor(parseFloat(listing.bathrooms) || 0).toString(),
-          // Convert decimal string to integer for parkingSpaces
-          parkingSpaces: listing.garages ? Math.floor(parseFloat(listing.garages)) : null,
-          // Convert to integers for size fields
-          floorSize: listing.floor_area?.size ? Math.floor(parseFloat(listing.floor_area.size)) : 
-                    (listing.floor_area ? Math.floor(parseFloat(listing.floor_area)) : null),
-          landSize: listing.erf_size?.size ? Math.floor(parseFloat(listing.erf_size.size)) : 
-                   (listing.erf_size ? Math.floor(parseFloat(listing.erf_size)) : 
-                   (listing.land_size ? Math.floor(parseFloat(listing.land_size)) : null)),
+          // Use garages or parkings field for parking spaces
+          parkingSpaces: listing.garages ? Math.floor(parseFloat(listing.garages)) : 
+                        (listing.parkings ? Math.floor(parseFloat(listing.parkings)) : null),
+          // Use building_size and land_size as per PropData API documentation
+          floorSize: listing.building_size ? Math.floor(parseFloat(listing.building_size)) : null,
+          landSize: listing.land_size ? Math.floor(parseFloat(listing.land_size)) : null,
           location: {
-            latitude: listing.gis_data?.latitude || null,
-            longitude: listing.gis_data?.longitude || null,
-            suburb: listing.lightstone_data?.townName || null,
-            city: listing.lightstone_data?.township || null,
-            province: listing.lightstone_data?.province || null,
+            latitude: listing.latitude || null,
+            longitude: listing.longitude || null,
+            suburb: listing.suburb || null,
+            city: listing.city || null,
+            province: listing.region || listing.country || null,
           },
-          features: listing.features || [],
-          images: listing.images?.map((img: any) => img.url) || [],
+          features: listing.tags || listing.extras || [],
+          images: listing.images?.map((img: any) => typeof img === 'string' ? img : img.url) || 
+                  listing.header_images || [],
           agentId: listing.agent?.id?.toString() || null,
-          agentPhone: listing.agent?.cell_number || null,
+          agentPhone: listing.agent?.phone || listing.agent?.cell_number || null,
 
-          // Use modified_at as the primary timestamp for sync detection
-          // This ensures we capture when listings are actually updated in PropData
-          lastModified: listing.modified_at 
-            ? new Date(listing.modified_at) 
-            : (listing.mandate_start_date 
-                ? new Date(listing.mandate_start_date)
+          // Use modified field for sync detection (PropData API uses 'modified', not 'modified_at')
+          lastModified: listing.modified 
+            ? new Date(listing.modified) 
+            : (listing.created 
+                ? new Date(listing.created)
                 : new Date()),
           updatedAt: new Date(),
-          // Add the actual listing date for display purposes
-          listingDate: listing.mandate_start_date 
-            ? new Date(listing.mandate_start_date)
-            : (listing.modified_at 
-                ? new Date(listing.modified_at)
+          // Use 'created' field for when agent uploaded the property (listing date)
+          listingDate: listing.created 
+            ? new Date(listing.created)
+            : (listing.modified 
+                ? new Date(listing.modified)
                 : new Date()),
         };
 
