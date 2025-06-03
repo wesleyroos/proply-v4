@@ -25,6 +25,19 @@ export class ListingsClient extends BaseApiClient {
             const url = `/listings/api/v1/residential/${listingId}/`;
             console.log(`Fetching PropData listing details: ${url}`);
             const response: AxiosResponse<Listing> = await this.axiosInstance.get(url);
+            
+            // Log all fields to understand the complete structure
+            console.log(`All fields in detailed listing ${listingId}:`, Object.keys(response.data).sort());
+            
+            // Look for any image-related fields
+            const imageFields: Record<string, any> = {};
+            Object.keys(response.data).forEach(key => {
+                if (key.toLowerCase().includes('image') || key.toLowerCase().includes('photo') || key.toLowerCase().includes('picture')) {
+                    imageFields[key] = response.data[key as keyof typeof response.data];
+                }
+            });
+            console.log(`Image-related fields in detailed listing ${listingId}:`, imageFields);
+            
             return response.data;
         } catch (error: any) {
             if (error.response?.status === 404) {
