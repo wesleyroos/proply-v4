@@ -16,6 +16,27 @@ interface Listing {
 
 export class ListingsClient extends BaseApiClient {
     /**
+     * Fetch a single listing with full details including images
+     * @param listingId The listing ID to fetch
+     * @returns Full listing details or null if not found
+     */
+    async fetchListingDetails(listingId: string): Promise<Listing | null> {
+        try {
+            const url = `/listings/api/v1/residential/${listingId}/`;
+            console.log(`Fetching PropData listing details: ${url}`);
+            const response: AxiosResponse<Listing> = await this.axiosInstance.get(url);
+            return response.data;
+        } catch (error: any) {
+            if (error.response?.status === 404) {
+                console.log(`Listing ${listingId} not found`);
+                return null;
+            }
+            console.error(`Error fetching listing ${listingId}:`, error.message);
+            throw error;
+        }
+    }
+
+    /**
      * Fetch listings with pagination
      * @param options Pagination and filtering options
      * @returns Paginated response with listings

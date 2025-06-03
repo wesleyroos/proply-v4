@@ -117,7 +117,24 @@ router.post("/propdata/listings/sync", async (req, res) => {
         floor_area: firstListing.floor_area,
         erf_size: firstListing.erf_size,
         // Status
-        status: firstListing.status
+        status: firstListing.status,
+        // Image fields
+        images: firstListing.images,
+        header_images: firstListing.header_images,
+        listing_images: firstListing.listing_images
+      });
+      
+      // Log image-related fields specifically
+      console.log('Image fields in listing:', {
+        hasImages: !!firstListing.images,
+        imagesType: typeof firstListing.images,
+        imagesLength: Array.isArray(firstListing.images) ? firstListing.images.length : 'not array',
+        hasHeaderImages: !!firstListing.header_images,
+        headerImagesType: typeof firstListing.header_images,
+        headerImagesLength: Array.isArray(firstListing.header_images) ? firstListing.header_images.length : 'not array',
+        hasListingImages: !!firstListing.listing_images,
+        listingImagesType: typeof firstListing.listing_images,
+        listingImagesLength: Array.isArray(firstListing.listing_images) ? firstListing.listing_images.length : 'not array'
       });
       
       // Log all available fields for complete debugging
@@ -155,6 +172,24 @@ router.post("/propdata/listings/sync", async (req, res) => {
         if (listing.status && listing.status.toLowerCase() !== 'active') {
           console.log(`Skipping ${listing.status} property: ${listing.id}`);
           continue;
+        }
+
+        // Fetch full listing details to get images (for first few listings as test)
+        let fullListingData = listing;
+        if (newCount < 5) { // Only fetch details for first 5 new listings to test
+          console.log(`Fetching full details for listing ${listing.id} to get images...`);
+          const detailedListing = await listingsClient.fetchListingDetails(listing.id.toString());
+          if (detailedListing) {
+            fullListingData = detailedListing;
+            console.log(`Detailed listing image fields:`, {
+              hasImages: !!detailedListing.images,
+              imagesCount: Array.isArray(detailedListing.images) ? detailedListing.images.length : 0,
+              hasHeaderImages: !!detailedListing.header_images,
+              headerImagesCount: Array.isArray(detailedListing.header_images) ? detailedListing.header_images.length : 0,
+              hasListingImages: !!detailedListing.listing_images,
+              listingImagesCount: Array.isArray(detailedListing.listing_images) ? detailedListing.listing_images.length : 0
+            });
+          }
         }
 
         // Extract key fields from the listing with proper PropData API field mapping
@@ -206,8 +241,8 @@ router.post("/propdata/listings/sync", async (req, res) => {
             const images: string[] = [];
             
             // Extract from header_images (hero shots)
-            if (listing.header_images && Array.isArray(listing.header_images)) {
-              listing.header_images.forEach((img: any) => {
+            if (fullListingData.header_images && Array.isArray(fullListingData.header_images)) {
+              fullListingData.header_images.forEach((img: any) => {
                 if (typeof img === 'string') {
                   images.push(img);
                 } else if (img && img.image) {
@@ -217,8 +252,8 @@ router.post("/propdata/listings/sync", async (req, res) => {
             }
             
             // Extract from listing_images (full gallery)
-            if (listing.listing_images && Array.isArray(listing.listing_images)) {
-              listing.listing_images.forEach((img: any) => {
+            if (fullListingData.listing_images && Array.isArray(fullListingData.listing_images)) {
+              fullListingData.listing_images.forEach((img: any) => {
                 if (typeof img === 'string') {
                   images.push(img);
                 } else if (img && img.image) {
@@ -228,9 +263,9 @@ router.post("/propdata/listings/sync", async (req, res) => {
             }
             
             // Fallback to legacy images field
-            if (images.length === 0 && listing.images) {
-              if (Array.isArray(listing.images)) {
-                listing.images.forEach((img: any) => {
+            if (images.length === 0 && fullListingData.images) {
+              if (Array.isArray(fullListingData.images)) {
+                fullListingData.images.forEach((img: any) => {
                   if (typeof img === 'string') {
                     images.push(img);
                   } else if (img && (img.url || img.image)) {
