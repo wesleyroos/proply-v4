@@ -32,6 +32,7 @@ import trafficDataRouter from './routes/traffic-data';
 import tomtomTestRouter from './routes/tomtom-test';
 import propdataListingsRouter from './routes/propdata-listings';
 import fetchPropdataRouter from './routes/fetch-propdata';
+import valuationRouter from './routes/valuation';
 import { sendPasswordResetEmail } from './services/email';
 import { sendDemoRequestEmail } from './services/emailService';
 
@@ -1952,6 +1953,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api/tomtom-test', tomtomTestRouter);
   app.use('/api', propdataListingsRouter);
   app.use('/api', fetchPropdataRouter);
+  app.use('/api', valuationRouter);
   
   // Public area rate endpoint that doesn't require authentication
   app.post("/api/area-rate", async (req, res) => {
