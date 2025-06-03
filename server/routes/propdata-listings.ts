@@ -313,9 +313,9 @@ router.post("/propdata/listings/sync", async (req, res) => {
           });
         }
 
-        // Fetch image details if we have IDs (limit to first 5 listings for testing)
-        if (imageIds.length > 0 && processedCount <= 5) {
-          console.log(`Found ${imageIds.length} image IDs for listing ${listing.id}:`, imageIds);
+        // Fetch image details if we have IDs (expand to more listings for debugging)
+        if (imageIds.length > 0 && processedCount <= 10) {
+          console.log(`Found ${imageIds.length} image IDs for listing ${listing.id} (${listing.created || 'unknown date'}):`, imageIds.slice(0, 5));
           try {
             const imageDetails = await filesClient.fetchMultipleFileDetails(imageIds);
             const imageUrls = imageDetails
@@ -323,7 +323,12 @@ router.post("/propdata/listings/sync", async (req, res) => {
               .map(img => img.file || img.image)
               .filter((url): url is string => Boolean(url));
             
-            console.log(`Fetched ${imageUrls.length} image URLs for listing ${listing.id}:`, imageUrls.slice(0, 3));
+            console.log(`Successfully fetched ${imageUrls.length}/${imageIds.length} image URLs for listing ${listing.id}`);
+            if (imageUrls.length > 0) {
+              console.log(`Sample URLs:`, imageUrls.slice(0, 2));
+            } else {
+              console.log(`No valid image URLs found for listing ${listing.id} despite having ${imageIds.length} IDs`);
+            }
             listingData.images = imageUrls;
           } catch (error) {
             console.error(`Failed to fetch images for listing ${listing.id}:`, error);

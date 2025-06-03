@@ -52,6 +52,8 @@ export class FilesClient extends BaseApiClient {
      */
     async fetchMultipleFileDetails(fileIds: number[]): Promise<FileDetails[]> {
         const fileDetails: FileDetails[] = [];
+        const successfulIds: number[] = [];
+        const failedIds: number[] = [];
         
         // Fetch files in parallel but limit concurrency to avoid overwhelming the API
         const batchSize = 5;
@@ -62,15 +64,27 @@ export class FilesClient extends BaseApiClient {
             try {
                 const batchResults = await Promise.allSettled(batchPromises);
                 batchResults.forEach((result, index) => {
+                    const fileId = batch[index];
                     if (result.status === 'fulfilled' && result.value) {
                         fileDetails.push(result.value);
-                    } else if (result.status === 'rejected') {
-                        console.error(`Failed to fetch file ${batch[index]}:`, result.reason);
+                        successfulIds.push(fileId);
+                    } else {
+                        failedIds.push(fileId);
+                        if (result.status === 'rejected') {
+                            console.error(`Failed to fetch file ${fileId}:`, result.reason);
+                        } else {
+                            console.log(`File ${fileId} not found in gallery service`);
+                        }
                     }
                 });
             } catch (error) {
                 console.error('Batch file fetch error:', error);
             }
+        }
+        
+        console.log(`File fetch summary: ${successfulIds.length} successful, ${failedIds.length} failed`);
+        if (failedIds.length > 0) {
+            console.log(`Failed file IDs:`, failedIds.slice(0, 10));
         }
         
         return fileDetails;
