@@ -4,6 +4,7 @@ import { propdataListings } from "@db/schema";
 import { desc, eq } from "drizzle-orm";
 import { ListingsClient } from "../services/propdata/listingsClient";
 import { AgentsClient } from "../services/propdata/agentsClient";
+import { FilesClient } from "../services/propdata/filesClient";
 
 const router = Router();
 
@@ -38,9 +39,10 @@ router.post("/propdata/listings/sync", async (req, res) => {
     
     console.log(`PropData sync requested. Force full sync: ${forceFullSync}, Max pages: ${maxPages}, Page size: ${pageSize}`);
 
-    // Create listings and agents client instances
+    // Create listings, agents, and files client instances
     const listingsClient = new ListingsClient();
     const agentsClient = new AgentsClient();
+    const filesClient = new FilesClient();
     
     // For incremental sync, get timestamp of most recent listing
     let options: { 
@@ -184,19 +186,30 @@ router.post("/propdata/listings/sync", async (req, res) => {
           console.log(`Image fields in expanded listing ${listing.id}:`, {
             hasImages: !!listing.images,
             imagesCount: Array.isArray(listing.images) ? listing.images.length : 0,
+            imagesType: typeof listing.images,
+            imagesValue: listing.images,
             hasHeaderImages: !!listing.header_images,
             headerImagesCount: Array.isArray(listing.header_images) ? listing.header_images.length : 0,
+            headerImagesType: typeof listing.header_images,
+            headerImagesValue: listing.header_images,
             hasListingImages: !!listing.listing_images,
-            listingImagesCount: Array.isArray(listing.listing_images) ? listing.listing_images.length : 0
+            listingImagesCount: Array.isArray(listing.listing_images) ? listing.listing_images.length : 0,
+            listingImagesType: typeof listing.listing_images,
+            listingImagesValue: listing.listing_images
           });
           
-          // Log sample image data to understand structure
-          if (listing.listing_images && Array.isArray(listing.listing_images) && listing.listing_images.length > 0) {
-            console.log(`First listing_images object:`, JSON.stringify(listing.listing_images[0], null, 2));
-          }
-          if (listing.header_images && Array.isArray(listing.header_images) && listing.header_images.length > 0) {
-            console.log(`First header_images object:`, JSON.stringify(listing.header_images[0], null, 2));
-          }
+          // Log all fields to see if there are other image-related fields
+          const imageRelatedFields: Record<string, any> = {};
+          Object.keys(listing).forEach(key => {
+            if (key.toLowerCase().includes('image') || 
+                key.toLowerCase().includes('photo') || 
+                key.toLowerCase().includes('picture') ||
+                key.toLowerCase().includes('media') ||
+                key.toLowerCase().includes('file')) {
+              imageRelatedFields[key] = listing[key];
+            }
+          });
+          console.log(`All image-related fields for listing ${listing.id}:`, imageRelatedFields);
         }
         processedCount++;
 
@@ -245,60 +258,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
             province: listing.region || listing.lightstone_data?.province || null,
           },
           features: listing.tags || listing.extras || listing.features || [],
-          images: (() => {
-            const images: string[] = [];
-            
-            // Extract from listing_images (full gallery) - prefer this first
-            if (listing.listing_images && Array.isArray(listing.listing_images)) {
-              const galleryImages = listing.listing_images
-                .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
-                .map((img: any) => {
-                  // Handle both direct URL and object with image property
-                  if (typeof img === 'string') return img;
-                  if (img && typeof img === 'object') {
-                    return img.image || img.url || img.file || null;
-                  }
-                  return null;
-                })
-                .filter((url: string | null) => url); // Remove any undefined/null URLs
-              images.push(...galleryImages);
-            }
-            
-            // Extract from header_images (hero shots) if no gallery images
-            if (images.length === 0 && listing.header_images && Array.isArray(listing.header_images)) {
-              const headerImages = listing.header_images
-                .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
-                .map((img: any) => {
-                  // Handle both direct URL and object with image property
-                  if (typeof img === 'string') return img;
-                  if (img && typeof img === 'object') {
-                    return img.image || img.url || img.file || null;
-                  }
-                  return null;
-                })
-                .filter((url: string | null) => url); // Remove any undefined/null URLs
-              images.push(...headerImages);
-            }
-            
-            // Fallback to direct images array if available
-            if (images.length === 0 && listing.images && Array.isArray(listing.images)) {
-              const directImages = listing.images
-                .map((img: any) => {
-                  if (typeof img === 'string') return img;
-                  if (img && typeof img === 'object') {
-                    return img.image || img.url || img.file || null;
-                  }
-                  return null;
-                })
-                .filter((url: string | null) => url);
-              images.push(...directImages);
-            }
-            
-            // Log the extracted images for debugging
-            console.log(`Extracted ${images.length} images for listing ${listing.id}:`, images.slice(0, 3));
-            
-            return images;
-          })(),
+          images: [], // Will be populated asynchronously after processing
           agentId: listing.agent?.toString() || null,
           agentName: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.full_name || null : null,
           agentEmail: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.email || null : null,
@@ -318,6 +278,57 @@ router.post("/propdata/listings/sync", async (req, res) => {
                 ? new Date(listing.modified)
                 : new Date()),
         };
+
+        // Extract image IDs and fetch actual image URLs
+        const imageIds: number[] = [];
+        
+        // Collect image IDs from various fields
+        if (listing.listing_images && Array.isArray(listing.listing_images)) {
+          listing.listing_images.forEach((img: any) => {
+            if (typeof img === 'number') {
+              imageIds.push(img);
+            } else if (img && typeof img === 'object' && img.id) {
+              imageIds.push(img.id);
+            }
+          });
+        }
+        
+        if (listing.header_images && Array.isArray(listing.header_images)) {
+          listing.header_images.forEach((img: any) => {
+            if (typeof img === 'number') {
+              imageIds.push(img);
+            } else if (img && typeof img === 'object' && img.id) {
+              imageIds.push(img.id);
+            }
+          });
+        }
+
+        if (listing.images && Array.isArray(listing.images)) {
+          listing.images.forEach((img: any) => {
+            if (typeof img === 'number') {
+              imageIds.push(img);
+            } else if (img && typeof img === 'object' && img.id) {
+              imageIds.push(img.id);
+            }
+          });
+        }
+
+        // Fetch image details if we have IDs (limit to first 5 listings for testing)
+        if (imageIds.length > 0 && processedCount <= 5) {
+          console.log(`Found ${imageIds.length} image IDs for listing ${listing.id}:`, imageIds);
+          try {
+            const imageDetails = await filesClient.fetchMultipleFileDetails(imageIds);
+            const imageUrls = imageDetails
+              .sort((a, b) => (a.order || 0) - (b.order || 0))
+              .map(img => img.file || img.image)
+              .filter(url => url);
+            
+            console.log(`Fetched ${imageUrls.length} image URLs for listing ${listing.id}:`, imageUrls.slice(0, 3));
+            listingData.images = imageUrls;
+          } catch (error) {
+            console.error(`Failed to fetch images for listing ${listing.id}:`, error);
+          }
+        }
 
         // Check if listing already exists
         const existingListing = await db

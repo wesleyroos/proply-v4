@@ -1,0 +1,51 @@
+Extracted 0 images for listing 2493247: []
+Skipping Archived property: 1899699
+Skipping Archived property: 1139816
+Processing listing 2488009 with expanded image data...
+Extracted 0 images for listing 2488009: []
+Skipping Pending property: 2348556
+Processing listing 2467298 with expanded image data...
+Extracted 0 images for listing 2467298: []
+Skipping Sold property: 1448802
+Processing listing 2464224 with expanded image data...
+Extracted 0 images for listing 2464224: []
+Processing listing 2496762 with expanded image data...
+Extracted 0 images for listing 2496762: []
+Skipping Archived property: 917996
+Processing listing 2204152 with expanded image data...
+Extracted 0 images for listing 2204152: []
+Skipping Archived property: 2379460
+Skipping Archived property: 2380936
+Skipping Archived property: 2380331
+Skipping Archived property: 2380884
+Skipping Archived property: 1259213
+Processing listing 2497799 with expanded image data...
+Extracted 0 images for listing 2497799: []
+Skipping Valuation property: 2491414
+Skipping Sold property: 1820112
+Skipping Pending property: 787990
+Skipping Sold property: 2196104
+Skipping Sold property: 1863366
+Processing listing 1211155 with expanded image data...
+Extracted 0 images for listing 1211155: []
+Skipping Archived property: 1724902
+Skipping Sold property: 1354027
+Skipping Archived property: 744888
+Skipping Archived property: 1761151
+Skipping Archived property: 1761164
+Skipping Archived property: 1761079
+Skipping Archived property: 1761176
+Skipping Archived property: 1761010
+Skipping Archived property: 1556135
+Skipping Archived property: 2205642
+Skipping Archived property: 1761125
+Skipping Archived property: 1761139
+Skipping Archived property: 1761046
+Skipping Pending property: 2409563
+Skipping Valuation property: 286968
+Skipping Valuation property: 287798
+Skipping Valuation property: 286511
+Skipping Valuation property: 286923
+Skipping Valuation property: 287863
+Skipping Sold property: 1795952
+Processing listing 2491710 with expanded image data
