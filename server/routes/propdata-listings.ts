@@ -45,9 +45,11 @@ router.post("/propdata/listings/sync", async (req, res) => {
       limit: number;
       modified_since?: Date;
       listing_type?: string;
+      order_by?: string;
     } = { 
       limit: pageSize,
-      listing_type: 'For Sale' // Only fetch properties for sale, not rentals
+      listing_type: 'For Sale', // Only fetch properties for sale, not rentals
+      order_by: '-modified_at' // Order by most recently modified first
     };
     
     if (!forceFullSync) {
@@ -58,8 +60,10 @@ router.post("/propdata/listings/sync", async (req, res) => {
         .limit(1);
       
       if (latestListing) {
-        // Use modified_since for incremental sync
+        // Subtract 1 hour from the latest timestamp to ensure we don't miss any listings
+        // This accounts for potential timezone differences or slight timing issues
         const modifiedSince = new Date(latestListing.lastModified);
+        modifiedSince.setHours(modifiedSince.getHours() - 1);
         console.log(`Using incremental sync with modified_since: ${modifiedSince.toISOString()}`);
         options.modified_since = modifiedSince;
       } else {
@@ -111,11 +115,13 @@ router.post("/propdata/listings/sync", async (req, res) => {
           images: listing.images?.map((img: any) => img.url) || [],
           agentId: listing.agent?.id?.toString() || null,
           agentPhone: listing.agent?.cell_number || null,
-          // Use mandate_start_date as the original listing date when available
-          // Otherwise fall back to modified_at or current date
-          lastModified: listing.mandate_start_date 
-            ? new Date(listing.mandate_start_date) 
-            : new Date(listing.modified_at || new Date()),
+          // Use modified_at as the primary timestamp for sync detection
+          // This ensures we capture when listings are actually updated in PropData
+          lastModified: listing.modified_at 
+            ? new Date(listing.modified_at) 
+            : (listing.mandate_start_date 
+                ? new Date(listing.mandate_start_date)
+                : new Date()),
           updatedAt: new Date(),
         };
 
