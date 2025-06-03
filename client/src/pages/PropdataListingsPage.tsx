@@ -248,10 +248,6 @@ export default function PropdataListingsPage() {
           </p>
         </div>
         <div className="space-x-2">
-          <Button onClick={() => refetch()} variant="outline" className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
           <Button
             onClick={async () => {
               setIsQuickSyncing(true);

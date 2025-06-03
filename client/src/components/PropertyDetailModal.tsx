@@ -37,6 +37,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  FileBarChart,
+  Loader2,
 } from "lucide-react";
 
 interface PropertyLocation {
@@ -88,6 +90,8 @@ export default function PropertyDetailModal({
   const [activeTab, setActiveTab] = useState("overview");
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [valuationReport, setValuationReport] = useState<any>(null);
 
   // Get property images
   const getPropertyImages = () => {
@@ -180,6 +184,48 @@ export default function PropertyDetailModal({
     );
   };
 
+  const generateValuationReport = async () => {
+    if (!property) return;
+
+    setIsGeneratingReport(true);
+    try {
+      const requestData = {
+        address: property.address,
+        propertyType: property.propertyType,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        parkingSpaces: property.parkingSpaces,
+        floorSize: property.floorSize,
+        landSize: property.landSize,
+        price: property.price,
+        images: propertyImages.slice(0, 5), // Limit to first 5 images for cost efficiency
+        location: property.location
+      };
+
+      const response = await fetch('/api/generate-valuation-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate report: ${response.statusText}`);
+      }
+
+      const report = await response.json();
+      setValuationReport(report);
+      setActiveTab('valuation'); // Switch to valuation tab
+    } catch (error) {
+      console.error('Error generating valuation report:', error);
+      alert('Failed to generate valuation report. Please try again.');
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-ZA", {
       style: "currency",
@@ -214,13 +260,29 @@ export default function PropertyDetailModal({
         <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl flex items-center justify-between">
-              <span>{property?.address}</span>
-              <Badge
-                variant="outline"
-                className="ml-2 bg-green-50 text-green-700 border-green-200"
+              <div className="flex items-center gap-2">
+                <span>{property?.address}</span>
+                <Badge
+                  variant="outline"
+                  className="ml-2 bg-green-50 text-green-700 border-green-200"
+                >
+                  {property?.status}
+                </Badge>
+              </div>
+              <Button
+                onClick={generateValuationReport}
+                disabled={isGeneratingReport}
+                variant="default"
+                size="sm"
+                className="gap-2"
               >
-                {property?.status}
-              </Badge>
+                {isGeneratingReport ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileBarChart className="h-4 w-4" />
+                )}
+                {isGeneratingReport ? 'Generating...' : 'Generate Report'}
+              </Button>
             </DialogTitle>
             <DialogDescription>
               Property ID: {property?.propdataId} • Last Modified:{" "}
@@ -351,10 +413,11 @@ export default function PropertyDetailModal({
 
           {/* Additional Details in Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="agent">Contact</TabsTrigger>
+              <TabsTrigger value="valuation">Valuation</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
@@ -487,6 +550,89 @@ export default function PropertyDetailModal({
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="valuation" className="space-y-4">
+              {valuationReport ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileBarChart className="h-5 w-5" />
+                      Estimated Value Range
+                    </CardTitle>
+                    <CardDescription>
+                      AI-powered property valuation based on specifications and imagery
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      {/* Valuation Summary */}
+                      {valuationReport.summary && (
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <h4 className="font-medium text-blue-900 mb-2">Analysis Summary</h4>
+                          <p className="text-blue-800 text-sm">{valuationReport.summary}</p>
+                        </div>
+                      )}
+
+                      {/* Valuation Table */}
+                      {valuationReport.valuations && (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-3 gap-4 text-sm font-medium text-muted-foreground">
+                            <div>Estimate Type</div>
+                            <div>Formula Used</div>
+                            <div>Outcome</div>
+                          </div>
+                          {valuationReport.valuations.map((valuation: any, index: number) => (
+                            <div key={index} className="grid grid-cols-3 gap-4 py-3 border-b last:border-b-0">
+                              <div className="font-medium">{valuation.type}</div>
+                              <div className="text-sm text-muted-foreground">{valuation.formula}</div>
+                              <div className="font-semibold text-lg">{formatCurrency(valuation.value)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Property Features Analysis */}
+                      {valuationReport.features && (
+                        <div className="bg-green-50 p-4 rounded-lg">
+                          <h4 className="font-medium text-green-900 mb-2">Property Features Analysis</h4>
+                          <p className="text-green-800 text-sm">{valuationReport.features}</p>
+                        </div>
+                      )}
+
+                      {/* Market Context */}
+                      {valuationReport.marketContext && (
+                        <div className="bg-yellow-50 p-4 rounded-lg">
+                          <h4 className="font-medium text-yellow-900 mb-2">Market Context</h4>
+                          <p className="text-yellow-800 text-sm">{valuationReport.marketContext}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="py-8 text-center">
+                    <FileBarChart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2">Generate Valuation Report</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Click "Generate Report" to get an AI-powered property valuation analysis
+                    </p>
+                    <Button
+                      onClick={generateValuationReport}
+                      disabled={isGeneratingReport}
+                      className="gap-2"
+                    >
+                      {isGeneratingReport ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileBarChart className="h-4 w-4" />
+                      )}
+                      {isGeneratingReport ? 'Generating...' : 'Generate Report'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </DialogContent>
