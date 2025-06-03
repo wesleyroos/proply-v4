@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -84,28 +84,14 @@ export default function PropertyDetailModal({
   onClose,
   property,
 }: PropertyDetailModalProps) {
-  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const [activeTab, setActiveTab] = React.useState("overview");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
+  const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
 
   if (!property) return null;
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-ZA", {
-      style: "currency",
-      currency: "ZAR",
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-ZA", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  // Extract images from PropData structure
+  // Get property images
   const getPropertyImages = () => {
     const images: string[] = [];
     
@@ -144,328 +130,421 @@ export default function PropertyDetailModal({
 
   const propertyImages = getPropertyImages();
 
-  const nextImage = () => {
-    if (propertyImages.length > 0) {
-      setCurrentImageIndex((prev) => {
-        const nextIndex = prev + 3;
-        return nextIndex >= propertyImages.length ? 0 : nextIndex;
-      });
+  // Arrow key navigation for full-screen viewer
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isFullScreenOpen || propertyImages.length === 0) return;
+      
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setFullScreenImageIndex((prev) => 
+          prev === 0 ? propertyImages.length - 1 : prev - 1
+        );
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setFullScreenImageIndex((prev) => 
+          prev === propertyImages.length - 1 ? 0 : prev + 1
+        );
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsFullScreenOpen(false);
+      }
+    };
+
+    if (isFullScreenOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
     }
+  }, [isFullScreenOpen, propertyImages.length]);
+
+  const openFullScreen = (index: number) => {
+    setFullScreenImageIndex(index);
+    setIsFullScreenOpen(true);
   };
 
-  const prevImage = () => {
-    if (propertyImages.length > 0) {
-      setCurrentImageIndex((prev) => {
-        const prevIndex = prev - 3;
-        return prevIndex < 0 ? Math.max(0, Math.floor((propertyImages.length - 1) / 3) * 3) : prevIndex;
-      });
-    }
+  const closeFullScreen = () => {
+    setIsFullScreenOpen(false);
   };
+
+  const nextFullScreenImage = () => {
+    setFullScreenImageIndex((prev) => 
+      prev === propertyImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevFullScreenImage = () => {
+    setFullScreenImageIndex((prev) => 
+      prev === 0 ? propertyImages.length - 1 : prev - 1
+    );
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-ZA", {
+      style: "currency",
+      currency: "ZAR",
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-ZA", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const scrollLeft = () => {
+    setCurrentImageIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const scrollRight = () => {
+    const maxStartIndex = Math.max(0, propertyImages.length - Math.floor(800 / 100)); // Approximate images that fit
+    setCurrentImageIndex((prev) => Math.min(maxStartIndex, prev + 1));
+  };
+
+  // Calculate how many images can fit in the available space (approximately)
+  const imagesPerView = Math.floor(800 / 100); // Assuming 800px width and 100px per image including gap
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl flex items-center justify-between">
-            <span>{property.address}</span>
-            <Badge
-              variant="outline"
-              className="ml-2 bg-green-50 text-green-700 border-green-200"
-            >
-              {property.status}
-            </Badge>
-          </DialogTitle>
-          <DialogDescription>
-            Property ID: {property.propdataId} • Last Modified:{" "}
-            {formatDate(property.lastModified)}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center justify-between">
+              <span>{property.address}</span>
+              <Badge
+                variant="outline"
+                className="ml-2 bg-green-50 text-green-700 border-green-200"
+              >
+                {property.status}
+              </Badge>
+            </DialogTitle>
+            <DialogDescription>
+              Property ID: {property.propdataId} • Last Modified:{" "}
+              {formatDate(property.lastModified)}
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Property Image Gallery */}
-        {propertyImages.length > 0 ? (
-          <div className="relative mb-4">
-            <div className="flex items-center gap-2">
-              {propertyImages.length > 3 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 p-0 shrink-0"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              )}
-              
-              <div className="flex gap-2 flex-1 justify-center">
-                {propertyImages.slice(currentImageIndex, currentImageIndex + 3).map((image, index) => (
-                  <div 
-                    key={currentImageIndex + index}
-                    className="w-24 h-24 rounded-md overflow-hidden bg-muted"
+          {/* Property Image Gallery */}
+          {propertyImages.length > 0 ? (
+            <div className="relative mb-4">
+              <div className="flex items-center gap-2">
+                {currentImageIndex > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0 shrink-0"
+                    onClick={scrollLeft}
                   >
-                    <img
-                      src={image}
-                      alt={`Property ${property.address} - Image ${currentImageIndex + index + 1}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                ))}
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                )}
+                
+                <div className="flex gap-2 overflow-hidden flex-1">
+                  {propertyImages.slice(currentImageIndex, currentImageIndex + imagesPerView).map((image, index) => (
+                    <div 
+                      key={currentImageIndex + index}
+                      className="w-24 h-24 rounded-md overflow-hidden bg-muted cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+                      onClick={() => openFullScreen(currentImageIndex + index)}
+                    >
+                      <img
+                        src={image}
+                        alt={`Property ${property.address} - Image ${currentImageIndex + index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                
+                {currentImageIndex + imagesPerView < propertyImages.length && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0 shrink-0"
+                    onClick={scrollRight}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
               
-              {propertyImages.length > 3 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 p-0 shrink-0"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+              {propertyImages.length > imagesPerView && (
+                <div className="text-center mt-2">
+                  <span className="text-xs text-muted-foreground">
+                    Showing {currentImageIndex + 1}-{Math.min(currentImageIndex + imagesPerView, propertyImages.length)} of {propertyImages.length} images
+                  </span>
+                </div>
               )}
             </div>
-            
-            {propertyImages.length > 3 && (
-              <div className="text-center mt-2">
-                <span className="text-xs text-muted-foreground">
-                  {Math.floor(currentImageIndex / 3) + 1} of {Math.ceil(propertyImages.length / 3)} pages
-                </span>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="rounded-md overflow-hidden h-[100px] bg-muted mb-4 flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <ImageIcon className="h-8 w-8 mx-auto mb-1" />
-              <p className="text-sm">No images available</p>
-            </div>
-          </div>
-        )}
-
-        {/* Key Property Details */}
-        <div className="flex flex-wrap gap-6 my-4 justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-primary/10 p-2 rounded-full">
-              <DollarSign className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">
-                {formatCurrency(property.price)}
-              </div>
-              <div className="text-xs text-muted-foreground">Asking Price</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="bg-primary/10 p-2 rounded-full">
-              <Home className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">{property.propertyType}</div>
-              <div className="text-xs text-muted-foreground">Property Type</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="bg-primary/10 p-2 rounded-full">
-              <Bed className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">{property.bedrooms}</div>
-              <div className="text-xs text-muted-foreground">Bedrooms</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="bg-primary/10 p-2 rounded-full">
-              <Bath className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">{property.bathrooms}</div>
-              <div className="text-xs text-muted-foreground">Bathrooms</div>
-            </div>
-          </div>
-
-          {property.parkingSpaces !== null && (
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/10 p-2 rounded-full">
-                <Car className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <div className="text-lg font-semibold">{property.parkingSpaces}</div>
-                <div className="text-xs text-muted-foreground">Parking</div>
+          ) : (
+            <div className="rounded-md overflow-hidden h-[100px] bg-muted mb-4 flex items-center justify-center">
+              <div className="text-center text-muted-foreground">
+                <ImageIcon className="h-8 w-8 mx-auto mb-1" />
+                <p className="text-sm">No images available</p>
               </div>
             </div>
           )}
-        </div>
 
-        {/* Tabs for different data views */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="mt-6"
-        >
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="features">Features</TabsTrigger>
-            <TabsTrigger value="market">Market Analysis</TabsTrigger>
-            <TabsTrigger value="investment">Investment</TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Property Details</CardTitle>
-                <CardDescription>
-                  Comprehensive information about this property
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Address</h3>
-                    <p className="text-base">{property.address}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Location</h3>
-                    <p className="text-base">
-                      {property.location?.suburb || "N/A"}, {property.location?.city || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Floor Size</h3>
-                    <p className="text-base">
-                      {property.floorSize ? `${property.floorSize} m²` : "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Land Size</h3>
-                    <p className="text-base">
-                      {property.landSize ? `${property.landSize} m²` : "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Listed Date</h3>
-                    <p className="text-base">{formatDate(property.lastModified)}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">PropData ID</h3>
-                    <p className="text-base">{property.propdataId}</p>
-                  </div>
-                  {property.agentPhone && (
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-2">Contact</h3>
-                      <p className="text-base">{property.agentPhone}</p>
-                    </div>
-                  )}
+          {/* Key Property Details */}
+          <div className="flex flex-wrap gap-6 my-4 justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 p-2 rounded-full">
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-lg font-semibold">
+                  {formatCurrency(property.price)}
                 </div>
+                <div className="text-xs text-muted-foreground">Asking Price</div>
+              </div>
+            </div>
 
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Agent Notes</h3>
-                  <p className="text-base">
-                    {property.listingData?.description || "No additional description available."}
-                  </p>
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 p-2 rounded-full">
+                <Home className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{property.propertyType}</div>
+                <div className="text-xs text-muted-foreground">Property Type</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 p-2 rounded-full">
+                <Bed className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{property.bedrooms}</div>
+                <div className="text-xs text-muted-foreground">Bedrooms</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 p-2 rounded-full">
+                <Bath className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{property.bathrooms}</div>
+                <div className="text-xs text-muted-foreground">Bathrooms</div>
+              </div>
+            </div>
+
+            {property.parkingSpaces !== null && (
+              <div className="flex items-center gap-2">
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Car className="h-5 w-5 text-primary" />
                 </div>
-              </CardContent>
-            </Card>
+                <div>
+                  <div className="text-lg font-semibold">{property.parkingSpaces}</div>
+                  <div className="text-xs text-muted-foreground">Parking</div>
+                </div>
+              </div>
+            )}
+          </div>
 
-            {/* Agent Card */}
-            {property.agentId && (
+          {/* Additional Details in Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="agent">Contact</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Listing Agent</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Ruler className="h-5 w-5" />
+                    Property Dimensions
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                      <User className="h-8 w-8 text-muted-foreground" />
+                <CardContent className="space-y-2">
+                  {property.floorSize && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Floor Size:</span>
+                      <span className="font-medium">{property.floorSize} m²</span>
                     </div>
-                    <div>
-                      <h3 className="text-base font-semibold">
-                        {property.listingData?.agent?.full_name || "Agent Information"}
-                      </h3>
-                      {property.agentPhone && (
-                        <p className="text-sm flex items-center gap-1 mt-1">
-                          <Phone className="h-3 w-3" /> {property.agentPhone}
-                        </p>
-                      )}
+                  )}
+                  {property.landSize && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Land Size:</span>
+                      <span className="font-medium">{property.landSize} m²</span>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {property.location && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Map className="h-5 w-5" />
+                      Location
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {property.location.suburb && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Suburb:</span>
+                        <span className="font-medium">{property.location.suburb}</span>
+                      </div>
+                    )}
+                    {property.location.city && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">City:</span>
+                        <span className="font-medium">{property.location.city}</span>
+                      </div>
+                    )}
+                    {property.location.province && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Province:</span>
+                        <span className="font-medium">{property.location.province}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="details" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Property Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Property ID:</span>
+                    <span className="font-medium">{property.propdataId}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Agency ID:</span>
+                    <span className="font-medium">{property.agencyId}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Created:</span>
+                    <span className="font-medium">{formatDate(property.createdAt)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Last Updated:</span>
+                    <span className="font-medium">{formatDate(property.updatedAt)}</span>
                   </div>
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
 
-          {/* Features Tab */}
-          <TabsContent value="features" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Property Features</CardTitle>
-                <CardDescription>
-                  Features and amenities of this property
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {Array.isArray(property.features) && property.features.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {property.features.filter((f): f is string => typeof f === 'string' && f.trim().length > 0).map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="bg-primary/10 p-1 rounded-full">
-                          <div className="h-2 w-2 bg-primary rounded-full"></div>
-                        </div>
-                        <span className="text-sm">{feature}</span>
+              {property.features && property.features.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Features</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {property.features.map((feature, index) => (
+                        <Badge key={index} variant="secondary">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="agent" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Agent Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {property.agentId && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Agent ID:</span>
+                      <span className="font-medium">{property.agentId}</span>
+                    </div>
+                  )}
+                  {property.agentPhone && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Phone:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{property.agentPhone}</span>
+                        <Button size="sm" variant="outline">
+                          <Phone className="h-4 w-4" />
+                        </Button>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No feature information available</p>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
 
-          {/* Market Analysis Tab */}
-          <TabsContent value="market" className="space-y-4">
-            <Card className="bg-muted/20">
-              <CardHeader>
-                <CardTitle>Market Analysis</CardTitle>
-                <CardDescription>
-                  Coming soon - Market insights will be available in a future update
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center justify-center py-6">
-                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  Market analysis features are being developed. This section will include
-                  comparable sales data, price trends, and suburb statistics.
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Investment Analysis Tab */}
-          <TabsContent value="investment" className="space-y-4">
-            <Card className="bg-muted/20">
-              <CardHeader>
-                <CardTitle>Investment Analysis</CardTitle>
-                <CardDescription>
-                  Coming soon - Investment projections will be available in a future update
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center justify-center py-6">
-                <DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  Investment analysis features are being developed. This section will include rental yield
-                  projections, ROI calculations, and financing scenarios.
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
+      {/* Full Screen Image Viewer */}
+      {isFullScreenOpen && propertyImages.length > 0 && (
+        <Dialog open={isFullScreenOpen} onOpenChange={closeFullScreen}>
+          <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
+            <div className="relative w-full h-[80vh] bg-black flex items-center justify-center">
+              <img
+                src={propertyImages[fullScreenImageIndex]}
+                alt={`Property ${property.address} - Full screen ${fullScreenImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+              
+              {/* Navigation buttons */}
+              {propertyImages.length > 1 && (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white border-0 h-12 w-12 p-0"
+                    onClick={prevFullScreenImage}
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white border-0 h-12 w-12 p-0"
+                    onClick={nextFullScreenImage}
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </>
+              )}
+              
+              {/* Close button */}
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white border-0 h-8 w-8 p-0"
+                onClick={closeFullScreen}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              
+              {/* Image counter */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded text-sm">
+                {fullScreenImageIndex + 1} / {propertyImages.length}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }
