@@ -136,9 +136,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
           images: listing.images?.map((img: any) => img.url) || [],
           agentId: listing.agent?.id?.toString() || null,
           agentPhone: listing.agent?.cell_number || null,
-          // Add external property links (Property24, Private Property, etc.)
-          externalLinkName: listing.external_link_name || null,
-          externalLinkUrl: listing.external_link_url || null,
+
           // Use modified_at as the primary timestamp for sync detection
           // This ensures we capture when listings are actually updated in PropData
           lastModified: listing.modified_at 
@@ -170,11 +168,10 @@ router.post("/propdata/listings/sync", async (req, res) => {
             .where(eq(propdataListings.propdataId, listingData.propdataId));
           updatedCount++;
         } else {
-          // Insert new listing (remove fields that don't exist in schema)
-          const { createdAt, ...dbListingData } = listingData;
+          // Insert new listing
           await db
             .insert(propdataListings)
-            .values(dbListingData);
+            .values(listingData);
           newCount++;
         }
       } catch (listingError) {
