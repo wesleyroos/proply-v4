@@ -465,12 +465,6 @@ export default function PropdataListingsPage() {
                                 {listing.parkingSpaces}
                               </div>
                             )}
-                            {listing.floorSize !== null && (
-                              <div className="flex items-center ml-2">
-                                <Binary className="h-3 w-3 mr-1 text-muted-foreground" />
-                                {listing.floorSize}m²
-                              </div>
-                            )}
                           </div>
                         </TableCell>
                         <TableCell>
