@@ -116,10 +116,10 @@ router.post("/propdata/listings/sync", async (req, res) => {
             listing.lightstone_data?.township,
             listing.lightstone_data?.province
           ].filter(Boolean).join(", "),
-          price: String(parseFloat(listing.price) || 0),
-          propertyType: listing.category || "Unknown",
-          bedrooms: String(parseFloat(listing.bedrooms) || 0),
-          bathrooms: String(parseFloat(listing.bathrooms) || 0),
+          price: (parseFloat(listing.price) || 0).toString(),
+          propertyType: listing.property_type || listing.category || "Unknown",
+          bedrooms: Math.floor(parseFloat(listing.bedrooms) || 0).toString(),
+          bathrooms: Math.floor(parseFloat(listing.bathrooms) || 0).toString(),
           // Convert decimal string to integer for parkingSpaces
           parkingSpaces: listing.garages ? Math.floor(parseFloat(listing.garages)) : null,
           // Convert to integers for size fields
@@ -136,6 +136,9 @@ router.post("/propdata/listings/sync", async (req, res) => {
           images: listing.images?.map((img: any) => img.url) || [],
           agentId: listing.agent?.id?.toString() || null,
           agentPhone: listing.agent?.cell_number || null,
+          // Add external property links (Property24, Private Property, etc.)
+          externalLinkName: listing.external_link_name || null,
+          externalLinkUrl: listing.external_link_url || null,
           // Use modified_at as the primary timestamp for sync detection
           // This ensures we capture when listings are actually updated in PropData
           lastModified: listing.modified_at 
@@ -167,13 +170,11 @@ router.post("/propdata/listings/sync", async (req, res) => {
             .where(eq(propdataListings.propdataId, listingData.propdataId));
           updatedCount++;
         } else {
-          // Insert new listing
+          // Insert new listing (remove fields that don't exist in schema)
+          const { createdAt, ...dbListingData } = listingData;
           await db
             .insert(propdataListings)
-            .values({
-              ...listingData,
-              createdAt: new Date(),
-            });
+            .values(dbListingData);
           newCount++;
         }
       } catch (listingError) {

@@ -100,6 +100,8 @@ export const propdataListings = pgTable("propdata_listings", {
   images: jsonb("images"), // Array of image URLs
   agentId: text("agent_id"), // PropData agent ID
   agentPhone: text("agent_phone"),
+  externalLinkName: text("external_link_name"), // Property24, Private Property, etc.
+  externalLinkUrl: text("external_link_url"), // External listing URL
   listingDate: timestamp("listing_date"), // When the property was actually listed (mandate_start_date)
   lastModified: timestamp("last_modified").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
