@@ -392,9 +392,9 @@ export default function PropertyDetailModal({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {property.features && property.features.length > 0 ? (
+                {Array.isArray(property.features) && property.features.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {property.features.map((feature, index) => (
+                    {property.features.filter((f): f is string => typeof f === 'string' && f.trim().length > 0).map((feature, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className="bg-primary/10 p-1 rounded-full">
                           <div className="h-2 w-2 bg-primary rounded-full"></div>
