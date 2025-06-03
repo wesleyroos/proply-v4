@@ -156,13 +156,14 @@ router.post("/propdata/listings/sync", async (req, res) => {
           parkingSpaces: listing.garages ? Math.floor(parseFloat(listing.garages)) : 
                         (listing.parkings ? Math.floor(parseFloat(listing.parkings)) : null),
           
-          // Handle building and land sizes from multiple possible fields
-          floorSize: listing.building_size ? Math.floor(parseFloat(listing.building_size)) : 
+          // Handle building and land sizes from PropData API fields
+          floorSize: listing.floor_size ? Math.floor(parseFloat(listing.floor_size)) : 
+                    (listing.building_size ? Math.floor(parseFloat(listing.building_size)) : 
                     (listing.floor_area?.size ? Math.floor(parseFloat(listing.floor_area.size)) : 
-                    (listing.floor_area ? Math.floor(parseFloat(listing.floor_area)) : null)),
-          landSize: listing.land_size ? Math.floor(parseFloat(listing.land_size)) : 
-                   (listing.erf_size?.size ? Math.floor(parseFloat(listing.erf_size.size)) : 
-                   (listing.erf_size ? Math.floor(parseFloat(listing.erf_size)) : null)),
+                    (listing.floor_area ? Math.floor(parseFloat(listing.floor_area)) : null))),
+          landSize: listing.erf_size ? Math.floor(parseFloat(listing.erf_size)) : 
+                   (listing.land_size ? Math.floor(parseFloat(listing.land_size)) : 
+                   (listing.erf_size?.size ? Math.floor(parseFloat(listing.erf_size.size)) : null)),
           
           location: {
             latitude: listing.latitude || listing.gis_data?.latitude || null,
