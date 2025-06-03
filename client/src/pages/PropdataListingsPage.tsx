@@ -47,6 +47,7 @@ interface PropdataListing {
   landSize: number | null;
   agentId: string | null;
   agentPhone: string | null;
+  listingDate: string | null; // When the property was actually listed by Sotheby's
   lastModified: string;
   createdAt: string;
   updatedAt: string;
@@ -70,7 +71,7 @@ interface ApiResponse {
   previous?: string;
 }
 
-type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt';
+type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate';
 type SortDirection = 'asc' | 'desc';
 
 export default function PropdataListingsPage() {
@@ -79,7 +80,7 @@ export default function PropdataListingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
-    field: 'createdAt',
+    field: 'listingDate',
     direction: 'desc'
   });
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -87,14 +88,14 @@ export default function PropdataListingsPage() {
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetailListing | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Query to fetch PropData listings
-  const { data, isLoading, error, refetch } = useQuery<ApiResponse>({
-    queryKey: ['/api/propdata/fetch-listings'],
+  // Query to fetch PropData listings from database
+  const { data, isLoading, error, refetch } = useQuery<PropdataListing[]>({
+    queryKey: ['/api/propdata/listings'],
     enabled: !!user?.isAdmin, // Only fetch if user is admin
   });
   
   // Extract listings from response
-  const listings = data?.results || [];
+  const listings = data || [];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-ZA', {
@@ -373,7 +374,7 @@ export default function PropdataListingsPage() {
         <CardHeader>
           <CardTitle>Property Listings</CardTitle>
           <CardDescription>
-            {data?.total ? `${data.total} total properties found (showing ${listings.length})` : 'Loading properties...'}
+            {listings.length > 0 ? `${listings.length} total properties found` : 'Loading properties...'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -417,7 +418,7 @@ export default function PropdataListingsPage() {
                       </TableHead>
                       <TableHead>Features</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead onClick={() => handleSort('createdAt')} className="cursor-pointer">
+                      <TableHead onClick={() => handleSort('listingDate')} className="cursor-pointer">
                         <div className="flex items-center gap-1">
                           Listed Date
                           <ArrowUpDown className="h-4 w-4" />
@@ -479,7 +480,9 @@ export default function PropdataListingsPage() {
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {format(new Date(listing.createdAt), 'MMM d, yyyy')}
+                            {listing.listingDate 
+                              ? format(new Date(listing.listingDate), 'MMM d, yyyy')
+                              : format(new Date(listing.createdAt), 'MMM d, yyyy')}
                           </div>
                         </TableCell>
                         <TableCell>
