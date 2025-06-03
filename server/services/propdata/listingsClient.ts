@@ -48,6 +48,32 @@ export class ListingsClient extends BaseApiClient {
                     }
                 });
                 console.log('Price-related fields:', priceFields);
+                
+                // Look for external property links (Property24, Private Property, etc.)
+                const linkFields: Record<string, any> = {};
+                Object.keys(firstListing).forEach(key => {
+                    if (key.toLowerCase().includes('url') || 
+                        key.toLowerCase().includes('link') || 
+                        key.toLowerCase().includes('property24') || 
+                        key.toLowerCase().includes('private') ||
+                        key.toLowerCase().includes('external') ||
+                        key.toLowerCase().includes('source')) {
+                        linkFields[key] = firstListing[key as keyof typeof firstListing];
+                    }
+                });
+                console.log('Link-related fields:', linkFields);
+                
+                // Look for date fields to understand listing dates
+                const dateFields: Record<string, any> = {};
+                Object.keys(firstListing).forEach(key => {
+                    if (key.toLowerCase().includes('date') || 
+                        key.toLowerCase().includes('created') || 
+                        key.toLowerCase().includes('listed') ||
+                        key.toLowerCase().includes('mandate')) {
+                        dateFields[key] = firstListing[key as keyof typeof firstListing];
+                    }
+                });
+                console.log('Date-related fields:', dateFields);
             }
             
             return response.data;
