@@ -313,8 +313,8 @@ router.post("/propdata/listings/sync", async (req, res) => {
           });
         }
 
-        // Fetch image details if we have IDs (expand to more listings for debugging)
-        if (imageIds.length > 0 && processedCount <= 10) {
+        // Handle image processing for all properties
+        if (imageIds.length > 0) {
           console.log(`Found ${imageIds.length} image IDs for listing ${listing.id} (${listing.created || 'unknown date'}):`, imageIds.slice(0, 5));
           try {
             const imageDetails = await filesClient.fetchMultipleFileDetails(imageIds);
@@ -326,12 +326,76 @@ router.post("/propdata/listings/sync", async (req, res) => {
             console.log(`Successfully fetched ${imageUrls.length}/${imageIds.length} image URLs for listing ${listing.id}`);
             if (imageUrls.length > 0) {
               console.log(`Sample URLs:`, imageUrls.slice(0, 2));
+              listingData.images = imageUrls;
             } else {
-              console.log(`No valid image URLs found for listing ${listing.id} despite having ${imageIds.length} IDs`);
+              console.log(`No gallery images found for listing ${listing.id}, checking for direct URLs in listing data`);
+              
+              // Fallback: Check if listing data contains direct image URLs
+              const fallbackImages: string[] = [];
+              
+              // Check various possible direct URL fields in the listing response
+              if (listing.images && Array.isArray(listing.images)) {
+                listing.images.forEach((img: any) => {
+                  if (typeof img === 'string' && img.startsWith('http')) {
+                    fallbackImages.push(img);
+                  } else if (img && typeof img === 'object' && (img.url || img.file || img.image)) {
+                    const url = img.url || img.file || img.image;
+                    if (typeof url === 'string' && url.startsWith('http')) {
+                      fallbackImages.push(url);
+                    }
+                  }
+                });
+              }
+              
+              // Check header images for direct URLs
+              if (listing.header_images && Array.isArray(listing.header_images)) {
+                listing.header_images.forEach((img: any) => {
+                  if (typeof img === 'string' && img.startsWith('http')) {
+                    fallbackImages.push(img);
+                  } else if (img && typeof img === 'object' && (img.url || img.file || img.image)) {
+                    const url = img.url || img.file || img.image;
+                    if (typeof url === 'string' && url.startsWith('http')) {
+                      fallbackImages.push(url);
+                    }
+                  }
+                });
+              }
+              
+              if (fallbackImages.length > 0) {
+                console.log(`Found ${fallbackImages.length} direct image URLs for listing ${listing.id}`);
+                listingData.images = fallbackImages;
+              } else {
+                listingData.images = [];
+              }
             }
-            listingData.images = imageUrls;
           } catch (error) {
             console.error(`Failed to fetch images for listing ${listing.id}:`, error);
+          }
+        } else {
+          // No image IDs found, check for direct URLs in listing data
+          const fallbackImages: string[] = [];
+          
+          // Check for direct image URLs in various fields
+          ['images', 'header_images', 'listing_images', 'photos', 'gallery'].forEach(field => {
+            if (listing[field] && Array.isArray(listing[field])) {
+              listing[field].forEach((img: any) => {
+                if (typeof img === 'string' && img.startsWith('http')) {
+                  fallbackImages.push(img);
+                } else if (img && typeof img === 'object') {
+                  const url = img.url || img.file || img.image || img.src;
+                  if (typeof url === 'string' && url.startsWith('http')) {
+                    fallbackImages.push(url);
+                  }
+                }
+              });
+            }
+          });
+          
+          if (fallbackImages.length > 0) {
+            console.log(`Found ${fallbackImages.length} direct image URLs for listing ${listing.id} (no IDs)`);
+            listingData.images = fallbackImages;
+          } else {
+            listingData.images = [];
           }
         }
 
