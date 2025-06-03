@@ -181,42 +181,95 @@ export default function PropertyDetailModal({
 
         {/* Property Image Gallery */}
         {propertyImages.length > 0 ? (
-          <div className="relative rounded-md overflow-hidden h-[300px] bg-muted mb-4">
-            <img
-              src={propertyImages[currentImageIndex]}
-              alt={`Property ${property.address}`}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // If image fails to load, try next image or show placeholder
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-            {propertyImages.length > 1 && (
-              <>
-                <div className="absolute inset-0 flex items-center justify-between px-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="rounded-full h-8 w-8 p-0 bg-black/50 hover:bg-black/70"
-                    onClick={prevImage}
-                  >
-                    <ChevronLeft className="h-4 w-4 text-white" />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="rounded-full h-8 w-8 p-0 bg-black/50 hover:bg-black/70"
-                    onClick={nextImage}
-                  >
-                    <ChevronRight className="h-4 w-4 text-white" />
-                  </Button>
+          <div className="space-y-4 mb-4">
+            {/* First 3 images as square thumbnails */}
+            <div className="grid grid-cols-3 gap-2">
+              {propertyImages.slice(0, 3).map((image, index) => (
+                <div 
+                  key={index}
+                  className={`aspect-square rounded-md overflow-hidden bg-muted cursor-pointer transition-all ${
+                    index === currentImageIndex ? 'ring-2 ring-primary' : 'hover:opacity-80'
+                  }`}
+                  onClick={() => setCurrentImageIndex(index)}
+                >
+                  <img
+                    src={image}
+                    alt={`Property ${property.address} - Image ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
                 </div>
-                <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md">
-                  {currentImageIndex + 1} / {propertyImages.length}
+              ))}
+            </div>
+            
+            {/* Scrollable gallery for remaining images */}
+            {propertyImages.length > 3 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-muted-foreground">All Images ({propertyImages.length})</h4>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {propertyImages.map((image, index) => (
+                    <div 
+                      key={index}
+                      className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden bg-muted cursor-pointer transition-all ${
+                        index === currentImageIndex ? 'ring-2 ring-primary' : 'hover:opacity-80'
+                      }`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    >
+                      <img
+                        src={image}
+                        alt={`Property ${property.address} - Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
-              </>
+              </div>
             )}
+            
+            {/* Full size image viewer */}
+            <div className="relative rounded-md overflow-hidden h-[400px] bg-muted">
+              <img
+                src={propertyImages[currentImageIndex]}
+                alt={`Property ${property.address} - Full view`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+              {propertyImages.length > 1 && (
+                <>
+                  <div className="absolute inset-0 flex items-center justify-between px-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-full h-8 w-8 p-0 bg-black/50 hover:bg-black/70"
+                      onClick={prevImage}
+                    >
+                      <ChevronLeft className="h-4 w-4 text-white" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-full h-8 w-8 p-0 bg-black/50 hover:bg-black/70"
+                      onClick={nextImage}
+                    >
+                      <ChevronRight className="h-4 w-4 text-white" />
+                    </Button>
+                  </div>
+                  <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md">
+                    {currentImageIndex + 1} / {propertyImages.length}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         ) : (
           <div className="rounded-md overflow-hidden h-[300px] bg-muted mb-4 flex items-center justify-center">

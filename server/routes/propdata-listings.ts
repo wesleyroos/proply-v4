@@ -91,6 +91,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
     let updatedCount = 0;
     let errorCount = 0;
     let processedCount = 0;
+    const totalListings = response.results.length;
     
     // Collect agent IDs to fetch their details
     const agentIds = new Set<number>();
@@ -212,6 +213,12 @@ router.post("/propdata/listings/sync", async (req, res) => {
           console.log(`All image-related fields for listing ${listing.id}:`, imageRelatedFields);
         }
         processedCount++;
+
+        // Log progress every 10 listings
+        if (processedCount % 10 === 0 || processedCount === totalListings) {
+          const progress = Math.round((processedCount / totalListings) * 100);
+          console.log(`Progress: ${processedCount}/${totalListings} (${progress}%) - New: ${newCount}, Updated: ${updatedCount}, Errors: ${errorCount}`);
+        }
 
         // Extract key fields from the listing with proper PropData API field mapping
         const listingData = {
