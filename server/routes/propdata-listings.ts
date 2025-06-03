@@ -100,9 +100,15 @@ router.post("/propdata/listings/sync", async (req, res) => {
       });
     }
     
-    // Process each listing
+    // Process each listing, but only include Active properties
     for (const listing of response.results) {
       try {
+        // Skip non-active properties (Archived, Sold, etc.)
+        if (listing.status && listing.status.toLowerCase() !== 'active') {
+          console.log(`Skipping ${listing.status} property: ${listing.id}`);
+          continue;
+        }
+
         // Extract key fields from the listing with proper type conversion
         const listingData = {
           propdataId: listing.id.toString(),
@@ -112,8 +118,8 @@ router.post("/propdata/listings/sync", async (req, res) => {
           address: [
             listing.street_number,
             listing.street_name,
-            listing.lightstone_data?.townName || listing.lightstone_data?.township,
-            listing.lightstone_data?.city,
+            listing.lightstone_data?.townName,
+            listing.lightstone_data?.township,
             listing.lightstone_data?.province
           ].filter(Boolean).join(", "),
           price: (parseFloat(listing.price) || 0).toString(),
