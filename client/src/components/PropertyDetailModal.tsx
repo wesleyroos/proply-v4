@@ -89,10 +89,10 @@ export default function PropertyDetailModal({
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
 
-  if (!property) return null;
-
   // Get property images
   const getPropertyImages = () => {
+    if (!property) return [];
+    
     const images: string[] = [];
     
     // First, try to get images from the stored images array (already processed)
@@ -157,6 +157,8 @@ export default function PropertyDetailModal({
     }
   }, [isFullScreenOpen, propertyImages.length]);
 
+  if (!property) return null;
+
   const openFullScreen = (index: number) => {
     setFullScreenImageIndex(index);
     setIsFullScreenOpen(true);
@@ -212,17 +214,17 @@ export default function PropertyDetailModal({
         <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl flex items-center justify-between">
-              <span>{property.address}</span>
+              <span>{property?.address}</span>
               <Badge
                 variant="outline"
                 className="ml-2 bg-green-50 text-green-700 border-green-200"
               >
-                {property.status}
+                {property?.status}
               </Badge>
             </DialogTitle>
             <DialogDescription>
-              Property ID: {property.propdataId} • Last Modified:{" "}
-              {formatDate(property.lastModified)}
+              Property ID: {property?.propdataId} • Last Modified:{" "}
+              {property?.lastModified && formatDate(property.lastModified)}
             </DialogDescription>
           </DialogHeader>
 
@@ -250,7 +252,7 @@ export default function PropertyDetailModal({
                     >
                       <img
                         src={image}
-                        alt={`Property ${property.address} - Image ${currentImageIndex + index + 1}`}
+                        alt={`Property ${property?.address} - Image ${currentImageIndex + index + 1}`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -298,7 +300,7 @@ export default function PropertyDetailModal({
               </div>
               <div>
                 <div className="text-lg font-semibold">
-                  {formatCurrency(property.price)}
+                  {property && formatCurrency(property.price)}
                 </div>
                 <div className="text-xs text-muted-foreground">Asking Price</div>
               </div>
@@ -309,7 +311,7 @@ export default function PropertyDetailModal({
                 <Home className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <div className="text-lg font-semibold">{property.propertyType}</div>
+                <div className="text-lg font-semibold">{property?.propertyType}</div>
                 <div className="text-xs text-muted-foreground">Property Type</div>
               </div>
             </div>
@@ -319,7 +321,7 @@ export default function PropertyDetailModal({
                 <Bed className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <div className="text-lg font-semibold">{property.bedrooms}</div>
+                <div className="text-lg font-semibold">{property?.bedrooms}</div>
                 <div className="text-xs text-muted-foreground">Bedrooms</div>
               </div>
             </div>
@@ -329,18 +331,18 @@ export default function PropertyDetailModal({
                 <Bath className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <div className="text-lg font-semibold">{property.bathrooms}</div>
+                <div className="text-lg font-semibold">{property?.bathrooms}</div>
                 <div className="text-xs text-muted-foreground">Bathrooms</div>
               </div>
             </div>
 
-            {property.parkingSpaces !== null && (
+            {property?.parkingSpaces !== null && (
               <div className="flex items-center gap-2">
                 <div className="bg-primary/10 p-2 rounded-full">
                   <Car className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <div className="text-lg font-semibold">{property.parkingSpaces}</div>
+                  <div className="text-lg font-semibold">{property?.parkingSpaces}</div>
                   <div className="text-xs text-muted-foreground">Parking</div>
                 </div>
               </div>
@@ -364,13 +366,13 @@ export default function PropertyDetailModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {property.floorSize && (
+                  {property?.floorSize && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Floor Size:</span>
                       <span className="font-medium">{property.floorSize} m²</span>
                     </div>
                   )}
-                  {property.landSize && (
+                  {property?.landSize && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Land Size:</span>
                       <span className="font-medium">{property.landSize} m²</span>
@@ -379,7 +381,7 @@ export default function PropertyDetailModal({
                 </CardContent>
               </Card>
 
-              {property.location && (
+              {property?.location && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -422,24 +424,24 @@ export default function PropertyDetailModal({
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Property ID:</span>
-                    <span className="font-medium">{property.propdataId}</span>
+                    <span className="font-medium">{property?.propdataId}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Agency ID:</span>
-                    <span className="font-medium">{property.agencyId}</span>
+                    <span className="font-medium">{property?.agencyId}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Created:</span>
-                    <span className="font-medium">{formatDate(property.createdAt)}</span>
+                    <span className="font-medium">{property?.createdAt && formatDate(property.createdAt)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Last Updated:</span>
-                    <span className="font-medium">{formatDate(property.updatedAt)}</span>
+                    <span className="font-medium">{property?.updatedAt && formatDate(property.updatedAt)}</span>
                   </div>
                 </CardContent>
               </Card>
 
-              {property.features && property.features.length > 0 && (
+              {property?.features && property.features.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Features</CardTitle>
@@ -466,13 +468,13 @@ export default function PropertyDetailModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {property.agentId && (
+                  {property?.agentId && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Agent ID:</span>
                       <span className="font-medium">{property.agentId}</span>
                     </div>
                   )}
-                  {property.agentPhone && (
+                  {property?.agentPhone && (
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Phone:</span>
                       <div className="flex items-center gap-2">
@@ -497,7 +499,7 @@ export default function PropertyDetailModal({
             <div className="relative w-full h-[80vh] bg-black flex items-center justify-center">
               <img
                 src={propertyImages[fullScreenImageIndex]}
-                alt={`Property ${property.address} - Full screen ${fullScreenImageIndex + 1}`}
+                alt={`Property ${property?.address} - Full screen ${fullScreenImageIndex + 1}`}
                 className="max-w-full max-h-full object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
