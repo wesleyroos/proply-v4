@@ -248,39 +248,22 @@ router.post("/propdata/listings/sync", async (req, res) => {
           images: (() => {
             const images: string[] = [];
             
-            // Extract from header_images (hero shots)
-            if (fullListingData.header_images && Array.isArray(fullListingData.header_images)) {
-              fullListingData.header_images.forEach((img: any) => {
-                if (typeof img === 'string') {
-                  images.push(img);
-                } else if (img && img.image) {
-                  images.push(img.image);
-                }
-              });
-            }
-            
-            // Extract from listing_images (full gallery)
+            // Extract from listing_images (full gallery) - prefer this first
             if (fullListingData.listing_images && Array.isArray(fullListingData.listing_images)) {
-              fullListingData.listing_images.forEach((img: any) => {
-                if (typeof img === 'string') {
-                  images.push(img);
-                } else if (img && img.image) {
-                  images.push(img.image);
-                }
-              });
+              const galleryImages = fullListingData.listing_images
+                .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
+                .map((img: any) => img.image)
+                .filter((url: string) => url); // Remove any undefined/null URLs
+              images.push(...galleryImages);
             }
             
-            // Fallback to legacy images field
-            if (images.length === 0 && fullListingData.images) {
-              if (Array.isArray(fullListingData.images)) {
-                fullListingData.images.forEach((img: any) => {
-                  if (typeof img === 'string') {
-                    images.push(img);
-                  } else if (img && (img.url || img.image)) {
-                    images.push(img.url || img.image);
-                  }
-                });
-              }
+            // Extract from header_images (hero shots) if no gallery images
+            if (images.length === 0 && fullListingData.header_images && Array.isArray(fullListingData.header_images)) {
+              const headerImages = fullListingData.header_images
+                .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
+                .map((img: any) => img.image)
+                .filter((url: string) => url); // Remove any undefined/null URLs
+              images.push(...headerImages);
             }
             
             // Log the extracted images for debugging
