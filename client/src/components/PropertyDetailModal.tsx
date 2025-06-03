@@ -234,7 +234,7 @@ export default function PropertyDetailModal({
             )}
             
             {/* Full size image viewer */}
-            <div className="relative rounded-md overflow-hidden h-[400px] bg-muted">
+            <div className="relative rounded-md overflow-hidden h-[300px] bg-muted">
               <img
                 src={propertyImages[currentImageIndex]}
                 alt={`Property ${property.address} - Full view`}
