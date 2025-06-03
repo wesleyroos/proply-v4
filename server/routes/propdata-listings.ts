@@ -134,46 +134,57 @@ router.post("/propdata/listings/sync", async (req, res) => {
           agencyId: 1, // Default agency ID - replace with actual agency ID
           status: listing.status || "Active",
           listingData: listing, // Store full API response
-          // Build address from PropData fields: street_number + street_name, suburb, city, region
+          
+          // Build comprehensive address from available PropData fields
+          // Handle both direct fields and nested location data
           address: [
             listing.street_number,
             listing.street_name,
-            listing.suburb,
-            listing.city,
-            listing.region
+            // Try multiple sources for location data
+            listing.suburb || listing.lightstone_data?.townName,
+            listing.city || listing.lightstone_data?.township,
+            listing.region || listing.lightstone_data?.province
           ].filter(Boolean).join(", "),
-          // Use asking_price as per PropData API documentation
+          
+          // Use asking_price as primary, fallback to price
           price: (parseFloat(listing.asking_price || listing.price) || 0).toString(),
           propertyType: listing.property_type || "Unknown",
           bedrooms: Math.floor(parseFloat(listing.bedrooms) || 0).toString(),
           bathrooms: Math.floor(parseFloat(listing.bathrooms) || 0).toString(),
-          // Use garages or parkings field for parking spaces
+          
+          // Handle parking spaces from multiple possible fields
           parkingSpaces: listing.garages ? Math.floor(parseFloat(listing.garages)) : 
                         (listing.parkings ? Math.floor(parseFloat(listing.parkings)) : null),
-          // Use building_size and land_size as per PropData API documentation
-          floorSize: listing.building_size ? Math.floor(parseFloat(listing.building_size)) : null,
-          landSize: listing.land_size ? Math.floor(parseFloat(listing.land_size)) : null,
+          
+          // Handle building and land sizes from multiple possible fields
+          floorSize: listing.building_size ? Math.floor(parseFloat(listing.building_size)) : 
+                    (listing.floor_area?.size ? Math.floor(parseFloat(listing.floor_area.size)) : 
+                    (listing.floor_area ? Math.floor(parseFloat(listing.floor_area)) : null)),
+          landSize: listing.land_size ? Math.floor(parseFloat(listing.land_size)) : 
+                   (listing.erf_size?.size ? Math.floor(parseFloat(listing.erf_size.size)) : 
+                   (listing.erf_size ? Math.floor(parseFloat(listing.erf_size)) : null)),
+          
           location: {
-            latitude: listing.latitude || null,
-            longitude: listing.longitude || null,
-            suburb: listing.suburb || null,
-            city: listing.city || null,
-            province: listing.region || listing.country || null,
+            latitude: listing.latitude || listing.gis_data?.latitude || null,
+            longitude: listing.longitude || listing.gis_data?.longitude || null,
+            suburb: listing.suburb || listing.lightstone_data?.townName || null,
+            city: listing.city || listing.lightstone_data?.township || null,
+            province: listing.region || listing.lightstone_data?.province || null,
           },
-          features: listing.tags || listing.extras || [],
+          features: listing.tags || listing.extras || listing.features || [],
           images: listing.images?.map((img: any) => typeof img === 'string' ? img : img.url) || 
                   listing.header_images || [],
           agentId: listing.agent?.id?.toString() || null,
           agentPhone: listing.agent?.phone || listing.agent?.cell_number || null,
 
-          // Use modified field for sync detection (PropData API uses 'modified', not 'modified_at')
+          // Use created field for listing date (when agent uploaded)
+          // Fallback to modified if created not available
           lastModified: listing.modified 
             ? new Date(listing.modified) 
             : (listing.created 
                 ? new Date(listing.created)
                 : new Date()),
           updatedAt: new Date(),
-          // Use 'created' field for when agent uploaded the property (listing date)
           listingDate: listing.created 
             ? new Date(listing.created)
             : (listing.modified 
