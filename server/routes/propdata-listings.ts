@@ -3,6 +3,7 @@ import { db } from "@db";
 import { propdataListings } from "@db/schema";
 import { desc, eq } from "drizzle-orm";
 import { ListingsClient } from "../services/propdata/listingsClient";
+import { AgentsClient } from "../services/propdata/agentsClient";
 
 const router = Router();
 
@@ -37,8 +38,9 @@ router.post("/propdata/listings/sync", async (req, res) => {
     
     console.log(`PropData sync requested. Force full sync: ${forceFullSync}, Max pages: ${maxPages}, Page size: ${pageSize}`);
 
-    // Create listings client instance
+    // Create listings and agents client instances
     const listingsClient = new ListingsClient();
+    const agentsClient = new AgentsClient();
     
     // For incremental sync, get timestamp of most recent listing
     let options: { 
@@ -87,6 +89,9 @@ router.post("/propdata/listings/sync", async (req, res) => {
     let updatedCount = 0;
     let errorCount = 0;
     
+    // Collect agent IDs to fetch their details
+    const agentIds = new Set<number>();
+    
     // Log sample of returned listings for debugging
     if (response.results.length > 0) {
       const firstListing = response.results[0];
@@ -119,6 +124,30 @@ router.post("/propdata/listings/sync", async (req, res) => {
       console.log('All available fields:', Object.keys(firstListing).sort());
     }
     
+    // First pass: collect agent IDs from active listings
+    for (const listing of response.results) {
+      if (listing.status && listing.status.toLowerCase() === 'active') {
+        // Collect primary agent ID
+        if (listing.agent && typeof listing.agent === 'number') {
+          agentIds.add(listing.agent);
+        }
+        // Collect additional agent IDs from agents array
+        if (listing.agents && Array.isArray(listing.agents)) {
+          listing.agents.forEach((agentId: any) => {
+            if (typeof agentId === 'number') {
+              agentIds.add(agentId);
+            }
+          });
+        }
+      }
+    }
+
+    // Fetch agent details for all collected IDs
+    console.log(`Found ${agentIds.size} unique agents to fetch details for`);
+    const agentDetails = agentIds.size > 0 ? 
+      await agentsClient.fetchAgents(Array.from(agentIds)) : 
+      new Map();
+
     // Process each listing, but only include Active properties
     for (const listing of response.results) {
       try {

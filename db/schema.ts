@@ -99,6 +99,8 @@ export const propdataListings = pgTable("propdata_listings", {
   features: jsonb("features"), // Property features and amenities
   images: jsonb("images"), // Array of image URLs
   agentId: text("agent_id"), // PropData agent ID
+  agentName: text("agent_name"), // Agent full name from PropData agents API
+  agentEmail: text("agent_email"), // Agent email
   agentPhone: text("agent_phone"),
 
   listingDate: timestamp("listing_date"), // When the property was actually listed (mandate_start_date)
