@@ -17,12 +17,11 @@ export class FilesClient extends BaseApiClient {
      * @returns File details or null if not found
      */
     async fetchFileDetails(fileId: number): Promise<FileDetails | null> {
-        // Try different file service endpoints that PropData tenants might use
+        // Use the correct PropData gallery endpoint for file details
         const endpoints = [
-            `/files/api/v1/files/${fileId}/`,
-            `/media/api/v1/files/${fileId}/`,
-            `/cdn/api/v1/files/${fileId}/`,
-            `/attachments/api/v1/files/${fileId}/`
+            `/gallery/api/v1/files/${fileId}/`,
+            `/files/api/v1/files/${fileId}/`, // fallback
+            `/media/api/v1/files/${fileId}/`, // fallback
         ];
 
         for (const endpoint of endpoints) {
