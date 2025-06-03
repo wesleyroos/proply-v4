@@ -100,6 +100,7 @@ export const propdataListings = pgTable("propdata_listings", {
   images: jsonb("images"), // Array of image URLs
   agentId: text("agent_id"), // PropData agent ID
   agentPhone: text("agent_phone"),
+  listingDate: timestamp("listing_date"), // When the property was actually listed (mandate_start_date)
   lastModified: timestamp("last_modified").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

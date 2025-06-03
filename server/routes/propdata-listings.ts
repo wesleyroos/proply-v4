@@ -13,8 +13,8 @@ router.get("/propdata/listings", async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    // Query database for PropData listings
-    const listings = await db.select().from(propdataListings).orderBy(desc(propdataListings.createdAt));
+    // Query database for PropData listings, ordered by actual listing date
+    const listings = await db.select().from(propdataListings).orderBy(desc(propdataListings.listingDate));
     
     return res.json(listings);
   } catch (error) {
@@ -144,6 +144,12 @@ router.post("/propdata/listings/sync", async (req, res) => {
                 ? new Date(listing.mandate_start_date)
                 : new Date()),
           updatedAt: new Date(),
+          // Add the actual listing date for display purposes
+          listingDate: listing.mandate_start_date 
+            ? new Date(listing.mandate_start_date)
+            : (listing.modified_at 
+                ? new Date(listing.modified_at)
+                : new Date()),
         };
 
         // Check if listing already exists
