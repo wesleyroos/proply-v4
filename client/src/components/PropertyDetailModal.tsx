@@ -105,18 +105,57 @@ export default function PropertyDetailModal({
     });
   };
 
-  const nextImage = () => {
+  // Extract images from PropData structure
+  const getPropertyImages = () => {
+    const images: string[] = [];
+    
+    // First, try to get images from the stored images array (already processed)
     if (property.images && property.images.length > 0) {
+      return property.images;
+    }
+    
+    // If not available, extract from listingData
+    if (property.listingData) {
+      // Get header images (hero shots)
+      if (property.listingData.header_images && Array.isArray(property.listingData.header_images)) {
+        property.listingData.header_images.forEach((img: any) => {
+          if (typeof img === 'string') {
+            images.push(img);
+          } else if (img && img.image) {
+            images.push(img.image);
+          }
+        });
+      }
+      
+      // Get listing images (full gallery)
+      if (property.listingData.listing_images && Array.isArray(property.listingData.listing_images)) {
+        property.listingData.listing_images.forEach((img: any) => {
+          if (typeof img === 'string') {
+            images.push(img);
+          } else if (img && img.image) {
+            images.push(img.image);
+          }
+        });
+      }
+    }
+    
+    return images;
+  };
+
+  const propertyImages = getPropertyImages();
+
+  const nextImage = () => {
+    if (propertyImages.length > 0) {
       setCurrentImageIndex((prev) =>
-        prev === property.images!.length - 1 ? 0 : prev + 1
+        prev === propertyImages.length - 1 ? 0 : prev + 1
       );
     }
   };
 
   const prevImage = () => {
-    if (property.images && property.images.length > 0) {
+    if (propertyImages.length > 0) {
       setCurrentImageIndex((prev) =>
-        prev === 0 ? property.images!.length - 1 : prev - 1
+        prev === 0 ? propertyImages.length - 1 : prev - 1
       );
     }
   };
@@ -141,34 +180,43 @@ export default function PropertyDetailModal({
         </DialogHeader>
 
         {/* Property Image Gallery */}
-        {property.images && property.images.length > 0 ? (
+        {propertyImages.length > 0 ? (
           <div className="relative rounded-md overflow-hidden h-[300px] bg-muted mb-4">
             <img
-              src={property.images[currentImageIndex]}
+              src={propertyImages[currentImageIndex]}
               alt={`Property ${property.address}`}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // If image fails to load, try next image or show placeholder
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
             />
-            <div className="absolute inset-0 flex items-center justify-between px-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="rounded-full h-8 w-8 p-0"
-                onClick={prevImage}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="rounded-full h-8 w-8 p-0"
-                onClick={nextImage}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md">
-              {currentImageIndex + 1} / {property.images.length}
-            </div>
+            {propertyImages.length > 1 && (
+              <>
+                <div className="absolute inset-0 flex items-center justify-between px-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="rounded-full h-8 w-8 p-0 bg-black/50 hover:bg-black/70"
+                    onClick={prevImage}
+                  >
+                    <ChevronLeft className="h-4 w-4 text-white" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="rounded-full h-8 w-8 p-0 bg-black/50 hover:bg-black/70"
+                    onClick={nextImage}
+                  >
+                    <ChevronRight className="h-4 w-4 text-white" />
+                  </Button>
+                </div>
+                <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md">
+                  {currentImageIndex + 1} / {propertyImages.length}
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="rounded-md overflow-hidden h-[300px] bg-muted mb-4 flex items-center justify-center">

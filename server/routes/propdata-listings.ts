@@ -202,8 +202,46 @@ router.post("/propdata/listings/sync", async (req, res) => {
             province: listing.region || listing.lightstone_data?.province || null,
           },
           features: listing.tags || listing.extras || listing.features || [],
-          images: listing.images?.map((img: any) => typeof img === 'string' ? img : img.url) || 
-                  listing.header_images || [],
+          images: (() => {
+            const images: string[] = [];
+            
+            // Extract from header_images (hero shots)
+            if (listing.header_images && Array.isArray(listing.header_images)) {
+              listing.header_images.forEach((img: any) => {
+                if (typeof img === 'string') {
+                  images.push(img);
+                } else if (img && img.image) {
+                  images.push(img.image);
+                }
+              });
+            }
+            
+            // Extract from listing_images (full gallery)
+            if (listing.listing_images && Array.isArray(listing.listing_images)) {
+              listing.listing_images.forEach((img: any) => {
+                if (typeof img === 'string') {
+                  images.push(img);
+                } else if (img && img.image) {
+                  images.push(img.image);
+                }
+              });
+            }
+            
+            // Fallback to legacy images field
+            if (images.length === 0 && listing.images) {
+              if (Array.isArray(listing.images)) {
+                listing.images.forEach((img: any) => {
+                  if (typeof img === 'string') {
+                    images.push(img);
+                  } else if (img && (img.url || img.image)) {
+                    images.push(img.url || img.image);
+                  }
+                });
+              }
+            }
+            
+            return images;
+          })(),
           agentId: listing.agent?.toString() || null,
           agentName: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.full_name || null : null,
           agentEmail: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.email || null : null,
