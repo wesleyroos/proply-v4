@@ -175,33 +175,27 @@ router.post("/propdata/listings/sync", async (req, res) => {
           continue;
         }
 
-        // Fetch full listing details to get images (limit to first 5 for testing)
-        let fullListingData = listing;
+        // With the expand parameter, we should now get full image objects directly
+        // No need to fetch detailed listing separately since we're using expand=listing_images,header_images
+        console.log(`Processing listing ${listing.id} with expanded image data...`);
+        
+        // Log image data structure for debugging (limit to first 5 for testing)
         if (processedCount < 5) {
-          console.log(`Fetching full details for listing ${listing.id} to get images...`);
-          try {
-            const detailedListing = await listingsClient.fetchListingDetails(listing.id.toString());
-            if (detailedListing) {
-              fullListingData = detailedListing;
-              console.log(`Detailed listing image fields:`, {
-                hasImages: !!detailedListing.images,
-                imagesCount: Array.isArray(detailedListing.images) ? detailedListing.images.length : 0,
-                hasHeaderImages: !!detailedListing.header_images,
-                headerImagesCount: Array.isArray(detailedListing.header_images) ? detailedListing.header_images.length : 0,
-                hasListingImages: !!detailedListing.listing_images,
-                listingImagesCount: Array.isArray(detailedListing.listing_images) ? detailedListing.listing_images.length : 0
-              });
-              
-              // Log sample image data to understand structure - full objects this time
-              if (detailedListing.listing_images && Array.isArray(detailedListing.listing_images) && detailedListing.listing_images.length > 0) {
-                console.log(`First complete listing_images object:`, JSON.stringify(detailedListing.listing_images[0], null, 2));
-              }
-              if (detailedListing.header_images && Array.isArray(detailedListing.header_images) && detailedListing.header_images.length > 0) {
-                console.log(`First complete header_images object:`, JSON.stringify(detailedListing.header_images[0], null, 2));
-              }
-            }
-          } catch (error) {
-            console.error(`Failed to fetch detailed listing for ${listing.id}:`, error);
+          console.log(`Image fields in expanded listing ${listing.id}:`, {
+            hasImages: !!listing.images,
+            imagesCount: Array.isArray(listing.images) ? listing.images.length : 0,
+            hasHeaderImages: !!listing.header_images,
+            headerImagesCount: Array.isArray(listing.header_images) ? listing.header_images.length : 0,
+            hasListingImages: !!listing.listing_images,
+            listingImagesCount: Array.isArray(listing.listing_images) ? listing.listing_images.length : 0
+          });
+          
+          // Log sample image data to understand structure
+          if (listing.listing_images && Array.isArray(listing.listing_images) && listing.listing_images.length > 0) {
+            console.log(`First listing_images object:`, JSON.stringify(listing.listing_images[0], null, 2));
+          }
+          if (listing.header_images && Array.isArray(listing.header_images) && listing.header_images.length > 0) {
+            console.log(`First header_images object:`, JSON.stringify(listing.header_images[0], null, 2));
           }
         }
         processedCount++;
@@ -255,21 +249,49 @@ router.post("/propdata/listings/sync", async (req, res) => {
             const images: string[] = [];
             
             // Extract from listing_images (full gallery) - prefer this first
-            if (fullListingData.listing_images && Array.isArray(fullListingData.listing_images)) {
-              const galleryImages = fullListingData.listing_images
+            if (listing.listing_images && Array.isArray(listing.listing_images)) {
+              const galleryImages = listing.listing_images
                 .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
-                .map((img: any) => img.image)
-                .filter((url: string) => url); // Remove any undefined/null URLs
+                .map((img: any) => {
+                  // Handle both direct URL and object with image property
+                  if (typeof img === 'string') return img;
+                  if (img && typeof img === 'object') {
+                    return img.image || img.url || img.file || null;
+                  }
+                  return null;
+                })
+                .filter((url: string | null) => url); // Remove any undefined/null URLs
               images.push(...galleryImages);
             }
             
             // Extract from header_images (hero shots) if no gallery images
-            if (images.length === 0 && fullListingData.header_images && Array.isArray(fullListingData.header_images)) {
-              const headerImages = fullListingData.header_images
+            if (images.length === 0 && listing.header_images && Array.isArray(listing.header_images)) {
+              const headerImages = listing.header_images
                 .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
-                .map((img: any) => img.image)
-                .filter((url: string) => url); // Remove any undefined/null URLs
+                .map((img: any) => {
+                  // Handle both direct URL and object with image property
+                  if (typeof img === 'string') return img;
+                  if (img && typeof img === 'object') {
+                    return img.image || img.url || img.file || null;
+                  }
+                  return null;
+                })
+                .filter((url: string | null) => url); // Remove any undefined/null URLs
               images.push(...headerImages);
+            }
+            
+            // Fallback to direct images array if available
+            if (images.length === 0 && listing.images && Array.isArray(listing.images)) {
+              const directImages = listing.images
+                .map((img: any) => {
+                  if (typeof img === 'string') return img;
+                  if (img && typeof img === 'object') {
+                    return img.image || img.url || img.file || null;
+                  }
+                  return null;
+                })
+                .filter((url: string | null) => url);
+              images.push(...directImages);
             }
             
             // Log the extracted images for debugging
