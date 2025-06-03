@@ -198,7 +198,7 @@ export default function PropertyDetailModal({
         floorSize: property.floorSize,
         landSize: property.landSize,
         price: property.price,
-        images: propertyImages.slice(0, 5), // Limit to first 5 images for cost efficiency
+        images: propertyImages.slice(0, 10), // Analyze first 10 images for comprehensive coverage
         location: property.location
       };
 
