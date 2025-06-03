@@ -112,8 +112,8 @@ router.post("/propdata/listings/sync", async (req, res) => {
           address: [
             listing.street_number,
             listing.street_name,
-            listing.lightstone_data?.townName,
-            listing.lightstone_data?.township,
+            listing.lightstone_data?.townName || listing.lightstone_data?.township,
+            listing.lightstone_data?.city,
             listing.lightstone_data?.province
           ].filter(Boolean).join(", "),
           price: (parseFloat(listing.price) || 0).toString(),
