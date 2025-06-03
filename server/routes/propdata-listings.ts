@@ -103,11 +103,11 @@ router.post("/propdata/listings/sync", async (req, res) => {
     // Process each listing
     for (const listing of response.results) {
       try {
-        // Extract key fields from the listing
+        // Extract key fields from the listing with proper type conversion
         const listingData = {
-          propdataId: listing.id,
+          propdataId: listing.id.toString(),
           agencyId: 1, // Default agency ID - replace with actual agency ID
-          status: "Active", // Default status
+          status: listing.status || "Active",
           listingData: listing, // Store full API response
           address: [
             listing.street_number,
@@ -120,9 +120,11 @@ router.post("/propdata/listings/sync", async (req, res) => {
           propertyType: listing.category || "Unknown",
           bedrooms: String(parseFloat(listing.bedrooms) || 0),
           bathrooms: String(parseFloat(listing.bathrooms) || 0),
-          parkingSpaces: listing.garages || null,
-          floorSize: listing.floor_area?.size || null,
-          landSize: listing.erf_size?.size || null,
+          // Convert decimal string to integer for parkingSpaces
+          parkingSpaces: listing.garages ? Math.floor(parseFloat(listing.garages)) : null,
+          // Convert to integers for size fields
+          floorSize: listing.floor_area?.size ? Math.floor(parseFloat(listing.floor_area.size)) : null,
+          landSize: listing.erf_size?.size ? Math.floor(parseFloat(listing.erf_size.size)) : null,
           location: {
             latitude: listing.gis_data?.latitude || null,
             longitude: listing.gis_data?.longitude || null,
@@ -201,7 +203,12 @@ router.get("/propdata/listings/debug", async (req, res) => {
     const listingsClient = new ListingsClient();
     
     // Test different query strategies
-    const results = {
+    const results: {
+      recentListings: any;
+      activeListings: any;
+      allListings: any;
+      sampleListing: any;
+    } = {
       recentListings: null,
       activeListings: null,
       allListings: null,
@@ -233,7 +240,7 @@ router.get("/propdata/listings/debug", async (req, res) => {
         }))
       };
     } catch (error) {
-      results.recentListings = { error: error.message };
+      results.recentListings = { error: error instanceof Error ? error.message : 'Unknown error' };
     }
 
     try {
@@ -248,8 +255,8 @@ router.get("/propdata/listings/debug", async (req, res) => {
         count: activeResponse.count,
         returned: activeResponse.results.length
       };
-    } catch (error) {
-      results.activeListings = { error: error.message };
+    } catch (error: any) {
+      results.activeListings = { error: error instanceof Error ? error.message : 'Unknown error' };
     }
 
     try {
@@ -279,7 +286,7 @@ router.get("/propdata/listings/debug", async (req, res) => {
         };
       }
     } catch (error) {
-      results.allListings = { error: error.message };
+      results.allListings = { error: error instanceof Error ? error.message : 'Unknown error' };
     }
 
     return res.json({
