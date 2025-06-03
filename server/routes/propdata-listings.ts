@@ -88,6 +88,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
     let newCount = 0;
     let updatedCount = 0;
     let errorCount = 0;
+    let processedCount = 0;
     
     // Collect agent IDs to fetch their details
     const agentIds = new Set<number>();
@@ -174,31 +175,36 @@ router.post("/propdata/listings/sync", async (req, res) => {
           continue;
         }
 
-        // Fetch full listing details to get images (for first few listings as test)
+        // Fetch full listing details to get images (limit to first 5 for testing)
         let fullListingData = listing;
-        if (newCount < 5) { // Only fetch details for first 5 new listings to test
+        if (processedCount < 5) {
           console.log(`Fetching full details for listing ${listing.id} to get images...`);
-          const detailedListing = await listingsClient.fetchListingDetails(listing.id.toString());
-          if (detailedListing) {
-            fullListingData = detailedListing;
-            console.log(`Detailed listing image fields:`, {
-              hasImages: !!detailedListing.images,
-              imagesCount: Array.isArray(detailedListing.images) ? detailedListing.images.length : 0,
-              hasHeaderImages: !!detailedListing.header_images,
-              headerImagesCount: Array.isArray(detailedListing.header_images) ? detailedListing.header_images.length : 0,
-              hasListingImages: !!detailedListing.listing_images,
-              listingImagesCount: Array.isArray(detailedListing.listing_images) ? detailedListing.listing_images.length : 0
-            });
-            
-            // Log sample image data to understand structure
-            if (detailedListing.listing_images && Array.isArray(detailedListing.listing_images) && detailedListing.listing_images.length > 0) {
-              console.log(`Sample listing_images structure:`, detailedListing.listing_images.slice(0, 2));
+          try {
+            const detailedListing = await listingsClient.fetchListingDetails(listing.id.toString());
+            if (detailedListing) {
+              fullListingData = detailedListing;
+              console.log(`Detailed listing image fields:`, {
+                hasImages: !!detailedListing.images,
+                imagesCount: Array.isArray(detailedListing.images) ? detailedListing.images.length : 0,
+                hasHeaderImages: !!detailedListing.header_images,
+                headerImagesCount: Array.isArray(detailedListing.header_images) ? detailedListing.header_images.length : 0,
+                hasListingImages: !!detailedListing.listing_images,
+                listingImagesCount: Array.isArray(detailedListing.listing_images) ? detailedListing.listing_images.length : 0
+              });
+              
+              // Log sample image data to understand structure
+              if (detailedListing.listing_images && Array.isArray(detailedListing.listing_images) && detailedListing.listing_images.length > 0) {
+                console.log(`Sample listing_images structure:`, detailedListing.listing_images.slice(0, 2));
+              }
+              if (detailedListing.header_images && Array.isArray(detailedListing.header_images) && detailedListing.header_images.length > 0) {
+                console.log(`Sample header_images structure:`, detailedListing.header_images.slice(0, 2));
+              }
             }
-            if (detailedListing.header_images && Array.isArray(detailedListing.header_images) && detailedListing.header_images.length > 0) {
-              console.log(`Sample header_images structure:`, detailedListing.header_images.slice(0, 2));
-            }
+          } catch (error) {
+            console.error(`Failed to fetch detailed listing for ${listing.id}:`, error);
           }
         }
+        processedCount++;
 
         // Extract key fields from the listing with proper PropData API field mapping
         const listingData = {
