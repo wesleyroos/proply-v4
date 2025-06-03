@@ -417,6 +417,7 @@ export default function PropdataListingsPage() {
                         </div>
                       </TableHead>
                       <TableHead>Features</TableHead>
+                      <TableHead>Size</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead onClick={() => handleSort('listingDate')} className="cursor-pointer">
                         <div className="flex items-center gap-1">
@@ -469,6 +470,19 @@ export default function PropdataListingsPage() {
                                 <Binary className="h-3 w-3 mr-1 text-muted-foreground" />
                                 {listing.floorSize}m²
                               </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs">
+                            {listing.floorSize && (
+                              <div>Floor: {listing.floorSize}m²</div>
+                            )}
+                            {listing.landSize && (
+                              <div>Land: {listing.landSize}m²</div>
+                            )}
+                            {!listing.floorSize && !listing.landSize && (
+                              <span className="text-muted-foreground">-</span>
                             )}
                           </div>
                         </TableCell>

@@ -129,8 +129,11 @@ router.post("/propdata/listings/sync", async (req, res) => {
           // Convert decimal string to integer for parkingSpaces
           parkingSpaces: listing.garages ? Math.floor(parseFloat(listing.garages)) : null,
           // Convert to integers for size fields
-          floorSize: listing.floor_area?.size ? Math.floor(parseFloat(listing.floor_area.size)) : null,
-          landSize: listing.erf_size?.size ? Math.floor(parseFloat(listing.erf_size.size)) : null,
+          floorSize: listing.floor_area?.size ? Math.floor(parseFloat(listing.floor_area.size)) : 
+                    (listing.floor_area ? Math.floor(parseFloat(listing.floor_area)) : null),
+          landSize: listing.erf_size?.size ? Math.floor(parseFloat(listing.erf_size.size)) : 
+                   (listing.erf_size ? Math.floor(parseFloat(listing.erf_size)) : 
+                   (listing.land_size ? Math.floor(parseFloat(listing.land_size)) : null)),
           location: {
             latitude: listing.gis_data?.latitude || null,
             longitude: listing.gis_data?.longitude || null,
