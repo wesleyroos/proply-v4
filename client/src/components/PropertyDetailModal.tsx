@@ -441,7 +441,7 @@ export default function PropertyDetailModal({
                 </CardContent>
               </Card>
 
-              {property?.features && property.features.length > 0 && (
+              {property?.features && Array.isArray(property.features) && property.features.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Features</CardTitle>

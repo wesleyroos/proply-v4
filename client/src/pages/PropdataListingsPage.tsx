@@ -89,6 +89,8 @@ export default function PropdataListingsPage() {
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>("all");
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetailListing | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQuickSyncing, setIsQuickSyncing] = useState(false);
+  const [isFullSyncing, setIsFullSyncing] = useState(false);
 
   // Query to fetch PropData listings from database
   const { data, isLoading, error, refetch } = useQuery<PropdataListing[]>({
@@ -252,6 +254,7 @@ export default function PropdataListingsPage() {
           </Button>
           <Button
             onClick={async () => {
+              setIsQuickSyncing(true);
               try {
                 // Default incremental sync
                 const response = await fetch('/api/propdata/listings/sync', {
@@ -276,13 +279,20 @@ export default function PropdataListingsPage() {
               } catch (error) {
                 console.error('Error syncing with PropData:', error);
                 alert('Failed to sync with PropData API. See console for details.');
+              } finally {
+                setIsQuickSyncing(false);
               }
             }}
             variant="default"
             className="gap-2"
+            disabled={isQuickSyncing || isFullSyncing}
           >
-            <Database className="h-4 w-4" />
-            Quick Sync
+            {isQuickSyncing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Database className="h-4 w-4" />
+            )}
+            {isQuickSyncing ? 'Syncing...' : 'Quick Sync'}
           </Button>
           
           <Button
@@ -291,6 +301,7 @@ export default function PropdataListingsPage() {
                 return;
               }
               
+              setIsFullSyncing(true);
               try {
                 const response = await fetch('/api/propdata/listings/sync', {
                   method: 'POST',
@@ -314,13 +325,20 @@ export default function PropdataListingsPage() {
               } catch (error) {
                 console.error('Error syncing with PropData:', error);
                 alert('Failed to sync with PropData API. See console for details.');
+              } finally {
+                setIsFullSyncing(false);
               }
             }}
             variant="outline"
             className="gap-2"
+            disabled={isQuickSyncing || isFullSyncing}
           >
-            <RefreshCw className="h-4 w-4" />
-            Full Sync
+            {isFullSyncing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {isFullSyncing ? 'Full Syncing...' : 'Full Sync'}
           </Button>
         </div>
       </div>
