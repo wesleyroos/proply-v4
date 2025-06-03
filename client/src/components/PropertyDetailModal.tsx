@@ -146,17 +146,19 @@ export default function PropertyDetailModal({
 
   const nextImage = () => {
     if (propertyImages.length > 0) {
-      setCurrentImageIndex((prev) =>
-        prev === propertyImages.length - 1 ? 0 : prev + 1
-      );
+      setCurrentImageIndex((prev) => {
+        const nextIndex = prev + 3;
+        return nextIndex >= propertyImages.length ? 0 : nextIndex;
+      });
     }
   };
 
   const prevImage = () => {
     if (propertyImages.length > 0) {
-      setCurrentImageIndex((prev) =>
-        prev === 0 ? propertyImages.length - 1 : prev - 1
-      );
+      setCurrentImageIndex((prev) => {
+        const prevIndex = prev - 3;
+        return prevIndex < 0 ? Math.max(0, Math.floor((propertyImages.length - 1) / 3) * 3) : prevIndex;
+      });
     }
   };
 
@@ -181,101 +183,63 @@ export default function PropertyDetailModal({
 
         {/* Property Image Gallery */}
         {propertyImages.length > 0 ? (
-          <div className="space-y-4 mb-4">
-            {/* First 3 images as square thumbnails */}
-            <div className="grid grid-cols-3 gap-2">
-              {propertyImages.slice(0, 3).map((image, index) => (
-                <div 
-                  key={index}
-                  className={`aspect-square rounded-md overflow-hidden bg-muted cursor-pointer transition-all ${
-                    index === currentImageIndex ? 'ring-2 ring-primary' : 'hover:opacity-80'
-                  }`}
-                  onClick={() => setCurrentImageIndex(index)}
+          <div className="relative mb-4">
+            <div className="flex items-center gap-2">
+              {propertyImages.length > 3 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                  onClick={prevImage}
                 >
-                  <img
-                    src={image}
-                    alt={`Property ${property.address} - Image ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-            
-            {/* Scrollable gallery for remaining images */}
-            {propertyImages.length > 3 && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-muted-foreground">All Images ({propertyImages.length})</h4>
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {propertyImages.map((image, index) => (
-                    <div 
-                      key={index}
-                      className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden bg-muted cursor-pointer transition-all ${
-                        index === currentImageIndex ? 'ring-2 ring-primary' : 'hover:opacity-80'
-                      }`}
-                      onClick={() => setCurrentImageIndex(index)}
-                    >
-                      <img
-                        src={image}
-                        alt={`Property ${property.address} - Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              )}
+              
+              <div className="flex gap-2 flex-1 justify-center">
+                {propertyImages.slice(currentImageIndex, currentImageIndex + 3).map((image, index) => (
+                  <div 
+                    key={currentImageIndex + index}
+                    className="w-24 h-24 rounded-md overflow-hidden bg-muted"
+                  >
+                    <img
+                      src={image}
+                      alt={`Property ${property.address} - Image ${currentImageIndex + index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
-            )}
-            
-            {/* Full size image viewer */}
-            <div className="relative rounded-md overflow-hidden h-[300px] bg-muted">
-              <img
-                src={propertyImages[currentImageIndex]}
-                alt={`Property ${property.address} - Full view`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-              {propertyImages.length > 1 && (
-                <>
-                  <div className="absolute inset-0 flex items-center justify-between px-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="rounded-full h-8 w-8 p-0 bg-black/50 hover:bg-black/70"
-                      onClick={prevImage}
-                    >
-                      <ChevronLeft className="h-4 w-4 text-white" />
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="rounded-full h-8 w-8 p-0 bg-black/50 hover:bg-black/70"
-                      onClick={nextImage}
-                    >
-                      <ChevronRight className="h-4 w-4 text-white" />
-                    </Button>
-                  </div>
-                  <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md">
-                    {currentImageIndex + 1} / {propertyImages.length}
-                  </div>
-                </>
+              
+              {propertyImages.length > 3 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                  onClick={nextImage}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               )}
             </div>
+            
+            {propertyImages.length > 3 && (
+              <div className="text-center mt-2">
+                <span className="text-xs text-muted-foreground">
+                  {Math.floor(currentImageIndex / 3) + 1} of {Math.ceil(propertyImages.length / 3)} pages
+                </span>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="rounded-md overflow-hidden h-[300px] bg-muted mb-4 flex items-center justify-center">
+          <div className="rounded-md overflow-hidden h-[100px] bg-muted mb-4 flex items-center justify-center">
             <div className="text-center text-muted-foreground">
-              <ImageIcon className="h-12 w-12 mx-auto mb-2" />
-              <p>No images available</p>
+              <ImageIcon className="h-8 w-8 mx-auto mb-1" />
+              <p className="text-sm">No images available</p>
             </div>
           </div>
         )}
