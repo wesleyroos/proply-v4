@@ -258,7 +258,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
             province: listing.region || listing.lightstone_data?.province || null,
           },
           features: listing.tags || listing.extras || listing.features || [],
-          images: [], // Will be populated asynchronously after processing
+          images: [] as any[], // Will be populated asynchronously after processing
           agentId: listing.agent?.toString() || null,
           agentName: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.full_name || null : null,
           agentEmail: listing.agent && agentDetails.has(listing.agent) ? agentDetails.get(listing.agent)?.email || null : null,
@@ -321,7 +321,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
             const imageUrls = imageDetails
               .sort((a, b) => (a.order || 0) - (b.order || 0))
               .map(img => img.file || img.image)
-              .filter(url => url);
+              .filter((url): url is string => Boolean(url));
             
             console.log(`Fetched ${imageUrls.length} image URLs for listing ${listing.id}:`, imageUrls.slice(0, 3));
             listingData.images = imageUrls;

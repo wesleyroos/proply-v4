@@ -22,7 +22,7 @@ export class ListingsClient extends BaseApiClient {
      */
     async fetchListingDetails(listingId: string): Promise<Listing | null> {
         try {
-            const url = `/listings/api/v1/residential/${listingId}/?expand=listing_images,header_images`;
+            const url = `/listings/api/v1/residential/${listingId}/?include=listing_images,header_images`;
             console.log(`Fetching PropData listing details: ${url}`);
             const response: AxiosResponse<Listing> = await this.axiosInstance.get(url);
             
@@ -63,8 +63,8 @@ export class ListingsClient extends BaseApiClient {
             if (options.modified_since) params.append('modified__gte', options.modified_since.toISOString());
             // Filter by listing type ('For Sale' or 'To Let')
             if (options.listing_type) params.append('listing_type', options.listing_type);
-            // Add expand parameter to get full image objects instead of just IDs
-            params.append('expand', 'listing_images,header_images');
+            // Try include parameter to get full image objects instead of just IDs
+            params.append('include', 'listing_images,header_images');
             
             const url = `/listings/api/v1/residential/${params.toString() ? `?${params.toString()}` : ''}`;
             console.log(`Fetching PropData listings: ${url}`);
