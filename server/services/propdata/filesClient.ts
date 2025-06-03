@@ -12,25 +12,38 @@ interface FileDetails {
 
 export class FilesClient extends BaseApiClient {
     /**
-     * Fetch file details by ID
+     * Fetch file details by ID - tries multiple potential endpoints
      * @param fileId The file ID to fetch
      * @returns File details or null if not found
      */
     async fetchFileDetails(fileId: number): Promise<FileDetails | null> {
-        try {
-            const url = `/files/api/v1/files/${fileId}/`;
-            console.log(`Fetching PropData file details: ${url}`);
-            const response: AxiosResponse<FileDetails> = await this.axiosInstance.get(url);
-            
-            return response.data;
-        } catch (error: any) {
-            if (error.response?.status === 404) {
-                console.log(`File ${fileId} not found`);
-                return null;
+        // Try different file service endpoints that PropData tenants might use
+        const endpoints = [
+            `/files/api/v1/files/${fileId}/`,
+            `/media/api/v1/files/${fileId}/`,
+            `/cdn/api/v1/files/${fileId}/`,
+            `/attachments/api/v1/files/${fileId}/`
+        ];
+
+        for (const endpoint of endpoints) {
+            try {
+                console.log(`Trying PropData file endpoint: ${endpoint}`);
+                const response: AxiosResponse<FileDetails> = await this.axiosInstance.get(endpoint);
+                console.log(`Success! File ${fileId} found at ${endpoint}`);
+                return response.data;
+            } catch (error: any) {
+                if (error.response?.status === 404) {
+                    console.log(`File ${fileId} not found at ${endpoint}`);
+                    continue; // Try next endpoint
+                } else {
+                    console.error(`Error fetching file ${fileId} from ${endpoint}:`, error.message);
+                    continue; // Try next endpoint
+                }
             }
-            console.error(`Error fetching file ${fileId}:`, error.message);
-            return null;
         }
+
+        console.error(`File ${fileId} not found at any known endpoint`);
+        return null;
     }
 
     /**

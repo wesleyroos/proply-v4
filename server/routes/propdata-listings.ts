@@ -374,6 +374,45 @@ router.post("/propdata/listings/sync", async (req, res) => {
   }
 });
 
+// GET /api/propdata/listings/debug/files/:fileId - Debug endpoint to test file service endpoints
+router.get("/propdata/listings/debug/files/:fileId", async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const fileId = parseInt(req.params.fileId);
+    if (isNaN(fileId)) {
+      return res.status(400).json({ error: "Invalid file ID" });
+    }
+
+    const filesClient = new FilesClient();
+    console.log(`Testing file endpoints for ID: ${fileId}`);
+    
+    const fileDetails = await filesClient.fetchFileDetails(fileId);
+    
+    if (fileDetails) {
+      return res.json({
+        success: true,
+        fileId,
+        fileDetails
+      });
+    } else {
+      return res.json({
+        success: false,
+        fileId,
+        message: "File not found at any known endpoint"
+      });
+    }
+  } catch (error) {
+    console.error("Error testing file endpoints:", error);
+    return res.status(500).json({ 
+      error: "Failed to test file endpoints", 
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
 // GET /api/propdata/listings/debug - Debug endpoint to check PropData API directly
 router.get("/propdata/listings/debug", async (req, res) => {
   try {
