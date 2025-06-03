@@ -475,15 +475,53 @@ export default function PropdataListingsPage() {
                         </TableCell>
                         <TableCell>
                           <div className="text-xs">
-                            {listing.floorSize && (
-                              <div>Floor: {listing.floorSize}m²</div>
-                            )}
-                            {listing.landSize && (
-                              <div>Land: {listing.landSize}m²</div>
-                            )}
-                            {!listing.floorSize && !listing.landSize && (
-                              <span className="text-muted-foreground">-</span>
-                            )}
+                            {(() => {
+                              const propertyType = listing.propertyType.toLowerCase();
+                              const isApartment = propertyType.includes('apartment') || 
+                                                propertyType.includes('penthouse') || 
+                                                propertyType.includes('studio');
+                              const isVacantLand = propertyType.includes('vacant') || 
+                                                 propertyType.includes('land');
+                              const isHouse = propertyType.includes('house') || 
+                                            propertyType.includes('freestanding') || 
+                                            propertyType.includes('duplex') || 
+                                            propertyType.includes('townhouse') ||
+                                            propertyType.includes('freehold');
+
+                              if (isVacantLand) {
+                                // Vacant land: show only land size
+                                return listing.landSize ? (
+                                  <div>Land: {listing.landSize}m²</div>
+                                ) : <span className="text-muted-foreground">-</span>;
+                              } else if (isApartment) {
+                                // Apartments: show only floor/building size
+                                return listing.floorSize ? (
+                                  <div>Floor: {listing.floorSize}m²</div>
+                                ) : <span className="text-muted-foreground">-</span>;
+                              } else if (isHouse) {
+                                // Houses: show both floor and land size
+                                return (
+                                  <>
+                                    {listing.floorSize && (
+                                      <div>Floor: {listing.floorSize}m²</div>
+                                    )}
+                                    {listing.landSize && (
+                                      <div>Land: {listing.landSize}m²</div>
+                                    )}
+                                    {!listing.floorSize && !listing.landSize && (
+                                      <span className="text-muted-foreground">-</span>
+                                    )}
+                                  </>
+                                );
+                              } else {
+                                // Default: show floor size primarily, land size if no floor size
+                                return listing.floorSize ? (
+                                  <div>Floor: {listing.floorSize}m²</div>
+                                ) : listing.landSize ? (
+                                  <div>Land: {listing.landSize}m²</div>
+                                ) : <span className="text-muted-foreground">-</span>;
+                              }
+                            })()}
                           </div>
                         </TableCell>
                         <TableCell>
