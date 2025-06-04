@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,7 @@ import {
   FileBarChart,
   Loader2,
 } from "lucide-react";
+import { initGoogleMaps } from "@/lib/maps";
 
 interface PropertyLocation {
   latitude?: number;
@@ -93,6 +94,8 @@ export default function PropertyDetailModal({
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [valuationReport, setValuationReport] = useState<any>(null);
   const [savedValuationData, setSavedValuationData] = useState<any>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   // Reset valuation report when property changes or modal closes, and load existing valuation
   useEffect(() => {
@@ -105,6 +108,60 @@ export default function PropertyDetailModal({
       loadExistingValuation(property.id.toString());
     }
   }, [property?.id, isOpen]);
+
+  // Google Maps initialization - using PropertyMap.tsx pattern
+  useEffect(() => {
+    if (!isOpen || !property?.address) return;
+
+    let isMounted = true;
+
+    const initializeMap = async () => {
+      try {
+        await initGoogleMaps();
+
+        if (!isMounted || !mapRef.current) return;
+
+        const geocoder = new window.google.maps.Geocoder();
+        const defaultLocation = { lat: -33.918861, lng: 18.4233 };
+
+        const map = new window.google.maps.Map(mapRef.current, {
+          center: defaultLocation,
+          zoom: 15,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          gestureHandling: 'cooperative'
+        });
+
+        geocoder.geocode({ address: property.address }, (results: any, status: any) => {
+          if (status === "OK" && results?.[0]) {
+            const location = results[0].geometry.location;
+            map.setCenter(location);
+            map.setZoom(16);
+
+            new window.google.maps.Marker({
+              map,
+              position: location,
+              title: "Property Location"
+            });
+            setMapLoaded(true);
+          } else {
+            console.error('Geocoding failed:', status);
+          }
+        });
+
+      } catch (error) {
+        console.error('Map initialization error:', error);
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      isMounted = false;
+      setMapLoaded(false);
+    };
+  }, [isOpen, property?.address]);
 
   // Load existing valuation from database
   const loadExistingValuation = async (propertyId: string) => {
@@ -558,14 +615,13 @@ export default function PropertyDetailModal({
                   <CardContent className="p-0">
                     {property?.address ? (
                       <div className="h-48 w-full rounded-b-lg overflow-hidden">
-                        <iframe
-                          src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(property.address)}&zoom=15&maptype=roadmap`}
-                          width="100%"
-                          height="100%"
-                          style={{ border: 0 }}
-                          allowFullScreen
-                          loading="lazy"
-                          referrerPolicy="no-referrer-when-downgrade"
+                        <div 
+                          ref={mapRef}
+                          className="w-full h-full"
+                          style={{ 
+                            border: '1px solid var(--border)',
+                            borderRadius: '0 0 0.5rem 0.5rem'
+                          }}
                         />
                       </div>
                     ) : (
