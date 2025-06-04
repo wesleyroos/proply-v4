@@ -103,11 +103,13 @@ export default function PropertyDetailModal({
   useEffect(() => {
     setValuationReport(null);
     setSavedValuationData(null);
+    setRentalData(null); // Clear rental data when switching properties
     setActiveTab("overview");
     
     // Load existing valuation if property is available
     if (property?.id && isOpen) {
       loadExistingValuation(property.id.toString());
+      loadExistingRentalData(property.id.toString());
     }
   }, [property?.id, isOpen]);
 
@@ -180,6 +182,21 @@ export default function PropertyDetailModal({
       // If 404, no existing valuation - that's fine
     } catch (error) {
       console.error("Error loading existing valuation:", error);
+    }
+  };
+
+  // Load existing rental data from database
+  const loadExistingRentalData = async (propertyId: string) => {
+    try {
+      const response = await fetch(`/api/rental-performance/${propertyId}`);
+      if (response.ok) {
+        const savedRentalData = await response.json();
+        setRentalData(savedRentalData);
+        console.log('Loaded existing rental data for property:', propertyId, savedRentalData);
+      }
+      // If 404, no existing rental data - that's fine
+    } catch (error) {
+      console.error("Error loading existing rental data:", error);
     }
   };
 

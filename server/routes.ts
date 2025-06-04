@@ -16,6 +16,7 @@ import {
   invoices,
   passwordResetTokens,
   valuationReports,
+  rentalPerformanceData,
 } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -1944,6 +1945,33 @@ export function registerRoutes(app: Express): Server {
         error: "Failed to fetch report analytics",
         details: error instanceof Error ? error.message : undefined,
       });
+    }
+  });
+
+  // Get rental performance data for a specific property
+  app.get("/api/rental-performance/:propertyId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const { propertyId } = req.params;
+    
+    try {
+      const rentalData = await db.query.rentalPerformanceData.findFirst({
+        where: and(
+          eq(rentalPerformanceData.userId, req.user.id),
+          eq(rentalPerformanceData.propertyId, propertyId)
+        ),
+      });
+
+      if (!rentalData) {
+        return res.status(404).json({ error: "Rental data not found" });
+      }
+
+      res.json(rentalData);
+    } catch (error) {
+      console.error("Error fetching rental performance data:", error);
+      res.status(500).json({ error: "Failed to fetch rental data" });
     }
   });
 
