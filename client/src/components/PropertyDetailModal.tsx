@@ -96,6 +96,7 @@ export default function PropertyDetailModal({
   const [savedValuationData, setSavedValuationData] = useState<any>(null);
   const [rentalData, setRentalData] = useState<any>(null);
   const [isLoadingRental, setIsLoadingRental] = useState(false);
+  const [selectedPercentile, setSelectedPercentile] = useState<'percentile25' | 'percentile50' | 'percentile75' | 'percentile90'>('percentile50');
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -104,6 +105,7 @@ export default function PropertyDetailModal({
     setValuationReport(null);
     setSavedValuationData(null);
     setRentalData(null); // Clear rental data when switching properties
+    setSelectedPercentile('percentile50'); // Reset to default percentile
     setActiveTab("overview");
     
     // Load existing valuation if property is available
@@ -304,17 +306,12 @@ export default function PropertyDetailModal({
 
   const propertyImages = getPropertyImages();
 
-  // Calculate which rental strategy is recommended based on yield
+  // Calculate which rental strategy is recommended based on dynamic yield
   const getRecommendedStrategy = () => {
     if (!rentalData?.shortTerm || !rentalData?.longTerm) return null;
     
-    // Calculate short-term annual yield (using average percentile50)
-    const shortTermAnnualRevenue = rentalData.shortTerm.percentile50.annual;
-    const shortTermYield = property?.price ? (shortTermAnnualRevenue / property.price) * 100 : 0;
-    
-    // Calculate long-term annual yield (using average of min/max)
-    const longTermAnnualRevenue = ((rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2) * 12;
-    const longTermYield = property?.price ? (longTermAnnualRevenue / property.price) * 100 : 0;
+    const shortTermYield = calculateDynamicYield();
+    const longTermYield = rentalData.longTerm.maxYield || 0;
     
     return shortTermYield > longTermYield ? 'shortTerm' : 'longTerm';
   };
@@ -436,6 +433,20 @@ export default function PropertyDetailModal({
       day: "numeric",
     });
   };
+
+  // Helper functions for dynamic calculations
+  const getSelectedShortTermData = () => {
+    if (!rentalData?.shortTerm) return null;
+    return rentalData.shortTerm[selectedPercentile];
+  };
+
+  const calculateDynamicYield = () => {
+    const selectedData = getSelectedShortTermData();
+    if (!selectedData || !property?.price) return 0;
+    return parseFloat(((selectedData.annual / property.price) * 100).toFixed(1));
+  };
+
+
 
   // Display exactly 8 images
   const imagesPerView = 8;
@@ -778,11 +789,11 @@ export default function PropertyDetailModal({
                         {rentalData?.shortTerm ? (
                           <>
                             <div className="text-xl font-bold text-[#1e40af]">
-                              R{rentalData.shortTerm.percentile50.monthly.toLocaleString()}
+                              R{getSelectedShortTermData()?.monthly.toLocaleString() || rentalData.shortTerm.percentile50.monthly.toLocaleString()}
                               <span className="text-sm font-normal">/month</span>
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              Based on {rentalData.shortTerm.occupancy}% occupancy & R{rentalData.shortTerm.percentile50.nightly.toLocaleString()} avg nightly rate
+                              Based on {rentalData.shortTerm.occupancy}% occupancy & R{getSelectedShortTermData()?.nightly.toLocaleString() || rentalData.shortTerm.percentile50.nightly.toLocaleString()} avg nightly rate
                             </div>
                             
                             <div className="border-t pt-3">
