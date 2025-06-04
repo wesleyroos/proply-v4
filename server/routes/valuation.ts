@@ -59,6 +59,14 @@ Property Details:
 - Current Listing Price: R${price?.toLocaleString('en-ZA') || 'Not specified'}
 - Location: ${location?.suburb || ''} ${location?.city || ''} ${location?.province || ''}
 
+IMPORTANT: For rental estimates, consider the specific property characteristics:
+- 1-bedroom apartments in Cape Town typically rent for R15,000-R25,000/month
+- 2-bedroom apartments typically rent for R25,000-R40,000/month  
+- 3-bedroom apartments typically rent for R40,000-R65,000/month
+- Premium locations (Waterfront, Sea Point, Camps Bay) command 30-50% premiums
+- Modern finishes and parking add 10-20% to rental values
+- Property condition from images significantly impacts rental potential
+
 Based on current Cape Town property market conditions and the specifications provided, provide a comprehensive valuation and rental analysis in the following JSON format:
 
 {
@@ -99,7 +107,16 @@ Consider factors like:
 - Comparable property values in the area
 - For rental estimates: tenant appeal, rental competitiveness, property condition and finishes (from images if provided)
 
-Provide realistic South African Rand valuations and rental estimates based on current Cape Town property market rates. For rental estimates, consider standard 12-month lease terms and factor in visual property condition, finishes, and overall tenant appeal.`;
+CRITICAL: Rental estimates MUST vary based on:
+1. NUMBER OF BEDROOMS: ${bedrooms} bedrooms should determine base rental range
+2. PROPERTY SIZE: ${floorSize}m² affects rental value significantly  
+3. LOCATION PREMIUM: Analyze ${address} for location-based adjustments
+4. VISUAL CONDITION: Use image analysis to adjust rental estimates up/down by 10-30%
+5. PARKING AVAILABILITY: ${parkingSpaces || 0} parking spaces add premium
+
+Provide realistic South African Rand valuations and rental estimates based on current Cape Town property market rates. For rental estimates, consider standard 12-month lease terms and factor in visual property condition, finishes, and overall tenant appeal.
+
+ENSURE rental estimates are property-specific and NOT generic ranges.`;
 
     console.log('Generating valuation report for property:', address);
     console.log('Property details for rental analysis:', {
@@ -109,8 +126,14 @@ Provide realistic South African Rand valuations and rental estimates based on cu
       propertyType,
       price,
       floorSize,
+      parkingSpaces,
       imagesProvided: images ? images.length : 0
     });
+    console.log('Expected rental range for', bedrooms, 'bedrooms:', 
+      bedrooms === 1 ? 'R15,000-R25,000' : 
+      bedrooms === 2 ? 'R25,000-R40,000' : 
+      bedrooms === 3 ? 'R40,000-R65,000' : 'R50,000+'
+    );
 
     // Fetch PriceLabs short-term rental data
     let shortTermData = null;
