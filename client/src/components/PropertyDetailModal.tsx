@@ -190,9 +190,22 @@ export default function PropertyDetailModal({
     try {
       const response = await fetch(`/api/rental-performance/${propertyId}`);
       if (response.ok) {
-        const savedRentalData = await response.json();
-        setRentalData(savedRentalData);
-        console.log('Loaded existing rental data for property:', propertyId, savedRentalData);
+        const rawRentalData = await response.json();
+        
+        // Transform database format to frontend format
+        const transformedData = {
+          shortTerm: rawRentalData.short_term_data ? JSON.parse(rawRentalData.short_term_data) : null,
+          longTerm: rawRentalData.long_term_min_rental ? {
+            minRental: parseFloat(rawRentalData.long_term_min_rental),
+            maxRental: parseFloat(rawRentalData.long_term_max_rental),
+            minYield: parseFloat(rawRentalData.long_term_min_yield || '0'),
+            maxYield: parseFloat(rawRentalData.long_term_max_yield || '0'),
+            managementFee: '8-10%'
+          } : null
+        };
+        
+        setRentalData(transformedData);
+        console.log('Loaded and transformed rental data for property:', propertyId, transformedData);
       }
       // If 404, no existing rental data - that's fine
     } catch (error) {
