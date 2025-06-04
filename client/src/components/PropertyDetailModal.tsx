@@ -345,14 +345,27 @@ export default function PropertyDetailModal({
     return parseFloat(((selectedData.annual / property.price) * 100).toFixed(1));
   };
 
-  // Calculate which rental strategy is recommended based on dynamic yield
+  // Calculate long-term yields dynamically based on current rental data
+  const calculateLongTermYield = () => {
+    if (!rentalData?.longTerm || !property?.price) return { min: 0, max: 0 };
+    const propertyPrice = parseFloat(property.price.toString());
+    const minAnnualRental = rentalData.longTerm.minRental * 12;
+    const maxAnnualRental = rentalData.longTerm.maxRental * 12;
+    
+    return {
+      min: parseFloat(((minAnnualRental / propertyPrice) * 100).toFixed(1)),
+      max: parseFloat(((maxAnnualRental / propertyPrice) * 100).toFixed(1))
+    };
+  };
+
+  // Calculate which rental strategy is recommended based on dynamic yields
   const getRecommendedStrategy = () => {
     if (!rentalData?.shortTerm || !rentalData?.longTerm) return null;
     
     const shortTermYield = calculateDynamicYield();
-    const longTermYield = rentalData.longTerm.maxYield || 0;
+    const longTermYield = calculateLongTermYield();
     
-    return shortTermYield > longTermYield ? 'shortTerm' : 'longTerm';
+    return shortTermYield > longTermYield.max ? 'shortTerm' : 'longTerm';
   };
 
   const recommendedStrategy = getRecommendedStrategy();
@@ -1099,7 +1112,7 @@ export default function PropertyDetailModal({
                             <div className="border-t pt-3 space-y-1">
                               <div className="flex justify-between text-sm">
                                 <span>Annual yield:</span>
-                                <span className="font-bold text-gray-600">{rentalData.longTerm.minYield}%-{rentalData.longTerm.maxYield}%</span>
+                                <span className="font-bold text-gray-600">{calculateLongTermYield().min}%-{calculateLongTermYield().max}%</span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span>Yearly income:</span>
