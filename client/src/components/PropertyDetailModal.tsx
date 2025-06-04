@@ -231,7 +231,7 @@ export default function PropertyDetailModal({
     
     try {
       const saveData = {
-        propertyId: property.id.toString(),
+        propertyId: property.propdataId,
         address: property.address,
         price: property.price,
         bedrooms: property.bedrooms,
