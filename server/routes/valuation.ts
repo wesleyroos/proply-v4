@@ -1,8 +1,8 @@
 import { Router } from "express";
 import OpenAI from "openai";
 import { fetchPriceLabsData } from "./rental-performance";
-import { db } from "../db";
-import { rentalPerformanceData } from "../db/schema";
+import { db } from "../../db";
+import { rentalPerformanceData } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 
 const router = Router();
@@ -195,6 +195,54 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
     };
 
     console.log('Final rental performance data:', rentalPerformance);
+
+    // Save rental performance data to database for persistence
+    if (rentalPerformance.longTerm || rentalPerformance.shortTerm) {
+      try {
+        const propertyIdFromAddress = address.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+        
+        // Check if rental data already exists for this property
+        const existingRentalData = await db.select()
+          .from(rentalPerformanceData)
+          .where(and(
+            eq(rentalPerformanceData.userId, req.user.id),
+            eq(rentalPerformanceData.propertyId, propertyIdFromAddress)
+          ))
+          .limit(1);
+
+        const rentalDataToSave = {
+          userId: req.user.id,
+          propertyId: propertyIdFromAddress,
+          address,
+          bedrooms,
+          bathrooms,
+          propertyType,
+          price: price?.toString(),
+          shortTermData: rentalPerformance.shortTerm,
+          longTermMinRental: rentalPerformance.longTerm?.minRental?.toString(),
+          longTermMaxRental: rentalPerformance.longTerm?.maxRental?.toString(),
+          longTermMinYield: rentalPerformance.longTerm?.minYield?.toString(),
+          longTermMaxYield: rentalPerformance.longTerm?.maxYield?.toString(),
+          longTermReasoning: valuationReport.rentalEstimates?.longTerm?.reasoning,
+          imagesAnalyzed: images ? images.length : 0,
+          analysisModel: "gpt-4o"
+        };
+
+        if (existingRentalData.length > 0) {
+          // Update existing record
+          await db.update(rentalPerformanceData)
+            .set(rentalDataToSave)
+            .where(eq(rentalPerformanceData.id, existingRentalData[0].id));
+          console.log('Updated existing rental performance data in database');
+        } else {
+          // Insert new record
+          await db.insert(rentalPerformanceData).values(rentalDataToSave);
+          console.log('Saved new rental performance data to database');
+        }
+      } catch (error) {
+        console.error('Error saving rental performance data to database:', error);
+      }
+    }
 
     // Include rental performance data in the response
     return res.json({
