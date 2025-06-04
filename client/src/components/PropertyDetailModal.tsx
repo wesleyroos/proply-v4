@@ -499,10 +499,11 @@ export default function PropertyDetailModal({
 
           {/* Additional Details in Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="agent">Contact</TabsTrigger>
+              <TabsTrigger value="rental">Rental Performance</TabsTrigger>
               <TabsTrigger value="valuation">Valuation</TabsTrigger>
             </TabsList>
 
@@ -678,6 +679,116 @@ export default function PropertyDetailModal({
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            <TabsContent value="rental" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Short-Term Rental Card */}
+                <Card className="border-blue-200">
+                  <CardHeader className="bg-blue-50">
+                    <CardTitle className="flex items-center gap-2 text-blue-800">
+                      <Calendar className="h-5 w-5" />
+                      Short-Term (Airbnb)
+                      <Badge className="bg-blue-600 text-white">RECOMMENDED</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <div className="text-2xl font-bold text-blue-600">R31,077<span className="text-lg font-normal">/month</span></div>
+                      <div className="text-sm text-muted-foreground">Based on 71% occupancy & R1,459 avg nightly rate</div>
+                      
+                      <div className="border-t pt-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium">Rate & Revenue Potential:</span>
+                          <span className="text-blue-600 font-bold">71% Occupancy</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <div className="font-medium text-muted-foreground">Conservative (25th)</div>
+                            <div>Nightly: R1,018</div>
+                            <div>Monthly: R21,683</div>
+                            <div className="font-medium">Annual: R263,815</div>
+                          </div>
+                          
+                          <div>
+                            <div className="font-medium text-muted-foreground">Average (50th)</div>
+                            <div>Nightly: R1,459</div>
+                            <div>Monthly: R31,077</div>
+                            <div className="font-medium">Annual: R378,100</div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm mt-3">
+                          <div>
+                            <div className="font-medium text-muted-foreground">Premium (75th)</div>
+                            <div>Nightly: R2,012</div>
+                            <div>Monthly: R42,856</div>
+                            <div className="font-medium">Annual: R521,410</div>
+                          </div>
+                          
+                          <div>
+                            <div className="font-medium text-muted-foreground">Luxury (90th)</div>
+                            <div>Nightly: R2,753</div>
+                            <div>Monthly: R58,639</div>
+                            <div className="font-medium">Annual: R713,440</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-4 space-y-2">
+                        <div className="flex justify-between">
+                          <span>Annual yield:</span>
+                          <span className="font-bold text-blue-600">12.4%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Yearly income:</span>
+                          <span className="font-medium">R378,100</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Management fee:</span>
+                          <span className="font-medium">15-20%</span>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-blue-50 p-3 rounded-lg">
+                        <div className="text-sm text-blue-800 font-medium">✓ Best option for this property</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Long-Term Rental Card */}
+                <Card className="border-gray-200">
+                  <CardHeader className="bg-gray-50">
+                    <CardTitle className="flex items-center gap-2 text-gray-800">
+                      <Home className="h-5 w-5" />
+                      Long-Term Rental
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <div className="text-2xl font-bold text-gray-600">R18,000-R45,000<span className="text-lg font-normal">/month</span></div>
+                      <div className="text-sm text-muted-foreground">Standard 12-month lease</div>
+                      
+                      <div className="border-t pt-4 space-y-2">
+                        <div className="flex justify-between">
+                          <span>Annual yield:</span>
+                          <span className="font-bold text-gray-600">7.1-17.7%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Yearly income:</span>
+                          <span className="font-medium">R216,000-R540,000</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Management fee:</span>
+                          <span className="font-medium">8-10%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="agent" className="space-y-4">

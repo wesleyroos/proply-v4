@@ -34,6 +34,7 @@ import tomtomTestRouter from './routes/tomtom-test';
 import propdataListingsRouter from './routes/propdata-listings';
 import fetchPropdataRouter from './routes/fetch-propdata';
 import valuationRouter from './routes/valuation';
+import { getRentalPerformance } from './routes/rental-performance';
 import { sendPasswordResetEmail } from './services/email';
 import { sendDemoRequestEmail } from './services/emailService';
 
@@ -2000,6 +2001,9 @@ export function registerRoutes(app: Express): Server {
       });
     }
   });
+
+  // Rental Performance API endpoint
+  app.post("/api/rental-performance", getRentalPerformance);
 
   // Add the calculate-deal-score endpoint
   app.post("/api/calculate-deal-score", async (req, res) => {
