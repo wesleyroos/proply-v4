@@ -345,6 +345,12 @@ export default function PropertyDetailModal({
 
       const report = await response.json();
       setValuationReport(report);
+      
+      // Set rental performance data if available
+      if (report.rentalPerformance) {
+        setRentalData(report.rentalPerformance);
+      }
+      
       setActiveTab('valuation'); // Switch to valuation tab
       
       // Save the valuation report to database
@@ -686,11 +692,16 @@ export default function PropertyDetailModal({
             </TabsContent>
 
             <TabsContent value="rental" className="space-y-4">
-              {isLoadingRental ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                  <span className="ml-2">Loading rental performance data...</span>
-                </div>
+              {!rentalData ? (
+                <Card>
+                  <CardContent className="py-8 text-center">
+                    <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2">Rental Performance Analysis</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Generate a valuation report to see rental performance data including PriceLabs short-term rental analysis and long-term rental estimates.
+                    </p>
+                  </CardContent>
+                </Card>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Short-Term Rental Card */}
