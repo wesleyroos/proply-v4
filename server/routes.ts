@@ -28,6 +28,7 @@ import { suburbs } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
+import OpenAI from "openai";
 import dealAdvisorRouter from './routes/deal-advisor';
 import addressValidationRouter from './routes/address-validation';
 import trafficDataRouter from './routes/traffic-data';
@@ -1895,6 +1896,117 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error clearing cache:", error);
       res.status(500).json({ error: "Failed to clear cache" });
+    }
+  });
+
+  // Contest rental estimate endpoint
+  app.post("/api/contest-rental-estimate", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    try {
+      const {
+        propertyId,
+        currentEstimate,
+        propertyDetails,
+        userFeedback,
+        conversationHistory
+      } = req.body;
+
+      const openai = new OpenAI({
+        apiKey: import.meta.env.OPENAI_API_KEY,
+      });
+
+      // Build conversation context
+      const messages = [
+        {
+          role: "system" as const,
+          content: `You are a property rental expert helping to refine rental estimates based on user feedback. 
+          
+          Current rental estimate: R${currentEstimate.min}-R${currentEstimate.max}/month
+          Property details: ${propertyDetails.address}, ${propertyDetails.bedrooms} bed, ${propertyDetails.bathrooms} bath, ${propertyDetails.floorSize}m², ${propertyDetails.propertyType}, Price: R${propertyDetails.price}
+          AI reasoning: ${currentEstimate.reasoning}
+          
+          The user is contesting this estimate. Consider their local knowledge and feedback carefully. If their concerns are valid, provide a revised estimate range. Respond conversationally and explain your reasoning.
+          
+          If you provide a new estimate, format it exactly like this at the end of your response:
+          NEW_ESTIMATE: {"min": 15000, "max": 18000}
+          
+          Be helpful and acknowledge the user's local knowledge while providing professional insights.`
+        },
+        ...conversationHistory.slice(-5), // Include last 5 messages for context
+        {
+          role: "user" as const,
+          content: userFeedback
+        }
+      ];
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages,
+        max_tokens: 500,
+        temperature: 0.7,
+      });
+
+      const aiResponse = response.choices[0].message.content || "";
+      
+      // Extract new estimate if provided
+      let newEstimate = null;
+      const estimateMatch = aiResponse.match(/NEW_ESTIMATE:\s*({[^}]+})/);
+      if (estimateMatch) {
+        try {
+          newEstimate = JSON.parse(estimateMatch[1]);
+        } catch (e) {
+          console.error("Failed to parse new estimate:", e);
+        }
+      }
+
+      // Clean response by removing the NEW_ESTIMATE part
+      const cleanResponse = aiResponse.replace(/NEW_ESTIMATE:\s*{[^}]+}/, '').trim();
+
+      res.json({
+        response: cleanResponse,
+        newEstimate
+      });
+
+    } catch (error) {
+      console.error("Error in contest rental estimate:", error);
+      res.status(500).json({ error: "Failed to process request" });
+    }
+  });
+
+  // Update rental performance data
+  app.patch("/api/rental-performance/:propertyId/update", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    try {
+      const { propertyId } = req.params;
+      const { longTerm } = req.body;
+      const userId = req.user.id;
+
+      // Update the rental performance data
+      await db
+        .update(rentalPerformanceData)
+        .set({
+          longTermMinRental: longTerm.minRental,
+          longTermMaxRental: longTerm.maxRental,
+          longTermReasoning: longTerm.reasoning,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(rentalPerformanceData.propertyId, propertyId),
+            eq(rentalPerformanceData.userId, userId)
+          )
+        );
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating rental performance:", error);
+      res.status(500).json({ error: "Failed to update rental performance" });
     }
   });
 
