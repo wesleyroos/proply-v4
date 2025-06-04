@@ -92,10 +92,12 @@ export default function PropertyDetailModal({
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [valuationReport, setValuationReport] = useState<any>(null);
+  const [savedValuationData, setSavedValuationData] = useState<any>(null);
 
   // Reset valuation report when property changes or modal closes, and load existing valuation
   useEffect(() => {
     setValuationReport(null);
+    setSavedValuationData(null);
     setActiveTab("overview");
     
     // Load existing valuation if property is available
@@ -111,6 +113,7 @@ export default function PropertyDetailModal({
       if (response.ok) {
         const savedValuation = await response.json();
         setValuationReport(savedValuation.valuationData);
+        setSavedValuationData(savedValuation); // Store the complete saved data including calculated fields
       }
       // If 404, no existing valuation - that's fine
     } catch (error) {
@@ -132,6 +135,7 @@ export default function PropertyDetailModal({
         floorSize: property.floorSize,
         landSize: property.landSize,
         propertyType: property.propertyType,
+        parkingSpaces: property.parkingSpaces,
         valuationData,
         imagesAnalyzed: 10
       };
@@ -526,10 +530,16 @@ export default function PropertyDetailModal({
                         <div>
                           <span className="text-muted-foreground text-sm">Price/m²</span>
                           <div className="font-medium">
-                            {property?.price && property?.floorSize 
-                              ? `R ${Math.round(property.price / property.floorSize).toLocaleString()}`
-                              : 'N/A'
-                            }
+                            {(() => {
+                              // Use saved calculated value if available, otherwise calculate live
+                              if (savedValuationData?.pricePerSquareMeter) {
+                                return `R ${Math.round(parseFloat(savedValuationData.pricePerSquareMeter)).toLocaleString()}`;
+                              }
+                              if (property?.price && property?.floorSize) {
+                                return `R ${Math.round(property.price / property.floorSize).toLocaleString()}`;
+                              }
+                              return 'N/A';
+                            })()}
                           </div>
                         </div>
                       </div>
