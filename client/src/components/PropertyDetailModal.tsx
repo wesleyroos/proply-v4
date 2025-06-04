@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -40,14 +40,6 @@ import {
   FileBarChart,
   Loader2,
 } from "lucide-react";
-import { initGoogleMaps } from "@/lib/maps";
-
-// TypeScript declarations for Google Maps
-declare global {
-  interface Window {
-    google: any;
-  }
-}
 
 interface PropertyLocation {
   latitude?: number;
@@ -101,90 +93,18 @@ export default function PropertyDetailModal({
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [valuationReport, setValuationReport] = useState<any>(null);
   const [savedValuationData, setSavedValuationData] = useState<any>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
 
   // Reset valuation report when property changes or modal closes, and load existing valuation
   useEffect(() => {
     setValuationReport(null);
     setSavedValuationData(null);
     setActiveTab("overview");
-    setMapLoaded(false);
-    setMapError(null);
     
     // Load existing valuation if property is available
     if (property?.id && isOpen) {
       loadExistingValuation(property.id.toString());
     }
   }, [property?.id, isOpen]);
-
-  // Initialize Google Maps when modal opens and property address is available
-  useEffect(() => {
-    if (isOpen && property?.address) {
-      initializeMap();
-    }
-  }, [isOpen, property?.address]);
-
-  const initializeMap = async () => {
-    if (!property?.address || !mapRef.current) {
-      console.log("Map initialization skipped: missing address or mapRef", {
-        address: property?.address,
-        mapRef: !!mapRef.current
-      });
-      return;
-    }
-
-    console.log("Initializing Google Maps for address:", property.address);
-    setMapError(null);
-
-    try {
-      await initGoogleMaps();
-      console.log("Google Maps script loaded successfully");
-      
-      // Ensure Google Maps is loaded
-      if (!window.google?.maps) {
-        const error = "Google Maps API not loaded";
-        console.error(error);
-        setMapError(error);
-        return;
-      }
-      
-      const geocoder = new window.google.maps.Geocoder();
-      geocoder.geocode({ address: property.address }, (results: any, status: any) => {
-        console.log("Geocoding result:", { status, resultsCount: results?.length });
-        
-        if (status === "OK" && results && results[0] && mapRef.current) {
-          console.log("Creating map for location:", results[0].geometry.location);
-          
-          const map = new window.google.maps.Map(mapRef.current, {
-            center: results[0].geometry.location,
-            zoom: 15,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-          });
-
-          new window.google.maps.Marker({
-            map,
-            position: results[0].geometry.location,
-            title: property.address,
-          });
-          
-          setMapLoaded(true);
-          console.log("Map loaded successfully");
-        } else {
-          const error = `Geocoding failed: ${status}`;
-          console.error(error);
-          setMapError(error);
-        }
-      });
-    } catch (error) {
-      const errorMessage = `Error initializing Google Maps: ${error}`;
-      console.error(errorMessage);
-      setMapError(errorMessage);
-    }
-  };
 
   // Load existing valuation from database
   const loadExistingValuation = async (propertyId: string) => {
@@ -638,32 +558,15 @@ export default function PropertyDetailModal({
                   <CardContent className="p-0">
                     {property?.address ? (
                       <div className="h-48 w-full rounded-b-lg overflow-hidden">
-                        <div 
-                          ref={mapRef}
-                          className="w-full h-full bg-gray-100"
-                          style={{ 
-                            border: '1px solid var(--border)',
-                            borderRadius: '0 0 0.5rem 0.5rem'
-                          }}
-                        >
-                          {!mapLoaded && !mapError && (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <div className="text-center text-muted-foreground">
-                                <Loader2 className="h-6 w-6 mx-auto mb-2 animate-spin" />
-                                <p className="text-sm">Loading map...</p>
-                              </div>
-                            </div>
-                          )}
-                          {mapError && (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <div className="text-center text-muted-foreground">
-                                <Map className="h-6 w-6 mx-auto mb-2" />
-                                <p className="text-xs">Map unavailable</p>
-                                <p className="text-xs text-red-500">{mapError}</p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        <iframe
+                          src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(property.address)}&zoom=15&maptype=roadmap`}
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                        />
                       </div>
                     ) : (
                       <div className="h-48 w-full rounded-b-lg overflow-hidden bg-muted flex items-center justify-center">
