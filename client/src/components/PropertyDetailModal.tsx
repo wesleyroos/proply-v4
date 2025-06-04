@@ -606,26 +606,25 @@ export default function PropertyDetailModal({
 
                 {/* Location Card */}
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2">
                       <Map className="h-5 w-5" />
                       Location
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-0">
+                  <CardContent className="p-4 pt-0">
                     {property?.address ? (
-                      <div className="h-48 w-full rounded-b-lg overflow-hidden">
+                      <div className="h-64 w-full rounded-lg overflow-hidden">
                         <div 
                           ref={mapRef}
-                          className="w-full h-full"
+                          className="w-full h-full rounded-lg"
                           style={{ 
-                            border: '1px solid var(--border)',
-                            borderRadius: '0 0 0.5rem 0.5rem'
+                            border: '1px solid var(--border)'
                           }}
                         />
                       </div>
                     ) : (
-                      <div className="h-48 w-full rounded-b-lg overflow-hidden bg-muted flex items-center justify-center">
+                      <div className="h-64 w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                         <div className="text-center text-muted-foreground">
                           <Map className="h-8 w-8 mx-auto mb-2" />
                           <p className="text-sm">Location not available</p>
