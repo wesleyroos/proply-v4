@@ -548,7 +548,7 @@ export default function PropertyDetailModal({
                 </Card>
 
                 {/* Location Card */}
-                {property?.location && (
+                {property?.location && (property.location.latitude && property.location.longitude) && (
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
@@ -556,25 +556,18 @@ export default function PropertyDetailModal({
                         Location
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
-                      {property.location.suburb && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Suburb:</span>
-                          <span className="font-medium">{property.location.suburb}</span>
-                        </div>
-                      )}
-                      {property.location.city && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">City:</span>
-                          <span className="font-medium">{property.location.city}</span>
-                        </div>
-                      )}
-                      {property.location.province && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Province:</span>
-                          <span className="font-medium">{property.location.province}</span>
-                        </div>
-                      )}
+                    <CardContent className="p-0">
+                      <div className="h-48 w-full rounded-b-lg overflow-hidden">
+                        <iframe
+                          src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${property.location.latitude},${property.location.longitude}&zoom=15&maptype=roadmap`}
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                        />
+                      </div>
                     </CardContent>
                   </Card>
                 )}
