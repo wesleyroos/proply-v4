@@ -210,7 +210,8 @@ export default function PropertyDetailModal({
             maxRental: parseFloat(rawRentalData.long_term_max_rental),
             minYield: parseFloat(rawRentalData.long_term_min_yield || '0'),
             maxYield: parseFloat(rawRentalData.long_term_max_yield || '0'),
-            managementFee: '8-10%'
+            managementFee: '8-10%',
+            reasoning: rawRentalData.long_term_reasoning
           } : null
         };
         
@@ -888,6 +889,16 @@ export default function PropertyDetailModal({
                                 <span className="font-medium">{rentalData.longTerm.managementFee}</span>
                               </div>
                             </div>
+                            
+                            {/* AI Justification */}
+                            {rentalData.longTerm.reasoning && (
+                              <div className="mt-3 pt-3 border-t">
+                                <div className="text-xs text-muted-foreground mb-1 font-medium">AI Analysis:</div>
+                                <p className="text-xs text-gray-600 leading-relaxed italic">
+                                  "{rentalData.longTerm.reasoning}"
+                                </p>
+                              </div>
+                            )}
                           </>
                         ) : (
                           <div className="text-center py-6 text-muted-foreground">
