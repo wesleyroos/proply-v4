@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Home,
   Bed,
@@ -39,6 +40,8 @@ import {
   ChevronRight,
   FileBarChart,
   Loader2,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import { initGoogleMaps } from "@/lib/maps";
 
@@ -98,6 +101,11 @@ export default function PropertyDetailModal({
   const [isLoadingRental, setIsLoadingRental] = useState(false);
   const [selectedPercentile, setSelectedPercentile] = useState<'percentile25' | 'percentile50' | 'percentile75' | 'percentile90'>('percentile50');
   const [generationTimer, setGenerationTimer] = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{role: 'user' | 'assistant', content: string, newEstimate?: {min: number, max: number}}>>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [hasNewEstimate, setHasNewEstimate] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -123,6 +131,9 @@ export default function PropertyDetailModal({
     setSelectedPercentile('percentile50'); // Reset to default percentile
     setActiveTab("overview");
     setGenerationTimer(0);
+    setIsChatOpen(false);
+    setChatMessages([]);
+    setHasNewEstimate(false);
     
     // Load existing valuation if property is available
     if (property?.propdataId && isOpen) {
@@ -345,6 +356,117 @@ export default function PropertyDetailModal({
   };
 
   const recommendedStrategy = getRecommendedStrategy();
+
+  // Chat functionality for contesting rental estimates
+  const handleChatSubmit = async () => {
+    if (!chatInput.trim() || isChatLoading) return;
+    
+    const userMessage = chatInput.trim();
+    setChatInput('');
+    setIsChatLoading(true);
+    
+    // Add user message to chat
+    const newMessages = [...chatMessages, { role: 'user' as const, content: userMessage }];
+    setChatMessages(newMessages);
+    
+    try {
+      const response = await fetch('/api/contest-rental-estimate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          propertyId: property?.propdataId,
+          currentEstimate: {
+            min: rentalData?.longTerm?.minRental,
+            max: rentalData?.longTerm?.maxRental,
+            reasoning: rentalData?.longTerm?.reasoning
+          },
+          propertyDetails: {
+            address: property?.address,
+            bedrooms: property?.bedrooms,
+            bathrooms: property?.bathrooms,
+            floorSize: property?.floorSize,
+            propertyType: property?.propertyType,
+            price: property?.price
+          },
+          userFeedback: userMessage,
+          conversationHistory: newMessages
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+      
+      const aiResponse = await response.json();
+      
+      const assistantMessage = {
+        role: 'assistant' as const,
+        content: aiResponse.response,
+        newEstimate: aiResponse.newEstimate ? {
+          min: aiResponse.newEstimate.min,
+          max: aiResponse.newEstimate.max
+        } : undefined
+      };
+      
+      setChatMessages([...newMessages, assistantMessage]);
+      
+      if (aiResponse.newEstimate) {
+        setHasNewEstimate(true);
+      }
+      
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      setChatMessages([...newMessages, {
+        role: 'assistant' as const,
+        content: 'Sorry, I encountered an error. Please try again.'
+      }]);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  const saveUpdatedEstimate = async () => {
+    const latestMessageWithEstimate = chatMessages.reverse().find(msg => msg.newEstimate);
+    if (!latestMessageWithEstimate?.newEstimate) return;
+    
+    try {
+      const response = await fetch(`/api/rental-performance/${property?.propdataId}/update`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          longTerm: {
+            ...rentalData.longTerm,
+            minRental: latestMessageWithEstimate.newEstimate.min,
+            maxRental: latestMessageWithEstimate.newEstimate.max,
+            reasoning: `Updated based on user feedback: ${latestMessageWithEstimate.content}`
+          }
+        }),
+      });
+      
+      if (response.ok) {
+        // Update local data
+        setRentalData({
+          ...rentalData,
+          longTerm: {
+            ...rentalData.longTerm,
+            minRental: latestMessageWithEstimate.newEstimate.min,
+            maxRental: latestMessageWithEstimate.newEstimate.max
+          }
+        });
+        setIsChatOpen(false);
+        setChatMessages([]);
+        setHasNewEstimate(false);
+      }
+    } catch (error) {
+      console.error('Error saving updated estimate:', error);
+    }
+  };
 
   // Arrow key navigation for full-screen viewer
   useEffect(() => {
@@ -994,10 +1116,89 @@ export default function PropertyDetailModal({
                             {/* AI Justification */}
                             {rentalData.longTerm.reasoning && (
                               <div className="mt-3 pt-3 border-t">
-                                <div className="text-xs text-muted-foreground mb-1 font-medium">AI Analysis:</div>
+                                <div className="flex justify-between items-center mb-1">
+                                  <div className="text-xs text-muted-foreground font-medium">AI Analysis:</div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setIsChatOpen(!isChatOpen)}
+                                    className="h-6 px-2 text-xs"
+                                  >
+                                    <MessageCircle className="h-3 w-3 mr-1" />
+                                    Contest
+                                  </Button>
+                                </div>
                                 <p className="text-xs text-gray-600 leading-relaxed italic">
                                   "{rentalData.longTerm.reasoning}"
                                 </p>
+                                
+                                {/* Chat Interface */}
+                                {isChatOpen && (
+                                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                                    <div className="text-xs font-medium mb-2 text-gray-700">Contest this estimate:</div>
+                                    
+                                    {/* Chat Messages */}
+                                    {chatMessages.length > 0 && (
+                                      <div className="max-h-32 overflow-y-auto space-y-2 mb-3">
+                                        {chatMessages.map((message, index) => (
+                                          <div key={index} className={`text-xs p-2 rounded ${
+                                            message.role === 'user' 
+                                              ? 'bg-blue-100 text-blue-800 ml-4' 
+                                              : 'bg-white text-gray-700 mr-4'
+                                          }`}>
+                                            <div className="font-medium mb-1">
+                                              {message.role === 'user' ? 'You:' : 'AI:'}
+                                            </div>
+                                            <div>{message.content}</div>
+                                            {message.newEstimate && (
+                                              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-green-800">
+                                                <div className="font-medium">New Estimate:</div>
+                                                <div>R{message.newEstimate.min.toLocaleString()}-R{message.newEstimate.max.toLocaleString()}/month</div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                    
+                                    {/* Chat Input */}
+                                    <div className="flex gap-2">
+                                      <Input
+                                        value={chatInput}
+                                        onChange={(e) => setChatInput(e.target.value)}
+                                        placeholder="I think this estimate is too high because..."
+                                        className="text-xs"
+                                        onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit()}
+                                        disabled={isChatLoading}
+                                      />
+                                      <Button
+                                        size="sm"
+                                        onClick={handleChatSubmit}
+                                        disabled={isChatLoading || !chatInput.trim()}
+                                        className="h-8 px-2"
+                                      >
+                                        {isChatLoading ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Send className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    </div>
+                                    
+                                    {/* Save Button */}
+                                    {hasNewEstimate && (
+                                      <div className="mt-2 text-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={saveUpdatedEstimate}
+                                          className="text-xs"
+                                        >
+                                          Save Updated Estimate
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </>
