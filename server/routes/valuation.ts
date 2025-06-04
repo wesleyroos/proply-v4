@@ -214,7 +214,8 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
         maxRental: valuationReport.rentalEstimates.longTerm.maxMonthlyRental,
         minYield: price ? parseFloat(((valuationReport.rentalEstimates.longTerm.minMonthlyRental * 12) / price * 100).toFixed(1)) : 0,
         maxYield: price ? parseFloat(((valuationReport.rentalEstimates.longTerm.maxMonthlyRental * 12) / price * 100).toFixed(1)) : 0,
-        managementFee: "8-10%"
+        managementFee: "8-10%",
+        reasoning: valuationReport.rentalEstimates.longTerm.reasoning
       } : null
     };
 
