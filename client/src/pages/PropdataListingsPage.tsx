@@ -162,13 +162,21 @@ export default function PropdataListingsPage() {
     return data.filter(listing => listing.propertyType.toLowerCase() === propertyTypeFilter.toLowerCase());
   };
 
+  const filterByAgent = (data: PropdataListing[]) => {
+    if (agentFilter === "all") return data;
+    return data.filter(listing => 
+      listing.agentName && listing.agentName.toLowerCase().includes(agentFilter.toLowerCase())
+    );
+  };
+
   const filterBySearchTerm = (data: PropdataListing[]) => {
     if (!searchTerm.trim()) return data;
     const term = searchTerm.toLowerCase();
     return data.filter(listing =>
       listing.address.toLowerCase().includes(term) ||
       listing.propdataId.toLowerCase().includes(term) ||
-      (listing.agentId && listing.agentId.toLowerCase().includes(term))
+      (listing.agentId && listing.agentId.toLowerCase().includes(term)) ||
+      (listing.agentName && listing.agentName.toLowerCase().includes(term))
     );
   };
 
@@ -177,6 +185,7 @@ export default function PropdataListingsPage() {
     let processed = [...data];
     processed = filterByStatus(processed);
     processed = filterByPropertyType(processed);
+    processed = filterByAgent(processed);
     processed = filterBySearchTerm(processed);
     return sortData(processed);
   };
@@ -348,7 +357,7 @@ export default function PropdataListingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -387,10 +396,28 @@ export default function PropdataListingsPage() {
               </SelectContent>
             </Select>
 
+            <Select value={agentFilter} onValueChange={setAgentFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Agent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Agents</SelectItem>
+                {Array.from(new Set(listings
+                  .filter(listing => listing.agentName)
+                  .map(listing => listing.agentName)
+                )).sort().map((agentName) => (
+                  <SelectItem key={agentName} value={agentName!}>
+                    {agentName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Button variant="outline" onClick={() => {
               setSearchTerm("");
               setStatusFilter("all");
               setPropertyTypeFilter("all");
+              setAgentFilter("all");
               setSortConfig({ field: 'createdAt', direction: 'desc' });
             }}>
               Clear Filters
