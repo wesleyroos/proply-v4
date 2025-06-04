@@ -102,6 +102,7 @@ export default function PropertyDetailModal({
   const [valuationReport, setValuationReport] = useState<any>(null);
   const [savedValuationData, setSavedValuationData] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
   // Reset valuation report when property changes or modal closes, and load existing valuation
@@ -110,6 +111,7 @@ export default function PropertyDetailModal({
     setSavedValuationData(null);
     setActiveTab("overview");
     setMapLoaded(false);
+    setMapError(null);
     
     // Load existing valuation if property is available
     if (property?.id && isOpen) {
@@ -125,20 +127,36 @@ export default function PropertyDetailModal({
   }, [isOpen, property?.address]);
 
   const initializeMap = async () => {
-    if (!property?.address || !mapRef.current) return;
+    if (!property?.address || !mapRef.current) {
+      console.log("Map initialization skipped: missing address or mapRef", {
+        address: property?.address,
+        mapRef: !!mapRef.current
+      });
+      return;
+    }
+
+    console.log("Initializing Google Maps for address:", property.address);
+    setMapError(null);
 
     try {
       await initGoogleMaps();
+      console.log("Google Maps script loaded successfully");
       
       // Ensure Google Maps is loaded
       if (!window.google?.maps) {
-        console.error("Google Maps API not loaded");
+        const error = "Google Maps API not loaded";
+        console.error(error);
+        setMapError(error);
         return;
       }
       
       const geocoder = new window.google.maps.Geocoder();
       geocoder.geocode({ address: property.address }, (results: any, status: any) => {
+        console.log("Geocoding result:", { status, resultsCount: results?.length });
+        
         if (status === "OK" && results && results[0] && mapRef.current) {
+          console.log("Creating map for location:", results[0].geometry.location);
+          
           const map = new window.google.maps.Map(mapRef.current, {
             center: results[0].geometry.location,
             zoom: 15,
@@ -154,12 +172,17 @@ export default function PropertyDetailModal({
           });
           
           setMapLoaded(true);
+          console.log("Map loaded successfully");
         } else {
-          console.error("Geocoding failed:", status);
+          const error = `Geocoding failed: ${status}`;
+          console.error(error);
+          setMapError(error);
         }
       });
     } catch (error) {
-      console.error("Error initializing Google Maps:", error);
+      const errorMessage = `Error initializing Google Maps: ${error}`;
+      console.error(errorMessage);
+      setMapError(errorMessage);
     }
   };
 
@@ -617,12 +640,30 @@ export default function PropertyDetailModal({
                       <div className="h-48 w-full rounded-b-lg overflow-hidden">
                         <div 
                           ref={mapRef}
-                          className="w-full h-full"
+                          className="w-full h-full bg-gray-100"
                           style={{ 
                             border: '1px solid var(--border)',
                             borderRadius: '0 0 0.5rem 0.5rem'
                           }}
-                        />
+                        >
+                          {!mapLoaded && !mapError && (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <div className="text-center text-muted-foreground">
+                                <Loader2 className="h-6 w-6 mx-auto mb-2 animate-spin" />
+                                <p className="text-sm">Loading map...</p>
+                              </div>
+                            </div>
+                          )}
+                          {mapError && (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <div className="text-center text-muted-foreground">
+                                <Map className="h-6 w-6 mx-auto mb-2" />
+                                <p className="text-xs">Map unavailable</p>
+                                <p className="text-xs text-red-500">{mapError}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <div className="h-48 w-full rounded-b-lg overflow-hidden bg-muted flex items-center justify-center">
