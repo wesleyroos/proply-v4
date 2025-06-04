@@ -1915,7 +1915,7 @@ export function registerRoutes(app: Express): Server {
       } = req.body;
 
       const openai = new OpenAI({
-        apiKey: import.meta.env.OPENAI_API_KEY,
+        apiKey: process.env.OPENAI_API_KEY,
       });
 
       // Build conversation context
