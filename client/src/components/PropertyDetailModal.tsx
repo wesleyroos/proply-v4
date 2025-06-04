@@ -548,15 +548,15 @@ export default function PropertyDetailModal({
                 </Card>
 
                 {/* Location Card */}
-                {property?.location && (property.location.latitude && property.location.longitude) && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Map className="h-5 w-5" />
-                        Location
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Map className="h-5 w-5" />
+                      Location
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {property?.location && property.location.latitude && property.location.longitude ? (
                       <div className="h-48 w-full rounded-b-lg overflow-hidden">
                         <iframe
                           src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${property.location.latitude},${property.location.longitude}&zoom=15&maptype=roadmap`}
@@ -568,9 +568,28 @@ export default function PropertyDetailModal({
                           referrerPolicy="no-referrer-when-downgrade"
                         />
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    ) : property?.address ? (
+                      <div className="h-48 w-full rounded-b-lg overflow-hidden">
+                        <iframe
+                          src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(property.address)}&zoom=15&maptype=roadmap`}
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-48 w-full rounded-b-lg overflow-hidden bg-muted flex items-center justify-center">
+                        <div className="text-center text-muted-foreground">
+                          <Map className="h-8 w-8 mx-auto mb-2" />
+                          <p className="text-sm">Location not available</p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
