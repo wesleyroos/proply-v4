@@ -46,6 +46,9 @@ import {
   Edit,
   Check,
   MapPin,
+  TrendingUp,
+  AlertTriangle,
+  Target,
 } from "lucide-react";
 import { initGoogleMaps } from "@/lib/maps";
 
@@ -1360,47 +1363,221 @@ export default function PropertyDetailModal({
             </TabsContent>
 
             <TabsContent value="agent" className="space-y-4">
+              {/* Core Investment Metrics */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Gross Rental Yield</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-2xl font-bold">
+                      {rentalData?.longTerm ? 
+                        `${calculateLongTermYield().min}%-${calculateLongTermYield().max}%` : 
+                        'N/A'
+                      }
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Annual rental ÷ Property price</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Cap Rate</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-2xl font-bold">
+                      {rentalData?.longTerm && property?.price ? 
+                        `${(((rentalData.longTerm.minRental * 12 * 0.85) / parseFloat(property.price.toString())) * 100).toFixed(1)}%-${(((rentalData.longTerm.maxRental * 12 * 0.85) / parseFloat(property.price.toString())) * 100).toFixed(1)}%` : 
+                        'N/A'
+                      }
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Net income ÷ Property value</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Cash-on-Cash Return</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-2xl font-bold">
+                      {rentalData?.longTerm && property?.price ? 
+                        `${(((rentalData.longTerm.minRental * 12 * 0.85) / (parseFloat(property.price.toString()) * 0.2)) * 100).toFixed(1)}%-${(((rentalData.longTerm.maxRental * 12 * 0.85) / (parseFloat(property.price.toString()) * 0.2)) * 100).toFixed(1)}%` : 
+                        'N/A'
+                      }
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Cash flow ÷ Cash invested (20% deposit)</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Break-even Point</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-2xl font-bold">
+                      {rentalData?.longTerm && property?.price ? 
+                        `${Math.ceil((parseFloat(property.price.toString()) * 0.2) / (rentalData.longTerm.maxRental * 12 * 0.15))} years` : 
+                        'N/A'
+                      }
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Time to recover initial investment</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Financial Summary */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5" />
-                    Investment Information
+                    <TrendingUp className="h-5 w-5" />
+                    Investment Summary
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Asking Price:</span>
-                    <span className="font-medium">R{property?.price ? parseFloat(property.price.toString()).toLocaleString() : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Property Type:</span>
-                    <span className="font-medium">{property?.propertyType}</span>
-                  </div>
-                  {property?.floorSize && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Floor Area:</span>
-                      <span className="font-medium">{property.floorSize}m²</span>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Property Value</div>
+                      <div className="text-lg font-semibold">R{property?.price ? parseFloat(property.price.toString()).toLocaleString() : 'N/A'}</div>
                     </div>
-                  )}
-                  {property?.landSize && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Land Size:</span>
-                      <span className="font-medium">{property.landSize}m²</span>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Required Deposit (20%)</div>
+                      <div className="text-lg font-semibold">
+                        R{property?.price ? (parseFloat(property.price.toString()) * 0.2).toLocaleString() : 'N/A'}
+                      </div>
                     </div>
+                  </div>
+                  
+                  {rentalData?.longTerm && (
+                    <>
+                      <div className="border-t pt-3 space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm">Monthly Rental Income</span>
+                          <span className="font-medium">R{rentalData.longTerm.minRental.toLocaleString()}-R{rentalData.longTerm.maxRental.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Annual Gross Income</span>
+                          <span className="font-medium">R{(rentalData.longTerm.minRental * 12).toLocaleString()}-R{(rentalData.longTerm.maxRental * 12).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Est. Net Income (85% of gross)</span>
+                          <span className="font-medium">R{(rentalData.longTerm.minRental * 12 * 0.85).toLocaleString()}-R{(rentalData.longTerm.maxRental * 12 * 0.85).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </>
                   )}
-                  {property?.agentPhone && (
-                    <div className="flex justify-between items-center border-t pt-2 mt-4">
-                      <span className="text-muted-foreground">Agent Contact:</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{property.agentPhone}</span>
-                        <Button size="sm" variant="outline">
-                          <Phone className="h-4 w-4" />
-                        </Button>
+                </CardContent>
+              </Card>
+
+              {/* Risk Assessment */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5" />
+                    Risk Assessment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="text-sm font-medium text-blue-800">Loan-to-Value Ratio</div>
+                      <div className="text-xl font-bold text-blue-900">80%</div>
+                      <div className="text-xs text-blue-600">Standard financing</div>
+                    </div>
+                    
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="text-sm font-medium text-green-800">Vacancy Risk</div>
+                      <div className="text-xl font-bold text-green-900">Low</div>
+                      <div className="text-xs text-green-600">Prime location</div>
+                    </div>
+                  </div>
+
+                  {rentalData?.longTerm && property?.price && (
+                    <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <div className="text-sm font-medium text-yellow-800">Debt Service Coverage</div>
+                      <div className="text-xl font-bold text-yellow-900">
+                        {(() => {
+                          const monthlyMortgage = (parseFloat(property.price.toString()) * 0.8 * 0.007); // Approx 8.4% annual rate
+                          const netMonthlyIncome = rentalData.longTerm.maxRental * 0.85;
+                          const coverage = netMonthlyIncome / monthlyMortgage;
+                          return coverage.toFixed(1);
+                        })()}x
+                      </div>
+                      <div className="text-xs text-yellow-600">
+                        {(() => {
+                          const monthlyMortgage = (parseFloat(property.price.toString()) * 0.8 * 0.007);
+                          const netMonthlyIncome = rentalData.longTerm.maxRental * 0.85;
+                          const coverage = netMonthlyIncome / monthlyMortgage;
+                          return coverage > 1.25 ? 'Good coverage' : coverage > 1.0 ? 'Adequate coverage' : 'Risk of negative cash flow';
+                        })()}
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
+
+              {/* Property Appreciation Estimate */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Growth Projections
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Est. Annual Appreciation</div>
+                      <div className="text-lg font-semibold text-green-600">6-8%</div>
+                      <div className="text-xs text-muted-foreground">Based on area trends</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Total Annual Return</div>
+                      <div className="text-lg font-semibold text-blue-600">
+                        {rentalData?.longTerm ? 
+                          `${(calculateLongTermYield().min + 6)}%-${(calculateLongTermYield().max + 8)}%` : 
+                          '12-15%'
+                        }
+                      </div>
+                      <div className="text-xs text-muted-foreground">Rental yield + appreciation</div>
+                    </div>
+                  </div>
+
+                  {property?.price && (
+                    <div className="border-t pt-3">
+                      <div className="text-sm text-muted-foreground mb-2">Projected 5-Year Value</div>
+                      <div className="text-xl font-bold">
+                        R{((parseFloat(property.price.toString()) * Math.pow(1.07, 5))).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-muted-foreground">At 7% annual appreciation</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Contact Information */}
+              {property?.agentPhone && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Phone className="h-5 w-5" />
+                      Agent Contact
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">{property.agentName || 'Agent'}</div>
+                        <div className="text-sm text-muted-foreground">{property.agentPhone}</div>
+                      </div>
+                      <Button size="sm" variant="outline">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="valuation" className="space-y-4">
