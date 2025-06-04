@@ -344,7 +344,8 @@ export default function PropertyDetailModal({
         landSize: property.landSize,
         price: property.price,
         images: propertyImages.slice(0, 10), // Analyze first 10 images for comprehensive coverage
-        location: property.location
+        location: property.location,
+        propertyId: property.id.toString() // Add property ID for rental data persistence
       };
 
       const response = await fetch('/api/generate-valuation-report', {

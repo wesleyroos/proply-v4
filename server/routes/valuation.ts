@@ -29,7 +29,8 @@ router.post("/generate-valuation-report", async (req, res) => {
       landSize,
       price,
       images,
-      location
+      location,
+      propertyId
     } = req.body;
 
     // Prepare property data for OpenAI analysis
@@ -222,12 +223,12 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
     // Save rental performance data to database for persistence
     if (rentalPerformance.longTerm || rentalPerformance.shortTerm) {
       try {
-        const propertyIdFromAddress = address.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+        const propertyIdToUse = propertyId || address.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
         
         // Check if rental data already exists for this property
         const existingRentalData = await db.execute(sql`
           SELECT id FROM rental_performance_data 
-          WHERE user_id = ${req.user.id} AND property_id = ${propertyIdFromAddress}
+          WHERE user_id = ${req.user.id} AND property_id = ${propertyIdToUse}
           LIMIT 1
         `);
 
@@ -262,7 +263,7 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
               long_term_min_yield, long_term_max_yield, long_term_reasoning,
               images_analyzed, analysis_model
             ) VALUES (
-              ${req.user.id}, ${propertyIdFromAddress}, ${address}, ${bedrooms}, ${bathrooms}, 
+              ${req.user.id}, ${propertyIdToUse}, ${address}, ${bedrooms}, ${bathrooms}, 
               ${propertyType}, ${price?.toString()}, ${JSON.stringify(rentalPerformance.shortTerm)},
               ${rentalPerformance.longTerm?.minRental?.toString()}, ${rentalPerformance.longTerm?.maxRental?.toString()},
               ${rentalPerformance.longTerm?.minYield?.toString()}, ${rentalPerformance.longTerm?.maxYield?.toString()},
