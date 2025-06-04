@@ -97,8 +97,23 @@ export default function PropertyDetailModal({
   const [rentalData, setRentalData] = useState<any>(null);
   const [isLoadingRental, setIsLoadingRental] = useState(false);
   const [selectedPercentile, setSelectedPercentile] = useState<'percentile25' | 'percentile50' | 'percentile75' | 'percentile90'>('percentile50');
+  const [generationTimer, setGenerationTimer] = useState(0);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  // Timer effect for generation counter
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isGeneratingReport) {
+      setGenerationTimer(0);
+      interval = setInterval(() => {
+        setGenerationTimer((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isGeneratingReport]);
 
   // Reset valuation report when property changes or modal closes, and load existing valuation
   useEffect(() => {
@@ -107,6 +122,7 @@ export default function PropertyDetailModal({
     setRentalData(null); // Clear rental data when switching properties
     setSelectedPercentile('percentile50'); // Reset to default percentile
     setActiveTab("overview");
+    setGenerationTimer(0);
     
     // Load existing valuation if property is available
     if (property?.propdataId && isOpen) {
@@ -1089,18 +1105,25 @@ export default function PropertyDetailModal({
                     <p className="text-muted-foreground mb-4">
                       Click "Generate Report" to get an AI-powered property valuation analysis
                     </p>
-                    <Button
-                      onClick={generateValuationReport}
-                      disabled={isGeneratingReport}
-                      className="gap-2"
-                    >
-                      {isGeneratingReport ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <FileBarChart className="h-4 w-4" />
+                    <div className="space-y-2">
+                      <Button
+                        onClick={generateValuationReport}
+                        disabled={isGeneratingReport}
+                        className="gap-2"
+                      >
+                        {isGeneratingReport ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <FileBarChart className="h-4 w-4" />
+                        )}
+                        {isGeneratingReport ? `Generating... ${generationTimer}s` : 'Generate Report'}
+                      </Button>
+                      {!isGeneratingReport && (
+                        <p className="text-xs text-muted-foreground">
+                          This should take about 20 seconds
+                        </p>
                       )}
-                      {isGeneratingReport ? 'Generating...' : 'Generate Report'}
-                    </Button>
+                    </div>
                   </CardContent>
                 </Card>
               )}
