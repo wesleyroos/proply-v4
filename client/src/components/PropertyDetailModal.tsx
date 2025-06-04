@@ -572,6 +572,22 @@ export default function PropertyDetailModal({
                 </div>
               </div>
             )}
+
+            {(property?.floorSize || property?.landSize) && (
+              <div className="flex items-center gap-2">
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Ruler className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold">
+                    {property?.floorSize ? `${property.floorSize}m²` : property?.landSize ? `${property.landSize}m²` : 'N/A'}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {property?.floorSize ? 'Floor Size' : 'Land Size'}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Additional Details in Tabs */}
