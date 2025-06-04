@@ -17,6 +17,7 @@ import {
   passwordResetTokens,
   valuationReports,
   rentalPerformanceData,
+  propdataListings,
 } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -2320,6 +2321,44 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error fetching valuation report:", error);
       res.status(500).json({ error: "Failed to fetch valuation report" });
+    }
+  });
+
+  // Property address update endpoint
+  app.patch('/api/properties/:propdataId/address', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+      const { propdataId } = req.params;
+      const { address } = req.body;
+
+      if (!address || typeof address !== 'string') {
+        return res.status(400).json({ error: 'Address is required' });
+      }
+
+      // Update the address in propdata_listings table
+      const result = await db
+        .update(propdataListings)
+        .set({ 
+          address: address.trim(),
+          updatedAt: new Date()
+        })
+        .where(eq(propdataListings.propdataId, propdataId))
+        .returning();
+
+      if (result.length === 0) {
+        return res.status(404).json({ error: 'Property not found' });
+      }
+
+      res.json({ 
+        message: 'Address updated successfully',
+        property: result[0]
+      });
+    } catch (error) {
+      console.error('Error updating property address:', error);
+      res.status(500).json({ error: 'Failed to update address' });
     }
   });
 

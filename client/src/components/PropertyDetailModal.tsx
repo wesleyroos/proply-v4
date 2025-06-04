@@ -42,6 +42,9 @@ import {
   Loader2,
   MessageCircle,
   Send,
+  Edit,
+  Check,
+  MapPin,
 } from "lucide-react";
 import { initGoogleMaps } from "@/lib/maps";
 
