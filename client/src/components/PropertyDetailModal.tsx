@@ -804,14 +804,32 @@ export default function PropertyDetailModal({
                               
                               <div className="grid grid-cols-2 gap-3 text-xs">
                                 <div>
-                                  <div className="font-medium text-muted-foreground mb-1">Conservative (25th)</div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <input 
+                                      type="radio" 
+                                      name="percentile" 
+                                      checked={selectedPercentile === 'percentile25'}
+                                      onChange={() => setSelectedPercentile('percentile25')}
+                                      className="w-3 h-3 text-blue-600"
+                                    />
+                                    <span className="font-medium text-muted-foreground">Conservative (25th)</span>
+                                  </div>
                                   <div>Nightly: R{rentalData.shortTerm.percentile25.nightly.toLocaleString()}</div>
                                   <div>Monthly: R{rentalData.shortTerm.percentile25.monthly.toLocaleString()}</div>
                                   <div className="font-medium">Annual: R{rentalData.shortTerm.percentile25.annual.toLocaleString()}</div>
                                 </div>
                                 
                                 <div>
-                                  <div className="font-medium text-muted-foreground mb-1">Average (50th)</div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <input 
+                                      type="radio" 
+                                      name="percentile" 
+                                      checked={selectedPercentile === 'percentile50'}
+                                      onChange={() => setSelectedPercentile('percentile50')}
+                                      className="w-3 h-3 text-blue-600"
+                                    />
+                                    <span className="font-medium text-muted-foreground">Average (50th)</span>
+                                  </div>
                                   <div>Nightly: R{rentalData.shortTerm.percentile50.nightly.toLocaleString()}</div>
                                   <div>Monthly: R{rentalData.shortTerm.percentile50.monthly.toLocaleString()}</div>
                                   <div className="font-medium">Annual: R{rentalData.shortTerm.percentile50.annual.toLocaleString()}</div>
@@ -820,14 +838,32 @@ export default function PropertyDetailModal({
                               
                               <div className="grid grid-cols-2 gap-3 text-xs mt-2">
                                 <div>
-                                  <div className="font-medium text-muted-foreground mb-1">Premium (75th)</div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <input 
+                                      type="radio" 
+                                      name="percentile" 
+                                      checked={selectedPercentile === 'percentile75'}
+                                      onChange={() => setSelectedPercentile('percentile75')}
+                                      className="w-3 h-3 text-blue-600"
+                                    />
+                                    <span className="font-medium text-muted-foreground">Premium (75th)</span>
+                                  </div>
                                   <div>Nightly: R{rentalData.shortTerm.percentile75.nightly.toLocaleString()}</div>
                                   <div>Monthly: R{rentalData.shortTerm.percentile75.monthly.toLocaleString()}</div>
                                   <div className="font-medium">Annual: R{rentalData.shortTerm.percentile75.annual.toLocaleString()}</div>
                                 </div>
                                 
                                 <div>
-                                  <div className="font-medium text-muted-foreground mb-1">Luxury (90th)</div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <input 
+                                      type="radio" 
+                                      name="percentile" 
+                                      checked={selectedPercentile === 'percentile90'}
+                                      onChange={() => setSelectedPercentile('percentile90')}
+                                      className="w-3 h-3 text-blue-600"
+                                    />
+                                    <span className="font-medium text-muted-foreground">Luxury (90th)</span>
+                                  </div>
                                   <div>Nightly: R{rentalData.shortTerm.percentile90.nightly.toLocaleString()}</div>
                                   <div>Monthly: R{rentalData.shortTerm.percentile90.monthly.toLocaleString()}</div>
                                   <div className="font-medium">Annual: R{rentalData.shortTerm.percentile90.annual.toLocaleString()}</div>
@@ -839,12 +875,12 @@ export default function PropertyDetailModal({
                               <div className="flex justify-between text-sm">
                                 <span>Annual yield:</span>
                                 <span className="font-bold text-[#1e40af]">
-                                  {property?.price ? ((rentalData.shortTerm.percentile50.annual / property.price) * 100).toFixed(1) : 'N/A'}%
+                                  {calculateDynamicYield()}%
                                 </span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span>Yearly income:</span>
-                                <span className="font-medium">R{rentalData.shortTerm.percentile50.annual.toLocaleString()}</span>
+                                <span className="font-medium">R{getSelectedShortTermData()?.annual.toLocaleString() || 'N/A'}</span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span>Management fee:</span>
