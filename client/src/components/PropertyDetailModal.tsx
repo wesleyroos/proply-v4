@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -94,7 +95,7 @@ export default function PropertyDetailModal({
   onClose,
   property,
 }: PropertyDetailModalProps) {
-
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
@@ -507,6 +508,8 @@ export default function PropertyDetailModal({
       });
       
       if (response.ok) {
+        const updatedProperty = await response.json();
+        
         // Update local property data
         if (property) {
           property.address = editedAddress.trim();
@@ -530,6 +533,9 @@ export default function PropertyDetailModal({
             }
           });
         }
+        
+        // Invalidate the property listings query to refresh the data
+        queryClient.invalidateQueries({ queryKey: ['/api/propdata/listings'] });
       }
     } catch (error) {
       console.error('Error saving address:', error);
