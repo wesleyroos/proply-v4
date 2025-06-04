@@ -1038,13 +1038,27 @@ export default function PropertyDetailModal({
                               return (order[a.type] || 4) - (order[b.type] || 4);
                             });
                             
-                            return reorderedValuations.map((valuation: any, index: number) => (
-                              <div key={index} className="grid grid-cols-3 gap-4 py-3 border-b last:border-b-0">
-                                <div className="font-medium">{valuation.type}</div>
-                                <div className="text-sm text-muted-foreground">{valuation.formula}</div>
-                                <div className="font-semibold text-lg">{formatCurrency(valuation.value)}</div>
-                              </div>
-                            ));
+                            return reorderedValuations.map((valuation: any, index: number) => {
+                              const isMidline = valuation.type === 'Midline (Proply est.)';
+                              return (
+                                <div 
+                                  key={index} 
+                                  className={`grid grid-cols-3 gap-4 py-3 border-b last:border-b-0 ${
+                                    isMidline ? 'bg-blue-50 rounded-lg px-3 border border-blue-200' : ''
+                                  }`}
+                                >
+                                  <div className={`font-medium ${isMidline ? 'text-blue-900' : ''}`}>
+                                    {valuation.type}
+                                  </div>
+                                  <div className={`text-sm ${isMidline ? 'text-blue-700' : 'text-muted-foreground'}`}>
+                                    {valuation.formula}
+                                  </div>
+                                  <div className={`font-semibold text-lg ${isMidline ? 'text-blue-900' : ''}`}>
+                                    {formatCurrency(valuation.value)}
+                                  </div>
+                                </div>
+                              );
+                            });
                           })()}
                         </div>
                       )}
