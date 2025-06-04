@@ -29,7 +29,7 @@ interface LongTermRentalData {
 }
 
 // Helper function to get rental data without HTTP response
-export async function fetchRentalData(propertyData: RentalPerformanceRequest): Promise<{ shortTerm: ShortTermRentalData | null; longTerm: LongTermRentalData | null }> {
+export async function fetchRentalData(propertyData: RentalPerformanceRequest & { images?: string[] }): Promise<{ shortTerm: ShortTermRentalData | null; longTerm: LongTermRentalData | null }> {
   try {
     // Fetch short-term rental data from PriceLabs
     const shortTermData = await fetchPriceLabsData(
@@ -39,13 +39,14 @@ export async function fetchRentalData(propertyData: RentalPerformanceRequest): P
       propertyData.propertyType
     );
 
-    // Generate long-term rental estimate using OpenAI
+    // Generate long-term rental estimate using OpenAI with optional image analysis
     const longTermData = await generateLongTermEstimate(
       propertyData.address,
       propertyData.bedrooms,
       propertyData.bathrooms,
       propertyData.propertyType,
-      propertyData.price
+      propertyData.price,
+      propertyData.images
     );
 
     return {
@@ -63,7 +64,7 @@ export async function fetchRentalData(propertyData: RentalPerformanceRequest): P
 
 export async function getRentalPerformance(req: Request, res: Response) {
   try {
-    const { address, bedrooms, bathrooms, propertyType, price } = req.body as RentalPerformanceRequest;
+    const { address, bedrooms, bathrooms, propertyType, price, images } = req.body as RentalPerformanceRequest & { images?: string[] };
 
     if (!address || !bedrooms || !price) {
       return res.status(400).json({ error: 'Missing required fields: address, bedrooms, price' });
@@ -72,8 +73,8 @@ export async function getRentalPerformance(req: Request, res: Response) {
     // Fetch short-term rental data from PriceLabs
     const shortTermData = await fetchPriceLabsData(address, bedrooms, bathrooms, propertyType);
     
-    // Generate long-term rental estimates using OpenAI
-    const longTermData = await generateLongTermEstimate(address, bedrooms, bathrooms, propertyType, price);
+    // Generate long-term rental estimates using OpenAI with optional image analysis
+    const longTermData = await generateLongTermEstimate(address, bedrooms, bathrooms, propertyType, price, images);
 
     res.json({
       shortTerm: shortTermData,
@@ -200,7 +201,8 @@ async function generateLongTermEstimate(
   bedrooms: number,
   bathrooms: number,
   propertyType: string,
-  price: number
+  price: number,
+  images?: string[]
 ): Promise<LongTermRentalData> {
   try {
     const prompt = `
@@ -213,34 +215,60 @@ Property Details:
 - Bathrooms: ${bathrooms}
 - Purchase Price: R${price.toLocaleString()}
 
+${images && images.length > 0 ? 'I will also provide property images for visual assessment of condition, finishes, layout, and rental appeal.' : ''}
+
 Please provide realistic monthly rental ranges for a standard 12-month lease in Cape Town. Consider:
 - Location desirability and transport links
 - Property type and size
 - Current Cape Town rental market (2025)
 - Quality expectations for the area
+${images && images.length > 0 ? '- Property condition, finishes, and overall presentation from images' : ''}
+- Tenant appeal and rental competitiveness
 
 Respond in JSON format:
 {
   "minMonthlyRental": number,
   "maxMonthlyRental": number,
-  "reasoning": "brief explanation of estimate basis"
+  "reasoning": "brief explanation of estimate basis including visual assessment"
 }
 `;
 
+    // Build messages with optional image analysis
+    const messages: any[] = [
+      {
+        role: "system",
+        content: "You are a Cape Town property rental expert with deep knowledge of local rental markets, property values, and yield calculations. Provide accurate, realistic rental estimates based on current market conditions and visual property assessment."
+      }
+    ];
+
+    if (images && images.length > 0) {
+      // Add message with images for visual analysis
+      const imageContent = images.slice(0, 4).map(imageUrl => ({
+        type: "image_url",
+        image_url: { url: imageUrl }
+      }));
+
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: prompt },
+          ...imageContent
+        ]
+      });
+    } else {
+      // Text-only message when no images available
+      messages.push({
+        role: "user",
+        content: prompt
+      });
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: "You are a Cape Town property rental expert with deep knowledge of local rental markets, property values, and yield calculations. Provide accurate, realistic rental estimates based on current market conditions."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
+      messages,
       response_format: { type: "json_object" },
-      temperature: 0.3
+      temperature: 0.3,
+      max_tokens: 500
     });
 
     const result = JSON.parse(response.choices[0].message.content || '{}');

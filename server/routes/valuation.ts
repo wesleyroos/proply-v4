@@ -92,13 +92,14 @@ Provide realistic South African Rand valuations based on current Cape Town prope
 
     console.log('Generating valuation report for property:', address);
 
-    // Fetch rental performance data
+    // Fetch rental performance data with property images for enhanced analysis
     const rentalData = await fetchRentalData({
       address,
       bedrooms,
       bathrooms,
       propertyType,
-      price
+      price,
+      images
     });
 
     // Prepare messages for OpenAI
