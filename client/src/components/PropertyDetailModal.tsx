@@ -107,11 +107,11 @@ export default function PropertyDetailModal({
     setActiveTab("overview");
     
     // Load existing valuation if property is available
-    if (property?.id && isOpen) {
-      loadExistingValuation(property.id.toString());
-      loadExistingRentalData(property.id.toString());
+    if (property?.propdataId && isOpen) {
+      loadExistingValuation(property.propdataId);
+      loadExistingRentalData(property.propdataId);
     }
-  }, [property?.id, isOpen]);
+  }, [property?.propdataId, isOpen]);
 
   // Google Maps initialization - using PropertyMap.tsx pattern
   useEffect(() => {
@@ -362,7 +362,7 @@ export default function PropertyDetailModal({
         price: property.price,
         images: propertyImages.slice(0, 10), // Analyze first 10 images for comprehensive coverage
         location: property.location,
-        propertyId: property.id.toString() // Add property ID for rental data persistence
+        propertyId: property.propdataId // Use PropData property ID for rental data persistence
       };
 
       const response = await fetch('/api/generate-valuation-report', {
