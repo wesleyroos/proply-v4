@@ -107,6 +107,9 @@ export default function PropertyDetailModal({
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [hasNewEstimate, setHasNewEstimate] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [editedAddress, setEditedAddress] = useState('');
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -135,6 +138,8 @@ export default function PropertyDetailModal({
     setIsChatOpen(false);
     setChatMessages([]);
     setHasNewEstimate(false);
+    setIsEditingAddress(false);
+    setEditedAddress(property?.address || '');
     
     // Load existing valuation if property is available
     if (property?.propdataId && isOpen) {
@@ -479,6 +484,54 @@ export default function PropertyDetailModal({
       }
     } catch (error) {
       console.error('Error saving updated estimate:', error);
+    }
+  };
+
+  const saveAddressUpdate = async () => {
+    if (!property?.propdataId || !editedAddress.trim()) return;
+    
+    setIsSavingAddress(true);
+    try {
+      const response = await fetch(`/api/properties/${property.propdataId}/address`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          address: editedAddress.trim()
+        }),
+      });
+      
+      if (response.ok) {
+        // Update local property data
+        if (property) {
+          property.address = editedAddress.trim();
+        }
+        setIsEditingAddress(false);
+        
+        // Reinitialize map with new address if needed
+        if (mapRef.current && window.google) {
+          const geocoder = new window.google.maps.Geocoder();
+          geocoder.geocode({ address: editedAddress }, (results, status) => {
+            if (status === 'OK' && results?.[0] && mapRef.current) {
+              const map = new window.google.maps.Map(mapRef.current, {
+                zoom: 15,
+                center: results[0].geometry.location,
+                mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+              });
+              new window.google.maps.Marker({
+                position: results[0].geometry.location,
+                map: map,
+              });
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error saving address:', error);
+    } finally {
+      setIsSavingAddress(false);
     }
   };
 
@@ -922,6 +975,74 @@ export default function PropertyDetailModal({
                     <span className="text-muted-foreground">Last Updated:</span>
                     <span className="font-medium">{property?.updatedAt && formatDate(property.updatedAt)}</span>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    Address
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {!isEditingAddress ? (
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium flex-1">{property?.address || 'No address available'}</span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => {
+                          setIsEditingAddress(true);
+                          setEditedAddress(property?.address || '');
+                        }}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <textarea
+                        value={editedAddress}
+                        onChange={(e) => setEditedAddress(e.target.value)}
+                        className="w-full p-2 border rounded-md resize-none"
+                        rows={2}
+                        placeholder="Enter complete address..."
+                      />
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          onClick={saveAddressUpdate}
+                          disabled={isSavingAddress || !editedAddress.trim()}
+                        >
+                          {isSavingAddress ? (
+                            <>
+                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Check className="h-4 w-4 mr-1" />
+                              Save
+                            </>
+                          )}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => {
+                            setIsEditingAddress(false);
+                            setEditedAddress(property?.address || '');
+                          }}
+                          disabled={isSavingAddress}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
