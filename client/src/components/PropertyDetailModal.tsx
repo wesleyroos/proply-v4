@@ -127,6 +127,7 @@ export default function PropertyDetailModal({
         const map = new window.google.maps.Map(mapRef.current, {
           center: defaultLocation,
           zoom: 15,
+          mapTypeId: window.google.maps.MapTypeId.SATELLITE,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
