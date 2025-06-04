@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,14 @@ import {
   FileBarChart,
   Loader2,
 } from "lucide-react";
+import { initGoogleMaps } from "@/lib/maps";
+
+// TypeScript declarations for Google Maps
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 interface PropertyLocation {
   latitude?: number;
@@ -93,18 +101,61 @@ export default function PropertyDetailModal({
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [valuationReport, setValuationReport] = useState<any>(null);
   const [savedValuationData, setSavedValuationData] = useState<any>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
 
   // Reset valuation report when property changes or modal closes, and load existing valuation
   useEffect(() => {
     setValuationReport(null);
     setSavedValuationData(null);
     setActiveTab("overview");
+    setMapLoaded(false);
     
     // Load existing valuation if property is available
     if (property?.id && isOpen) {
       loadExistingValuation(property.id.toString());
     }
   }, [property?.id, isOpen]);
+
+  // Initialize Google Maps when modal opens and property address is available
+  useEffect(() => {
+    if (isOpen && property?.address) {
+      initializeMap();
+    }
+  }, [isOpen, property?.address]);
+
+  const initializeMap = async () => {
+    if (!property?.address || !mapRef.current) return;
+
+    try {
+      await initGoogleMaps();
+      
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ address: property.address }, (results: any, status: any) => {
+        if (status === "OK" && results && results[0] && mapRef.current) {
+          const map = new window.google.maps.Map(mapRef.current, {
+            center: results[0].geometry.location,
+            zoom: 15,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+          });
+
+          new window.google.maps.Marker({
+            map,
+            position: results[0].geometry.location,
+            title: property.address,
+          });
+          
+          setMapLoaded(true);
+        } else {
+          console.error("Geocoding failed:", status);
+        }
+      });
+    } catch (error) {
+      console.error("Error initializing Google Maps:", error);
+    }
+  };
 
   // Load existing valuation from database
   const loadExistingValuation = async (propertyId: string) => {
@@ -556,28 +607,15 @@ export default function PropertyDetailModal({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
-                    {property?.location && property.location.latitude && property.location.longitude ? (
+                    {property?.address ? (
                       <div className="h-48 w-full rounded-b-lg overflow-hidden">
-                        <iframe
-                          src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${property.location.latitude},${property.location.longitude}&zoom=15&maptype=roadmap`}
-                          width="100%"
-                          height="100%"
-                          style={{ border: 0 }}
-                          allowFullScreen
-                          loading="lazy"
-                          referrerPolicy="no-referrer-when-downgrade"
-                        />
-                      </div>
-                    ) : property?.address ? (
-                      <div className="h-48 w-full rounded-b-lg overflow-hidden">
-                        <iframe
-                          src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(property.address)}&zoom=15&maptype=roadmap`}
-                          width="100%"
-                          height="100%"
-                          style={{ border: 0 }}
-                          allowFullScreen
-                          loading="lazy"
-                          referrerPolicy="no-referrer-when-downgrade"
+                        <div 
+                          ref={mapRef}
+                          className="w-full h-full"
+                          style={{ 
+                            border: '1px solid var(--border)',
+                            borderRadius: '0 0 0.5rem 0.5rem'
+                          }}
                         />
                       </div>
                     ) : (
