@@ -87,6 +87,7 @@ export default function PropdataListingsPage() {
   });
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>("all");
+  const [agentFilter, setAgentFilter] = useState<string>("all");
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetailListing | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isQuickSyncing, setIsQuickSyncing] = useState(false);
