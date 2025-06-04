@@ -1152,8 +1152,19 @@ export default function PropertyDetailModal({
                                             <div>{message.content}</div>
                                             {message.newEstimate && (
                                               <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-green-800">
-                                                <div className="font-medium">New Estimate:</div>
-                                                <div>R{message.newEstimate.min.toLocaleString()}-R{message.newEstimate.max.toLocaleString()}/month</div>
+                                                <div className="flex justify-between items-start">
+                                                  <div>
+                                                    <div className="font-medium">New Estimate:</div>
+                                                    <div>R{message.newEstimate.min.toLocaleString()}-R{message.newEstimate.max.toLocaleString()}/month</div>
+                                                  </div>
+                                                  <Button
+                                                    size="sm"
+                                                    onClick={saveUpdatedEstimate}
+                                                    className="text-xs h-6 px-2 bg-green-600 hover:bg-green-700"
+                                                  >
+                                                    Save?
+                                                  </Button>
+                                                </div>
                                               </div>
                                             )}
                                           </div>
@@ -1184,19 +1195,7 @@ export default function PropertyDetailModal({
                                         )}
                                       </Button>
                                     </div>
-                                    
-                                    {/* Save Button */}
-                                    {hasNewEstimate && (
-                                      <div className="mt-2 text-center">
-                                        <Button
-                                          size="sm"
-                                          onClick={saveUpdatedEstimate}
-                                          className="text-xs"
-                                        >
-                                          Save Updated Estimate
-                                        </Button>
-                                      </div>
-                                    )}
+
                                   </div>
                                 )}
                               </div>
