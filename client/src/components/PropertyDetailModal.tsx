@@ -664,13 +664,71 @@ export default function PropertyDetailModal({
           <DialogHeader>
             <DialogTitle className="text-xl flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span>{property?.address}</span>
+                {!isEditingAddress ? (
+                  <span>{property?.address}</span>
+                ) : (
+                  <input
+                    value={editedAddress}
+                    onChange={(e) => setEditedAddress(e.target.value)}
+                    className="text-xl font-semibold bg-transparent border-b border-gray-300 focus:border-blue-500 outline-none"
+                    placeholder="Enter complete address..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        saveAddressUpdate();
+                      } else if (e.key === 'Escape') {
+                        setIsEditingAddress(false);
+                        setEditedAddress(property?.address || '');
+                      }
+                    }}
+                  />
+                )}
                 <Badge
                   variant="outline"
                   className="ml-2 bg-green-50 text-green-700 border-green-200"
                 >
                   {property?.status}
                 </Badge>
+                {!isEditingAddress ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setIsEditingAddress(true);
+                      setEditedAddress(property?.address || '');
+                    }}
+                    className="h-6 w-6 p-0"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                ) : (
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={saveAddressUpdate}
+                      disabled={isSavingAddress || !editedAddress.trim()}
+                      className="h-6 w-6 p-0"
+                    >
+                      {isSavingAddress ? (
+                        <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Check className="h-3 w-3 text-green-600" />
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setIsEditingAddress(false);
+                        setEditedAddress(property?.address || '');
+                      }}
+                      disabled={isSavingAddress}
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="h-3 w-3 text-red-600" />
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="text-right">
                 <Button
@@ -981,73 +1039,7 @@ export default function PropertyDetailModal({
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Address
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {!isEditingAddress ? (
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium flex-1">{property?.address || 'No address available'}</span>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => {
-                          setIsEditingAddress(true);
-                          setEditedAddress(property?.address || '');
-                        }}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <textarea
-                        value={editedAddress}
-                        onChange={(e) => setEditedAddress(e.target.value)}
-                        className="w-full p-2 border rounded-md resize-none"
-                        rows={2}
-                        placeholder="Enter complete address..."
-                      />
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          onClick={saveAddressUpdate}
-                          disabled={isSavingAddress || !editedAddress.trim()}
-                        >
-                          {isSavingAddress ? (
-                            <>
-                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1" />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Check className="h-4 w-4 mr-1" />
-                              Save
-                            </>
-                          )}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => {
-                            setIsEditingAddress(false);
-                            setEditedAddress(property?.address || '');
-                          }}
-                          disabled={isSavingAddress}
-                        >
-                          <X className="h-4 w-4 mr-1" />
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+
 
               {property?.features && Array.isArray(property.features) && property.features.length > 0 && (
                 <Card>
