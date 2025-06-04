@@ -98,20 +98,26 @@ async function fetchPriceLabsData(
       throw new Error('PriceLabs API key not configured');
     }
 
-    // PriceLabs API endpoint for market data
-    const response = await fetch('https://api.pricelabs.co/v1/market_data', {
-      method: 'POST',
+    // Construct the PriceLabs Revenue Estimator API URL with query parameters
+    const apiUrl = new URL('https://api.pricelabs.co/v1/revenue/estimator');
+    apiUrl.searchParams.set('version', '2');
+    apiUrl.searchParams.set('address', address);
+    apiUrl.searchParams.set('currency', 'ZAR'); // South African Rand
+    apiUrl.searchParams.set('bedroom_category', bedrooms.toString());
+
+    // Add bathroom filter if available
+    if (bathrooms > 0) {
+      const filters = JSON.stringify({
+        "bathroom": {"gt": bathrooms - 1}
+      });
+      apiUrl.searchParams.set('filters', filters);
+    }
+
+    const response = await fetch(apiUrl.toString(), {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        address: address,
-        bedrooms: bedrooms,
-        bathrooms: bathrooms,
-        property_type: propertyType.toLowerCase(),
-        market_data_type: 'percentiles'
-      })
+        'X-API-Key': apiKey
+      }
     });
 
     if (!response.ok) {
@@ -120,39 +126,39 @@ async function fetchPriceLabsData(
 
     const data = await response.json();
     
-    // Calculate monthly and annual from nightly rates assuming given occupancy
-    const occupancy = data.occupancy || 0.71; // Default 71% occupancy
-    const daysPerMonth = 30;
-    const monthsPerYear = 12;
-
-    const percentile25Nightly = data.percentiles?.p25?.adr || 1018;
-    const percentile50Nightly = data.percentiles?.p50?.adr || 1459;
-    const percentile75Nightly = data.percentiles?.p75?.adr || 2012;
-    const percentile90Nightly = data.percentiles?.p90?.adr || 2753;
-
+    // Extract data from PriceLabs response format
+    const bedroomData = data.KPIsByBedroomCategory?.[bedrooms.toString()];
+    
+    if (!bedroomData) {
+      throw new Error('No data available for this bedroom category');
+    }
+    
+    // Use PriceLabs data directly
+    const occupancy = bedroomData.AvgAdjustedOccupancy || 0;
+    
     return {
       percentile25: {
-        nightly: percentile25Nightly,
-        monthly: Math.round(percentile25Nightly * daysPerMonth * occupancy),
-        annual: Math.round(percentile25Nightly * daysPerMonth * occupancy * monthsPerYear)
+        nightly: bedroomData.ADR25PercentileAvg || 0,
+        monthly: Math.round(bedroomData.Revenue25PercentileSum / 12) || 0,
+        annual: bedroomData.Revenue25PercentileSum || 0
       },
       percentile50: {
-        nightly: percentile50Nightly,
-        monthly: Math.round(percentile50Nightly * daysPerMonth * occupancy),
-        annual: Math.round(percentile50Nightly * daysPerMonth * occupancy * monthsPerYear)
+        nightly: bedroomData.ADR50PercentileAvg || 0,
+        monthly: bedroomData.RevenueMonthlyAvg || 0,
+        annual: bedroomData.Revenue50PercentileSum || 0
       },
       percentile75: {
-        nightly: percentile75Nightly,
-        monthly: Math.round(percentile75Nightly * daysPerMonth * occupancy),
-        annual: Math.round(percentile75Nightly * daysPerMonth * occupancy * monthsPerYear)
+        nightly: bedroomData.ADR75PercentileAvg || 0,
+        monthly: Math.round(bedroomData.Revenue75PercentileSum / 12) || 0,
+        annual: bedroomData.Revenue75PercentileSum || 0
       },
       percentile90: {
-        nightly: percentile90Nightly,
-        monthly: Math.round(percentile90Nightly * daysPerMonth * occupancy),
-        annual: Math.round(percentile90Nightly * daysPerMonth * occupancy * monthsPerYear)
+        nightly: bedroomData.ADR90PercentileAvg || 0,
+        monthly: Math.round(bedroomData.Revenue90PercentileSum / 12) || 0,
+        annual: bedroomData.Revenue90PercentileSum || 0
       },
-      occupancy: Math.round(occupancy * 100),
-      yield: 0 // Will be calculated on frontend with property price
+      occupancy: occupancy,
+      yield: 0 // Will be calculated on frontend based on property price
     };
 
   } catch (error) {
