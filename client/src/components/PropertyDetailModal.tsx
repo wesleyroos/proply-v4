@@ -518,7 +518,7 @@ export default function PropertyDetailModal({
           )}
 
           {/* Key Property Details */}
-          <div className="flex flex-wrap gap-10 my-4 justify-start">
+          <div className="flex flex-wrap gap-4 my-4 justify-start">
             <div className="flex items-center gap-2">
               <div className="bg-primary/10 p-2 rounded-full">
                 <DollarSign className="h-5 w-5 text-primary" />
