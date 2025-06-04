@@ -376,10 +376,54 @@ export const valuationReports = pgTable("valuation_reports", {
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
 
-export const valuationReportsRelations = relations(valuationReports, ({ one }) => ({
+export const valuationReportsRelations = relations(valuationReports, ({ one, many }) => ({
   user: one(users, {
     fields: [valuationReports.userId],
     references: [users.id],
+  }),
+  rentalPerformance: many(rentalPerformanceData),
+}));
+
+// Rental Performance Data table
+export const rentalPerformanceData = pgTable("rental_performance_data", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  propertyId: text("property_id").notNull(), // PropData property ID
+  valuationReportId: integer("valuation_report_id"), // Link to valuation report
+  
+  // Property details for context
+  address: text("address").notNull(),
+  bedrooms: integer("bedrooms"),
+  bathrooms: integer("bathrooms"),
+  propertyType: text("property_type"),
+  price: decimal("price", { precision: 12, scale: 2 }),
+  
+  // Short-term rental data (PriceLabs)
+  shortTermData: jsonb("short_term_data"), // Complete PriceLabs response
+  
+  // Long-term rental data (OpenAI generated)
+  longTermMinRental: decimal("long_term_min_rental", { precision: 10, scale: 2 }),
+  longTermMaxRental: decimal("long_term_max_rental", { precision: 10, scale: 2 }),
+  longTermMinYield: decimal("long_term_min_yield", { precision: 5, scale: 2 }),
+  longTermMaxYield: decimal("long_term_max_yield", { precision: 5, scale: 2 }),
+  longTermReasoning: text("long_term_reasoning"),
+  
+  // Analysis metadata
+  imagesAnalyzed: integer("images_analyzed").default(0),
+  analysisModel: text("analysis_model").default("gpt-4o"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+});
+
+export const rentalPerformanceDataRelations = relations(rentalPerformanceData, ({ one }) => ({
+  user: one(users, {
+    fields: [rentalPerformanceData.userId],
+    references: [users.id],
+  }),
+  valuationReport: one(valuationReports, {
+    fields: [rentalPerformanceData.valuationReportId],
+    references: [valuationReports.id],
   }),
 }));
 

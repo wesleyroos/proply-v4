@@ -1,6 +1,9 @@
 import { Router } from "express";
 import OpenAI from "openai";
 import { fetchPriceLabsData } from "./rental-performance";
+import { db } from "../db";
+import { rentalPerformanceData } from "../db/schema";
+import { eq, and } from "drizzle-orm";
 
 const router = Router();
 
@@ -99,11 +102,22 @@ Consider factors like:
 Provide realistic South African Rand valuations and rental estimates based on current Cape Town property market rates. For rental estimates, consider standard 12-month lease terms and factor in visual property condition, finishes, and overall tenant appeal.`;
 
     console.log('Generating valuation report for property:', address);
+    console.log('Property details for rental analysis:', {
+      address,
+      bedrooms,
+      bathrooms,
+      propertyType,
+      price,
+      floorSize,
+      imagesProvided: images ? images.length : 0
+    });
 
     // Fetch PriceLabs short-term rental data
     let shortTermData = null;
     try {
+      console.log('Fetching PriceLabs data...');
       shortTermData = await fetchPriceLabsData(address, bedrooms, bathrooms, propertyType);
+      console.log('PriceLabs data received:', shortTermData);
     } catch (error) {
       console.error('PriceLabs API error:', error);
     }
@@ -122,13 +136,24 @@ Provide realistic South African Rand valuations and rental estimates based on cu
 
     // Add image analysis if images are provided
     if (images && images.length > 0) {
-      const imageAnalysisPrompt = "Additionally, I'm providing property images for visual analysis. Consider the property's condition, finishes, views, and overall presentation in your valuation.";
+      const imageAnalysisPrompt = `Additionally, I'm providing property images for visual analysis. Consider the property's condition, finishes, views, and overall presentation in both your valuation AND rental estimates. 
+
+For rental estimates, carefully assess:
+- Property finishes and quality level (affects premium pricing)
+- Layout and space efficiency 
+- Natural light and views
+- Overall condition and maintenance
+- Tenant appeal and marketability
+
+This is a ${bedrooms}-bedroom property in Cape Town. For context, similar properties in desirable Cape Town areas typically rent for R35,000-R55,000+ per month depending on location, condition, and finishes.`;
+      
+      console.log('Sending images to OpenAI for visual analysis:', images.length, 'images');
       
       messages.push({
         role: "user",
         content: [
           { type: "text", text: imageAnalysisPrompt },
-          ...images.slice(0, 3).map((imageUrl: string) => ({
+          ...images.slice(0, 10).map((imageUrl: string) => ({
             type: "image_url",
             image_url: { url: imageUrl }
           }))
@@ -155,7 +180,8 @@ Provide realistic South African Rand valuations and rental estimates based on cu
     const valuationReport = JSON.parse(reportContent);
 
     console.log('Valuation report generated successfully');
-
+    console.log('OpenAI rental estimates received:', valuationReport.rentalEstimates);
+    
     // Process rental estimates from the valuation report and combine with PriceLabs data
     const rentalPerformance = {
       shortTerm: shortTermData,
@@ -167,6 +193,8 @@ Provide realistic South African Rand valuations and rental estimates based on cu
         managementFee: "8-10%"
       } : null
     };
+
+    console.log('Final rental performance data:', rentalPerformance);
 
     // Include rental performance data in the response
     return res.json({
