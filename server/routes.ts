@@ -1957,18 +1957,17 @@ export function registerRoutes(app: Express): Server {
     const { propertyId } = req.params;
     
     try {
-      const rentalData = await db.query.rentalPerformanceData.findFirst({
-        where: and(
-          eq(rentalPerformanceData.userId, req.user.id),
-          eq(rentalPerformanceData.propertyId, propertyId)
-        ),
-      });
+      const rentalData = await db.execute(sql`
+        SELECT * FROM rental_performance_data 
+        WHERE user_id = ${req.user.id} AND property_id = ${propertyId}
+        LIMIT 1
+      `);
 
-      if (!rentalData) {
+      if (!rentalData.rows || rentalData.rows.length === 0) {
         return res.status(404).json({ error: "Rental data not found" });
       }
 
-      res.json(rentalData);
+      res.json(rentalData.rows[0]);
     } catch (error) {
       console.error("Error fetching rental performance data:", error);
       res.status(500).json({ error: "Failed to fetch rental data" });

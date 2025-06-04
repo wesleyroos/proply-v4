@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import { fetchPriceLabsData } from "./rental-performance";
 import { db } from "../../db";
 import { rentalPerformanceData } from "../../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 const router = Router();
 
@@ -202,41 +202,50 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
         const propertyIdFromAddress = address.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
         
         // Check if rental data already exists for this property
-        const existingRentalData = await db.select()
-          .from(rentalPerformanceData)
-          .where(and(
-            eq(rentalPerformanceData.userId, req.user.id),
-            eq(rentalPerformanceData.propertyId, propertyIdFromAddress)
-          ))
-          .limit(1);
+        const existingRentalData = await db.execute(sql`
+          SELECT id FROM rental_performance_data 
+          WHERE user_id = ${req.user.id} AND property_id = ${propertyIdFromAddress}
+          LIMIT 1
+        `);
 
-        const rentalDataToSave = {
-          userId: req.user.id,
-          propertyId: propertyIdFromAddress,
-          address,
-          bedrooms,
-          bathrooms,
-          propertyType,
-          price: price?.toString(),
-          shortTermData: rentalPerformance.shortTerm,
-          longTermMinRental: rentalPerformance.longTerm?.minRental?.toString(),
-          longTermMaxRental: rentalPerformance.longTerm?.maxRental?.toString(),
-          longTermMinYield: rentalPerformance.longTerm?.minYield?.toString(),
-          longTermMaxYield: rentalPerformance.longTerm?.maxYield?.toString(),
-          longTermReasoning: valuationReport.rentalEstimates?.longTerm?.reasoning,
-          imagesAnalyzed: images ? images.length : 0,
-          analysisModel: "gpt-4o"
-        };
-
-        if (existingRentalData.length > 0) {
+        if (existingRentalData.rows.length > 0) {
           // Update existing record
-          await db.update(rentalPerformanceData)
-            .set(rentalDataToSave)
-            .where(eq(rentalPerformanceData.id, existingRentalData[0].id));
+          await db.execute(sql`
+            UPDATE rental_performance_data 
+            SET 
+              address = ${address},
+              bedrooms = ${bedrooms},
+              bathrooms = ${bathrooms},
+              property_type = ${propertyType},
+              price = ${price?.toString()},
+              short_term_data = ${JSON.stringify(rentalPerformance.shortTerm)},
+              long_term_min_rental = ${rentalPerformance.longTerm?.minRental?.toString()},
+              long_term_max_rental = ${rentalPerformance.longTerm?.maxRental?.toString()},
+              long_term_min_yield = ${rentalPerformance.longTerm?.minYield?.toString()},
+              long_term_max_yield = ${rentalPerformance.longTerm?.maxYield?.toString()},
+              long_term_reasoning = ${valuationReport.rentalEstimates?.longTerm?.reasoning},
+              images_analyzed = ${images ? images.length : 0},
+              analysis_model = 'gpt-4o',
+              updated_at = NOW()
+            WHERE id = ${existingRentalData.rows[0].id}
+          `);
           console.log('Updated existing rental performance data in database');
         } else {
           // Insert new record
-          await db.insert(rentalPerformanceData).values(rentalDataToSave);
+          await db.execute(sql`
+            INSERT INTO rental_performance_data (
+              user_id, property_id, address, bedrooms, bathrooms, property_type, price,
+              short_term_data, long_term_min_rental, long_term_max_rental, 
+              long_term_min_yield, long_term_max_yield, long_term_reasoning,
+              images_analyzed, analysis_model
+            ) VALUES (
+              ${req.user.id}, ${propertyIdFromAddress}, ${address}, ${bedrooms}, ${bathrooms}, 
+              ${propertyType}, ${price?.toString()}, ${JSON.stringify(rentalPerformance.shortTerm)},
+              ${rentalPerformance.longTerm?.minRental?.toString()}, ${rentalPerformance.longTerm?.maxRental?.toString()},
+              ${rentalPerformance.longTerm?.minYield?.toString()}, ${rentalPerformance.longTerm?.maxYield?.toString()},
+              ${valuationReport.rentalEstimates?.longTerm?.reasoning}, ${images ? images.length : 0}, 'gpt-4o'
+            )
+          `);
           console.log('Saved new rental performance data to database');
         }
       } catch (error) {
