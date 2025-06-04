@@ -411,8 +411,6 @@ export default function PropertyDetailModal({
         setRentalData(report.rentalPerformance);
       }
       
-      setActiveTab('valuation'); // Switch to valuation tab
-      
       // Save the valuation report to database
       await saveValuationToDatabase(report);
     } catch (error) {
