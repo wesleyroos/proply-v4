@@ -780,14 +780,10 @@ export default function PropertyDetailModal({
                                 <span className="font-medium">15-20%</span>
                               </div>
                             </div>
-                            
-                            <div className="bg-blue-50 p-3 rounded-lg">
-                              <div className="text-sm text-blue-800 font-medium">✓ Best option for this property</div>
-                            </div>
                           </>
                         ) : (
                           <div className="text-center py-8 text-muted-foreground">
-                            <p>Unable to load short-term rental data</p>
+                            <p>No short-term rental data available</p>
                           </div>
                         )}
                       </div>
@@ -831,7 +827,7 @@ export default function PropertyDetailModal({
                           </>
                         ) : (
                           <div className="text-center py-8 text-muted-foreground">
-                            <p>Unable to load long-term rental data</p>
+                            <p>No long-term rental data available</p>
                           </div>
                         )}
                       </div>
