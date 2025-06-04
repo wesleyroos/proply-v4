@@ -130,6 +130,12 @@ export default function PropertyDetailModal({
     try {
       await initGoogleMaps();
       
+      // Ensure Google Maps is loaded
+      if (!window.google?.maps) {
+        console.error("Google Maps API not loaded");
+        return;
+      }
+      
       const geocoder = new window.google.maps.Geocoder();
       geocoder.geocode({ address: property.address }, (results: any, status: any) => {
         if (status === "OK" && results && results[0] && mapRef.current) {
