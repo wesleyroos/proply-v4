@@ -187,10 +187,17 @@ export default function PropertyDetailModal({
 
   // Load existing rental data from database
   const loadExistingRentalData = async (propertyId: string) => {
+    console.log('Loading rental data for property ID:', propertyId);
     try {
-      const response = await fetch(`/api/rental-performance/${propertyId}`);
+      const response = await fetch(`/api/rental-performance/${propertyId}`, {
+        credentials: 'include'
+      });
+      
+      console.log('Rental data response status:', response.status);
+      
       if (response.ok) {
         const rawRentalData = await response.json();
+        console.log('Raw rental data received:', rawRentalData);
         
         // Transform database format to frontend format
         const transformedData = {
@@ -204,10 +211,11 @@ export default function PropertyDetailModal({
           } : null
         };
         
+        console.log('Transformed rental data:', transformedData);
         setRentalData(transformedData);
-        console.log('Loaded and transformed rental data for property:', propertyId, transformedData);
+      } else {
+        console.log('No rental data found for property:', propertyId);
       }
-      // If 404, no existing rental data - that's fine
     } catch (error) {
       console.error("Error loading existing rental data:", error);
     }
