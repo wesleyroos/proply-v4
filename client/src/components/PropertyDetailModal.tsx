@@ -1031,13 +1031,21 @@ export default function PropertyDetailModal({
                             <div>Formula Used</div>
                             <div>Outcome</div>
                           </div>
-                          {valuationReport.valuations.map((valuation: any, index: number) => (
-                            <div key={index} className="grid grid-cols-3 gap-4 py-3 border-b last:border-b-0">
-                              <div className="font-medium">{valuation.type}</div>
-                              <div className="text-sm text-muted-foreground">{valuation.formula}</div>
-                              <div className="font-semibold text-lg">{formatCurrency(valuation.value)}</div>
-                            </div>
-                          ))}
+                          {(() => {
+                            // Reorder valuations to show Conservative, Midline, Optimistic
+                            const reorderedValuations = [...valuationReport.valuations].sort((a, b) => {
+                              const order = { 'Conservative': 1, 'Midline (Proply est.)': 2, 'Optimistic': 3 };
+                              return (order[a.type] || 4) - (order[b.type] || 4);
+                            });
+                            
+                            return reorderedValuations.map((valuation: any, index: number) => (
+                              <div key={index} className="grid grid-cols-3 gap-4 py-3 border-b last:border-b-0">
+                                <div className="font-medium">{valuation.type}</div>
+                                <div className="text-sm text-muted-foreground">{valuation.formula}</div>
+                                <div className="font-semibold text-lg">{formatCurrency(valuation.value)}</div>
+                              </div>
+                            ));
+                          })()}
                         </div>
                       )}
 
