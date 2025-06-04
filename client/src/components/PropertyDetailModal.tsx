@@ -480,20 +480,27 @@ export default function PropertyDetailModal({
                   {property?.status}
                 </Badge>
               </div>
-              <Button
-                onClick={generateValuationReport}
-                disabled={isGeneratingReport}
-                variant="default"
-                size="sm"
-                className="gap-2"
-              >
-                {isGeneratingReport ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <FileBarChart className="h-4 w-4" />
+              <div className="text-right">
+                <Button
+                  onClick={generateValuationReport}
+                  disabled={isGeneratingReport}
+                  variant="default"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {isGeneratingReport ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileBarChart className="h-4 w-4" />
+                  )}
+                  {isGeneratingReport ? `Generating... ${generationTimer}s` : 'Generate Report'}
+                </Button>
+                {!isGeneratingReport && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    This should take about 20 seconds
+                  </p>
                 )}
-                {isGeneratingReport ? 'Generating...' : 'Generate Report'}
-              </Button>
+              </div>
             </DialogTitle>
             <DialogDescription>
               Property ID: {property?.propdataId} • Last Modified:{" "}
@@ -799,6 +806,25 @@ export default function PropertyDetailModal({
                     <p className="text-muted-foreground mb-4">
                       Generate a valuation report to see rental performance data including PriceLabs short-term rental analysis and long-term rental estimates.
                     </p>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={generateValuationReport}
+                        disabled={isGeneratingReport}
+                        className="gap-2"
+                      >
+                        {isGeneratingReport ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <FileBarChart className="h-4 w-4" />
+                        )}
+                        {isGeneratingReport ? `Generating... ${generationTimer}s` : 'Generate Report'}
+                      </Button>
+                      {!isGeneratingReport && (
+                        <p className="text-xs text-muted-foreground">
+                          This should take about 20 seconds
+                        </p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
