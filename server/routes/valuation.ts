@@ -79,13 +79,13 @@ Based on current Cape Town property market conditions and the specifications pro
       "value": numeric_value_in_rands
     },
     {
-      "type": "Optimistic", 
-      "formula": "Calculation method with premium factors",
+      "type": "Midline (Proply est.)",
+      "formula": "Balanced calculation approach",
       "value": numeric_value_in_rands
     },
     {
-      "type": "Midline (Proply est.)",
-      "formula": "Balanced calculation approach",
+      "type": "Optimistic", 
+      "formula": "Calculation method with premium factors",
       "value": numeric_value_in_rands
     }
   ],
