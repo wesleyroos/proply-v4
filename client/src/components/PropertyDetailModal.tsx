@@ -68,6 +68,7 @@ export interface PropertyDetailListing {
   floorSize: number | null;
   landSize: number | null;
   agentId: string | null;
+  agentName: string | null;
   agentPhone: string | null;
   lastModified: string;
   createdAt: string;
@@ -753,7 +754,7 @@ export default function PropertyDetailModal({
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="agent">Contact</TabsTrigger>
+              <TabsTrigger value="agent">Investment</TabsTrigger>
               <TabsTrigger value="rental">Rental Performance</TabsTrigger>
               <TabsTrigger value="valuation">Valuation</TabsTrigger>
             </TabsList>
@@ -902,6 +903,16 @@ export default function PropertyDetailModal({
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Agency ID:</span>
                     <span className="font-medium">{property?.agencyId}</span>
+                  </div>
+                  {property?.agentId && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Agent ID:</span>
+                      <span className="font-medium">{property.agentId}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Agent Name:</span>
+                    <span className="font-medium">{property?.agentName || 'Not Available'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Created:</span>
@@ -1230,20 +1241,34 @@ export default function PropertyDetailModal({
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Agent Information
+                    <DollarSign className="h-5 w-5" />
+                    Investment Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {property?.agentId && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Asking Price:</span>
+                    <span className="font-medium">R{property?.price ? parseFloat(property.price.toString()).toLocaleString() : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Property Type:</span>
+                    <span className="font-medium">{property?.propertyType}</span>
+                  </div>
+                  {property?.floorSize && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Agent ID:</span>
-                      <span className="font-medium">{property.agentId}</span>
+                      <span className="text-muted-foreground">Floor Area:</span>
+                      <span className="font-medium">{property.floorSize}m²</span>
+                    </div>
+                  )}
+                  {property?.landSize && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Land Size:</span>
+                      <span className="font-medium">{property.landSize}m²</span>
                     </div>
                   )}
                   {property?.agentPhone && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Phone:</span>
+                    <div className="flex justify-between items-center border-t pt-2 mt-4">
+                      <span className="text-muted-foreground">Agent Contact:</span>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{property.agentPhone}</span>
                         <Button size="sm" variant="outline">
