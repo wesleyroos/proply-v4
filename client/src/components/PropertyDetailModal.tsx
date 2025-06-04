@@ -441,7 +441,7 @@ export default function PropertyDetailModal({
           )}
 
           {/* Key Property Details */}
-          <div className="flex flex-wrap gap-2 my-4 justify-start">
+          <div className="flex flex-wrap gap-10 my-4 justify-start">
             <div className="flex items-center gap-2">
               <div className="bg-primary/10 p-2 rounded-full">
                 <DollarSign className="h-5 w-5 text-primary" />
@@ -542,7 +542,41 @@ export default function PropertyDetailModal({
                       <div className="space-y-3">
                         <div>
                           <span className="text-muted-foreground text-sm">Size</span>
-                          <div className="font-medium">{property?.floorSize ? `${property.floorSize} m²` : 'N/A'}</div>
+                          <div className="font-medium">
+                            {(() => {
+                              const propertyType = property?.propertyType?.toLowerCase() || '';
+                              const isVacantLand = propertyType.includes('vacant') || propertyType.includes('land');
+                              const isApartment = propertyType.includes('apartment') || 
+                                                propertyType.includes('penthouse') || 
+                                                propertyType.includes('studio');
+                              const isHouse = propertyType.includes('house') || 
+                                            propertyType.includes('freestanding') || 
+                                            propertyType.includes('duplex');
+
+                              if (isVacantLand) {
+                                // Vacant land: show only land size
+                                return property?.landSize ? `${property.landSize} m² (Land)` : 'N/A';
+                              } else if (isApartment) {
+                                // Apartments: show only floor/building size
+                                return property?.floorSize ? `${property.floorSize} m²` : 'N/A';
+                              } else if (isHouse) {
+                                // Houses: show floor size primarily, land size as fallback
+                                if (property?.floorSize && property?.landSize) {
+                                  return `${property.floorSize} m² (Floor), ${property.landSize} m² (Land)`;
+                                } else if (property?.floorSize) {
+                                  return `${property.floorSize} m² (Floor)`;
+                                } else if (property?.landSize) {
+                                  return `${property.landSize} m² (Land)`;
+                                } else {
+                                  return 'N/A';
+                                }
+                              } else {
+                                // Default: show floor size primarily, land size if no floor size
+                                return property?.floorSize ? `${property.floorSize} m²` : 
+                                       property?.landSize ? `${property.landSize} m² (Land)` : 'N/A';
+                              }
+                            })()}
+                          </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground text-sm">Price/m²</span>
@@ -552,8 +586,12 @@ export default function PropertyDetailModal({
                               if (savedValuationData?.pricePerSquareMeter) {
                                 return `R ${Math.round(parseFloat(savedValuationData.pricePerSquareMeter)).toLocaleString()}`;
                               }
-                              if (property?.price && property?.floorSize) {
-                                return `R ${Math.round(property.price / property.floorSize).toLocaleString()}`;
+                              if (property?.price) {
+                                // Use floorSize first, then landSize as fallback
+                                const sizeToUse = property?.floorSize || property?.landSize;
+                                if (sizeToUse) {
+                                  return `R ${Math.round(property.price / sizeToUse).toLocaleString()}`;
+                                }
                               }
                               return 'N/A';
                             })()}
