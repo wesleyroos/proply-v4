@@ -2088,7 +2088,10 @@ export function registerRoutes(app: Express): Server {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const { propertyId, address, price, bedrooms, bathrooms, floorSize, landSize, propertyType, valuationData, imagesAnalyzed } = req.body;
+      const { propertyId, address, price, bedrooms, bathrooms, floorSize, landSize, propertyType, parkingSpaces, valuationData, imagesAnalyzed } = req.body;
+
+      // Calculate price per square meter
+      const pricePerSquareMeter = price && floorSize ? price / floorSize : null;
 
       // Check if valuation already exists for this property and user
       const existingValuation = await db.query.valuationReports.findFirst({
@@ -2106,6 +2109,8 @@ export function registerRoutes(app: Express): Server {
             floorSize: floorSize?.toString(),
             landSize: landSize?.toString(),
             propertyType,
+            parkingSpaces,
+            pricePerSquareMeter: pricePerSquareMeter?.toString(),
             valuationData,
             imagesAnalyzed,
             updatedAt: new Date()
@@ -2127,6 +2132,8 @@ export function registerRoutes(app: Express): Server {
             floorSize: floorSize?.toString(),
             landSize: landSize?.toString(),
             propertyType,
+            parkingSpaces,
+            pricePerSquareMeter: pricePerSquareMeter?.toString(),
             valuationData,
             imagesAnalyzed: imagesAnalyzed || 0
           })

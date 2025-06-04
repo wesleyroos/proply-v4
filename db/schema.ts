@@ -360,6 +360,10 @@ export const valuationReports = pgTable("valuation_reports", {
   floorSize: decimal("floor_size", { precision: 10, scale: 2 }),
   landSize: decimal("land_size", { precision: 10, scale: 2 }),
   propertyType: text("property_type"),
+  parkingSpaces: integer("parking_spaces"),
+  
+  // Calculated fields
+  pricePerSquareMeter: decimal("price_per_square_meter", { precision: 10, scale: 2 }),
   
   // Valuation results as JSON
   valuationData: jsonb("valuation_data").notNull(), // Stores the complete OpenAI response

@@ -486,59 +486,89 @@ export default function PropertyDetailModal({
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Ruler className="h-5 w-5" />
-                    Property Dimensions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {property?.floorSize && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Floor Size:</span>
-                      <span className="font-medium">{property.floorSize} m²</span>
-                    </div>
-                  )}
-                  {property?.landSize && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Land Size:</span>
-                      <span className="font-medium">{property.landSize} m²</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {property?.location && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Property Specs Card */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Map className="h-5 w-5" />
-                      Location
+                      <Home className="h-5 w-5" />
+                      Property Specs
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {property.location.suburb && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Suburb:</span>
-                        <span className="font-medium">{property.location.suburb}</span>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Column 1 */}
+                      <div className="space-y-3">
+                        <div>
+                          <span className="text-muted-foreground text-sm">Property Type</span>
+                          <div className="font-medium">{property?.propertyType || 'N/A'}</div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Bedrooms</span>
+                          <div className="font-medium">{property?.bedrooms || 'N/A'}</div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Bathrooms</span>
+                          <div className="font-medium">{property?.bathrooms || 'N/A'}</div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Parking</span>
+                          <div className="font-medium">{property?.parkingSpaces !== null ? property?.parkingSpaces : 'N/A'}</div>
+                        </div>
                       </div>
-                    )}
-                    {property.location.city && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">City:</span>
-                        <span className="font-medium">{property.location.city}</span>
+                      
+                      {/* Column 2 */}
+                      <div className="space-y-3">
+                        <div>
+                          <span className="text-muted-foreground text-sm">Size</span>
+                          <div className="font-medium">{property?.floorSize ? `${property.floorSize} m²` : 'N/A'}</div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Price/m²</span>
+                          <div className="font-medium">
+                            {property?.price && property?.floorSize 
+                              ? `R ${Math.round(property.price / property.floorSize).toLocaleString()}`
+                              : 'N/A'
+                            }
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    {property.location.province && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Province:</span>
-                        <span className="font-medium">{property.location.province}</span>
-                      </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
-              )}
+
+                {/* Location Card */}
+                {property?.location && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Map className="h-5 w-5" />
+                        Location
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {property.location.suburb && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Suburb:</span>
+                          <span className="font-medium">{property.location.suburb}</span>
+                        </div>
+                      )}
+                      {property.location.city && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">City:</span>
+                          <span className="font-medium">{property.location.city}</span>
+                        </div>
+                      )}
+                      {property.location.province && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Province:</span>
+                          <span className="font-medium">{property.location.province}</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="details" className="space-y-4">
