@@ -28,6 +28,39 @@ interface LongTermRentalData {
   managementFee: string;
 }
 
+// Helper function to get rental data without HTTP response
+export async function fetchRentalData(propertyData: RentalPerformanceRequest): Promise<{ shortTerm: ShortTermRentalData | null; longTerm: LongTermRentalData | null }> {
+  try {
+    // Fetch short-term rental data from PriceLabs
+    const shortTermData = await fetchPriceLabsData(
+      propertyData.address,
+      propertyData.bedrooms,
+      propertyData.bathrooms,
+      propertyData.propertyType
+    );
+
+    // Generate long-term rental estimate using OpenAI
+    const longTermData = await generateLongTermEstimate(
+      propertyData.address,
+      propertyData.bedrooms,
+      propertyData.bathrooms,
+      propertyData.propertyType,
+      propertyData.price
+    );
+
+    return {
+      shortTerm: shortTermData,
+      longTerm: longTermData
+    };
+  } catch (error) {
+    console.error('Error fetching rental data:', error);
+    return {
+      shortTerm: null,
+      longTerm: null
+    };
+  }
+}
+
 export async function getRentalPerformance(req: Request, res: Response) {
   try {
     const { address, bedrooms, bathrooms, propertyType, price } = req.body as RentalPerformanceRequest;

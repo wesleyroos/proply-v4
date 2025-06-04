@@ -166,45 +166,7 @@ export default function PropertyDetailModal({
     };
   }, [isOpen, property?.address, activeTab]);
 
-  // Fetch rental performance data when rental tab is accessed
-  useEffect(() => {
-    if (activeTab === "rental" && property && !rentalData && !isLoadingRental) {
-      fetchRentalPerformance();
-    }
-  }, [activeTab, property, rentalData, isLoadingRental]);
 
-  // Fetch rental performance data
-  const fetchRentalPerformance = async () => {
-    if (!property) return;
-    
-    setIsLoadingRental(true);
-    try {
-      const response = await fetch('/api/rental-performance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          address: property.address,
-          bedrooms: property.bedrooms,
-          bathrooms: property.bathrooms,
-          propertyType: property.propertyType,
-          price: property.price
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch rental performance data');
-      }
-
-      const data = await response.json();
-      setRentalData(data);
-    } catch (error) {
-      console.error('Error fetching rental performance:', error);
-    } finally {
-      setIsLoadingRental(false);
-    }
-  };
 
   // Load existing valuation from database
   const loadExistingValuation = async (propertyId: string) => {

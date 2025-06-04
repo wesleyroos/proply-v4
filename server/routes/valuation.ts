@@ -1,5 +1,6 @@
 import { Router } from "express";
 import OpenAI from "openai";
+import { fetchRentalData } from "./rental-performance";
 
 const router = Router();
 
@@ -91,6 +92,15 @@ Provide realistic South African Rand valuations based on current Cape Town prope
 
     console.log('Generating valuation report for property:', address);
 
+    // Fetch rental performance data
+    const rentalData = await fetchRentalData({
+      address,
+      bedrooms,
+      bathrooms,
+      propertyType,
+      price
+    });
+
     // Prepare messages for OpenAI
     const messages: any[] = [
       {
@@ -139,7 +149,11 @@ Provide realistic South African Rand valuations based on current Cape Town prope
 
     console.log('Valuation report generated successfully');
 
-    return res.json(valuationReport);
+    // Include rental performance data in the response
+    return res.json({
+      ...valuationReport,
+      rentalPerformance: rentalData
+    });
 
   } catch (error) {
     console.error("Error generating valuation report:", error);
