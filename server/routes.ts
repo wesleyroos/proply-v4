@@ -1957,16 +1957,25 @@ export function registerRoutes(app: Express): Server {
     const { propertyId } = req.params;
     
     try {
+      // Try multiple property ID formats for better matching
       const rentalData = await db.execute(sql`
         SELECT * FROM rental_performance_data 
-        WHERE user_id = ${req.user.id} AND property_id = ${propertyId}
+        WHERE user_id = ${req.user.id} 
+        AND (
+          property_id = ${propertyId} 
+          OR property_id = ${propertyId.toString()}
+          OR property_id = ${parseInt(propertyId) || propertyId}
+        )
+        ORDER BY created_at DESC
         LIMIT 1
       `);
 
       if (!rentalData.rows || rentalData.rows.length === 0) {
+        console.log(`No rental data found for property ID: ${propertyId}, user ID: ${req.user.id}`);
         return res.status(404).json({ error: "Rental data not found" });
       }
 
+      console.log(`Found rental data for property ID: ${propertyId}`);
       res.json(rentalData.rows[0]);
     } catch (error) {
       console.error("Error fetching rental performance data:", error);

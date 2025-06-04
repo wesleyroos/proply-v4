@@ -279,6 +279,23 @@ export default function PropertyDetailModal({
 
   const propertyImages = getPropertyImages();
 
+  // Calculate which rental strategy is recommended based on yield
+  const getRecommendedStrategy = () => {
+    if (!rentalData?.shortTerm || !rentalData?.longTerm) return null;
+    
+    // Calculate short-term annual yield (using average percentile50)
+    const shortTermAnnualRevenue = rentalData.shortTerm.percentile50.annual;
+    const shortTermYield = property?.price ? (shortTermAnnualRevenue / property.price) * 100 : 0;
+    
+    // Calculate long-term annual yield (using average of min/max)
+    const longTermAnnualRevenue = ((rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2) * 12;
+    const longTermYield = property?.price ? (longTermAnnualRevenue / property.price) * 100 : 0;
+    
+    return shortTermYield > longTermYield ? 'shortTerm' : 'longTerm';
+  };
+
+  const recommendedStrategy = getRecommendedStrategy();
+
   // Arrow key navigation for full-screen viewer
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -723,12 +740,14 @@ export default function PropertyDetailModal({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Short-Term Rental Card */}
-                  <Card className="border-blue-200">
-                    <CardHeader className="bg-blue-50 pb-3">
-                      <CardTitle className="flex items-center gap-2 text-[#1e40af] text-base">
+                  <Card className={`${recommendedStrategy === 'shortTerm' ? 'border-blue-200 ring-2 ring-blue-100' : 'border-gray-200'}`}>
+                    <CardHeader className={`${recommendedStrategy === 'shortTerm' ? 'bg-blue-50' : 'bg-gray-50'} pb-3`}>
+                      <CardTitle className={`flex items-center gap-2 text-base ${recommendedStrategy === 'shortTerm' ? 'text-[#1e40af]' : 'text-gray-700'}`}>
                         <Calendar className="h-4 w-4" />
                         Short-Term (Airbnb)
-                        <Badge className="bg-[#1e40af] text-white text-xs">RECOMMENDED</Badge>
+                        {recommendedStrategy === 'shortTerm' && (
+                          <Badge className="bg-[#1e40af] text-white text-xs">RECOMMENDED</Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4">
@@ -809,11 +828,14 @@ export default function PropertyDetailModal({
                   </Card>
 
                   {/* Long-Term Rental Card */}
-                  <Card className="border-gray-200">
-                    <CardHeader className="bg-gray-50 pb-3">
-                      <CardTitle className="flex items-center gap-2 text-gray-700 text-base">
+                  <Card className={`${recommendedStrategy === 'longTerm' ? 'border-blue-200 ring-2 ring-blue-100' : 'border-gray-200'}`}>
+                    <CardHeader className={`${recommendedStrategy === 'longTerm' ? 'bg-blue-50' : 'bg-gray-50'} pb-3`}>
+                      <CardTitle className={`flex items-center gap-2 text-base ${recommendedStrategy === 'longTerm' ? 'text-[#1e40af]' : 'text-gray-700'}`}>
                         <Home className="h-4 w-4" />
                         Long-Term Rental
+                        {recommendedStrategy === 'longTerm' && (
+                          <Badge className="bg-[#1e40af] text-white text-xs">RECOMMENDED</Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4">
