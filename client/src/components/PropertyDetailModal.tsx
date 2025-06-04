@@ -201,7 +201,10 @@ export default function PropertyDetailModal({
         
         // Transform database format to frontend format
         const transformedData = {
-          shortTerm: rawRentalData.short_term_data ? JSON.parse(rawRentalData.short_term_data) : null,
+          shortTerm: rawRentalData.short_term_data ? 
+            (typeof rawRentalData.short_term_data === 'string' ? 
+              JSON.parse(rawRentalData.short_term_data) : 
+              rawRentalData.short_term_data) : null,
           longTerm: rawRentalData.long_term_min_rental ? {
             minRental: parseFloat(rawRentalData.long_term_min_rental),
             maxRental: parseFloat(rawRentalData.long_term_max_rental),
