@@ -706,57 +706,57 @@ export default function PropertyDetailModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Short-Term Rental Card */}
                   <Card className="border-blue-200">
-                    <CardHeader className="bg-blue-50">
-                      <CardTitle className="flex items-center gap-2 text-blue-800">
-                        <Calendar className="h-5 w-5" />
+                    <CardHeader className="bg-blue-50 pb-3">
+                      <CardTitle className="flex items-center gap-2 text-[#1e40af] text-base">
+                        <Calendar className="h-4 w-4" />
                         Short-Term (Airbnb)
-                        <Badge className="bg-blue-600 text-white">RECOMMENDED</Badge>
+                        <Badge className="bg-[#1e40af] text-white text-xs">RECOMMENDED</Badge>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
                         {rentalData?.shortTerm ? (
                           <>
-                            <div className="text-2xl font-bold text-blue-600">
+                            <div className="text-xl font-bold text-[#1e40af]">
                               R{rentalData.shortTerm.percentile50.monthly.toLocaleString()}
-                              <span className="text-lg font-normal">/month</span>
+                              <span className="text-sm font-normal">/month</span>
                             </div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               Based on {rentalData.shortTerm.occupancy}% occupancy & R{rentalData.shortTerm.percentile50.nightly.toLocaleString()} avg nightly rate
                             </div>
                             
-                            <div className="border-t pt-4">
+                            <div className="border-t pt-3">
                               <div className="flex justify-between items-center mb-2">
-                                <span className="font-medium">Rate & Revenue Potential:</span>
-                                <span className="text-blue-600 font-bold">{rentalData.shortTerm.occupancy}% Occupancy</span>
+                                <span className="text-sm font-medium">Rate & Revenue Potential:</span>
+                                <span className="text-[#1e40af] font-bold text-sm">{rentalData.shortTerm.occupancy}% Occupancy</span>
                               </div>
                               
-                              <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="grid grid-cols-2 gap-3 text-xs">
                                 <div>
-                                  <div className="font-medium text-muted-foreground">Conservative (25th)</div>
+                                  <div className="font-medium text-muted-foreground mb-1">Conservative (25th)</div>
                                   <div>Nightly: R{rentalData.shortTerm.percentile25.nightly.toLocaleString()}</div>
                                   <div>Monthly: R{rentalData.shortTerm.percentile25.monthly.toLocaleString()}</div>
                                   <div className="font-medium">Annual: R{rentalData.shortTerm.percentile25.annual.toLocaleString()}</div>
                                 </div>
                                 
                                 <div>
-                                  <div className="font-medium text-muted-foreground">Average (50th)</div>
+                                  <div className="font-medium text-muted-foreground mb-1">Average (50th)</div>
                                   <div>Nightly: R{rentalData.shortTerm.percentile50.nightly.toLocaleString()}</div>
                                   <div>Monthly: R{rentalData.shortTerm.percentile50.monthly.toLocaleString()}</div>
                                   <div className="font-medium">Annual: R{rentalData.shortTerm.percentile50.annual.toLocaleString()}</div>
                                 </div>
                               </div>
                               
-                              <div className="grid grid-cols-2 gap-4 text-sm mt-3">
+                              <div className="grid grid-cols-2 gap-3 text-xs mt-2">
                                 <div>
-                                  <div className="font-medium text-muted-foreground">Premium (75th)</div>
+                                  <div className="font-medium text-muted-foreground mb-1">Premium (75th)</div>
                                   <div>Nightly: R{rentalData.shortTerm.percentile75.nightly.toLocaleString()}</div>
                                   <div>Monthly: R{rentalData.shortTerm.percentile75.monthly.toLocaleString()}</div>
                                   <div className="font-medium">Annual: R{rentalData.shortTerm.percentile75.annual.toLocaleString()}</div>
                                 </div>
                                 
                                 <div>
-                                  <div className="font-medium text-muted-foreground">Luxury (90th)</div>
+                                  <div className="font-medium text-muted-foreground mb-1">Luxury (90th)</div>
                                   <div>Nightly: R{rentalData.shortTerm.percentile90.nightly.toLocaleString()}</div>
                                   <div>Monthly: R{rentalData.shortTerm.percentile90.monthly.toLocaleString()}</div>
                                   <div className="font-medium">Annual: R{rentalData.shortTerm.percentile90.annual.toLocaleString()}</div>
@@ -764,26 +764,26 @@ export default function PropertyDetailModal({
                               </div>
                             </div>
                             
-                            <div className="border-t pt-4 space-y-2">
-                              <div className="flex justify-between">
+                            <div className="border-t pt-3 space-y-1">
+                              <div className="flex justify-between text-sm">
                                 <span>Annual yield:</span>
-                                <span className="font-bold text-blue-600">
+                                <span className="font-bold text-[#1e40af]">
                                   {property?.price ? ((rentalData.shortTerm.percentile50.annual / property.price) * 100).toFixed(1) : 'N/A'}%
                                 </span>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="flex justify-between text-sm">
                                 <span>Yearly income:</span>
                                 <span className="font-medium">R{rentalData.shortTerm.percentile50.annual.toLocaleString()}</span>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="flex justify-between text-sm">
                                 <span>Management fee:</span>
                                 <span className="font-medium">15-20%</span>
                               </div>
                             </div>
                           </>
                         ) : (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <p>No short-term rental data available</p>
+                          <div className="text-center py-6 text-muted-foreground">
+                            <p className="text-sm">No short-term rental data available</p>
                           </div>
                         )}
                       </div>
@@ -792,42 +792,42 @@ export default function PropertyDetailModal({
 
                   {/* Long-Term Rental Card */}
                   <Card className="border-gray-200">
-                    <CardHeader className="bg-gray-50">
-                      <CardTitle className="flex items-center gap-2 text-gray-800">
-                        <Home className="h-5 w-5" />
+                    <CardHeader className="bg-gray-50 pb-3">
+                      <CardTitle className="flex items-center gap-2 text-gray-700 text-base">
+                        <Home className="h-4 w-4" />
                         Long-Term Rental
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
                         {rentalData?.longTerm ? (
                           <>
-                            <div className="text-2xl font-bold text-gray-600">
+                            <div className="text-xl font-bold text-gray-600">
                               R{rentalData.longTerm.minRental.toLocaleString()}-R{rentalData.longTerm.maxRental.toLocaleString()}
-                              <span className="text-lg font-normal">/month</span>
+                              <span className="text-sm font-normal">/month</span>
                             </div>
-                            <div className="text-sm text-muted-foreground">Standard 12-month lease</div>
+                            <div className="text-xs text-muted-foreground">Standard 12-month lease</div>
                             
-                            <div className="border-t pt-4 space-y-2">
-                              <div className="flex justify-between">
+                            <div className="border-t pt-3 space-y-1">
+                              <div className="flex justify-between text-sm">
                                 <span>Annual yield:</span>
                                 <span className="font-bold text-gray-600">{rentalData.longTerm.minYield}%-{rentalData.longTerm.maxYield}%</span>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="flex justify-between text-sm">
                                 <span>Yearly income:</span>
                                 <span className="font-medium">
                                   R{(rentalData.longTerm.minRental * 12).toLocaleString()}-R{(rentalData.longTerm.maxRental * 12).toLocaleString()}
                                 </span>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="flex justify-between text-sm">
                                 <span>Management fee:</span>
                                 <span className="font-medium">{rentalData.longTerm.managementFee}</span>
                               </div>
                             </div>
                           </>
                         ) : (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <p>No long-term rental data available</p>
+                          <div className="text-center py-6 text-muted-foreground">
+                            <p className="text-sm">No long-term rental data available</p>
                           </div>
                         )}
                       </div>
