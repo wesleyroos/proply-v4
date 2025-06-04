@@ -111,7 +111,7 @@ export default function PropertyDetailModal({
 
   // Google Maps initialization - using PropertyMap.tsx pattern
   useEffect(() => {
-    if (!isOpen || !property?.address) return;
+    if (!isOpen || !property?.address || activeTab !== "overview") return;
 
     let isMounted = true;
 
@@ -162,7 +162,7 @@ export default function PropertyDetailModal({
       isMounted = false;
       setMapLoaded(false);
     };
-  }, [isOpen, property?.address]);
+  }, [isOpen, property?.address, activeTab]);
 
   // Load existing valuation from database
   const loadExistingValuation = async (propertyId: string) => {
