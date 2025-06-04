@@ -87,7 +87,7 @@ export default function PropertyDetailModal({
   onClose,
   property,
 }: PropertyDetailModalProps) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const [activeTab, setActiveTab] = useState("overview");
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
@@ -369,17 +369,8 @@ export default function PropertyDetailModal({
     });
   };
 
-  const scrollLeft = () => {
-    setCurrentImageIndex((prev) => Math.max(0, prev - 1));
-  };
-
-  const scrollRight = () => {
-    const maxStartIndex = Math.max(0, propertyImages.length - Math.floor(800 / 100)); // Approximate images that fit
-    setCurrentImageIndex((prev) => Math.min(maxStartIndex, prev + 1));
-  };
-
-  // Calculate how many images can fit in the available space (approximately)
-  const imagesPerView = Math.floor(800 / 100); // Assuming 800px width and 100px per image including gap
+  // Display exactly 8 images
+  const imagesPerView = 8;
 
   return (
     <>
@@ -419,58 +410,26 @@ export default function PropertyDetailModal({
 
           {/* Property Image Gallery */}
           {propertyImages.length > 0 ? (
-            <div className="relative mb-4">
-              <div className="flex items-center gap-2">
-                {currentImageIndex > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8 p-0 shrink-0"
-                    onClick={scrollLeft}
+            <div className="mb-4">
+              <div className="flex gap-2 overflow-hidden">
+                {propertyImages.slice(0, imagesPerView).map((image, index) => (
+                  <div 
+                    key={index}
+                    className="w-24 h-24 rounded-md overflow-hidden bg-muted cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+                    onClick={() => openFullScreen(index)}
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                )}
-                
-                <div className="flex gap-2 overflow-hidden flex-1">
-                  {propertyImages.slice(currentImageIndex, currentImageIndex + imagesPerView).map((image, index) => (
-                    <div 
-                      key={currentImageIndex + index}
-                      className="w-24 h-24 rounded-md overflow-hidden bg-muted cursor-pointer hover:opacity-80 transition-opacity shrink-0"
-                      onClick={() => openFullScreen(currentImageIndex + index)}
-                    >
-                      <img
-                        src={image}
-                        alt={`Property ${property?.address} - Image ${currentImageIndex + index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-                
-                {currentImageIndex + imagesPerView < propertyImages.length && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8 p-0 shrink-0"
-                    onClick={scrollRight}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                )}
+                    <img
+                      src={image}
+                      alt={`Property ${property?.address} - Image ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
-              
-              {propertyImages.length > imagesPerView && (
-                <div className="text-center mt-2">
-                  <span className="text-xs text-muted-foreground">
-                    Showing {currentImageIndex + 1}-{Math.min(currentImageIndex + imagesPerView, propertyImages.length)} of {propertyImages.length} images
-                  </span>
-                </div>
-              )}
             </div>
           ) : (
             <div className="rounded-md overflow-hidden h-[100px] bg-muted mb-4 flex items-center justify-center">
@@ -558,7 +517,7 @@ export default function PropertyDetailModal({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                       {/* Column 1 */}
                       <div className="space-y-3">
                         <div>
