@@ -87,7 +87,7 @@ export async function getRentalPerformance(req: Request, res: Response) {
   }
 }
 
-async function fetchPriceLabsData(
+export async function fetchPriceLabsData(
   address: string, 
   bedrooms: number, 
   bathrooms: number, 
