@@ -19,7 +19,39 @@ router.get("/propdata/listings", async (req, res) => {
     // Query database for PropData listings, ordered by actual listing date
     const listings = await db.select().from(propdataListings).orderBy(desc(propdataListings.listingDate));
     
-    return res.json(listings);
+    // Parse JSON fields in the response
+    const parsedListings = listings.map(listing => ({
+      ...listing,
+      images: typeof listing.images === 'string' ? 
+        (() => {
+          try {
+            return JSON.parse(listing.images as string);
+          } catch (e) {
+            return [];
+          }
+        })() : 
+        (listing.images || []),
+      location: typeof listing.location === 'string' ? 
+        (() => {
+          try {
+            return JSON.parse(listing.location as string);
+          } catch (e) {
+            return null;
+          }
+        })() : 
+        listing.location,
+      features: typeof listing.features === 'string' ? 
+        (() => {
+          try {
+            return JSON.parse(listing.features as string);
+          } catch (e) {
+            return [];
+          }
+        })() : 
+        (listing.features || [])
+    }));
+    
+    return res.json(parsedListings);
   } catch (error) {
     console.error("Error fetching PropData listings:", error);
     return res.status(500).json({ error: "Failed to fetch PropData listings" });
