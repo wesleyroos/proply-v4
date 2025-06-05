@@ -1522,60 +1522,85 @@ export default function PropertyDetailModal({
                       Annual appreciation forecast based on market analysis
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4">
                     {/* Annual Appreciation Rate Summary */}
-                    <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="bg-green-50 p-3 rounded">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-green-700">Estimated Annual Appreciation</span>
-                        <span className="text-2xl font-bold text-green-800">
+                        <span className="text-xs text-green-700">Annual Appreciation</span>
+                        <span className="text-xl font-bold text-green-800">
                           {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}%
                         </span>
                       </div>
-                      <p className="text-sm text-green-600 mt-2">
+                      <p className="text-xs text-green-600 mt-1">
                         {valuationReport.propertyAppreciation.summary}
                       </p>
                     </div>
 
                     {/* Component Breakdown */}
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-sm">Appreciation Components</h4>
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-xs">Components</h4>
                       
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span>Base Suburb Rate</span>
-                          <span className="font-medium text-blue-600">
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
+                          <div className="flex-1">
+                            <div className="font-medium">Base Suburb Rate</div>
+                            <div className="text-muted-foreground text-xs">
+                              {valuationReport.propertyAppreciation.components.baseSuburbRate.justification}
+                            </div>
+                          </div>
+                          <span className="font-medium text-blue-600 ml-2 text-xs">
                             {valuationReport.propertyAppreciation.components.baseSuburbRate.rate > 0 ? '+' : ''}
                             {valuationReport.propertyAppreciation.components.baseSuburbRate.rate.toFixed(1)}%
                           </span>
                         </div>
                         
-                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span>Property Type Modifier</span>
-                          <span className={`font-medium ${valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
+                          <div className="flex-1">
+                            <div className="font-medium">Property Type</div>
+                            <div className="text-muted-foreground text-xs">
+                              {valuationReport.propertyAppreciation.components.propertyTypeModifier.justification}
+                            </div>
+                          </div>
+                          <span className={`font-medium ml-2 text-xs ${valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment > 0 ? '+' : ''}
                             {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment.toFixed(1)}%
                           </span>
                         </div>
                         
-                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span>Levy Impact (R{valuationReport.propertyAppreciation.components.levyImpact.levyPerSquareMeter.toFixed(0)}/m²)</span>
-                          <span className={`font-medium ${valuationReport.propertyAppreciation.components.levyImpact.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
+                          <div className="flex-1">
+                            <div className="font-medium">Levy (R{valuationReport.propertyAppreciation.components.levyImpact.levyPerSquareMeter.toFixed(0)}/m²)</div>
+                            <div className="text-muted-foreground text-xs">
+                              {valuationReport.propertyAppreciation.components.levyImpact.justification}
+                            </div>
+                          </div>
+                          <span className={`font-medium ml-2 text-xs ${valuationReport.propertyAppreciation.components.levyImpact.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {valuationReport.propertyAppreciation.components.levyImpact.adjustment > 0 ? '+' : ''}
                             {valuationReport.propertyAppreciation.components.levyImpact.adjustment.toFixed(1)}%
                           </span>
                         </div>
                         
-                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span>Visual Condition</span>
-                          <span className={`font-medium ${valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
+                          <div className="flex-1">
+                            <div className="font-medium">Condition</div>
+                            <div className="text-muted-foreground text-xs">
+                              {valuationReport.propertyAppreciation.components.visualConditionAdjustment.justification}
+                            </div>
+                          </div>
+                          <span className={`font-medium ml-2 text-xs ${valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment > 0 ? '+' : ''}
                             {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment.toFixed(1)}%
                           </span>
                         </div>
                         
-                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span>Location Premium</span>
-                          <span className={`font-medium ${valuationReport.propertyAppreciation.components.locationPremium.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
+                          <div className="flex-1">
+                            <div className="font-medium">Location</div>
+                            <div className="text-muted-foreground text-xs">
+                              {valuationReport.propertyAppreciation.components.locationPremium.justification}
+                            </div>
+                          </div>
+                          <span className={`font-medium ml-2 text-xs ${valuationReport.propertyAppreciation.components.locationPremium.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {valuationReport.propertyAppreciation.components.locationPremium.adjustment > 0 ? '+' : ''}
                             {valuationReport.propertyAppreciation.components.locationPremium.adjustment.toFixed(1)}%
                           </span>
@@ -1584,46 +1609,21 @@ export default function PropertyDetailModal({
                     </div>
 
                     {/* 5-Year Value Projection */}
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-sm">5-Year Value Projection</h4>
-                      <div className="space-y-2">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-xs">5-Year Projection</h4>
+                      <div className="grid grid-cols-2 gap-1 text-xs">
                         {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any, index: number) => (
-                          <div key={projection.year} className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                          <div key={projection.year} className="flex justify-between items-center p-1.5 bg-blue-50 rounded">
                             <span className="text-blue-700">{projection.year}</span>
                             <span className="font-medium text-blue-800">
-                              R{projection.estimatedValue.toLocaleString()}
+                              R{(projection.estimatedValue / 1000000).toFixed(1)}M
                             </span>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* Detailed Justifications */}
-                    <div className="space-y-3 pt-4 border-t">
-                      <h4 className="font-medium text-sm">Analysis Details</h4>
-                      <div className="space-y-3 text-xs text-muted-foreground">
-                        <div>
-                          <span className="font-medium text-blue-600">Suburb Analysis:</span>
-                          <p>{valuationReport.propertyAppreciation.components.baseSuburbRate.justification}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-purple-600">Property Type:</span>
-                          <p>{valuationReport.propertyAppreciation.components.propertyTypeModifier.justification}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-orange-600">Levy Impact:</span>
-                          <p>{valuationReport.propertyAppreciation.components.levyImpact.justification}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-red-600">Condition Assessment:</span>
-                          <p>{valuationReport.propertyAppreciation.components.visualConditionAdjustment.justification}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-green-600">Location Premium:</span>
-                          <p>{valuationReport.propertyAppreciation.components.locationPremium.justification}</p>
-                        </div>
-                      </div>
-                    </div>
+
                   </CardContent>
                 </Card>
               ) : (
