@@ -1633,6 +1633,90 @@ export default function PropertyDetailModal({
                   </CardContent>
                 </Card>
               )}
+
+              {/* Cash Flow Analysis */}
+              <Card>
+                <CardContent className="p-0">
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="cashflow-analysis" className="border-none">
+                      <AccordionTrigger className="px-6 py-4 hover:no-underline [&>svg]:hidden">
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            <TrendingUp className="h-5 w-5" />
+                            <div className="font-semibold">Cash Flow Analysis</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4 shrink-0 transition-transform duration-200 data-[state=open]:rotate-180"
+                            >
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                            <Badge variant="secondary">
+                              Coming Soon
+                            </Badge>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 pb-4">
+                        <div className="py-8 text-center">
+                          <p className="text-muted-foreground">Cash flow analysis content coming soon</p>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+
+              {/* Investment Metrics */}
+              <Card>
+                <CardContent className="p-0">
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="investment-metrics" className="border-none">
+                      <AccordionTrigger className="px-6 py-4 hover:no-underline [&>svg]:hidden">
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            <Calculator className="h-5 w-5" />
+                            <div className="font-semibold">Investment Metrics</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4 shrink-0 transition-transform duration-200 data-[state=open]:rotate-180"
+                            >
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                            <Badge variant="secondary">
+                              Coming Soon
+                            </Badge>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 pb-4">
+                        <div className="py-8 text-center">
+                          <p className="text-muted-foreground">Investment metrics content coming soon</p>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="valuation" className="space-y-4">
