@@ -54,13 +54,14 @@ export async function getComparableSales(
 
   try {
     // FIRST ATTEMPT: Try to get real property listings using Property24 scraper
-    const scrapedProperties = await findComparableProperties(
-      address,
-      propertySize,
-      bedrooms,
-      propertyType || 'apartment',
-      15
-    );
+    // const scrapedProperties = await findComparableProperties(
+    //   address,
+    //   propertySize,
+    //   bedrooms,
+    //   propertyType || 'apartment',
+    //   15
+    // );
+    const scrapedProperties = null; // Temporarily disabled
 
     // If we found any properties, use them (we now have better filtering)
     if (scrapedProperties && scrapedProperties.length > 0) {

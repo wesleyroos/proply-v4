@@ -1,6 +1,6 @@
 import express from "express";
 import { getComparableSales } from "../services/comparableSalesService";
-import { findComparableProperties, scrapeProperty24 } from "../services/property24Scraper";
+// import { findComparableProperties, scrapeProperty24 } from "../services/property24Scraper"; // Temporarily disabled
 
 const router = express.Router();
 
@@ -59,13 +59,14 @@ router.post("/comparable-sales", async (req, res) => {
       try {
         console.log(`Trying to find comparable properties in ${address} using Property24 scraper`);
         
-        const scrapedProperties = await findComparableProperties(
-          address,
-          size,
-          beds,
-          propertyType || 'apartment',
-          15
-        );
+        // const scrapedProperties = await findComparableProperties(
+        //   address,
+        //   size,
+        //   beds,
+        //   propertyType || 'apartment',
+        //   15
+        // );
+        const scrapedProperties = []; // Temporarily disabled
         
         if (scrapedProperties.length > 0) {
           // Successfully found scraped properties! Use them.
