@@ -1484,19 +1484,6 @@ export default function PropertyDetailModal({
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pb-4">
                           <div className="space-y-4">
-                            {/* Annual Appreciation Rate Summary */}
-                            <div className="bg-green-50 p-3 rounded">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-green-700">Annual Appreciation</span>
-                                <span className="text-xl font-bold text-green-800">
-                                  {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}%
-                                </span>
-                              </div>
-                              <p className="text-xs text-green-600 mt-1">
-                                {valuationReport.propertyAppreciation.summary}
-                              </p>
-                            </div>
-
                             {/* Component Breakdown */}
                             <div className="space-y-2">
                               <h4 className="font-medium text-xs">Components</h4>
