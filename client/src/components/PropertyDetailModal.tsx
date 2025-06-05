@@ -899,10 +899,10 @@ export default function PropertyDetailModal({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="agent">Investment</TabsTrigger>
-              <TabsTrigger value="rental">Rental Performance</TabsTrigger>
               <TabsTrigger value="valuation">Valuation</TabsTrigger>
+              <TabsTrigger value="rental">Rental Performance</TabsTrigger>
+              <TabsTrigger value="agent">Investment</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
