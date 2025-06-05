@@ -49,6 +49,23 @@ import {
 } from "lucide-react";
 import { initGoogleMaps } from "@/lib/maps";
 
+// Utility function to create optimized image URLs for faster loading
+const createOptimizedImageUrl = (originalUrl: string, size: 'thumbnail' | 'medium' | 'large' = 'thumbnail') => {
+  if (!originalUrl) return originalUrl;
+  
+  // For CloudFront URLs, we can add query parameters for image optimization
+  if (originalUrl.includes('cloudfront.net')) {
+    const sizeParams = {
+      thumbnail: '?w=300&h=300&fit=crop&q=70',
+      medium: '?w=600&h=600&fit=crop&q=80',
+      large: '?w=1200&h=1200&fit=crop&q=85'
+    };
+    return originalUrl + sizeParams[size];
+  }
+  
+  return originalUrl;
+};
+
 interface PropertyLocation {
   latitude?: number;
   longitude?: number;
@@ -805,9 +822,10 @@ export default function PropertyDetailModal({
                     onClick={() => openFullScreen(index)}
                   >
                     <img
-                      src={image}
+                      src={createOptimizedImageUrl(image, 'thumbnail')}
                       alt={`Property ${property?.address} - Image ${index + 1}`}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
@@ -1607,9 +1625,10 @@ export default function PropertyDetailModal({
           <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
             <div className="relative w-full h-[80vh] bg-black flex items-center justify-center">
               <img
-                src={propertyImages[fullScreenImageIndex]}
+                src={createOptimizedImageUrl(propertyImages[fullScreenImageIndex], 'medium')}
                 alt={`Property ${property?.address} - Full screen ${fullScreenImageIndex + 1}`}
                 className="max-w-full max-h-full object-contain"
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
