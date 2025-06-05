@@ -319,8 +319,20 @@ export default function PropertyDetailModal({
     const images: string[] = [];
     
     // First, try to get images from the stored images array (already processed)
-    if (property.images && property.images.length > 0) {
-      return property.images;
+    if (property.images) {
+      // Handle both parsed arrays and JSON strings from database
+      if (Array.isArray(property.images)) {
+        return property.images;
+      } else if (typeof property.images === 'string') {
+        try {
+          const parsedImages = JSON.parse(property.images);
+          if (Array.isArray(parsedImages)) {
+            return parsedImages;
+          }
+        } catch (e) {
+          console.error('Failed to parse images JSON:', e);
+        }
+      }
     }
     
     // If not available, extract from listingData
