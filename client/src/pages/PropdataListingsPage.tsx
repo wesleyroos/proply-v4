@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock } from "lucide-react";
+import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock, History, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -96,6 +96,13 @@ export default function PropdataListingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isQuickSyncing, setIsQuickSyncing] = useState(false);
   const [isFullSyncing, setIsFullSyncing] = useState(false);
+  const [isSyncLogOpen, setIsSyncLogOpen] = useState(false);
+  const [syncLogs, setSyncLogs] = useState<Array<{
+    timestamp: string;
+    type: 'quick' | 'full' | 'image';
+    message: string;
+    details?: string;
+  }>>([]);
 
   // Query to fetch PropData listings from database
   const { data, isLoading, error, refetch } = useQuery<PropdataListing[]>({
@@ -121,6 +128,17 @@ export default function PropdataListingsPage() {
   
   // Extract listings from response
   const listings = data || [];
+
+  // Function to add sync log entry
+  const addSyncLog = (type: 'quick' | 'full' | 'image', message: string, details?: string) => {
+    const newLog = {
+      timestamp: new Date().toISOString(),
+      type,
+      message,
+      details
+    };
+    setSyncLogs(prev => [newLog, ...prev.slice(0, 19)]); // Keep last 20 entries
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-ZA', {
@@ -285,11 +303,27 @@ export default function PropdataListingsPage() {
             View and manage property listings from PropData integration.
           </p>
         </div>
-        <div className="space-x-2">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsSyncLogOpen(!isSyncLogOpen)}
+            className="relative"
+          >
+            <History className="h-4 w-4 mr-2" />
+            Sync Log
+            {syncLogs.length > 0 && (
+              <Badge className="ml-2 bg-primary text-primary-foreground text-xs px-1 py-0 h-4 min-w-4">
+                {syncLogs.length}
+              </Badge>
+            )}
+            {isSyncLogOpen ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
+          </Button>
           <Button
             variant="outline"
             onClick={async () => {
               try {
+                addSyncLog('image', 'Starting image sync...');
                 const response = await fetch('/api/sync-missing-images', {
                   method: 'POST',
                   credentials: 'include',
@@ -297,13 +331,17 @@ export default function PropdataListingsPage() {
                 
                 if (response.ok) {
                   const result = await response.json();
+                  addSyncLog('image', `Image sync completed: ${result.processedProperties} properties processed, ${result.totalImagesAdded} images added`);
                   alert(`Image sync completed: ${result.processedProperties} properties processed, ${result.totalImagesAdded} images added`);
                   refetch();
                 } else {
-                  alert('Failed to sync images: ' + (await response.text()));
+                  const errorText = await response.text();
+                  addSyncLog('image', 'Image sync failed', errorText);
+                  alert('Failed to sync images: ' + errorText);
                 }
               } catch (error) {
                 console.error('Error syncing images:', error);
+                addSyncLog('image', 'Image sync error', error instanceof Error ? error.message : 'Unknown error');
                 alert('Failed to sync images. See console for details.');
               }
             }}
@@ -315,6 +353,7 @@ export default function PropdataListingsPage() {
             onClick={async () => {
               setIsQuickSyncing(true);
               try {
+                addSyncLog('quick', 'Starting quick sync...');
                 // Use the new quick sync endpoint
                 const response = await fetch('/api/propdata/listings/quick-sync', {
                   method: 'POST',
@@ -326,14 +365,23 @@ export default function PropdataListingsPage() {
                 
                 if (response.ok) {
                   const result = await response.json();
-                  alert(`Quick sync completed: ${result.newListings} new, ${result.updatedListings} updated`);
+                  const message = `Quick sync completed: ${result.newListings} new, ${result.updatedListings} updated`;
+                  let details = '';
+                  if (result.updatedProperties && result.updatedProperties.length > 0) {
+                    details = `Updated properties: ${result.updatedProperties.map((p: any) => `${p.propdataId} (${p.address})`).join(', ')}`;
+                  }
+                  addSyncLog('quick', message, details);
+                  alert(message);
                   refetch();
                   refetchSyncStatus();
                 } else {
-                  alert('Failed to perform quick sync: ' + (await response.text()));
+                  const errorText = await response.text();
+                  addSyncLog('quick', 'Quick sync failed', errorText);
+                  alert('Failed to perform quick sync: ' + errorText);
                 }
               } catch (error) {
                 console.error('Error performing quick sync:', error);
+                addSyncLog('quick', 'Quick sync error', error instanceof Error ? error.message : 'Unknown error');
                 alert('Failed to perform quick sync. See console for details.');
               } finally {
                 setIsQuickSyncing(false);
@@ -399,6 +447,73 @@ export default function PropdataListingsPage() {
           </Button>
         </div>
       </div>
+
+      {/* Sync Log Panel */}
+      {isSyncLogOpen && (
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Sync History
+            </CardTitle>
+            <CardDescription>
+              Detailed log of sync activities and property updates
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {syncLogs.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                No sync activities yet. Click sync buttons to see activity logs here.
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {syncLogs.map((log, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start gap-3 p-3 rounded-lg border bg-card"
+                  >
+                    <div className="flex-shrink-0 mt-1">
+                      {log.type === 'quick' && <RefreshCw className="h-4 w-4 text-blue-500" />}
+                      {log.type === 'full' && <Database className="h-4 w-4 text-green-500" />}
+                      {log.type === 'image' && <ImageIcon className="h-4 w-4 text-purple-500" />}
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge
+                          variant={log.type === 'quick' ? 'default' : log.type === 'full' ? 'secondary' : 'outline'}
+                          className="text-xs"
+                        >
+                          {log.type.charAt(0).toUpperCase() + log.type.slice(1)} Sync
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(log.timestamp), 'MMM dd, HH:mm:ss')}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium">{log.message}</p>
+                      {log.details && (
+                        <p className="text-xs text-muted-foreground mt-1 break-all">
+                          {log.details}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {syncLogs.length > 0 && (
+              <div className="flex justify-center mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSyncLogs([])}
+                >
+                  Clear Log
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Last Sync Status */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
