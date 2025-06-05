@@ -65,7 +65,7 @@ async function syncPropDataListings() {
         const listingData = {
           propdataId: listing.id.toString(),
           agencyId: 1, // Default agency ID - replace with actual agency ID
-          status: "Active", // Default status
+          status: listing.status || "Unknown", // Use actual status from API
           listingData: listing, // Store full API response
           address: [
             listing.street_number,

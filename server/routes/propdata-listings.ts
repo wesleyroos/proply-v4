@@ -145,21 +145,19 @@ router.post("/propdata/listings/sync", async (req, res) => {
       console.log('All available fields:', Object.keys(firstListing).sort());
     }
     
-    // First pass: collect agent IDs from active listings
+    // First pass: collect agent IDs from all listings
     for (const listing of response.results) {
-      if (listing.status && listing.status.toLowerCase() === 'active') {
-        // Collect primary agent ID
-        if (listing.agent && typeof listing.agent === 'number') {
-          agentIds.add(listing.agent);
-        }
-        // Collect additional agent IDs from agents array
-        if (listing.agents && Array.isArray(listing.agents)) {
-          listing.agents.forEach((agentId: any) => {
-            if (typeof agentId === 'number') {
-              agentIds.add(agentId);
-            }
-          });
-        }
+      // Collect primary agent ID
+      if (listing.agent && typeof listing.agent === 'number') {
+        agentIds.add(listing.agent);
+      }
+      // Collect additional agent IDs from agents array
+      if (listing.agents && Array.isArray(listing.agents)) {
+        listing.agents.forEach((agentId: any) => {
+          if (typeof agentId === 'number') {
+            agentIds.add(agentId);
+          }
+        });
       }
     }
 
@@ -169,14 +167,11 @@ router.post("/propdata/listings/sync", async (req, res) => {
       await agentsClient.fetchAgents(Array.from(agentIds)) : 
       new Map();
 
-    // Process each listing, but only include Active properties
+    // Process each listing (all statuses)
     for (const listing of response.results) {
       try {
-        // Skip non-active properties (Archived, Sold, etc.)
-        if (listing.status && listing.status.toLowerCase() !== 'active') {
-          console.log(`Skipping ${listing.status} property: ${listing.id}`);
-          continue;
-        }
+        // Process all property statuses to capture complete market lifecycle
+        console.log(`Processing ${listing.status || 'Unknown'} property: ${listing.id}`);
 
         // With the expand parameter, we should now get full image objects directly
         // No need to fetch detailed listing separately since we're using expand=listing_images,header_images
