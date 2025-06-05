@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { findComparableProperties } from "./property24Scraper";
+// import { findComparableProperties } from "./property24Scraper"; // Temporarily disabled
 
 // Import the interfaces we need
 interface ComparableProperty {

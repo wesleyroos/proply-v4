@@ -4,6 +4,7 @@ import { desc, eq } from "drizzle-orm";
 import { ListingsClient } from "./propdata/listingsClient";
 import { AgentsClient } from "./propdata/agentsClient";
 import { FilesClient } from "./propdata/filesClient";
+import { Property24Scraper } from "./property24Scraper";
 
 class AutoSyncService {
   private syncInterval: NodeJS.Timeout | null = null;
