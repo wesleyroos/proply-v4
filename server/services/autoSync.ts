@@ -3,6 +3,7 @@ import { propdataListings, syncTracking } from "@db/schema";
 import { desc, eq } from "drizzle-orm";
 import { ListingsClient } from "./propdata/listingsClient";
 import { AgentsClient } from "./propdata/agentsClient";
+import { FilesClient } from "./propdata/filesClient";
 
 class AutoSyncService {
   private syncInterval: NodeJS.Timeout | null = null;
@@ -155,7 +156,7 @@ class AutoSyncService {
               province: listing.region || listing.lightstone_data?.province || null,
             },
             features: listing.tags || listing.extras || listing.features || [],
-            images: [],
+            images: [], // Will be updated with actual URLs below
             agentId: listing.agent?.toString() || null,
             agentName: listing.agent && agentDetails.has(listing.agent) ? 
               agentDetails.get(listing.agent)?.full_name || null : null,
@@ -167,6 +168,42 @@ class AutoSyncService {
             updatedAt: new Date(),
             listingDate: listing.created ? new Date(listing.created) : null,
           };
+
+          // Extract and fetch image URLs
+          const imageIds: number[] = [];
+          if (listing.listing_images && Array.isArray(listing.listing_images)) {
+            imageIds.push(...listing.listing_images);
+          }
+          if (listing.header_images && Array.isArray(listing.header_images)) {
+            imageIds.push(...listing.header_images);
+          }
+          if (listing.images && Array.isArray(listing.images)) {
+            listing.images.forEach((img: any) => {
+              if (typeof img === 'number') {
+                imageIds.push(img);
+              } else if (img && typeof img === 'object' && img.id) {
+                imageIds.push(img.id);
+              }
+            });
+          }
+
+          // Fetch actual image URLs if we have image IDs
+          if (imageIds.length > 0) {
+            try {
+              const filesClient = new FilesClient();
+              const imageDetails = await filesClient.fetchMultipleFileDetails(imageIds);
+              const imageUrls = imageDetails
+                .sort((a, b) => (a.order || 0) - (b.order || 0))
+                .map(img => img.file || img.image)
+                .filter((url): url is string => Boolean(url));
+              
+              listingData.images = imageUrls;
+              console.log(`Fetched ${imageUrls.length}/${imageIds.length} images for property ${listing.id}`);
+            } catch (imageError) {
+              console.error(`Failed to fetch images for property ${listing.id}:`, imageError);
+              listingData.images = [];
+            }
+          }
 
           if (existingListing) {
             // Update existing listing
