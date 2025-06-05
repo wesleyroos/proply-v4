@@ -351,13 +351,13 @@ export default function PropertyDetailModal({
 
   const calculateDynamicYield = () => {
     const selectedData = getSelectedShortTermData();
-    if (!selectedData || !property?.price) return 0;
+    if (!selectedData || !property?.price || property.price === 0) return null;
     return parseFloat(((selectedData.annual / property.price) * 100).toFixed(1));
   };
 
   // Calculate long-term yields dynamically based on current rental data
   const calculateLongTermYield = () => {
-    if (!rentalData?.longTerm || !property?.price) return { min: 0, max: 0 };
+    if (!rentalData?.longTerm || !property?.price || property.price === 0) return { min: null, max: null };
     const propertyPrice = parseFloat(property.price.toString());
     const minAnnualRental = rentalData.longTerm.minRental * 12;
     const maxAnnualRental = rentalData.longTerm.maxRental * 12;
@@ -374,6 +374,9 @@ export default function PropertyDetailModal({
     
     const shortTermYield = calculateDynamicYield();
     const longTermYield = calculateLongTermYield();
+    
+    // If yields can't be calculated (valuation property), don't recommend a strategy
+    if (shortTermYield === null || longTermYield.max === null) return null;
     
     return shortTermYield > longTermYield.max ? 'shortTerm' : 'longTerm';
   };
@@ -1199,7 +1202,7 @@ export default function PropertyDetailModal({
                               <div className="flex justify-between text-sm">
                                 <span>Annual yield:</span>
                                 <span className="font-bold text-[#1e40af]">
-                                  {calculateDynamicYield()}%
+                                  {calculateDynamicYield() !== null ? `${calculateDynamicYield()}%` : 'N/A (Valuation)'}
                                 </span>
                               </div>
                               <div className="flex justify-between text-sm">
@@ -1245,7 +1248,12 @@ export default function PropertyDetailModal({
                             <div className="border-t pt-3 space-y-1">
                               <div className="flex justify-between text-sm">
                                 <span>Annual yield:</span>
-                                <span className="font-bold text-gray-600">{calculateLongTermYield().min}%-{calculateLongTermYield().max}%</span>
+                                <span className="font-bold text-gray-600">
+                                  {calculateLongTermYield().min !== null && calculateLongTermYield().max !== null 
+                                    ? `${calculateLongTermYield().min}%-${calculateLongTermYield().max}%`
+                                    : 'N/A (Valuation)'
+                                  }
+                                </span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span>Yearly income:</span>
