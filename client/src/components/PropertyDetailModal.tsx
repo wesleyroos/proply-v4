@@ -1467,55 +1467,6 @@ export default function PropertyDetailModal({
             </TabsContent>
 
             <TabsContent value="agent" className="space-y-4">
-              {/* Basic Investment Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5" />
-                    Investment Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Asking Price:</span>
-                    <span className="font-medium">R{property?.price ? parseFloat(property.price.toString()).toLocaleString() : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Property Type:</span>
-                    <span className="font-medium">{property?.propertyType}</span>
-                  </div>
-                  {property?.floorSize && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Floor Area:</span>
-                      <span className="font-medium">{property.floorSize}m²</span>
-                    </div>
-                  )}
-                  {property?.landSize && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Land Size:</span>
-                      <span className="font-medium">{property.landSize}m²</span>
-                    </div>
-                  )}
-                  {(property?.monthlyLevy || property?.sectionalTitleLevy || property?.homeOwnerLevy) && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Monthly Levy:</span>
-                      <span className="font-medium">R{(property.monthlyLevy || property.sectionalTitleLevy || property.homeOwnerLevy)?.toLocaleString()}</span>
-                    </div>
-                  )}
-                  {property?.agentPhone && (
-                    <div className="flex justify-between items-center border-t pt-2 mt-4">
-                      <span className="text-muted-foreground">Agent Contact:</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{property.agentPhone}</span>
-                        <Button size="sm" variant="outline">
-                          <Phone className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
               {/* Property Appreciation Analysis */}
               {valuationReport?.propertyAppreciation ? (
                 <Card>
