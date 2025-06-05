@@ -41,6 +41,7 @@ import { getRentalPerformance } from './routes/rental-performance';
 import { sendPasswordResetEmail } from './services/email';
 import { sendDemoRequestEmail } from './services/emailService';
 import propdataDebugRouter from './routes/propdata-debug';
+import { imageSyncService } from './services/imageSyncService';
 
 // Extend Express.User to include our schema
 declare global {
@@ -2108,6 +2109,32 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', fetchPropdataRouter);
   app.use('/api', valuationRouter);
   app.use('/api/propdata-debug', propdataDebugRouter);
+  
+  // Image sync endpoint for comprehensive image processing
+  app.post("/api/sync-missing-images", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    try {
+      console.log("Starting comprehensive image sync...");
+      const result = await imageSyncService.syncMissingImages();
+      
+      res.json({
+        success: result.success,
+        message: `Image sync completed: ${result.processedProperties} properties processed, ${result.totalImagesAdded} images added, ${result.errors} errors`,
+        processedProperties: result.processedProperties,
+        totalImagesAdded: result.totalImagesAdded,
+        errors: result.errors
+      });
+    } catch (error) {
+      console.error("Error in image sync endpoint:", error);
+      res.status(500).json({ 
+        error: "Failed to sync images",
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
   
   // Public area rate endpoint that doesn't require authentication
   app.post("/api/area-rate", async (req, res) => {
