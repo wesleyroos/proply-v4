@@ -1522,11 +1522,11 @@ export default function PropertyDetailModal({
                   <CardContent className="p-0">
                     <Accordion type="single" collapsible className="w-full">
                       <AccordionItem value="appreciation-analysis" className="border-none">
-                        <AccordionTrigger className="px-6 py-4 hover:no-underline [&>svg]:ml-0">
+                        <AccordionTrigger className="px-6 py-4 hover:no-underline">
                           <div className="flex items-center gap-3 w-full">
                             <FileBarChart className="h-5 w-5" />
-                            <div className="font-semibold flex-1">Annual Property Appreciation</div>
-                            <Badge variant="secondary">
+                            <div className="font-semibold">Annual Property Appreciation</div>
+                            <Badge variant="secondary" className="ml-auto">
                               {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}%
                             </Badge>
                           </div>
