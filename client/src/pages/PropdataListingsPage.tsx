@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock, History, ChevronDown, ChevronUp, Image } from "lucide-react";
+import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock, History, ChevronDown, ChevronUp, Image, Settings } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -27,6 +27,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { format } from "date-fns";
 import PropertyDetailModal, { PropertyDetailListing } from "@/components/PropertyDetailModal";
@@ -319,132 +325,145 @@ export default function PropdataListingsPage() {
             )}
             {isSyncLogOpen ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
           </Button>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              try {
-                addSyncLog('image', 'Starting image sync...');
-                const response = await fetch('/api/sync-missing-images', {
-                  method: 'POST',
-                  credentials: 'include',
-                });
-                
-                if (response.ok) {
-                  const result = await response.json();
-                  addSyncLog('image', `Image sync completed: ${result.processedProperties} properties processed, ${result.totalImagesAdded} images added`);
-                  alert(`Image sync completed: ${result.processedProperties} properties processed, ${result.totalImagesAdded} images added`);
-                  refetch();
-                } else {
-                  const errorText = await response.text();
-                  addSyncLog('image', 'Image sync failed', errorText);
-                  alert('Failed to sync images: ' + errorText);
-                }
-              } catch (error) {
-                console.error('Error syncing images:', error);
-                addSyncLog('image', 'Image sync error', error instanceof Error ? error.message : 'Unknown error');
-                alert('Failed to sync images. See console for details.');
-              }
-            }}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Sync Images
-          </Button>
-          <Button
-            onClick={async () => {
-              setIsQuickSyncing(true);
-              try {
-                addSyncLog('quick', 'Starting quick sync...');
-                // Use the new quick sync endpoint
-                const response = await fetch('/api/propdata/listings/quick-sync', {
-                  method: 'POST',
-                  credentials: 'include',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                });
-                
-                if (response.ok) {
-                  const result = await response.json();
-                  const message = `Quick sync completed: ${result.newListings} new, ${result.updatedListings} updated`;
-                  let details = '';
-                  if (result.updatedProperties && result.updatedProperties.length > 0) {
-                    details = `Updated properties: ${result.updatedProperties.map((p: any) => `${p.propdataId} (${p.address})`).join(', ')}`;
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="default"
+                className="gap-2"
+                disabled={isQuickSyncing || isFullSyncing}
+              >
+                {(isQuickSyncing || isFullSyncing) ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Settings className="h-4 w-4" />
+                )}
+                {isQuickSyncing ? 'Quick Syncing...' : isFullSyncing ? 'Full Syncing...' : 'Sync'}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={async () => {
+                  try {
+                    addSyncLog('image', 'Starting image sync...');
+                    const response = await fetch('/api/sync-missing-images', {
+                      method: 'POST',
+                      credentials: 'include',
+                    });
+                    
+                    if (response.ok) {
+                      const result = await response.json();
+                      addSyncLog('image', `Image sync completed: ${result.processedProperties} properties processed, ${result.totalImagesAdded} images added`);
+                      alert(`Image sync completed: ${result.processedProperties} properties processed, ${result.totalImagesAdded} images added`);
+                      refetch();
+                    } else {
+                      const errorText = await response.text();
+                      addSyncLog('image', 'Image sync failed', errorText);
+                      alert('Failed to sync images: ' + errorText);
+                    }
+                  } catch (error) {
+                    console.error('Error syncing images:', error);
+                    addSyncLog('image', 'Image sync error', error instanceof Error ? error.message : 'Unknown error');
+                    alert('Failed to sync images. See console for details.');
                   }
-                  addSyncLog('quick', message, details);
-                  alert(message);
-                  refetch();
-                  refetchSyncStatus();
-                } else {
-                  const errorText = await response.text();
-                  addSyncLog('quick', 'Quick sync failed', errorText);
-                  alert('Failed to perform quick sync: ' + errorText);
-                }
-              } catch (error) {
-                console.error('Error performing quick sync:', error);
-                addSyncLog('quick', 'Quick sync error', error instanceof Error ? error.message : 'Unknown error');
-                alert('Failed to perform quick sync. See console for details.');
-              } finally {
-                setIsQuickSyncing(false);
-              }
-            }}
-            variant="default"
-            className="gap-2"
-            disabled={isQuickSyncing || isFullSyncing}
-          >
-            {isQuickSyncing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Database className="h-4 w-4" />
-            )}
-            {isQuickSyncing ? 'Syncing...' : 'Quick Sync'}
-          </Button>
-          
-          <Button
-            onClick={async () => {
-              if (!confirm("This will perform a full sync of ALL PropData listings, which may take some time. Continue?")) {
-                return;
-              }
+                }}
+                className="gap-2"
+              >
+                <Image className="h-4 w-4" />
+                Sync Images
+              </DropdownMenuItem>
               
-              setIsFullSyncing(true);
-              try {
-                const response = await fetch('/api/propdata/listings/sync', {
-                  method: 'POST',
-                  credentials: 'include',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    forceFullSync: true, 
-                    maxPages: 20
-                  }),
-                });
-                
-                if (response.ok) {
-                  const result = await response.json();
-                  alert(`Full sync completed: ${result.message}`);
-                  refetch();
-                  refetchSyncStatus();
-                } else {
-                  alert('Failed to sync with PropData API: ' + (await response.text()));
-                }
-              } catch (error) {
-                console.error('Error syncing with PropData:', error);
-                alert('Failed to sync with PropData API. See console for details.');
-              } finally {
-                setIsFullSyncing(false);
-              }
-            }}
-            variant="outline"
-            className="gap-2"
-            disabled={isQuickSyncing || isFullSyncing}
-          >
-            {isFullSyncing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            {isFullSyncing ? 'Full Syncing...' : 'Full Sync'}
-          </Button>
+              <DropdownMenuItem
+                onClick={async () => {
+                  setIsQuickSyncing(true);
+                  try {
+                    addSyncLog('quick', 'Starting quick sync...');
+                    const response = await fetch('/api/propdata/listings/quick-sync', {
+                      method: 'POST',
+                      credentials: 'include',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                    });
+                    
+                    if (response.ok) {
+                      const result = await response.json();
+                      const message = `Quick sync completed: ${result.newListings} new, ${result.updatedListings} updated`;
+                      let details = '';
+                      if (result.updatedProperties && result.updatedProperties.length > 0) {
+                        details = `Updated properties: ${result.updatedProperties.map((p: any) => `${p.propdataId} (${p.address})`).join(', ')}`;
+                      }
+                      addSyncLog('quick', message, details);
+                      alert(message);
+                      refetch();
+                      refetchSyncStatus();
+                    } else {
+                      const errorText = await response.text();
+                      addSyncLog('quick', 'Quick sync failed', errorText);
+                      alert('Failed to perform quick sync: ' + errorText);
+                    }
+                  } catch (error) {
+                    console.error('Error performing quick sync:', error);
+                    addSyncLog('quick', 'Quick sync error', error instanceof Error ? error.message : 'Unknown error');
+                    alert('Failed to perform quick sync. See console for details.');
+                  } finally {
+                    setIsQuickSyncing(false);
+                  }
+                }}
+                className="gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Quick Sync
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem
+                onClick={async () => {
+                  if (!confirm("This will perform a full sync of ALL PropData listings, which may take some time. Continue?")) {
+                    return;
+                  }
+                  
+                  setIsFullSyncing(true);
+                  try {
+                    addSyncLog('full', 'Starting full sync...');
+                    const response = await fetch('/api/propdata/listings/sync', {
+                      method: 'POST',
+                      credentials: 'include',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        forceFullSync: true, 
+                        maxPages: 20
+                      }),
+                    });
+                    
+                    if (response.ok) {
+                      const result = await response.json();
+                      const message = `Full sync completed: ${result.message}`;
+                      addSyncLog('full', message);
+                      alert(message);
+                      refetch();
+                      refetchSyncStatus();
+                    } else {
+                      const errorText = await response.text();
+                      addSyncLog('full', 'Full sync failed', errorText);
+                      alert('Failed to sync with PropData API: ' + errorText);
+                    }
+                  } catch (error) {
+                    console.error('Error syncing with PropData:', error);
+                    addSyncLog('full', 'Full sync error', error instanceof Error ? error.message : 'Unknown error');
+                    alert('Failed to sync with PropData API. See console for details.');
+                  } finally {
+                    setIsFullSyncing(false);
+                  }
+                }}
+                className="gap-2"
+              >
+                <Database className="h-4 w-4" />
+                Full Sync
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
