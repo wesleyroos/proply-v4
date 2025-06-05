@@ -52,6 +52,8 @@ import {
   Edit,
   Check,
   MapPin,
+  TrendingUp,
+  Calculator,
 } from "lucide-react";
 import { initGoogleMaps } from "@/lib/maps";
 
