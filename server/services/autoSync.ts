@@ -169,8 +169,16 @@ class AutoSyncService {
               (listing.agent && agentDetails.has(listing.agent) ? 
                 agentDetails.get(listing.agent)?.mobile || null : null),
             
-            // Levy fields from PropData API
-            monthlyLevy: listing.monthly_levy && parseFloat(listing.monthly_levy) > 0 ? listing.monthly_levy : null,
+            // Levy fields from PropData API - Debug logging
+            monthlyLevy: (() => {
+              console.log(`Property ${listing.id} levy data:`, {
+                monthly_levy: listing.monthly_levy,
+                sectional_title_levy: listing.sectional_title_levy,
+                special_levy: listing.special_levy,
+                home_owner_levy: listing.home_owner_levy
+              });
+              return listing.monthly_levy && parseFloat(listing.monthly_levy) > 0 ? listing.monthly_levy : null;
+            })(),
             sectionalTitleLevy: listing.sectional_title_levy && parseFloat(listing.sectional_title_levy) > 0 ? listing.sectional_title_levy : null,
             specialLevy: listing.special_levy && parseFloat(listing.special_levy) > 0 ? listing.special_levy : null,
             homeOwnerLevy: listing.home_owner_levy && parseFloat(listing.home_owner_levy) > 0 ? listing.home_owner_levy : null,
