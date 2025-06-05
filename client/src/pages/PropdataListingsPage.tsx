@@ -210,10 +210,14 @@ export default function PropdataListingsPage() {
         return 'bg-green-100 text-green-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
-      case 'processing':
+      case 'sold':
         return 'bg-blue-100 text-blue-800';
-      case 'archived':
-        return 'bg-gray-100 text-gray-800';
+      case 'withdrawn':
+        return 'bg-red-100 text-red-800';
+      case 'suspended':
+        return 'bg-orange-100 text-orange-800';
+      case 'expired':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -377,8 +381,10 @@ export default function PropdataListingsPage() {
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="sold">Sold</SelectItem>
+                <SelectItem value="withdrawn">Withdrawn</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
               </SelectContent>
             </Select>
 
