@@ -26,6 +26,36 @@ router.get("/propdata/listings", async (req, res) => {
   }
 });
 
+// GET /api/propdata/listings/sync-status - Get last sync information
+router.get("/propdata/listings/sync-status", async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const lastSync = await autoSyncService.getLastSyncInfo();
+    return res.json(lastSync);
+  } catch (error) {
+    console.error("Error fetching sync status:", error);
+    return res.status(500).json({ error: "Failed to fetch sync status" });
+  }
+});
+
+// POST /api/propdata/listings/quick-sync - Trigger manual quick sync
+router.post("/propdata/listings/quick-sync", async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const result = await autoSyncService.performQuickSync();
+    return res.json(result);
+  } catch (error) {
+    console.error("Error performing quick sync:", error);
+    return res.status(500).json({ error: "Failed to perform quick sync" });
+  }
+});
+
 // POST /api/propdata/listings/sync - Sync listings from PropData API
 router.post("/propdata/listings/sync", async (req, res) => {
   try {
@@ -216,6 +246,27 @@ router.post("/propdata/listings/sync", async (req, res) => {
           console.log(`Progress: ${processedCount}/${totalListings} (${progress}%) - New: ${newCount}, Updated: ${updatedCount}, Errors: ${errorCount}`);
         }
 
+        // Check if listing already exists and if address was manually edited
+        const [existingListingCheck] = await db
+          .select({ 
+            id: propdataListings.id, 
+            address: propdataListings.address,
+            addressManuallyEdited: propdataListings.addressManuallyEdited 
+          })
+          .from(propdataListings)
+          .where(eq(propdataListings.propdataId, listing.id.toString()))
+          .limit(1);
+
+        // Build address from API data
+        const apiAddress = [
+          listing.street_number,
+          listing.street_name,
+          // Try multiple sources for location data
+          listing.suburb || listing.lightstone_data?.townName,
+          listing.city || listing.lightstone_data?.township,
+          listing.region || listing.lightstone_data?.province
+        ].filter(Boolean).join(", ");
+
         // Extract key fields from the listing with proper PropData API field mapping
         const listingData = {
           propdataId: listing.id.toString(),
@@ -223,16 +274,10 @@ router.post("/propdata/listings/sync", async (req, res) => {
           status: listing.status || "Active",
           listingData: listing, // Store full API response
           
-          // Build comprehensive address from available PropData fields
-          // Handle both direct fields and nested location data
-          address: [
-            listing.street_number,
-            listing.street_name,
-            // Try multiple sources for location data
-            listing.suburb || listing.lightstone_data?.townName,
-            listing.city || listing.lightstone_data?.township,
-            listing.region || listing.lightstone_data?.province
-          ].filter(Boolean).join(", "),
+          // Preserve manually edited address, otherwise use API address
+          address: existingListingCheck?.addressManuallyEdited ? 
+            existingListingCheck.address : 
+            apiAddress,
           
           // Use asking_price as primary, fallback to price
           price: (parseFloat(listing.asking_price || listing.price) || 0).toString(),
@@ -402,14 +447,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
           }
         }
 
-        // Check if listing already exists
-        const existingListing = await db
-          .select({ id: propdataListings.id })
-          .from(propdataListings)
-          .where(eq(propdataListings.propdataId, listingData.propdataId))
-          .limit(1);
-
-        if (existingListing.length > 0) {
+        if (existingListingCheck) {
           // Update existing listing
           await db
             .update(propdataListings)
@@ -420,7 +458,10 @@ router.post("/propdata/listings/sync", async (req, res) => {
           // Insert new listing
           await db
             .insert(propdataListings)
-            .values(listingData);
+            .values({
+              ...listingData,
+              createdAt: new Date(),
+            });
           newCount++;
         }
       } catch (listingError) {

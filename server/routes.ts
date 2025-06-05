@@ -2338,11 +2338,12 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: 'Address is required' });
       }
 
-      // Update the address in propdata_listings table
+      // Update the address in propdata_listings table and mark as manually edited
       const result = await db
         .update(propdataListings)
         .set({ 
           address: address.trim(),
+          addressManuallyEdited: true,
           updatedAt: new Date()
         })
         .where(eq(propdataListings.propdataId, propdataId))
