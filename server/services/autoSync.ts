@@ -132,13 +132,7 @@ class AutoSyncService {
             listing.region || listing.lightstone_data?.province
           ].filter(Boolean).join(", ");
 
-          // Debug logging for agent contact data
-          if (listing.managing_agent_email || listing.managing_agent_telephone_number) {
-            console.log(`Agent contact data for property ${listing.id}:`, {
-              managing_agent_email: listing.managing_agent_email,
-              managing_agent_telephone_number: listing.managing_agent_telephone_number
-            });
-          }
+
 
           const listingData = {
             propdataId: listing.id.toString(),
