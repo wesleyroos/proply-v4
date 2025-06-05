@@ -57,7 +57,12 @@ export default function Sidebar() {
       icon: Building2,
       href: "/dashboard/rent-compare",
     },
-
+    {
+      title: "Deal Score",
+      icon: Target,
+      href: "/dashboard/deal-score",
+      adminOnly: true,
+    },
     {
       title: "Properties",
       icon: Library,

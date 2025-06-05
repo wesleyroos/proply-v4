@@ -37,7 +37,7 @@ import { ToastDemo } from "./components/ToastDemo";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotificationsMenu from "./components/NotificationsMenu";
 import AirbnbYieldCalculator from "./pages/AirbnbYieldCalculator";
-
+import DealScorePage from "./pages/DealScorePage";
 import DealScorePublicPage from "./pages/DealScorePublicPage";
 import DealScoreReportPage from "./pages/DealScoreReportPage";
 import RiskIndexPage from "./pages/RiskIndexPage";
@@ -253,7 +253,7 @@ function App() {
             <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
             <Route path="/dashboard/market-intelligence" component={() => <ProtectedRoute component={MarketIntelligencePage} />} />
             <Route path="/dashboard/rent-compare" component={() => <ProtectedRoute component={ComparisonPage} />} />
-
+            <Route path="/dashboard/deal-score" component={() => <ProtectedRoute component={DealScorePage} />} />
             <Route path="/dashboard/toast-demo" component={() => <ProtectedRoute component={ToastDemo} />} />
             <Route path="/properties" component={() => <ProtectedRoute component={PropertiesPage} />} />
             <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />

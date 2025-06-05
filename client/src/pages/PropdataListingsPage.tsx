@@ -66,15 +66,11 @@ interface PropdataListing {
   listingData?: any; // Raw PropData API response
 }
 
-interface PaginatedResponse {
-  listings: PropdataListing[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-    hasNext: boolean;
-    hasPrevious: boolean;
-  };
+interface ApiResponse {
+  total: number;
+  results: PropdataListing[];
+  next?: string;
+  previous?: string;
 }
 
 type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate' | 'agentName';
@@ -97,31 +93,9 @@ export default function PropdataListingsPage() {
   const [isQuickSyncing, setIsQuickSyncing] = useState(false);
   const [isFullSyncing, setIsFullSyncing] = useState(false);
 
-  // Query to fetch PropData listings from database with pagination
-  const { data: paginatedData, isLoading, error, refetch } = useQuery<PaginatedResponse>({
-    queryKey: ['/api/propdata/listings', currentPage, itemsPerPage, sortConfig, statusFilter, propertyTypeFilter, agentFilter, searchTerm],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: itemsPerPage.toString(),
-        sortBy: sortConfig.field,
-        sortOrder: sortConfig.direction,
-        status: statusFilter,
-        propertyType: propertyTypeFilter,
-        agent: agentFilter,
-        search: searchTerm
-      });
-      
-      const response = await fetch(`/api/propdata/listings?${params}`, {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch listings');
-      }
-      
-      return response.json();
-    },
+  // Query to fetch PropData listings from database
+  const { data, isLoading, error, refetch } = useQuery<PropdataListing[]>({
+    queryKey: ['/api/propdata/listings'],
     enabled: !!user?.isAdmin, // Only fetch if user is admin
   });
 
@@ -141,17 +115,8 @@ export default function PropdataListingsPage() {
     refetchInterval: 30000, // Refetch every 30 seconds to show updated sync status
   });
   
-  // Extract listings and pagination from response
-  const listings = paginatedData?.listings || [];
-  const pagination = paginatedData?.pagination;
-  
-  // Reset page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, propertyTypeFilter, agentFilter]);
-
-  // Current data is directly from backend pagination
-  const currentData = listings;
+  // Extract listings from response
+  const listings = data || [];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-ZA', {
@@ -169,7 +134,6 @@ export default function PropdataListingsPage() {
           ? 'desc'
           : 'asc',
     }));
-    setCurrentPage(1); // Reset to first page when sorting changes
   };
 
   const sortData = (data: PropdataListing[]) => {
@@ -570,7 +534,7 @@ export default function PropdataListingsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {currentData.map((listing) => (
+                    {getPageData().map((listing) => (
                       <TableRow key={listing.id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
@@ -703,27 +667,27 @@ export default function PropdataListingsPage() {
                 </Table>
               </div>
               
-              {pagination && pagination.totalPages > 1 && (
+              {getTotalPages() > 1 && (
                 <div className="mt-4 flex justify-center w-full">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={!pagination.hasPrevious}
+                      disabled={currentPage === 1}
                     >
                       Previous
                     </Button>
                     
                     <span className="text-sm text-muted-foreground px-2">
-                      Page {pagination.currentPage} of {pagination.totalPages}
+                      Page {currentPage} of {getTotalPages()}
                     </span>
                     
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(prev => prev + 1)}
-                      disabled={!pagination.hasNext}
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, getTotalPages()))}
+                      disabled={currentPage === getTotalPages()}
                     >
                       Next
                     </Button>

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@db";
 import { propdataListings, syncTracking } from "@db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { ListingsClient } from "../services/propdata/listingsClient";
 import { AgentsClient } from "../services/propdata/agentsClient";
 import { FilesClient } from "../services/propdata/filesClient";
@@ -9,78 +9,15 @@ import { autoSyncService } from "../services/autoSync";
 
 const router = Router();
 
-// GET /api/propdata/listings - Fetch PropData listings with pagination
+// GET /api/propdata/listings - Fetch all PropData listings
 router.get("/propdata/listings", async (req, res) => {
   try {
     if (!req.user?.isAdmin) {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    // Parse pagination parameters
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const offset = (page - 1) * limit;
-
-    // Parse filters
-    const status = req.query.status as string;
-    const propertyType = req.query.propertyType as string;
-    const search = req.query.search as string;
-    const agent = req.query.agent as string;
-
-    // Parse sorting
-    const sortBy = req.query.sortBy as string || 'listingDate';
-    const sortOrder = req.query.sortOrder as string || 'desc';
-
-    // Build where conditions
-    let whereConditions: any[] = [];
-    
-    if (status && status !== 'all') {
-      whereConditions.push(eq(propdataListings.status, status));
-    }
-    
-    if (propertyType && propertyType !== 'all') {
-      whereConditions.push(eq(propdataListings.propertyType, propertyType));
-    }
-
-    if (agent && agent !== 'all') {
-      whereConditions.push(eq(propdataListings.agentName, agent));
-    }
-
-    // For search, we'll do a simple ILIKE on address (can be enhanced later)
-    if (search) {
-      // Note: This is a simplified search - in production you might want full-text search
-      whereConditions.push(
-        // Using raw SQL for ILIKE since drizzle doesn't have a direct equivalent
-        // This is a simplified approach - you might want to use a proper search solution
-      );
-    }
-
-    // Get total count for pagination
-    const countResult = await db.select({ count: sql`count(*)` }).from(propdataListings);
-    const totalCount = parseInt(countResult[0].count as string);
-
-    console.log(`Pagination debug: page=${page}, limit=${limit}, offset=${offset}, totalCount=${totalCount}`);
-
-    // Build the query with sorting and pagination
-    let orderByClause;
-    if (sortBy === 'listingDate') {
-      orderByClause = sortOrder === 'desc' ? desc(propdataListings.listingDate) : propdataListings.listingDate;
-    } else if (sortBy === 'price') {
-      orderByClause = sortOrder === 'desc' ? desc(propdataListings.price) : propdataListings.price;
-    } else if (sortBy === 'address') {
-      orderByClause = sortOrder === 'desc' ? desc(propdataListings.address) : propdataListings.address;
-    } else {
-      orderByClause = desc(propdataListings.listingDate); // Default sort
-    }
-
-    // Apply pagination and sorting
-    const listings = await db.select()
-      .from(propdataListings)
-      .orderBy(orderByClause)
-      .limit(limit)
-      .offset(offset);
-
-    console.log(`Query returned ${listings.length} listings for page ${page}`);
+    // Query database for PropData listings, ordered by actual listing date
+    const listings = await db.select().from(propdataListings).orderBy(desc(propdataListings.listingDate));
     
     // Parse JSON fields in the response
     const parsedListings = listings.map(listing => ({
@@ -114,16 +51,7 @@ router.get("/propdata/listings", async (req, res) => {
         (listing.features || [])
     }));
     
-    return res.json({
-      listings: parsedListings,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount: totalCount,
-        hasNext: offset + limit < totalCount,
-        hasPrevious: page > 1
-      }
-    });
+    return res.json(parsedListings);
   } catch (error) {
     console.error("Error fetching PropData listings:", error);
     return res.status(500).json({ error: "Failed to fetch PropData listings" });
