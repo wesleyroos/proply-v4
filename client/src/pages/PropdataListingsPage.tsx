@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye } from "lucide-react";
+import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -342,6 +342,7 @@ export default function PropdataListingsPage() {
                   const result = await response.json();
                   alert(`Full sync completed: ${result.message}`);
                   refetch();
+                  refetchSyncStatus();
                 } else {
                   alert('Failed to sync with PropData API: ' + (await response.text()));
                 }
@@ -364,6 +365,29 @@ export default function PropdataListingsPage() {
             {isFullSyncing ? 'Full Syncing...' : 'Full Sync'}
           </Button>
         </div>
+      </div>
+
+      {/* Last Sync Status */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Clock className="h-4 w-4" />
+        {syncStatus ? (
+          <span>
+            Last sync: {format(new Date(syncStatus.completedAt || syncStatus.startedAt), 'PPp')}
+            {syncStatus.status === 'running' && (
+              <span className="ml-2 text-blue-600">(Auto-sync in progress...)</span>
+            )}
+            {syncStatus.status === 'completed' && syncStatus.newListings !== undefined && (
+              <span className="ml-2 text-green-600">
+                ({syncStatus.newListings} new, {syncStatus.updatedListings} updated)
+              </span>
+            )}
+          </span>
+        ) : (
+          <span>No sync history available</span>
+        )}
+        <span className="ml-4 text-xs">
+          Auto-sync runs every 5 minutes
+        </span>
       </div>
 
       <Card>

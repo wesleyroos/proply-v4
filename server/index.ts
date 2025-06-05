@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createServer } from "net";
 import aiRouter from './routes/ai';
+import './services/autoSync'; // Initialize auto-sync service
 
 const app = express();
 
