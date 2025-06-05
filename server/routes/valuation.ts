@@ -212,10 +212,10 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
       longTerm: valuationReport.rentalEstimates?.longTerm ? {
         minRental: valuationReport.rentalEstimates.longTerm.minMonthlyRental,
         maxRental: valuationReport.rentalEstimates.longTerm.maxMonthlyRental,
-        minYield: price ? parseFloat(((valuationReport.rentalEstimates.longTerm.minMonthlyRental * 12) / price * 100).toFixed(1)) : 0,
-        maxYield: price ? parseFloat(((valuationReport.rentalEstimates.longTerm.maxMonthlyRental * 12) / price * 100).toFixed(1)) : 0,
+        minYield: price && price > 0 ? parseFloat(((valuationReport.rentalEstimates.longTerm.minMonthlyRental * 12) / price * 100).toFixed(1)) : null,
+        maxYield: price && price > 0 ? parseFloat(((valuationReport.rentalEstimates.longTerm.maxMonthlyRental * 12) / price * 100).toFixed(1)) : null,
         managementFee: "8-10%",
-        reasoning: valuationReport.rentalEstimates.longTerm.reasoning
+        reasoning: valuationReport.rentalEstimates.longTerm.reasoning || (price === 0 ? "Yield cannot be calculated for valuation properties (no asking price)" : "AI-generated rental estimate")
       } : null
     };
 

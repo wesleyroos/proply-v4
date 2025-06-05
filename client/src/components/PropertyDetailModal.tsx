@@ -239,16 +239,26 @@ export default function PropertyDetailModal({
         console.log('Raw rental data received:', rawRentalData);
         
         // Transform database format to frontend format
+        let shortTermData = null;
+        if (rawRentalData.short_term_data) {
+          const parsedData = typeof rawRentalData.short_term_data === 'string' ? 
+            JSON.parse(rawRentalData.short_term_data) : 
+            rawRentalData.short_term_data;
+          
+          // Clean up infinity values in short-term data
+          if (parsedData && typeof parsedData.yield === 'number' && !isFinite(parsedData.yield)) {
+            parsedData.yield = null;
+          }
+          shortTermData = parsedData;
+        }
+        
         const transformedData = {
-          shortTerm: rawRentalData.short_term_data ? 
-            (typeof rawRentalData.short_term_data === 'string' ? 
-              JSON.parse(rawRentalData.short_term_data) : 
-              rawRentalData.short_term_data) : null,
+          shortTerm: shortTermData,
           longTerm: rawRentalData.long_term_min_rental ? {
             minRental: parseFloat(rawRentalData.long_term_min_rental),
             maxRental: parseFloat(rawRentalData.long_term_max_rental),
-            minYield: parseFloat(rawRentalData.long_term_min_yield || '0'),
-            maxYield: parseFloat(rawRentalData.long_term_max_yield || '0'),
+            minYield: rawRentalData.long_term_min_yield && rawRentalData.long_term_min_yield !== 'Infinity' ? parseFloat(rawRentalData.long_term_min_yield) : null,
+            maxYield: rawRentalData.long_term_max_yield && rawRentalData.long_term_max_yield !== 'Infinity' ? parseFloat(rawRentalData.long_term_max_yield) : null,
             managementFee: '8-10%',
             reasoning: rawRentalData.long_term_reasoning
           } : null
