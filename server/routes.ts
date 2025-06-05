@@ -40,6 +40,7 @@ import valuationRouter from './routes/valuation';
 import { getRentalPerformance } from './routes/rental-performance';
 import { sendPasswordResetEmail } from './services/email';
 import { sendDemoRequestEmail } from './services/emailService';
+import propdataDebugRouter from './routes/propdata-debug';
 
 // Extend Express.User to include our schema
 declare global {
@@ -108,7 +109,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/area-rate" || // New public area rate endpoint
       req.path === "/demo-request" || // Demo request endpoint
       req.path === "/download-pdf" || // PDF download endpoint
-      req.path === "/download-property-analysis-pdf" // Property analysis PDF download endpoint
+      req.path === "/download-property-analysis-pdf" || // Property analysis PDF download endpoint
+      req.path.startsWith("/propdata-debug/") // PropData debug endpoint
     ) {
       return next();
     }
@@ -2105,6 +2107,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', propdataListingsRouter);
   app.use('/api', fetchPropdataRouter);
   app.use('/api', valuationRouter);
+  app.use('/api/propdata-debug', propdataDebugRouter);
   
   // Public area rate endpoint that doesn't require authentication
   app.post("/api/area-rate", async (req, res) => {
