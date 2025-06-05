@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@db";
 import { propdataListings, syncTracking } from "@db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { ListingsClient } from "../services/propdata/listingsClient";
 import { AgentsClient } from "../services/propdata/agentsClient";
 import { FilesClient } from "../services/propdata/filesClient";
@@ -55,9 +55,11 @@ router.get("/propdata/listings", async (req, res) => {
       );
     }
 
-    // Get total count for pagination (simplified approach)
-    const allListingsCount = await db.select().from(propdataListings);
-    const totalCount = allListingsCount.length;
+    // Get total count for pagination
+    const countResult = await db.select({ count: sql`count(*)` }).from(propdataListings);
+    const totalCount = parseInt(countResult[0].count as string);
+
+    console.log(`Pagination debug: page=${page}, limit=${limit}, offset=${offset}, totalCount=${totalCount}`);
 
     // Build the query with sorting and pagination
     let orderByClause;
@@ -77,6 +79,8 @@ router.get("/propdata/listings", async (req, res) => {
       .orderBy(orderByClause)
       .limit(limit)
       .offset(offset);
+
+    console.log(`Query returned ${listings.length} listings for page ${page}`);
     
     // Parse JSON fields in the response
     const parsedListings = listings.map(listing => ({
