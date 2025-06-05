@@ -1523,14 +1523,12 @@ export default function PropertyDetailModal({
                     <Accordion type="single" collapsible className="w-full">
                       <AccordionItem value="appreciation-analysis" className="border-none">
                         <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <FileBarChart className="h-5 w-5" />
-                            <div className="text-left">
-                              <div className="font-semibold">Property Appreciation Analysis</div>
-                              <div className="text-sm text-muted-foreground">
-                                {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}% annual appreciation forecast
-                              </div>
-                            </div>
+                            <div className="font-semibold">Annual Property Appreciation</div>
+                            <Badge variant="secondary" className="ml-auto">
+                              {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}%
+                            </Badge>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pb-4">
