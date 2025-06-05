@@ -1001,34 +1001,41 @@ export default function PropertyDetailModal({
                           </div>
                         </div>
                         
-                        {/* Levy Information */}
-                        {(() => {
-                          const levies = [];
-                          if (property?.monthlyLevy && parseFloat(property.monthlyLevy.toString()) > 0) {
-                            levies.push(`Monthly: R ${parseFloat(property.monthlyLevy.toString()).toLocaleString()}`);
-                          }
-                          if (property?.sectionalTitleLevy && parseFloat(property.sectionalTitleLevy.toString()) > 0) {
-                            levies.push(`Sectional: R ${parseFloat(property.sectionalTitleLevy.toString()).toLocaleString()}`);
-                          }
-                          if (property?.specialLevy && parseFloat(property.specialLevy.toString()) > 0) {
-                            levies.push(`Special: R ${parseFloat(property.specialLevy.toString()).toLocaleString()}`);
-                          }
-                          if (property?.homeOwnerLevy && parseFloat(property.homeOwnerLevy.toString()) > 0) {
-                            levies.push(`HOA: R ${parseFloat(property.homeOwnerLevy.toString()).toLocaleString()}`);
-                          }
-                          
-                          if (levies.length > 0) {
-                            return (
-                              <div>
-                                <span className="text-muted-foreground text-sm">Levies</span>
-                                <div className="font-medium">
-                                  {levies.join(', ')}
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
+                        {/* Levy Information - Always show */}
+                        <div>
+                          <span className="text-muted-foreground text-sm">Levies</span>
+                          <div className="font-medium">
+                            {(() => {
+                              const levies = [];
+                              
+                              // Monthly Levy
+                              const monthlyLevy = property?.monthlyLevy && parseFloat(property.monthlyLevy.toString()) > 0 
+                                ? `R ${parseFloat(property.monthlyLevy.toString()).toLocaleString()}` 
+                                : 'N/A';
+                              levies.push(`Monthly: ${monthlyLevy}`);
+                              
+                              // Sectional Title Levy
+                              const sectionalLevy = property?.sectionalTitleLevy && parseFloat(property.sectionalTitleLevy.toString()) > 0 
+                                ? `R ${parseFloat(property.sectionalTitleLevy.toString()).toLocaleString()}` 
+                                : 'N/A';
+                              levies.push(`Sectional: ${sectionalLevy}`);
+                              
+                              // Special Levy
+                              const specialLevy = property?.specialLevy && parseFloat(property.specialLevy.toString()) > 0 
+                                ? `R ${parseFloat(property.specialLevy.toString()).toLocaleString()}` 
+                                : 'N/A';
+                              levies.push(`Special: ${specialLevy}`);
+                              
+                              // HOA Levy
+                              const hoaLevy = property?.homeOwnerLevy && parseFloat(property.homeOwnerLevy.toString()) > 0 
+                                ? `R ${parseFloat(property.homeOwnerLevy.toString()).toLocaleString()}` 
+                                : 'N/A';
+                              levies.push(`HOA: ${hoaLevy}`);
+                              
+                              return levies.join(', ');
+                            })()}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
