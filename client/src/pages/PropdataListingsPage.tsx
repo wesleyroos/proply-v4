@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock, History, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock, History, ChevronDown, ChevronUp, Image } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -475,7 +475,7 @@ export default function PropdataListingsPage() {
                     <div className="flex-shrink-0 mt-1">
                       {log.type === 'quick' && <RefreshCw className="h-4 w-4 text-blue-500" />}
                       {log.type === 'full' && <Database className="h-4 w-4 text-green-500" />}
-                      {log.type === 'image' && <ImageIcon className="h-4 w-4 text-purple-500" />}
+                      {log.type === 'image' && <Image className="h-4 w-4 text-purple-500" />}
                     </div>
                     <div className="flex-grow min-w-0">
                       <div className="flex items-center gap-2 mb-1">
