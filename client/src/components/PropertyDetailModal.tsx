@@ -20,6 +20,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1513,126 +1519,134 @@ export default function PropertyDetailModal({
               {/* Property Appreciation Analysis */}
               {valuationReport?.propertyAppreciation ? (
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileBarChart className="h-5 w-5" />
-                      Property Appreciation Analysis
-                    </CardTitle>
-                    <CardDescription>
-                      Annual appreciation forecast based on market analysis
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Annual Appreciation Rate Summary */}
-                    <div className="bg-green-50 p-3 rounded">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-green-700">Annual Appreciation</span>
-                        <span className="text-xl font-bold text-green-800">
-                          {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}%
-                        </span>
-                      </div>
-                      <p className="text-xs text-green-600 mt-1">
-                        {valuationReport.propertyAppreciation.summary}
-                      </p>
-                    </div>
+                  <CardContent className="p-0">
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value="appreciation-analysis" className="border-none">
+                        <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                          <div className="flex items-center gap-2">
+                            <FileBarChart className="h-5 w-5" />
+                            <div className="text-left">
+                              <div className="font-semibold">Property Appreciation Analysis</div>
+                              <div className="text-sm text-muted-foreground">
+                                {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}% annual appreciation forecast
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-4">
+                          <div className="space-y-4">
+                            {/* Annual Appreciation Rate Summary */}
+                            <div className="bg-green-50 p-3 rounded">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-green-700">Annual Appreciation</span>
+                                <span className="text-xl font-bold text-green-800">
+                                  {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}%
+                                </span>
+                              </div>
+                              <p className="text-xs text-green-600 mt-1">
+                                {valuationReport.propertyAppreciation.summary}
+                              </p>
+                            </div>
 
-                    {/* Component Breakdown */}
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-xs">Components</h4>
-                      
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="border-b">
-                              <th className="text-left py-1 px-2 font-medium">Component</th>
-                              <th className="text-left py-1 px-2 font-medium">Analysis</th>
-                              <th className="text-right py-1 px-2 font-medium">Impact</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y">
-                            <tr className="hover:bg-gray-50">
-                              <td className="py-2 px-2 font-medium">Base Suburb Rate</td>
-                              <td className="py-2 px-2 text-muted-foreground">
-                                {valuationReport.propertyAppreciation.components.baseSuburbRate.justification}
-                              </td>
-                              <td className="py-2 px-2 text-right font-medium text-blue-600">
-                                {valuationReport.propertyAppreciation.components.baseSuburbRate.rate > 0 ? '+' : ''}
-                                {valuationReport.propertyAppreciation.components.baseSuburbRate.rate.toFixed(1)}%
-                              </td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="py-2 px-2 font-medium">Property Type</td>
-                              <td className="py-2 px-2 text-muted-foreground">
-                                {valuationReport.propertyAppreciation.components.propertyTypeModifier.justification}
-                              </td>
-                              <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment > 0 ? '+' : ''}
-                                {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment.toFixed(1)}%
-                              </td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="py-2 px-2 font-medium">Levy (R{valuationReport.propertyAppreciation.components.levyImpact.levyPerSquareMeter.toFixed(0)}/m²)</td>
-                              <td className="py-2 px-2 text-muted-foreground">
-                                {valuationReport.propertyAppreciation.components.levyImpact.justification}
-                              </td>
-                              <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.levyImpact.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {valuationReport.propertyAppreciation.components.levyImpact.adjustment > 0 ? '+' : ''}
-                                {valuationReport.propertyAppreciation.components.levyImpact.adjustment.toFixed(1)}%
-                              </td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="py-2 px-2 font-medium">Condition</td>
-                              <td className="py-2 px-2 text-muted-foreground">
-                                {valuationReport.propertyAppreciation.components.visualConditionAdjustment.justification}
-                              </td>
-                              <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment > 0 ? '+' : ''}
-                                {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment.toFixed(1)}%
-                              </td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="py-2 px-2 font-medium">Location</td>
-                              <td className="py-2 px-2 text-muted-foreground">
-                                {valuationReport.propertyAppreciation.components.locationPremium.justification}
-                              </td>
-                              <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.locationPremium.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {valuationReport.propertyAppreciation.components.locationPremium.adjustment > 0 ? '+' : ''}
-                                {valuationReport.propertyAppreciation.components.locationPremium.adjustment.toFixed(1)}%
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+                            {/* Component Breakdown */}
+                            <div className="space-y-2">
+                              <h4 className="font-medium text-xs">Components</h4>
+                              
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="border-b">
+                                      <th className="text-left py-1 px-2 font-medium">Component</th>
+                                      <th className="text-left py-1 px-2 font-medium">Analysis</th>
+                                      <th className="text-right py-1 px-2 font-medium">Impact</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y">
+                                    <tr className="hover:bg-gray-50">
+                                      <td className="py-2 px-2 font-medium">Base Suburb Rate</td>
+                                      <td className="py-2 px-2 text-muted-foreground">
+                                        {valuationReport.propertyAppreciation.components.baseSuburbRate.justification}
+                                      </td>
+                                      <td className="py-2 px-2 text-right font-medium text-blue-600">
+                                        {valuationReport.propertyAppreciation.components.baseSuburbRate.rate > 0 ? '+' : ''}
+                                        {valuationReport.propertyAppreciation.components.baseSuburbRate.rate.toFixed(1)}%
+                                      </td>
+                                    </tr>
+                                    <tr className="hover:bg-gray-50">
+                                      <td className="py-2 px-2 font-medium">Property Type</td>
+                                      <td className="py-2 px-2 text-muted-foreground">
+                                        {valuationReport.propertyAppreciation.components.propertyTypeModifier.justification}
+                                      </td>
+                                      <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment > 0 ? '+' : ''}
+                                        {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment.toFixed(1)}%
+                                      </td>
+                                    </tr>
+                                    <tr className="hover:bg-gray-50">
+                                      <td className="py-2 px-2 font-medium">Levy (R{valuationReport.propertyAppreciation.components.levyImpact.levyPerSquareMeter.toFixed(0)}/m²)</td>
+                                      <td className="py-2 px-2 text-muted-foreground">
+                                        {valuationReport.propertyAppreciation.components.levyImpact.justification}
+                                      </td>
+                                      <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.levyImpact.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {valuationReport.propertyAppreciation.components.levyImpact.adjustment > 0 ? '+' : ''}
+                                        {valuationReport.propertyAppreciation.components.levyImpact.adjustment.toFixed(1)}%
+                                      </td>
+                                    </tr>
+                                    <tr className="hover:bg-gray-50">
+                                      <td className="py-2 px-2 font-medium">Condition</td>
+                                      <td className="py-2 px-2 text-muted-foreground">
+                                        {valuationReport.propertyAppreciation.components.visualConditionAdjustment.justification}
+                                      </td>
+                                      <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment > 0 ? '+' : ''}
+                                        {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment.toFixed(1)}%
+                                      </td>
+                                    </tr>
+                                    <tr className="hover:bg-gray-50">
+                                      <td className="py-2 px-2 font-medium">Location</td>
+                                      <td className="py-2 px-2 text-muted-foreground">
+                                        {valuationReport.propertyAppreciation.components.locationPremium.justification}
+                                      </td>
+                                      <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.locationPremium.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {valuationReport.propertyAppreciation.components.locationPremium.adjustment > 0 ? '+' : ''}
+                                        {valuationReport.propertyAppreciation.components.locationPremium.adjustment.toFixed(1)}%
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
 
-                    {/* 5-Year Value Projection */}
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-xs">5-Year Projection</h4>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="bg-blue-50">
-                              {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any) => (
-                                <th key={projection.year} className="py-1 px-2 text-center font-medium text-blue-700">
-                                  {projection.year}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any) => (
-                                <td key={projection.year} className="py-2 px-2 text-center font-medium text-blue-800">
-                                  R{(projection.estimatedValue / 1000000).toFixed(1)}M
-                                </td>
-                              ))}
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-
+                            {/* 5-Year Value Projection */}
+                            <div className="space-y-2">
+                              <h4 className="font-medium text-xs">5-Year Projection</h4>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="bg-blue-50">
+                                      {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any) => (
+                                        <th key={projection.year} className="py-1 px-2 text-center font-medium text-blue-700">
+                                          {projection.year}
+                                        </th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any) => (
+                                        <td key={projection.year} className="py-2 px-2 text-center font-medium text-blue-800">
+                                          R{projection.estimatedValue.toLocaleString()}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </CardContent>
                 </Card>
               ) : (
