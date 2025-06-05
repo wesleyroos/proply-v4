@@ -53,17 +53,16 @@ import { initGoogleMaps } from "@/lib/maps";
 const createOptimizedImageUrl = (originalUrl: string, size: 'thumbnail' | 'medium' | 'large' = 'thumbnail') => {
   if (!originalUrl) return originalUrl;
   
-  // For CloudFront URLs, we can add query parameters for image optimization
-  if (originalUrl.includes('cloudfront.net')) {
-    const sizeParams = {
-      thumbnail: '?w=300&h=300&fit=crop&q=70',
-      medium: '?w=600&h=600&fit=crop&q=80',
-      large: '?w=1200&h=1200&fit=crop&q=85'
-    };
-    return originalUrl + sizeParams[size];
-  }
+  // Use server-side image optimization endpoint for better performance
+  const sizeParams = {
+    thumbnail: { width: 200, height: 200, quality: 60 },
+    medium: { width: 500, height: 500, quality: 75 },
+    large: { width: 800, height: 800, quality: 85 }
+  };
   
-  return originalUrl;
+  const params = sizeParams[size];
+  const encodedUrl = encodeURIComponent(originalUrl);
+  return `/api/optimize-image?url=${encodedUrl}&width=${params.width}&height=${params.height}&quality=${params.quality}`;
 };
 
 interface PropertyLocation {

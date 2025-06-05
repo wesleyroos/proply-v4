@@ -42,6 +42,7 @@ import { sendPasswordResetEmail } from './services/email';
 import { sendDemoRequestEmail } from './services/emailService';
 import propdataDebugRouter from './routes/propdata-debug';
 import { imageSyncService } from './services/imageSyncService';
+import sharp from 'sharp';
 
 // Extend Express.User to include our schema
 declare global {
@@ -2133,6 +2134,50 @@ export function registerRoutes(app: Express): Server {
         error: "Failed to sync images",
         message: error instanceof Error ? error.message : "Unknown error"
       });
+    }
+  });
+  
+  // Image optimization endpoint for faster loading
+  app.get("/api/optimize-image", async (req, res) => {
+    try {
+      const { url, width, height, quality } = req.query;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: "URL parameter is required" });
+      }
+
+      const targetWidth = parseInt(width as string) || 300;
+      const targetHeight = parseInt(height as string) || 300;
+      const targetQuality = parseInt(quality as string) || 70;
+
+      // Fetch the original image
+      const response = await fetch(url);
+      if (!response.ok) {
+        return res.status(404).json({ error: "Image not found" });
+      }
+
+      const imageBuffer = await response.arrayBuffer();
+      
+      // Optimize the image with Sharp
+      const optimizedImage = await sharp(Buffer.from(imageBuffer))
+        .resize(targetWidth, targetHeight, {
+          fit: 'cover',
+          position: 'center'
+        })
+        .jpeg({ quality: targetQuality })
+        .toBuffer();
+
+      // Set appropriate headers
+      res.set({
+        'Content-Type': 'image/jpeg',
+        'Cache-Control': 'public, max-age=86400', // 24 hours cache
+        'Content-Length': optimizedImage.length.toString()
+      });
+
+      res.send(optimizedImage);
+    } catch (error) {
+      console.error("Error optimizing image:", error);
+      res.status(500).json({ error: "Failed to optimize image" });
     }
   });
   
