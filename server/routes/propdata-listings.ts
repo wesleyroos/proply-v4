@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { db } from "@db";
-import { propdataListings } from "@db/schema";
+import { propdataListings, syncTracking } from "@db/schema";
 import { desc, eq } from "drizzle-orm";
 import { ListingsClient } from "../services/propdata/listingsClient";
 import { AgentsClient } from "../services/propdata/agentsClient";
 import { FilesClient } from "../services/propdata/filesClient";
+import { autoSyncService } from "../services/autoSync";
 
 const router = Router();
 

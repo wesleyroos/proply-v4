@@ -88,6 +88,7 @@ export const propdataListings = pgTable("propdata_listings", {
   status: text("status").notNull(), // Active, Pending, Processing, etc.
   listingData: jsonb("listing_data").notNull(), // Raw PropData listing data
   address: text("address").notNull(),
+  addressManuallyEdited: boolean("address_manually_edited").default(false).notNull(),
   price: decimal("price", { precision: 15, scale: 2 }).notNull(),
   propertyType: text("property_type").notNull(),
   bedrooms: decimal("bedrooms", { precision: 3, scale: 1 }).notNull(),
@@ -107,6 +108,18 @@ export const propdataListings = pgTable("propdata_listings", {
   lastModified: timestamp("last_modified").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const syncTracking = pgTable("sync_tracking", {
+  id: serial("id").primaryKey(),
+  syncType: text("sync_type").notNull(), // 'quick' or 'full'
+  status: text("status").notNull(), // 'running', 'completed', 'failed'
+  startedAt: timestamp("started_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+  newListings: integer("new_listings").default(0),
+  updatedListings: integer("updated_listings").default(0),
+  errors: integer("errors").default(0),
+  errorMessage: text("error_message"),
 });
 
 export const agencySettings = pgTable("agency_settings", {
@@ -539,3 +552,8 @@ export const propertyListings = pgTable("property_listings", {
 
 export type InsertPropertyListing = typeof propertyListings.$inferInsert;
 export type SelectPropertyListing = typeof propertyListings.$inferSelect;
+
+export const insertSyncTrackingSchema = createInsertSchema(syncTracking);
+export const selectSyncTrackingSchema = createSelectSchema(syncTracking);
+export type InsertSyncTracking = typeof syncTracking.$inferInsert;
+export type SelectSyncTracking = typeof syncTracking.$inferSelect;
