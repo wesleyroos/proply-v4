@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { 
@@ -97,6 +97,22 @@ export default function PropdataListingsPage() {
   const { data, isLoading, error, refetch } = useQuery<PropdataListing[]>({
     queryKey: ['/api/propdata/listings'],
     enabled: !!user?.isAdmin, // Only fetch if user is admin
+  });
+
+  // Query to fetch sync status and last sync information
+  const { data: syncStatus, refetch: refetchSyncStatus } = useQuery({
+    queryKey: ['/api/propdata/listings/sync-status'],
+    queryFn: async () => {
+      const response = await fetch('/api/propdata/listings/sync-status', {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        return null;
+      }
+      return response.json();
+    },
+    enabled: !!user?.isAdmin,
+    refetchInterval: 30000, // Refetch every 30 seconds to show updated sync status
   });
   
   // Extract listings from response
@@ -266,29 +282,26 @@ export default function PropdataListingsPage() {
             onClick={async () => {
               setIsQuickSyncing(true);
               try {
-                // Default incremental sync
-                const response = await fetch('/api/propdata/listings/sync', {
+                // Use the new quick sync endpoint
+                const response = await fetch('/api/propdata/listings/quick-sync', {
                   method: 'POST',
                   credentials: 'include',
                   headers: {
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({
-                    forceFullSync: false, 
-                    maxPages: 5
-                  }),
                 });
                 
                 if (response.ok) {
                   const result = await response.json();
-                  alert(`Sync completed: ${result.message}`);
+                  alert(`Quick sync completed: ${result.newListings} new, ${result.updatedListings} updated`);
                   refetch();
+                  refetchSyncStatus();
                 } else {
-                  alert('Failed to sync with PropData API: ' + (await response.text()));
+                  alert('Failed to perform quick sync: ' + (await response.text()));
                 }
               } catch (error) {
-                console.error('Error syncing with PropData:', error);
-                alert('Failed to sync with PropData API. See console for details.');
+                console.error('Error performing quick sync:', error);
+                alert('Failed to perform quick sync. See console for details.');
               } finally {
                 setIsQuickSyncing(false);
               }
