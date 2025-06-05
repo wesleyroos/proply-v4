@@ -144,6 +144,14 @@ export default function PropdataListingsPage() {
   // Extract listings and pagination from response
   const listings = paginatedData?.listings || [];
   const pagination = paginatedData?.pagination;
+  
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, propertyTypeFilter, agentFilter]);
+
+  // Current data is directly from backend pagination
+  const currentData = listings;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-ZA', {
