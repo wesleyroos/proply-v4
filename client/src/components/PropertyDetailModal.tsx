@@ -1608,15 +1608,27 @@ export default function PropertyDetailModal({
                     {/* 5-Year Value Projection */}
                     <div className="space-y-2">
                       <h4 className="font-medium text-xs">5-Year Projection</h4>
-                      <div className="grid grid-cols-2 gap-1 text-xs">
-                        {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any, index: number) => (
-                          <div key={projection.year} className="flex justify-between items-center p-1.5 bg-blue-50 rounded">
-                            <span className="text-blue-700">{projection.year}</span>
-                            <span className="font-medium text-blue-800">
-                              R{(projection.estimatedValue / 1000000).toFixed(1)}M
-                            </span>
-                          </div>
-                        ))}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="bg-blue-50">
+                              {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any) => (
+                                <th key={projection.year} className="py-1 px-2 text-center font-medium text-blue-700">
+                                  {projection.year}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any) => (
+                                <td key={projection.year} className="py-2 px-2 text-center font-medium text-blue-800">
+                                  R{(projection.estimatedValue / 1000000).toFixed(1)}M
+                                </td>
+                              ))}
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
 
