@@ -23,9 +23,10 @@ interface ShortTermRentalData {
 interface LongTermRentalData {
   minRental: number;
   maxRental: number;
-  minYield: number;
-  maxYield: number;
+  minYield: number | null;
+  maxYield: number | null;
   managementFee: string;
+  reasoning?: string;
 }
 
 // Helper function to get rental data without HTTP response
@@ -276,31 +277,51 @@ Respond in JSON format:
     const maxRental = result.maxMonthlyRental || 45000;
 
     // Calculate yields
-    const minYield = ((minRental * 12) / price) * 100;
-    const maxYield = ((maxRental * 12) / price) * 100;
+    // Handle valuation properties (price = 0) gracefully
+    let minYield = 0;
+    let maxYield = 0;
+    
+    if (price > 0) {
+      minYield = ((minRental * 12) / price) * 100;
+      maxYield = ((maxRental * 12) / price) * 100;
+    }
 
     return {
       minRental,
       maxRental,
-      minYield: Math.round(minYield * 10) / 10,
-      maxYield: Math.round(maxYield * 10) / 10,
-      managementFee: "8-10%"
+      minYield: price > 0 ? Math.round(minYield * 10) / 10 : null,
+      maxYield: price > 0 ? Math.round(maxYield * 10) / 10 : null,
+      managementFee: "8-10%",
+      reasoning: price === 0 ? "Yield cannot be calculated for valuation properties (no asking price)" : (result.reasoning || "AI-generated rental estimate")
     };
 
   } catch (error) {
     console.error('Error generating long-term rental estimate:', error);
     
     // Fallback calculation based on property price
-    const estimatedYield = 0.08; // 8% conservative yield
-    const minRental = Math.round((price * estimatedYield) / 12);
-    const maxRental = Math.round((price * 0.15) / 12); // 15% higher yield
+    if (price > 0) {
+      const estimatedYield = 0.08; // 8% conservative yield
+      const minRental = Math.round((price * estimatedYield) / 12);
+      const maxRental = Math.round((price * 0.15) / 12); // 15% higher yield
 
-    return {
-      minRental,
-      maxRental,
-      minYield: 8.0,
-      maxYield: 15.0,
-      managementFee: "8-10%"
-    };
+      return {
+        minRental,
+        maxRental,
+        minYield: 8.0,
+        maxYield: 15.0,
+        managementFee: "8-10%",
+        reasoning: "Fallback estimate used due to API error"
+      };
+    } else {
+      // For valuation properties (price = 0), provide rental estimates without yield
+      return {
+        minRental: 25000, // Conservative estimate
+        maxRental: 60000, // High-end estimate
+        minYield: null,
+        maxYield: null,
+        managementFee: "8-10%",
+        reasoning: "Yield cannot be calculated for valuation properties (no asking price)"
+      };
+    }
   }
 }
