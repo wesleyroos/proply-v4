@@ -487,6 +487,86 @@ router.post("/propdata/listings/sync", async (req, res) => {
   }
 });
 
+// POST /api/propdata/listings/:id/fetch-images - Force fetch images for a specific property
+router.post("/propdata/listings/:id/fetch-images", async (req, res) => {
+  try {
+    const propertyId = req.params.id;
+    
+    // Get the property with image IDs
+    const [property] = await db
+      .select()
+      .from(propdataListings)
+      .where(eq(propdataListings.propdataId, propertyId))
+      .limit(1);
+    
+    if (!property) {
+      return res.status(404).json({ error: "Property not found" });
+    }
+    
+    // Extract image IDs from listing data
+    const listingData = property.listingData as any;
+    const imageIds: number[] = [];
+    
+    if (listingData.listing_images && Array.isArray(listingData.listing_images)) {
+      imageIds.push(...listingData.listing_images);
+    }
+    if (listingData.header_images && Array.isArray(listingData.header_images)) {
+      imageIds.push(...listingData.header_images);
+    }
+    if (listingData.images && Array.isArray(listingData.images)) {
+      listingData.images.forEach((img: any) => {
+        if (typeof img === 'number') {
+          imageIds.push(img);
+        } else if (img && typeof img === 'object' && img.id) {
+          imageIds.push(img.id);
+        }
+      });
+    }
+    
+    console.log(`Fetching ${imageIds.length} images for property ${propertyId}`);
+    
+    if (imageIds.length === 0) {
+      return res.json({ success: false, message: "No image IDs found for this property" });
+    }
+    
+    // Fetch image details using PropData Files API
+    const filesClient = new FilesClient();
+    const imageDetails = await filesClient.fetchMultipleFileDetails(imageIds);
+    
+    // Extract image URLs
+    const imageUrls = imageDetails
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .map(img => img.file || img.image)
+      .filter((url): url is string => Boolean(url));
+    
+    console.log(`Successfully fetched ${imageUrls.length}/${imageIds.length} image URLs for property ${propertyId}`);
+    
+    // Update the property with the fetched images
+    await db
+      .update(propdataListings)
+      .set({
+        images: imageUrls,
+        updatedAt: new Date()
+      })
+      .where(eq(propdataListings.propdataId, propertyId));
+    
+    return res.json({
+      success: true,
+      message: `Fetched ${imageUrls.length} images for property ${propertyId}`,
+      imageCount: imageUrls.length,
+      totalImageIds: imageIds.length,
+      images: imageUrls.slice(0, 3) // Show first 3 URLs for debugging
+    });
+    
+  } catch (error) {
+    console.error(`Error fetching images for property ${req.params.id}:`, error);
+    return res.status(500).json({ 
+      error: "Failed to fetch images", 
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
 // GET /api/propdata/listings/debug/files/:fileId - Debug endpoint to test file service endpoints
 router.get("/propdata/listings/debug/files/:fileId", async (req, res) => {
   try {

@@ -25,13 +25,17 @@ export class BaseApiClient {
     protected axiosInstance: AxiosInstance;
 
     constructor() {
-        if (!process.env.PROPDATA_SERVER_URL) throw new Error('PROPDATA_SERVER_URL environment variable is required');
-        if (!process.env.PROPDATA_API_USERNAME) throw new Error('PROPDATA_API_USERNAME environment variable is required');
-        if (!process.env.PROPDATA_API_PASSWORD) throw new Error('PROPDATA_API_PASSWORD environment variable is required');
+        // Use the correct environment variable names that match our secrets
+        const serverUrl = process.env.PROPDATA_SERVER_URL || 'https://propdata.co.za';
+        const username = process.env.PROPDATA_USERNAME;
+        const password = process.env.PROPDATA_PASSWORD;
+        
+        if (!username) throw new Error('PROPDATA_USERNAME environment variable is required');
+        if (!password) throw new Error('PROPDATA_PASSWORD environment variable is required');
 
-        this.API_BASE_URL = process.env.PROPDATA_SERVER_URL;
-        this.USERNAME = process.env.PROPDATA_API_USERNAME;
-        this.PASSWORD = process.env.PROPDATA_API_PASSWORD;
+        this.API_BASE_URL = serverUrl;
+        this.USERNAME = username;
+        this.PASSWORD = password;
 
         this.axiosInstance = axios.create({
             baseURL: this.API_BASE_URL,
