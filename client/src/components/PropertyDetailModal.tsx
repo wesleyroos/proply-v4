@@ -73,6 +73,7 @@ export interface PropertyDetailListing {
   landSize: number | null;
   agentId: string | null;
   agentName: string | null;
+  agentEmail: string | null;
   agentPhone: string | null;
   lastModified: string;
   createdAt: string;
@@ -1059,6 +1060,18 @@ export default function PropertyDetailModal({
                     <span className="text-muted-foreground">Agent Name:</span>
                     <span className="font-medium">{property?.agentName || 'Not Available'}</span>
                   </div>
+                  {property?.agentEmail && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Agent Email:</span>
+                      <span className="font-medium">{property.agentEmail}</span>
+                    </div>
+                  )}
+                  {property?.agentPhone && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Agent Phone:</span>
+                      <span className="font-medium">{property.agentPhone}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Created:</span>
                     <span className="font-medium">{property?.createdAt && formatDate(property.createdAt)}</span>

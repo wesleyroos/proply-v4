@@ -160,10 +160,12 @@ class AutoSyncService {
             agentId: listing.agent?.toString() || null,
             agentName: listing.agent && agentDetails.has(listing.agent) ? 
               agentDetails.get(listing.agent)?.full_name || null : null,
-            agentEmail: listing.agent && agentDetails.has(listing.agent) ? 
-              agentDetails.get(listing.agent)?.email || null : null,
-            agentPhone: listing.agent && agentDetails.has(listing.agent) ? 
-              agentDetails.get(listing.agent)?.mobile || null : null,
+            agentEmail: listing.managing_agent_email || 
+              (listing.agent && agentDetails.has(listing.agent) ? 
+                agentDetails.get(listing.agent)?.email || null : null),
+            agentPhone: listing.managing_agent_telephone_number || 
+              (listing.agent && agentDetails.has(listing.agent) ? 
+                agentDetails.get(listing.agent)?.mobile || null : null),
             lastModified: listing.modified ? new Date(listing.modified) : new Date(),
             updatedAt: new Date(),
             listingDate: listing.created ? new Date(listing.created) : null,
