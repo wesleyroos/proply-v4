@@ -1540,71 +1540,68 @@ export default function PropertyDetailModal({
                     <div className="space-y-2">
                       <h4 className="font-medium text-xs">Components</h4>
                       
-                      <div className="space-y-1 text-xs">
-                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
-                          <div className="flex-1">
-                            <div className="font-medium">Base Suburb Rate</div>
-                            <div className="text-muted-foreground text-xs">
-                              {valuationReport.propertyAppreciation.components.baseSuburbRate.justification}
-                            </div>
-                          </div>
-                          <span className="font-medium text-blue-600 ml-2 text-xs">
-                            {valuationReport.propertyAppreciation.components.baseSuburbRate.rate > 0 ? '+' : ''}
-                            {valuationReport.propertyAppreciation.components.baseSuburbRate.rate.toFixed(1)}%
-                          </span>
-                        </div>
-                        
-                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
-                          <div className="flex-1">
-                            <div className="font-medium">Property Type</div>
-                            <div className="text-muted-foreground text-xs">
-                              {valuationReport.propertyAppreciation.components.propertyTypeModifier.justification}
-                            </div>
-                          </div>
-                          <span className={`font-medium ml-2 text-xs ${valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment > 0 ? '+' : ''}
-                            {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment.toFixed(1)}%
-                          </span>
-                        </div>
-                        
-                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
-                          <div className="flex-1">
-                            <div className="font-medium">Levy (R{valuationReport.propertyAppreciation.components.levyImpact.levyPerSquareMeter.toFixed(0)}/m²)</div>
-                            <div className="text-muted-foreground text-xs">
-                              {valuationReport.propertyAppreciation.components.levyImpact.justification}
-                            </div>
-                          </div>
-                          <span className={`font-medium ml-2 text-xs ${valuationReport.propertyAppreciation.components.levyImpact.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {valuationReport.propertyAppreciation.components.levyImpact.adjustment > 0 ? '+' : ''}
-                            {valuationReport.propertyAppreciation.components.levyImpact.adjustment.toFixed(1)}%
-                          </span>
-                        </div>
-                        
-                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
-                          <div className="flex-1">
-                            <div className="font-medium">Condition</div>
-                            <div className="text-muted-foreground text-xs">
-                              {valuationReport.propertyAppreciation.components.visualConditionAdjustment.justification}
-                            </div>
-                          </div>
-                          <span className={`font-medium ml-2 text-xs ${valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment > 0 ? '+' : ''}
-                            {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment.toFixed(1)}%
-                          </span>
-                        </div>
-                        
-                        <div className="flex justify-between items-start p-2 bg-gray-50 rounded">
-                          <div className="flex-1">
-                            <div className="font-medium">Location</div>
-                            <div className="text-muted-foreground text-xs">
-                              {valuationReport.propertyAppreciation.components.locationPremium.justification}
-                            </div>
-                          </div>
-                          <span className={`font-medium ml-2 text-xs ${valuationReport.propertyAppreciation.components.locationPremium.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {valuationReport.propertyAppreciation.components.locationPremium.adjustment > 0 ? '+' : ''}
-                            {valuationReport.propertyAppreciation.components.locationPremium.adjustment.toFixed(1)}%
-                          </span>
-                        </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-1 px-2 font-medium">Component</th>
+                              <th className="text-left py-1 px-2 font-medium">Analysis</th>
+                              <th className="text-right py-1 px-2 font-medium">Impact</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            <tr className="hover:bg-gray-50">
+                              <td className="py-2 px-2 font-medium">Base Suburb Rate</td>
+                              <td className="py-2 px-2 text-muted-foreground">
+                                {valuationReport.propertyAppreciation.components.baseSuburbRate.justification}
+                              </td>
+                              <td className="py-2 px-2 text-right font-medium text-blue-600">
+                                {valuationReport.propertyAppreciation.components.baseSuburbRate.rate > 0 ? '+' : ''}
+                                {valuationReport.propertyAppreciation.components.baseSuburbRate.rate.toFixed(1)}%
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50">
+                              <td className="py-2 px-2 font-medium">Property Type</td>
+                              <td className="py-2 px-2 text-muted-foreground">
+                                {valuationReport.propertyAppreciation.components.propertyTypeModifier.justification}
+                              </td>
+                              <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment > 0 ? '+' : ''}
+                                {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment.toFixed(1)}%
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50">
+                              <td className="py-2 px-2 font-medium">Levy (R{valuationReport.propertyAppreciation.components.levyImpact.levyPerSquareMeter.toFixed(0)}/m²)</td>
+                              <td className="py-2 px-2 text-muted-foreground">
+                                {valuationReport.propertyAppreciation.components.levyImpact.justification}
+                              </td>
+                              <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.levyImpact.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {valuationReport.propertyAppreciation.components.levyImpact.adjustment > 0 ? '+' : ''}
+                                {valuationReport.propertyAppreciation.components.levyImpact.adjustment.toFixed(1)}%
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50">
+                              <td className="py-2 px-2 font-medium">Condition</td>
+                              <td className="py-2 px-2 text-muted-foreground">
+                                {valuationReport.propertyAppreciation.components.visualConditionAdjustment.justification}
+                              </td>
+                              <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment > 0 ? '+' : ''}
+                                {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment.toFixed(1)}%
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50">
+                              <td className="py-2 px-2 font-medium">Location</td>
+                              <td className="py-2 px-2 text-muted-foreground">
+                                {valuationReport.propertyAppreciation.components.locationPremium.justification}
+                              </td>
+                              <td className={`py-2 px-2 text-right font-medium ${valuationReport.propertyAppreciation.components.locationPremium.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {valuationReport.propertyAppreciation.components.locationPremium.adjustment > 0 ? '+' : ''}
+                                {valuationReport.propertyAppreciation.components.locationPremium.adjustment.toFixed(1)}%
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
 
