@@ -49,6 +49,10 @@ interface PropdataListing {
   agentName: string | null;
   agentEmail: string | null;
   agentPhone: string | null;
+  monthlyLevy: number | null;
+  sectionalTitleLevy: number | null;
+  specialLevy: number | null;
+  homeOwnerLevy: number | null;
   listingDate: string | null; // When the property was actually listed by Sotheby's
   lastModified: string;
   createdAt: string;
@@ -245,6 +249,10 @@ export default function PropdataListingsPage() {
     const detailProperty: PropertyDetailListing = {
       ...property,
       listingData: property.listingData || {},
+      monthlyLevy: property.monthlyLevy || null,
+      sectionalTitleLevy: property.sectionalTitleLevy || null,
+      specialLevy: property.specialLevy || null,
+      homeOwnerLevy: property.homeOwnerLevy || null,
     };
     
     setSelectedProperty(detailProperty);

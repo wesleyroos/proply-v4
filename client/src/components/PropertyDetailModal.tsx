@@ -75,6 +75,10 @@ export interface PropertyDetailListing {
   agentName: string | null;
   agentEmail: string | null;
   agentPhone: string | null;
+  monthlyLevy: number | null;
+  sectionalTitleLevy: number | null;
+  specialLevy: number | null;
+  homeOwnerLevy: number | null;
   lastModified: string;
   createdAt: string;
   updatedAt: string;

@@ -103,6 +103,12 @@ export const propdataListings = pgTable("propdata_listings", {
   agentName: text("agent_name"), // Agent full name from PropData agents API
   agentEmail: text("agent_email"), // Agent email
   agentPhone: text("agent_phone"),
+  
+  // Levy fields from PropData API
+  monthlyLevy: decimal("monthly_levy", { precision: 10, scale: 2 }),
+  sectionalTitleLevy: decimal("sectional_title_levy", { precision: 10, scale: 2 }),
+  specialLevy: decimal("special_levy", { precision: 10, scale: 2 }),
+  homeOwnerLevy: decimal("home_owner_levy", { precision: 10, scale: 2 }),
 
   listingDate: timestamp("listing_date"), // When the property was actually listed (mandate_start_date)
   lastModified: timestamp("last_modified").notNull(),

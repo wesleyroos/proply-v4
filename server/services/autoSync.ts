@@ -168,6 +168,13 @@ class AutoSyncService {
             agentPhone: listing.managing_agent_telephone_number || 
               (listing.agent && agentDetails.has(listing.agent) ? 
                 agentDetails.get(listing.agent)?.mobile || null : null),
+            
+            // Levy fields from PropData API
+            monthlyLevy: listing.monthly_levy && parseFloat(listing.monthly_levy) > 0 ? listing.monthly_levy : null,
+            sectionalTitleLevy: listing.sectional_title_levy && parseFloat(listing.sectional_title_levy) > 0 ? listing.sectional_title_levy : null,
+            specialLevy: listing.special_levy && parseFloat(listing.special_levy) > 0 ? listing.special_levy : null,
+            homeOwnerLevy: listing.home_owner_levy && parseFloat(listing.home_owner_levy) > 0 ? listing.home_owner_levy : null,
+            
             lastModified: listing.modified ? new Date(listing.modified) : new Date(),
             updatedAt: new Date(),
             listingDate: listing.created ? new Date(listing.created) : null,

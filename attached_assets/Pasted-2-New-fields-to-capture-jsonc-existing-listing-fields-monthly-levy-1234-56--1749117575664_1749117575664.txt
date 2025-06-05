@@ -1,0 +1,48 @@
+2. New fields to capture
+jsonc
+{
+  // … existing listing fields …
+  "monthly_levy": "1234.56",          // string – monthly levy
+  "sectional_title_levy": "0.00",     // string – sectional‑title levy
+  "special_levy": "2500.00",          // string – once‑off special levy
+  "home_owner_levy": "0.00"           // string – HOA levy
+}
+All four fields are optional and may return "0.00" or null if the agency hasn’t filled them in.
+3. Changes required in our code
+DTO / Interface update
+Add the four levy properties to our ResidentialListing type/model.
+ts
+interface ResidentialListing {
+  /* existing props */
+  monthly_levy?: string | null;
+  sectional_title_levy?: string | null;
+  special_levy?: string | null;
+  home_owner_levy?: string | null;
+}
+Parsing the response
+Nothing special is needed—the levies come in the same JSON object we already parse.
+Make sure we do not strip unknown keys when deserialising.
+Database / persistence
+If we store listings locally, add four DECIMAL(10,2) NULL columns (or equivalent) to the listings table:
+sql
+ALTER TABLE listings
+  ADD COLUMN monthly_levy DECIMAL(10,2) NULL,
+  ADD COLUMN sectional_title_levy DECIMAL(10,2) NULL,
+  ADD COLUMN special_levy DECIMAL(10,2) NULL,
+  ADD COLUMN home_owner_levy DECIMAL(10,2) NULL;
+Front‑end / API output
+Display the levies in the property‑details panel under “Levies”.
+Hide the row if all four values are null or 0.00.
+Unit tests
+Mock a listing payload that includes levy values and assert they are saved / returned.
+Mock a payload with null levies and assert we handle it gracefully.
+4. Edge‑case handling
+Scenario	What to do
+Field is "0.00" or null	Treat as “Not specified” – don’t show on the UI.
+Agency later updates a levy	Our nightly sync will overwrite the stored value automatically.
+Currency changes	Values are plain numbers; currency is implied (ZAR). If Prop Data ever adds a currency field, we’ll surface it next.
+5. Acceptance criteria
+ Levies appear in the DB (or in‑memory store) after the next sync.
+ UI shows a “Levies” section only when at least one levy > 0.
+ All automated tests pass.
+Reference: Prop Data Residential Listing schema – see monthly_levy, sectional_title_levy, special_levy, home_owner_levy fields.
