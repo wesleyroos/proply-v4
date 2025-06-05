@@ -146,7 +146,7 @@ export default function PropdataListingsPage() {
   const pagination = paginatedData?.pagination;
   
   // Reset page when filters change
-  React.useEffect(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter, propertyTypeFilter, agentFilter]);
 
