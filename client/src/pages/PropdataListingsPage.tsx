@@ -695,27 +695,27 @@ export default function PropdataListingsPage() {
                 </Table>
               </div>
               
-              {getTotalPages() > 1 && (
+              {pagination && pagination.totalPages > 1 && (
                 <div className="mt-4 flex justify-center w-full">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
+                      disabled={!pagination.hasPrevious}
                     >
                       Previous
                     </Button>
                     
                     <span className="text-sm text-muted-foreground px-2">
-                      Page {currentPage} of {getTotalPages()}
+                      Page {pagination.currentPage} of {pagination.totalPages}
                     </span>
                     
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, getTotalPages()))}
-                      disabled={currentPage === getTotalPages()}
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      disabled={!pagination.hasNext}
                     >
                       Next
                     </Button>
