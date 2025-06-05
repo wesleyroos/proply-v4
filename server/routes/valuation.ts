@@ -30,7 +30,8 @@ router.post("/generate-valuation-report", async (req, res) => {
       price,
       images,
       location,
-      propertyId
+      propertyId,
+      monthlyLevy
     } = req.body;
 
     // Prepare property data for OpenAI analysis
@@ -58,6 +59,7 @@ Property Details:
 - Floor Size: ${floorSize ? `${floorSize}m²` : 'Not specified'}
 - Land Size: ${landSize ? `${landSize}m²` : 'Not specified'}
 - Current Listing Price: R${price?.toLocaleString('en-ZA') || 'Not specified'}
+- Monthly Levy: R${monthlyLevy?.toLocaleString('en-ZA') || 'Not specified'}
 - Location: ${location?.suburb || ''} ${location?.city || ''} ${location?.province || ''}
 
 IMPORTANT: For rental estimates, consider the specific property characteristics:
@@ -97,6 +99,40 @@ Based on current Cape Town property market conditions and the specifications pro
       "maxMonthlyRental": numeric_value,
       "reasoning": "Brief explanation based on visual assessment and market analysis"
     }
+  },
+  "propertyAppreciation": {
+    "annualAppreciationRate": numeric_value_percentage,
+    "components": {
+      "baseSuburbRate": {
+        "rate": numeric_value_percentage,
+        "justification": "Historical CAGR and recent market trends for this suburb"
+      },
+      "propertyTypeModifier": {
+        "adjustment": numeric_value_percentage,
+        "justification": "Explanation of why this property type performs differently vs full-title homes"
+      },
+      "levyImpact": {
+        "levyPerSquareMeter": numeric_value,
+        "adjustment": numeric_value_percentage,
+        "justification": "Analysis of levy impact - high/low relative to area norm and investor appeal"
+      },
+      "visualConditionAdjustment": {
+        "adjustment": numeric_value_percentage,
+        "justification": "Based on property condition, finishes, and renovation needs from images"
+      },
+      "locationPremium": {
+        "adjustment": numeric_value_percentage,
+        "justification": "Premium/discount for views, proximity to amenities, transport links"
+      }
+    },
+    "fiveYearProjection": [
+      {"year": 2025, "estimatedValue": numeric_value},
+      {"year": 2026, "estimatedValue": numeric_value},
+      {"year": 2027, "estimatedValue": numeric_value},
+      {"year": 2028, "estimatedValue": numeric_value},
+      {"year": 2029, "estimatedValue": numeric_value}
+    ],
+    "summary": "Brief summary of key appreciation drivers and potential risks"
   }
 }
 
@@ -107,6 +143,15 @@ Consider factors like:
 - Current market trends
 - Comparable property values in the area
 - For rental estimates: tenant appeal, rental competitiveness, property condition and finishes (from images if provided)
+
+FOR PROPERTY APPRECIATION ANALYSIS:
+1. BASE SUBURB RATE: Research historical appreciation for this specific suburb/area (typical Cape Town suburbs: 4-8% annually)
+2. PROPERTY TYPE MODIFIER: Analyze why apartments vs townhouses vs full-title homes perform differently (liquidity, maintenance, demographics)
+3. LEVY IMPACT: Calculate levy per m² (divide monthly levy by floor size). Cape Town norm is R30-R40/m². High levies (>R50/m²) typically reduce investor appeal and growth
+4. VISUAL CONDITION: Assess renovation needs, finishes quality, and marketability from images. Dated properties typically lag market by 0.5-1.5%
+5. LOCATION PREMIUM: Consider proximity to transport, amenities, views, security. Premium locations can add 0.3-0.8% annually
+
+Use current property price as baseline for 5-year projections with compound annual growth.
 
 CRITICAL: Rental estimates MUST vary based on:
 1. NUMBER OF BEDROOMS: ${bedrooms} bedrooms should determine base rental range

@@ -654,6 +654,7 @@ export default function PropertyDetailModal({
         floorSize: property.floorSize,
         landSize: property.landSize,
         price: property.price,
+        monthlyLevy: property.monthlyLevy || property.sectionalTitleLevy || property.homeOwnerLevy,
         images: propertyImages.slice(0, 10), // Analyze first 10 images for comprehensive coverage
         location: property.location,
         propertyId: property.propdataId // Use PropData property ID for rental data persistence
@@ -1460,6 +1461,7 @@ export default function PropertyDetailModal({
             </TabsContent>
 
             <TabsContent value="agent" className="space-y-4">
+              {/* Basic Investment Information */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -1488,6 +1490,12 @@ export default function PropertyDetailModal({
                       <span className="font-medium">{property.landSize}m²</span>
                     </div>
                   )}
+                  {(property?.monthlyLevy || property?.sectionalTitleLevy || property?.homeOwnerLevy) && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Monthly Levy:</span>
+                      <span className="font-medium">R{(property.monthlyLevy || property.sectionalTitleLevy || property.homeOwnerLevy)?.toLocaleString()}</span>
+                    </div>
+                  )}
                   {property?.agentPhone && (
                     <div className="flex justify-between items-center border-t pt-2 mt-4">
                       <span className="text-muted-foreground">Agent Contact:</span>
@@ -1501,6 +1509,153 @@ export default function PropertyDetailModal({
                   )}
                 </CardContent>
               </Card>
+
+              {/* Property Appreciation Analysis */}
+              {valuationReport?.propertyAppreciation ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileBarChart className="h-5 w-5" />
+                      Property Appreciation Analysis
+                    </CardTitle>
+                    <CardDescription>
+                      Annual appreciation forecast based on market analysis
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Annual Appreciation Rate Summary */}
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-green-700">Estimated Annual Appreciation</span>
+                        <span className="text-2xl font-bold text-green-800">
+                          {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(1)}%
+                        </span>
+                      </div>
+                      <p className="text-sm text-green-600 mt-2">
+                        {valuationReport.propertyAppreciation.summary}
+                      </p>
+                    </div>
+
+                    {/* Component Breakdown */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm">Appreciation Components</h4>
+                      
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <span>Base Suburb Rate</span>
+                          <span className="font-medium text-blue-600">
+                            {valuationReport.propertyAppreciation.components.baseSuburbRate.rate > 0 ? '+' : ''}
+                            {valuationReport.propertyAppreciation.components.baseSuburbRate.rate.toFixed(1)}%
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <span>Property Type Modifier</span>
+                          <span className={`font-medium ${valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment > 0 ? '+' : ''}
+                            {valuationReport.propertyAppreciation.components.propertyTypeModifier.adjustment.toFixed(1)}%
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <span>Levy Impact (R{valuationReport.propertyAppreciation.components.levyImpact.levyPerSquareMeter.toFixed(0)}/m²)</span>
+                          <span className={`font-medium ${valuationReport.propertyAppreciation.components.levyImpact.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {valuationReport.propertyAppreciation.components.levyImpact.adjustment > 0 ? '+' : ''}
+                            {valuationReport.propertyAppreciation.components.levyImpact.adjustment.toFixed(1)}%
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <span>Visual Condition</span>
+                          <span className={`font-medium ${valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment > 0 ? '+' : ''}
+                            {valuationReport.propertyAppreciation.components.visualConditionAdjustment.adjustment.toFixed(1)}%
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <span>Location Premium</span>
+                          <span className={`font-medium ${valuationReport.propertyAppreciation.components.locationPremium.adjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {valuationReport.propertyAppreciation.components.locationPremium.adjustment > 0 ? '+' : ''}
+                            {valuationReport.propertyAppreciation.components.locationPremium.adjustment.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 5-Year Value Projection */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm">5-Year Value Projection</h4>
+                      <div className="space-y-2">
+                        {valuationReport.propertyAppreciation.fiveYearProjection.map((projection: any, index: number) => (
+                          <div key={projection.year} className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                            <span className="text-blue-700">{projection.year}</span>
+                            <span className="font-medium text-blue-800">
+                              R{projection.estimatedValue.toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Detailed Justifications */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <h4 className="font-medium text-sm">Analysis Details</h4>
+                      <div className="space-y-3 text-xs text-muted-foreground">
+                        <div>
+                          <span className="font-medium text-blue-600">Suburb Analysis:</span>
+                          <p>{valuationReport.propertyAppreciation.components.baseSuburbRate.justification}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-purple-600">Property Type:</span>
+                          <p>{valuationReport.propertyAppreciation.components.propertyTypeModifier.justification}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-orange-600">Levy Impact:</span>
+                          <p>{valuationReport.propertyAppreciation.components.levyImpact.justification}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-red-600">Condition Assessment:</span>
+                          <p>{valuationReport.propertyAppreciation.components.visualConditionAdjustment.justification}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-green-600">Location Premium:</span>
+                          <p>{valuationReport.propertyAppreciation.components.locationPremium.justification}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="py-8 text-center">
+                    <FileBarChart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2">Property Appreciation Analysis</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Generate a valuation report to see detailed property appreciation forecasts and component analysis.
+                    </p>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={generateValuationReport}
+                        disabled={isGeneratingReport}
+                        className="gap-2"
+                      >
+                        {isGeneratingReport ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <FileBarChart className="h-4 w-4" />
+                        )}
+                        {isGeneratingReport ? `Generating... ${generationTimer}s` : 'Generate Report'}
+                      </Button>
+                      {!isGeneratingReport && (
+                        <p className="text-xs text-muted-foreground">
+                          This will include appreciation analysis with levy impact assessment
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="valuation" className="space-y-4">
