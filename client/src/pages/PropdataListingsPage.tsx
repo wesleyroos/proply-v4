@@ -562,7 +562,7 @@ export default function PropdataListingsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {getPageData().map((listing) => (
+                    {currentData.map((listing) => (
                       <TableRow key={listing.id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
