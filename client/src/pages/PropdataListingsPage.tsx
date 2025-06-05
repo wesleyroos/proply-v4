@@ -287,6 +287,31 @@ export default function PropdataListingsPage() {
         </div>
         <div className="space-x-2">
           <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/sync-missing-images', {
+                  method: 'POST',
+                  credentials: 'include',
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  alert(`Image sync completed: ${result.processedProperties} properties processed, ${result.totalImagesAdded} images added`);
+                  refetch();
+                } else {
+                  alert('Failed to sync images: ' + (await response.text()));
+                }
+              } catch (error) {
+                console.error('Error syncing images:', error);
+                alert('Failed to sync images. See console for details.');
+              }
+            }}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Sync Images
+          </Button>
+          <Button
             onClick={async () => {
               setIsQuickSyncing(true);
               try {
