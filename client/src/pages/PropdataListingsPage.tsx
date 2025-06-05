@@ -66,11 +66,15 @@ interface PropdataListing {
   listingData?: any; // Raw PropData API response
 }
 
-interface ApiResponse {
-  total: number;
-  results: PropdataListing[];
-  next?: string;
-  previous?: string;
+interface PaginatedResponse {
+  listings: PropdataListing[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+  };
 }
 
 type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate' | 'agentName';
@@ -93,9 +97,31 @@ export default function PropdataListingsPage() {
   const [isQuickSyncing, setIsQuickSyncing] = useState(false);
   const [isFullSyncing, setIsFullSyncing] = useState(false);
 
-  // Query to fetch PropData listings from database
-  const { data, isLoading, error, refetch } = useQuery<PropdataListing[]>({
-    queryKey: ['/api/propdata/listings'],
+  // Query to fetch PropData listings from database with pagination
+  const { data: paginatedData, isLoading, error, refetch } = useQuery<PaginatedResponse>({
+    queryKey: ['/api/propdata/listings', currentPage, itemsPerPage, sortConfig, statusFilter, propertyTypeFilter, agentFilter, searchTerm],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        sortBy: sortConfig.field,
+        sortOrder: sortConfig.direction,
+        status: statusFilter,
+        propertyType: propertyTypeFilter,
+        agent: agentFilter,
+        search: searchTerm
+      });
+      
+      const response = await fetch(`/api/propdata/listings?${params}`, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch listings');
+      }
+      
+      return response.json();
+    },
     enabled: !!user?.isAdmin, // Only fetch if user is admin
   });
 
@@ -115,8 +141,9 @@ export default function PropdataListingsPage() {
     refetchInterval: 30000, // Refetch every 30 seconds to show updated sync status
   });
   
-  // Extract listings from response
-  const listings = data || [];
+  // Extract listings and pagination from response
+  const listings = paginatedData?.listings || [];
+  const pagination = paginatedData?.pagination;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-ZA', {
@@ -134,6 +161,7 @@ export default function PropdataListingsPage() {
           ? 'desc'
           : 'asc',
     }));
+    setCurrentPage(1); // Reset to first page when sorting changes
   };
 
   const sortData = (data: PropdataListing[]) => {
