@@ -4,8 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function testPropdataLevyData() {
-  const baseUrl = 'https://propdata.co.za';
-  const apiKey = process.env.PROPDATA_API_KEY;
+  const baseUrl = process.env.PROPDATA_SERVER_URL || 'https://staging.api-gw.propdata.net';
+  const username = process.env.PROPDATA_API_USERNAME;
+  const password = process.env.PROPDATA_API_PASSWORD;
   
   // Test properties that should have levy data according to Property24
   const testProperties = ['2380259', '2380001', '2380134', '2380909'];
@@ -14,10 +15,32 @@ async function testPropdataLevyData() {
     try {
       console.log(`\n=== Testing Property ${propertyId} ===`);
       
+      // First authenticate to get Bearer token
+      const authResponse = await fetch(`${baseUrl}/accounts/login/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'proply'
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password
+        })
+      });
+      
+      const authData = await authResponse.json();
+      const token = authData.clients?.[0]?.token;
+      
+      if (!token) {
+        console.log(`No token received for property ${propertyId}`);
+        continue;
+      }
+      
       const response = await fetch(`${baseUrl}/listings/api/v1/residential/${propertyId}/`, {
         headers: {
-          'Authorization': `Token ${apiKey}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'proply'
         }
       });
       

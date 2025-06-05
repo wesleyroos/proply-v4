@@ -171,7 +171,7 @@ class AutoSyncService {
                 agentDetails.get(listing.agent)?.mobile || null : null),
             
             // Levy fields from PropData API - using correct field names
-            monthlyLevy: listing.levy && parseFloat(listing.levy) > 0 ? listing.levy : null,
+            monthlyLevy: listing.monthly_levy && parseFloat(listing.monthly_levy) > 0 ? listing.monthly_levy : null,
             sectionalTitleLevy: listing.sectional_title_levy && parseFloat(listing.sectional_title_levy) > 0 ? listing.sectional_title_levy : null,
             specialLevy: listing.special_levy && parseFloat(listing.special_levy) > 0 ? listing.special_levy : null,
             homeOwnerLevy: listing.home_owner_levy && parseFloat(listing.home_owner_levy) > 0 ? listing.home_owner_levy : null,
