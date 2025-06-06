@@ -81,10 +81,25 @@ export const propdataTokens = pgTable("propdata_tokens", {
   isActive: boolean("is_active").default(true).notNull(),
 });
 
+export const agencyBranches = pgTable("agency_branches", {
+  id: serial("id").primaryKey(),
+  franchiseName: text("franchise_name").notNull(), // e.g., "Sotheby's", "NOX", "Pam Golding"
+  slug: text("slug").notNull(), // e.g., "sothebys", "nox", "pam-golding"
+  branchName: text("branch_name").notNull(), // e.g., "Sotheby's Atlantic Seaboard"
+  propdataFranchiseId: text("propdata_franchise_id").notNull(), // PropData franchise ID
+  propdataBranchId: text("propdata_branch_id").notNull().unique(), // PropData branch ID
+  provider: text("provider").default("PropData").notNull(), // Syndication platform
+  status: text("status").default("active").notNull(), // active, inactive
+  autoSyncEnabled: boolean("auto_sync_enabled").default(true).notNull(),
+  syncFrequency: text("sync_frequency").default("5 minutes").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const propdataListings = pgTable("propdata_listings", {
   id: serial("id").primaryKey(),
   propdataId: text("propdata_id").unique().notNull(),
-  agencyId: integer("agency_id").notNull(),
+  branchId: integer("branch_id"), // References agency_branches table
   status: text("status").notNull(), // Active, Pending, Processing, etc.
   listingData: jsonb("listing_data").notNull(), // Raw PropData listing data
   address: text("address").notNull(),
@@ -481,6 +496,8 @@ export const insertPropdataTokenSchema = createInsertSchema(propdataTokens);
 export const selectPropdataTokenSchema = createSelectSchema(propdataTokens);
 export const insertPropdataListingSchema = createInsertSchema(propdataListings);
 export const selectPropdataListingSchema = createSelectSchema(propdataListings);
+export const insertAgencyBranchSchema = createInsertSchema(agencyBranches);
+export const selectAgencyBranchSchema = createSelectSchema(agencyBranches);
 export const insertAgencySettingsSchema = createInsertSchema(agencySettings);
 export const selectAgencySettingsSchema = createSelectSchema(agencySettings);
 export const insertReportTrackingSchema = createInsertSchema(reportTracking);
@@ -509,6 +526,8 @@ export type InsertPropdataToken = typeof propdataTokens.$inferInsert;
 export type SelectPropdataToken = typeof propdataTokens.$inferSelect;
 export type InsertPropdataListing = typeof propdataListings.$inferInsert;
 export type SelectPropdataListing = typeof propdataListings.$inferSelect;
+export type InsertAgencyBranch = typeof agencyBranches.$inferInsert;
+export type SelectAgencyBranch = typeof agencyBranches.$inferSelect;
 export type InsertAgencySettings = typeof agencySettings.$inferInsert;
 export type SelectAgencySettings = typeof agencySettings.$inferSelect;
 export type InsertReportTracking = typeof reportTracking.$inferInsert;
