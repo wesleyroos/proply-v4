@@ -1,0 +1,47 @@
+Where the IDs come from
+PropData already allocates every agency (“franchise”) and office (“branch”) an ID.
+You therefore do not create your own IDs – you query the API to discover the ones that belong to Knox and then pass those IDs back when you fetch listings.
+1. Look‑up the franchise (agency) ID for “Knox”
+http
+POST /branches/api/v1/franchises/search/
+Content‑Type: application/json
+
+{
+  "filters": {
+    "name__icontains": "Knox"      // or any other field PropData gave you
+  }
+}
+The response returns an object whose id field is Knox’s franchise ID.
+“POST https://staging.api-gw.propdata.net/branches/api/v1/franchises/search/” ¹
+2. Get the branch IDs that belong to that franchise
+http
+POST /branches/api/v1/branches/search/
+Content‑Type: application/json
+
+{
+  "filters": {
+    "franchises": [ <franchise_id> ]   // value returned in step 1
+  }
+}
+Save the id of every branch you receive – each listing is linked to one of these branch IDs.
+3. Pull the listings for those branches
+Use the search endpoints that you already use for Sotheby’s, but add the branch filter:
+http
+POST /listings/api/v1/residential/search/      // or /commercial/search/
+Content‑Type: application/json
+
+{
+  "filters": {
+    "branch__in": [ <branch_id_1>, <branch_id_2>, … ],
+    "status": "active"                          // any other filters you need
+  },
+  "order_by": "-created",
+  "limit": 100
+}
+The same pattern works for commercial, industrial, agricultural, etc. listings – just call the corresponding /…/search/ endpoint.
+Putting it together in your integration
+One‑off set‑up – run steps 1‑2 to store Knox’s franchise and branch IDs in your system.
+Regular import – on each sync cycle call the appropriate listing search endpoint, passing the stored branch IDs, exactly as you already do for Sotheby’s.
+Future agencies – repeat steps 1‑2 for any new franchise; no code changes are required.
+Concise reference (from PropData docs) ¹
+PropData exposes search endpoints for franchises, branches and listings; each takes a JSON filters object to narrow the results.
