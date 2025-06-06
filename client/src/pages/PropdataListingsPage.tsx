@@ -829,11 +829,12 @@ export default function PropdataListingsPage() {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            {listing.franchiseName && listing.branchName ? (
+                            {listing.franchiseName ? (
                               <div>
                                 <div className="font-medium text-xs">{listing.franchiseName}</div>
-                                <div className="text-xs text-muted-foreground">{listing.branchName}</div>
-                              </div>
+                                {listing.branchName && (
+                                  <div className="text-xs text-muted-foreground">{listing.branchName}</div>
+                                )}</div>
                             ) : listing.branchId ? (
                               <Badge variant="secondary" className="text-xs">
                                 Branch {listing.branchId}
