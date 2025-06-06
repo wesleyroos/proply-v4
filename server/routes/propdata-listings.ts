@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@db";
-import { propdataListings, syncTracking } from "@db/schema";
+import { propdataListings, syncTracking, agencyBranches } from "@db/schema";
 import { desc, eq } from "drizzle-orm";
 import { ListingsClient } from "../services/propdata/listingsClient";
 import { AgentsClient } from "../services/propdata/agentsClient";

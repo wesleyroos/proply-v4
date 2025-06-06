@@ -41,7 +41,7 @@ import PropertyDetailModal, { PropertyDetailListing } from "@/components/Propert
 interface PropdataListing {
   id: number;
   propdataId: string;
-  agencyId: number;
+  branchId: number | null;
   status: string;
   address: string;
   price: number;
@@ -74,6 +74,9 @@ interface PropdataListing {
   };
   features?: string[];
   listingData?: any; // Raw PropData API response
+  // Agency branch information
+  franchiseName?: string;
+  branchName?: string;
 }
 
 interface ApiResponse {
@@ -697,6 +700,11 @@ export default function PropdataListingsPage() {
                           <ArrowUpDown className="h-4 w-4" />
                         </div>
                       </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          Agency Branch
+                        </div>
+                      </TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -814,6 +822,24 @@ export default function PropdataListingsPage() {
                               </div>
                             ) : (
                               <span className="text-muted-foreground">-</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {listing.franchiseName && listing.branchName ? (
+                              <div>
+                                <div className="font-medium text-xs">{listing.franchiseName}</div>
+                                <div className="text-xs text-muted-foreground">{listing.branchName}</div>
+                              </div>
+                            ) : listing.branchId ? (
+                              <Badge variant="secondary" className="text-xs">
+                                Branch {listing.branchId}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs text-muted-foreground">
+                                Sotheby's (Legacy)
+                              </Badge>
                             )}
                           </div>
                         </TableCell>
