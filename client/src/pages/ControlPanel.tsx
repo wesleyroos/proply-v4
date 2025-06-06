@@ -193,7 +193,14 @@ export function ControlPanel() {
               {agencies.length > 0 ? (
                 agencies.map((agency) => (
                   <TableRow key={agency.id}>
-                    <TableCell className="font-medium">{agency.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div>
+                        <div>{agency.franchiseName || agency.name}</div>
+                        {agency.branchName && (
+                          <div className="text-sm text-muted-foreground">{agency.branchName}</div>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{agency.provider}</TableCell>
                     <TableCell>{getStatusBadge(agency.status)}</TableCell>
                     <TableCell>
