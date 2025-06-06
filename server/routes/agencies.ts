@@ -174,6 +174,22 @@ router.post("/agencies/search-franchise", async (req, res) => {
       return res.status(400).json({ error: "Franchise name is required" });
     }
 
+    // Check if PropData API token exists
+    if (!process.env.PROPDATA_API_TOKEN) {
+      // Allow manual agency addition without API verification
+      return res.json({
+        id: `manual-${Date.now()}`,
+        name: name,
+        branches: [{
+          id: `manual-branch-${Date.now()}`,
+          name: `${name} - Main Branch`,
+          address: "Address to be confirmed"
+        }],
+        isManual: true,
+        note: "Agency added manually - PropData API access pending"
+      });
+    }
+
     // Call PropData API to search for franchise
     const franchiseResponse = await fetch('https://staging.api-gw.propdata.net/branches/api/v1/franchises/search/', {
       method: 'POST',
@@ -189,7 +205,18 @@ router.post("/agencies/search-franchise", async (req, res) => {
     });
 
     if (!franchiseResponse.ok) {
-      throw new Error('Failed to search PropData API');
+      // Fall back to manual addition if API fails
+      return res.json({
+        id: `manual-${Date.now()}`,
+        name: name,
+        branches: [{
+          id: `manual-branch-${Date.now()}`,
+          name: `${name} - Main Branch`,
+          address: "Address to be confirmed"
+        }],
+        isManual: true,
+        note: "Agency added manually - PropData API search failed"
+      });
     }
 
     const franchiseData = await franchiseResponse.json();
@@ -330,7 +357,7 @@ router.post("/agencies/add-integration", async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const { id: franchiseId, name: franchiseName, branches } = req.body;
+    const { id: franchiseId, name: franchiseName, branches, isManual, note } = req.body;
     
     if (!franchiseId || !franchiseName || !branches || !Array.isArray(branches)) {
       return res.status(400).json({ error: "Invalid franchise data" });
@@ -339,28 +366,33 @@ router.post("/agencies/add-integration", async (req, res) => {
     // Generate slug from franchise name
     const slug = franchiseName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
-    // Check if this franchise is already integrated
+    // Check if this franchise is already integrated by slug (for manual entries)
     const existingBranch = await db
       .select()
       .from(agencyBranches)
-      .where(eq(agencyBranches.propdataFranchiseId, franchiseId))
+      .where(eq(agencyBranches.slug, slug))
       .limit(1);
 
     if (existingBranch.length > 0) {
       return res.status(400).json({ error: "This franchise is already integrated" });
     }
 
+    // Determine status based on whether this is manual or API-verified
+    const status = isManual ? 'pending_activation' : 'active';
+    const syncEnabled = !isManual;
+
     // Insert all branches
     const branchRecords = branches.map((branch: any) => ({
       franchiseName,
       slug,
       branchName: branch.name,
-      propdataFranchiseId: franchiseId,
-      propdataBranchId: branch.id,
+      propdataFranchiseId: isManual ? null : franchiseId,
+      propdataBranchId: isManual ? null : branch.id,
       provider: 'PropData',
-      status: 'active',
-      autoSyncEnabled: true,
-      syncFrequency: '5 minutes'
+      status,
+      autoSyncEnabled: syncEnabled,
+      syncFrequency: '5 minutes',
+      notes: note || null
     }));
 
     await db.insert(agencyBranches).values(branchRecords);

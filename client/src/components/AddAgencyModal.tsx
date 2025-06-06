@@ -192,21 +192,9 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
                   Search
                 </Button>
               </div>
-              <div className="text-center mt-2">
-                <Button 
-                  variant="outline"
-                  onClick={loadAvailableFranchises}
-                  disabled={isLoadingFranchises}
-                  className="text-sm"
-                >
-                  {isLoadingFranchises ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <Building2 className="w-4 h-4 mr-2" />
-                  )}
-                  Browse All Available Agencies
-                </Button>
-              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Search for the agency name to begin integration setup. Data access will need to be coordinated with PropData.
+              </p>
             </div>
           </div>
 
