@@ -263,6 +263,7 @@ function App() {
             <Route path="/access-codes" component={() => <ProtectedRoute component={AccessCodePage} />} />
             <Route path="/subscription" component={() => <ProtectedRoute component={SubscriptionPage} />} />
             <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
+            <Route path="/dashboard/propdata-listings" component={() => <ProtectedRoute component={PropdataListingsPage} />} />
             <Route path="/airbnb-yield-calculator" component={() => (
               <PageTransition>
                 <AirbnbYieldCalculator />
