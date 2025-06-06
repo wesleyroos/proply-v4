@@ -7,6 +7,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { 
   BadgeCheck, 
   AlertTriangle, 
@@ -161,80 +169,104 @@ export function ControlPanel() {
         </Button>
       </div>
 
-      {/* Agency Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-        {agencies.map((agency) => (
-          <Card key={agency.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{agency.name}</CardTitle>
-                {getStatusBadge(agency.status)}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                via {agency.provider}
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Last Sync:</span>
-                <span className="font-medium">
-                  {agency.lastSync ? format(new Date(agency.lastSync), 'MMM d, HH:mm') : 'Never'}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Properties:</span>
-                <span className="font-medium">{agency.totalProperties}</span>
-              </div>
-              {agency.lastSyncResult && (
-                <>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Last Result:</span>
-                    <span className="font-medium">
-                      +{agency.lastSyncResult.newListings} new, {agency.lastSyncResult.updatedListings} updated
-                    </span>
-                  </div>
-                  {agency.lastSyncResult.errors > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Errors:</span>
-                      <span className="font-medium text-red-600">{agency.lastSyncResult.errors}</span>
-                    </div>
-                  )}
-                </>
+      {/* Agency Integrations Table */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Agency Integrations
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Agency</TableHead>
+                <TableHead>Syndication Platform</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last Sync</TableHead>
+                <TableHead>Properties</TableHead>
+                <TableHead>Last Result</TableHead>
+                <TableHead>Auto-sync</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {agencies.length > 0 ? (
+                agencies.map((agency) => (
+                  <TableRow key={agency.id}>
+                    <TableCell className="font-medium">{agency.name}</TableCell>
+                    <TableCell>{agency.provider}</TableCell>
+                    <TableCell>{getStatusBadge(agency.status)}</TableCell>
+                    <TableCell>
+                      {agency.lastSync ? format(new Date(agency.lastSync), 'MMM d, HH:mm') : 'Never'}
+                    </TableCell>
+                    <TableCell>{agency.totalProperties.toLocaleString()}</TableCell>
+                    <TableCell>
+                      {agency.lastSyncResult ? (
+                        <div className="text-sm">
+                          <div>+{agency.lastSyncResult.newListings} new</div>
+                          <div className="text-muted-foreground">{agency.lastSyncResult.updatedListings} updated</div>
+                          {agency.lastSyncResult.errors > 0 && (
+                            <div className="text-red-600">{agency.lastSyncResult.errors} errors</div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {agency.autoSyncEnabled ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span className="text-sm">Every {agency.syncFrequency}</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-muted-foreground">Disabled</span>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          disabled={syncMutation.isPending || agency.status === 'syncing'}
+                          onClick={() => syncMutation.mutate({ agencyId: agency.id })}
+                        >
+                          {syncMutation.isPending ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <RefreshCcw className="w-3 h-3" />
+                          )}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          disabled={syncMutation.isPending || agency.status === 'syncing'}
+                          onClick={() => syncMutation.mutate({ agencyId: agency.id, forceFullSync: true })}
+                        >
+                          <Database className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    No agencies configured
+                  </TableCell>
+                </TableRow>
               )}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Auto-sync:</span>
-                <span className="font-medium">
-                  {agency.autoSyncEnabled ? `Every ${agency.syncFrequency}` : 'Disabled'}
-                </span>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex-1"
-                  disabled={syncMutation.isPending || agency.status === 'syncing'}
-                  onClick={() => syncMutation.mutate({ agencyId: agency.id })}
-                >
-                  {syncMutation.isPending ? (
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                  ) : (
-                    <RefreshCcw className="w-3 h-3 mr-1" />
-                  )}
-                  Quick Sync
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  disabled={syncMutation.isPending || agency.status === 'syncing'}
-                  onClick={() => syncMutation.mutate({ agencyId: agency.id, forceFullSync: true })}
-                >
-                  <Database className="w-3 h-3" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* System Status and Recent Activity */}
       <div className="grid gap-6 md:grid-cols-2">

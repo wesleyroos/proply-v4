@@ -94,7 +94,7 @@ router.post("/agencies/:agencyId/sync", async (req, res) => {
       : "/api/propdata/listings/quick-sync";
 
     // Forward the request to the existing sync endpoint
-    const response = await fetch(`${req.protocol}://${req.get('host')}${syncUrl}`, {
+    const response = await fetch(`http://localhost:5000${syncUrl}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
