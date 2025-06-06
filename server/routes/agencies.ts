@@ -54,10 +54,16 @@ router.get("/agencies", async (req, res) => {
       Object.values(franchiseGroups).map(async (franchise: any) => {
         // Get property count for this franchise's branches
         const branchIds = franchise.branches.map((b: any) => b.id);
-        const [propertyCount] = await db
-          .select({ count: count() })
-          .from(propdataListings)
-          .where(branchIds.length > 0 ? `branch_id IN (${branchIds.join(',')})` : '1=0');
+        
+        let propertyCount;
+        if (branchIds.length > 0) {
+          [propertyCount] = await db
+            .select({ count: count() })
+            .from(propdataListings)
+            .where(inArray(propdataListings.branchId, branchIds));
+        } else {
+          propertyCount = { count: 0 };
+        }
 
         return {
           ...franchise,
