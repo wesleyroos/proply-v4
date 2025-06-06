@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { AddAgencyModal } from "@/components/AddAgencyModal";
 
 interface Agency {
   id: string;
@@ -163,10 +164,7 @@ export function ControlPanel() {
             Manage and monitor agency integrations
           </p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add Agency
-        </Button>
+        <AddAgencyModal />
       </div>
 
       {/* Agency Integrations Table */}
