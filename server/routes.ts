@@ -41,6 +41,7 @@ import { getRentalPerformance } from './routes/rental-performance';
 import { sendPasswordResetEmail } from './services/email';
 import { sendDemoRequestEmail } from './services/emailService';
 import propdataDebugRouter from './routes/propdata-debug';
+import agenciesRouter from './routes/agencies';
 import { imageSyncService } from './services/imageSyncService';
 import sharp from 'sharp';
 
@@ -2109,6 +2110,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', propdataListingsRouter);
   app.use('/api', fetchPropdataRouter);
   app.use('/api', valuationRouter);
+  app.use('/api', agenciesRouter);
   app.use('/api/propdata-debug', propdataDebugRouter);
   
   // Image sync endpoint for comprehensive image processing

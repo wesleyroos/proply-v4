@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,29 +7,144 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BadgeCheck, AlertTriangle, RefreshCcw, Plus } from 'lucide-react';
+import { 
+  BadgeCheck, 
+  AlertTriangle, 
+  RefreshCcw, 
+  Plus, 
+  Database,
+  Clock,
+  Activity,
+  CheckCircle,
+  XCircle,
+  Loader2
+} from 'lucide-react';
+import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
+
+interface Agency {
+  id: string;
+  name: string;
+  provider: string;
+  status: 'active' | 'syncing' | 'error' | 'inactive';
+  lastSync: string | null;
+  totalProperties: number;
+  lastSyncResult: {
+    newListings: number;
+    updatedListings: number;
+    errors: number;
+    errorMessage?: string | null;
+  } | null;
+  autoSyncEnabled: boolean;
+  syncFrequency: string;
+}
+
+interface SyncHistory {
+  id: number;
+  status: string;
+  startedAt: string;
+  completedAt: string | null;
+  newListings: number;
+  updatedListings: number;
+  errors: number;
+  errorMessage?: string | null;
+}
+
+interface AgenciesData {
+  agencies: Agency[];
+  recentSyncs: SyncHistory[];
+}
 
 export function ControlPanel() {
-  const [integrations] = useState([
-    {
-      agencyName: "Sothebys Atlantic Seaboard",
-      apiProvider: "PropData",
-      status: "active",
-      lastSync: "2025-01-22 13:30",
-      properties: 156,
-      reportsGenerated: 42,
-      monthlyBilling: "R0.00"
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch agencies data
+  const { data: agenciesData, isLoading, error } = useQuery<AgenciesData>({
+    queryKey: ["/api/agencies"],
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  // Sync mutation
+  const syncMutation = useMutation({
+    mutationFn: async ({ agencyId, forceFullSync }: { agencyId: string; forceFullSync?: boolean }) => {
+      const response = await fetch(`/api/agencies/${agencyId}/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ forceFullSync }),
+      });
+      if (!response.ok) throw new Error('Sync failed');
+      return response.json();
     },
-    {
-      agencyName: "Quay1",
-      apiProvider: "PropCtrl",
-      status: "pending",
-      lastSync: "-",
-      properties: 0,
-      reportsGenerated: 0,
-      monthlyBilling: "R0.00"
+    onSuccess: (data) => {
+      toast({
+        title: "Sync completed",
+        description: data.message || "Agency sync completed successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/agencies"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sync failed",
+        description: error.message || "Failed to sync agency data",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'syncing':
+        return <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />;
+      case 'error':
+        return <XCircle className="w-4 h-4 text-red-600" />;
+      default:
+        return <AlertTriangle className="w-4 h-4 text-gray-400" />;
     }
-  ]);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      case 'syncing':
+        return <Badge className="bg-blue-100 text-blue-800">Syncing</Badge>;
+      case 'error':
+        return <Badge variant="destructive">Error</Badge>;
+      default:
+        return <Badge variant="secondary">Inactive</Badge>;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-red-600">
+              <XCircle className="h-5 w-5" />
+              <span>Failed to load agency data</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const agencies = agenciesData?.agencies || [];
+  const recentSyncs = agenciesData?.recentSyncs || [];
 
   return (
     <div className="p-6">
@@ -37,150 +152,174 @@ export function ControlPanel() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Control Panel</h1>
           <p className="text-muted-foreground mt-2">
-            Manage and monitor syndicator integrations
+            Manage and monitor agency integrations
           </p>
         </div>
         <Button className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Add Integration
+          Add Agency
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active Integrations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1 / 5</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Properties Synced
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">156</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Reports Generated
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">42</div>
-          </CardContent>
-        </Card>
+      {/* Agency Cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        {agencies.map((agency) => (
+          <Card key={agency.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">{agency.name}</CardTitle>
+                {getStatusBadge(agency.status)}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                via {agency.provider}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Last Sync:</span>
+                <span className="font-medium">
+                  {agency.lastSync ? format(new Date(agency.lastSync), 'MMM d, HH:mm') : 'Never'}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Properties:</span>
+                <span className="font-medium">{agency.totalProperties}</span>
+              </div>
+              {agency.lastSyncResult && (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Last Result:</span>
+                    <span className="font-medium">
+                      +{agency.lastSyncResult.newListings} new, {agency.lastSyncResult.updatedListings} updated
+                    </span>
+                  </div>
+                  {agency.lastSyncResult.errors > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Errors:</span>
+                      <span className="font-medium text-red-600">{agency.lastSyncResult.errors}</span>
+                    </div>
+                  )}
+                </>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Auto-sync:</span>
+                <span className="font-medium">
+                  {agency.autoSyncEnabled ? `Every ${agency.syncFrequency}` : 'Disabled'}
+                </span>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1"
+                  disabled={syncMutation.isPending || agency.status === 'syncing'}
+                  onClick={() => syncMutation.mutate({ agencyId: agency.id })}
+                >
+                  {syncMutation.isPending ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <RefreshCcw className="w-3 h-3 mr-1" />
+                  )}
+                  Quick Sync
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  disabled={syncMutation.isPending || agency.status === 'syncing'}
+                  onClick={() => syncMutation.mutate({ agencyId: agency.id, forceFullSync: true })}
+                >
+                  <Database className="w-3 h-3" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid gap-6">
+      {/* System Status and Recent Activity */}
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Active Integrations</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              System Status
+            </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                    <th className="h-12 px-4 text-left align-middle font-medium">Agency</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Syndicator</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Last Sync</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Properties</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Reports</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {integrations.map((integration, i) => (
-                    <tr key={i} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                      <td className="p-4 align-middle">{integration.agencyName}</td>
-                      <td className="p-4 align-middle">{integration.apiProvider}</td>
-                      <td className="p-4 align-middle">
-                        <Badge variant={integration.status === 'active' ? 'default' : 'secondary'} className="flex w-fit items-center gap-1">
-                          {integration.status === 'active' ? <BadgeCheck className="w-4 h-4" /> : null}
-                          {integration.status === 'active' ? 'Active' : 'Pending'}
-                        </Badge>
-                      </td>
-                      <td className="p-4 align-middle">{integration.lastSync}</td>
-                      <td className="p-4 align-middle">{integration.properties}</td>
-                      <td className="p-4 align-middle">{integration.reportsGenerated}</td>
-                      <td className="p-4 align-middle">
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <RefreshCcw className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
-                            <AlertTriangle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span>PropData API</span>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-600">Connected</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Database</span>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-600">Healthy</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Auto-sync Service</span>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-600">Running</span>
+                </div>
+              </div>
+              {agencies.length > 0 && agencies[0].lastSync && (
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-muted-foreground">Last Auto-sync</span>
+                  <span className="text-sm">
+                    {format(new Date(agencies[0].lastSync), 'HH:mm')}
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Available Syndicators</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">PropData</span>
-                  <Badge>Connected</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">PropCtrl</span>
-                  <span className="text-muted-foreground">Coming Soon</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">RealtyPA</span>
-                  <span className="text-muted-foreground">Coming Soon</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Fusion</span>
-                  <span className="text-muted-foreground">Coming Soon</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <p className="font-medium">PropData sync completed</p>
-                  <p className="text-sm text-muted-foreground">22 January 2025, 13:30</p>
-                </div>
-                <div>
-                  <p className="font-medium">New property synced: 123 Main Road</p>
-                  <p className="text-sm text-muted-foreground">22 January 2025, 13:25</p>
-                </div>
-                <div>
-                  <p className="font-medium">Report generated for Sothebys</p>
-                  <p className="text-sm text-muted-foreground">22 January 2025, 13:20</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Recent Sync Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentSyncs.length > 0 ? (
+                recentSyncs.slice(0, 5).map((sync) => (
+                  <div key={sync.id} className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(sync.status)}
+                        <span className="font-medium capitalize">{sync.status}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(sync.startedAt), 'MMM d, HH:mm')}
+                      </p>
+                    </div>
+                    <div className="text-right text-sm">
+                      {sync.status === 'completed' && (
+                        <>
+                          <div>+{sync.newListings} new</div>
+                          <div className="text-muted-foreground">{sync.updatedListings} updated</div>
+                        </>
+                      )}
+                      {sync.errors > 0 && (
+                        <div className="text-red-600">{sync.errors} errors</div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">No recent sync activity</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
