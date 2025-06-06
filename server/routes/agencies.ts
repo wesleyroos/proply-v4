@@ -241,6 +241,88 @@ router.post("/agencies/search-franchise", async (req, res) => {
   }
 });
 
+// GET /api/agencies/list-franchises - Get all available franchises from PropData
+router.get("/agencies/list-franchises", async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // Call PropData API to get all franchises
+    const franchiseResponse = await fetch('https://staging.api-gw.propdata.net/branches/api/v1/franchises/search/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${process.env.PROPDATA_API_TOKEN}`
+      },
+      body: JSON.stringify({
+        filters: {},
+        pagination: {
+          page: 1,
+          page_size: 1000  // Get up to 1000 franchises
+        }
+      })
+    });
+
+    if (!franchiseResponse.ok) {
+      throw new Error('Failed to fetch franchises from PropData API');
+    }
+
+    const franchiseData = await franchiseResponse.json();
+    
+    if (!franchiseData.results) {
+      return res.json({ franchises: [] });
+    }
+
+    // Get branch counts for each franchise
+    const franchisesWithBranchCounts = await Promise.all(
+      franchiseData.results.map(async (franchise: any) => {
+        try {
+          const branchesResponse = await fetch('https://staging.api-gw.propdata.net/branches/api/v1/branches/search/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Token ${process.env.PROPDATA_API_TOKEN}`
+            },
+            body: JSON.stringify({
+              filters: {
+                franchises: [franchise.id]
+              }
+            })
+          });
+
+          const branchesData = await branchesResponse.json();
+          return {
+            id: franchise.id,
+            name: franchise.name,
+            branchCount: branchesData.results ? branchesData.results.length : 0
+          };
+        } catch (error) {
+          return {
+            id: franchise.id,
+            name: franchise.name,
+            branchCount: 0
+          };
+        }
+      })
+    );
+
+    // Sort by name
+    franchisesWithBranchCounts.sort((a, b) => a.name.localeCompare(b.name));
+
+    return res.json({
+      franchises: franchisesWithBranchCounts,
+      total: franchisesWithBranchCounts.length
+    });
+  } catch (error) {
+    console.error("Error fetching franchises:", error);
+    return res.status(500).json({ 
+      error: "Failed to fetch franchises", 
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
 // POST /api/agencies/add-integration - Add new agency integration
 router.post("/agencies/add-integration", async (req, res) => {
   try {

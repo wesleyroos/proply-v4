@@ -22,6 +22,12 @@ import {
 import { Plus, Search, Loader2, CheckCircle, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface FranchiseItem {
+  id: string;
+  name: string;
+  branchCount?: number;
+}
+
 interface FranchiseResult {
   id: string;
   name: string;
@@ -39,13 +45,41 @@ interface AddAgencyModalProps {
 export function AddAgencyModal({ children }: AddAgencyModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [agencyName, setAgencyName] = useState("");
+  const [availableFranchises, setAvailableFranchises] = useState<FranchiseItem[]>([]);
   const [searchResults, setSearchResults] = useState<FranchiseResult | null>(null);
+  const [isLoadingFranchises, setIsLoadingFranchises] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [showAvailableList, setShowAvailableList] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Search for franchise
+  // Load all available franchises
+  const loadAvailableFranchises = async () => {
+    setIsLoadingFranchises(true);
+    try {
+      const response = await fetch('/api/agencies/list-franchises', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) throw new Error('Failed to load franchises');
+      
+      const data = await response.json();
+      setAvailableFranchises(data.franchises);
+      setShowAvailableList(true);
+    } catch (error) {
+      toast({
+        title: "Failed to load agencies",
+        description: "Could not fetch available agencies from PropData",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingFranchises(false);
+    }
+  };
+
+  // Search for specific franchise
   const searchFranchise = async () => {
     if (!agencyName.trim()) return;
     
@@ -102,9 +136,17 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
     },
   });
 
+  const selectFranchise = async (franchise: FranchiseItem) => {
+    setAgencyName(franchise.name);
+    setShowAvailableList(false);
+    await searchFranchise();
+  };
+
   const handleReset = () => {
     setAgencyName("");
     setSearchResults(null);
+    setShowAvailableList(false);
+    setAvailableFranchises([]);
   };
 
   return (
@@ -150,8 +192,64 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
                   Search
                 </Button>
               </div>
+              <div className="text-center mt-2">
+                <Button 
+                  variant="outline"
+                  onClick={loadAvailableFranchises}
+                  disabled={isLoadingFranchises}
+                  className="text-sm"
+                >
+                  {isLoadingFranchises ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Building2 className="w-4 h-4 mr-2" />
+                  )}
+                  Browse All Available Agencies
+                </Button>
+              </div>
             </div>
           </div>
+
+          {/* Available Agencies List */}
+          {showAvailableList && availableFranchises.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Available Agencies in PropData</h3>
+                <Badge variant="outline">
+                  {availableFranchises.length} agencies found
+                </Badge>
+              </div>
+              
+              <div className="max-h-60 overflow-y-auto border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Agency Name</TableHead>
+                      <TableHead>Branches</TableHead>
+                      <TableHead></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {availableFranchises.map((franchise) => (
+                      <TableRow key={franchise.id}>
+                        <TableCell className="font-medium">{franchise.name}</TableCell>
+                        <TableCell>{franchise.branchCount || 'Unknown'}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => selectFranchise(franchise)}
+                          >
+                            Select
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
 
           {/* Search Results */}
           {searchResults && (
