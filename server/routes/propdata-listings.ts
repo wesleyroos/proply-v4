@@ -16,8 +16,16 @@ router.get("/propdata/listings", async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    // Query database for PropData listings, ordered by actual listing date
-    const listings = await db.select().from(propdataListings).orderBy(desc(propdataListings.listingDate));
+    // Query database for PropData listings with agency branch information
+    const listings = await db
+      .select({
+        ...propdataListings,
+        franchiseName: agencyBranches.franchiseName,
+        branchName: agencyBranches.branchName,
+      })
+      .from(propdataListings)
+      .leftJoin(agencyBranches, eq(propdataListings.branchId, agencyBranches.id))
+      .orderBy(desc(propdataListings.listingDate));
     
     // Parse JSON fields in the response
     const parsedListings = listings.map(listing => ({
