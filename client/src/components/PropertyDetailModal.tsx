@@ -111,6 +111,9 @@ export interface PropertyDetailListing {
   location?: PropertyLocation;
   features?: string[];
   listingData?: any; // The raw PropData data
+  // Agency branch information
+  franchiseName?: string;
+  branchName?: string;
 }
 
 interface PropertyDetailModalProps {
@@ -1113,9 +1116,17 @@ export default function PropertyDetailModal({
                     <span className="font-medium">{property?.propdataId}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Agency ID:</span>
-                    <span className="font-medium">{property?.agencyId}</span>
+                    <span className="text-muted-foreground">Agency:</span>
+                    <span className="font-medium">
+                      {property?.franchiseName || "Sotheby's International Realty"}
+                    </span>
                   </div>
+                  {property?.branchName && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Branch:</span>
+                      <span className="font-medium">{property.branchName}</span>
+                    </div>
+                  )}
                   {property?.agentId && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Agent ID:</span>

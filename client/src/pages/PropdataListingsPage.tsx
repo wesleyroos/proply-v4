@@ -77,6 +77,7 @@ interface PropdataListing {
   // Agency branch information
   franchiseName?: string;
   branchName?: string;
+  agencyId?: number; // For compatibility with PropertyDetailModal
 }
 
 interface ApiResponse {
@@ -275,6 +276,7 @@ export default function PropdataListingsPage() {
     // Convert PropdataListing to PropertyDetailListing
     const detailProperty: PropertyDetailListing = {
       ...property,
+      agencyId: property.branchId || property.agencyId || 1, // Use branchId or fallback for compatibility
       listingData: property.listingData || {},
       monthlyLevy: property.monthlyLevy || null,
       sectionalTitleLevy: property.sectionalTitleLevy || null,
@@ -837,8 +839,8 @@ export default function PropdataListingsPage() {
                                 Branch {listing.branchId}
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-xs text-muted-foreground">
-                                Sotheby's (Legacy)
+                              <Badge variant="outline" className="text-xs">
+                                Sotheby's International Realty
                               </Badge>
                             )}
                           </div>
