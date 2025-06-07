@@ -149,6 +149,12 @@ export default function PropertyDetailModal({
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
+  const [financingParams, setFinancingParams] = useState({
+    depositPercentage: 10,
+    interestRate: 10.75,
+    loanTermYears: 20
+  });
 
   // Timer effect for generation counter
   useEffect(() => {
@@ -732,12 +738,12 @@ export default function PropertyDetailModal({
       );
     }
 
-    // Financing parameters
+    // Financing parameters - using dynamic state
     const propertyPrice = parseFloat(property.price.toString());
-    const depositPercentage = 0.10; // 10% deposit
-    const loanToValue = 0.90; // 90% LTV
-    const interestRate = 0.1075; // 10.75% annual interest rate
-    const loanTermYears = 20;
+    const depositPercentage = financingParams.depositPercentage / 100;
+    const loanToValue = 1 - depositPercentage;
+    const interestRate = financingParams.interestRate / 100;
+    const loanTermYears = financingParams.loanTermYears;
     const loanTermMonths = loanTermYears * 12;
 
     // Calculate loan amount and monthly payment
@@ -776,10 +782,22 @@ export default function PropertyDetailModal({
       <div className="space-y-4">
         {/* Financing Assumptions */}
         <div className="bg-gray-50 p-2 rounded-lg text-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium text-gray-700">Financing Assumptions</span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 px-2 text-xs"
+              onClick={() => setIsFinancingModalOpen(true)}
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div>
               <span className="text-muted-foreground">Deposit:</span>
-              <div className="font-medium">{formatCurrency(depositAmount)} (10%)</div>
+              <div className="font-medium">{formatCurrency(depositAmount)} ({financingParams.depositPercentage}%)</div>
             </div>
             <div>
               <span className="text-muted-foreground">Loan Amount:</span>
@@ -787,11 +805,11 @@ export default function PropertyDetailModal({
             </div>
             <div>
               <span className="text-muted-foreground">Interest Rate:</span>
-              <div className="font-medium">10.75%</div>
+              <div className="font-medium">{financingParams.interestRate}%</div>
             </div>
             <div>
               <span className="text-muted-foreground">Term:</span>
-              <div className="font-medium">20 years</div>
+              <div className="font-medium">{financingParams.loanTermYears} years</div>
             </div>
           </div>
         </div>
@@ -2219,6 +2237,90 @@ export default function PropertyDetailModal({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Financing Parameters Modal */}
+      <Dialog open={isFinancingModalOpen} onOpenChange={setIsFinancingModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Financing Parameters</DialogTitle>
+            <DialogDescription>
+              Adjust the deposit, interest rate, and loan term to see how they affect your investment analysis.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="depositPercentage">Deposit Percentage</Label>
+              <Input
+                id="depositPercentage"
+                type="number"
+                min="5"
+                max="50"
+                step="1"
+                value={financingParams.depositPercentage}
+                onChange={(e) => setFinancingParams(prev => ({
+                  ...prev,
+                  depositPercentage: parseFloat(e.target.value) || 10
+                }))}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">Between 5% and 50%</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="interestRate">Interest Rate (%)</Label>
+              <Input
+                id="interestRate"
+                type="number"
+                min="1"
+                max="25"
+                step="0.25"
+                value={financingParams.interestRate}
+                onChange={(e) => setFinancingParams(prev => ({
+                  ...prev,
+                  interestRate: parseFloat(e.target.value) || 10.75
+                }))}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">Current market rates typically 8-15%</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="loanTermYears">Loan Term (Years)</Label>
+              <Input
+                id="loanTermYears"
+                type="number"
+                min="5"
+                max="30"
+                step="1"
+                value={financingParams.loanTermYears}
+                onChange={(e) => setFinancingParams(prev => ({
+                  ...prev,
+                  loanTermYears: parseInt(e.target.value) || 20
+                }))}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">Between 5 and 30 years</p>
+            </div>
+          </div>
+          
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsFinancingModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setIsFinancingModalOpen(false);
+                // Parameters are already updated via state, charts will re-render automatically
+              }}
+            >
+              Update
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
