@@ -25,13 +25,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import {
   Home,
   Bed,
   Bath,
@@ -232,15 +225,6 @@ export default function PropertyDetailModal({
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
-  
-  // PDF Report Generation State
-  const [isSendingReport, setIsSendingReport] = useState(false);
-  const [reportSendStatus, setReportSendStatus] = useState<{
-    success?: boolean;
-    message?: string;
-    reportId?: string;
-    emailSent?: boolean;
-  } | null>(null);
   // FINANCING PARAMETERS - Database-backed single source of truth
   // These parameters are loaded from valuation_reports table and saved on update
   // This ensures PDF generation uses exact same data user sees in modal
@@ -937,103 +921,6 @@ export default function PropertyDetailModal({
     }
   };
 
-  // Send PDF Report Function
-  const sendPDFReport = async () => {
-    if (!property?.propdataId) {
-      alert("Property ID is required to generate report");
-      return;
-    }
-
-    setIsSendingReport(true);
-    setReportSendStatus(null);
-
-    try {
-      const response = await fetch(`/api/reports/generate-and-send/${property.propdataId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      setReportSendStatus({
-        success: result.success,
-        message: result.message,
-        reportId: result.reportId,
-        emailSent: result.emailSent
-      });
-
-      if (result.success && result.emailSent) {
-        alert("PDF report generated and sent successfully! Check your email for the download link.");
-      } else if (result.success && !result.emailSent) {
-        alert("PDF report generated successfully, but email delivery failed. Please contact support.");
-      } else {
-        throw new Error(result.message || "Failed to generate PDF report");
-      }
-
-    } catch (error: any) {
-      console.error("Error sending PDF report:", error);
-      setReportSendStatus({
-        success: false,
-        message: error.message || "Failed to send PDF report"
-      });
-      alert(`Failed to send PDF report: ${error.message}`);
-    } finally {
-      setIsSendingReport(false);
-    }
-  };
-
-  // Download PDF Report Function
-  const downloadPDFReport = async () => {
-    if (!property?.propdataId) {
-      alert("Property ID is required to generate report");
-      return;
-    }
-
-    setIsSendingReport(true);
-    setReportSendStatus(null);
-
-    try {
-      const response = await fetch(`/api/reports/generate-and-send/${property.propdataId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success && result.downloadUrl) {
-        // Trigger direct download
-        const downloadLink = document.createElement('a');
-        downloadLink.href = result.downloadUrl;
-        downloadLink.download = `investment-analysis-${property.address}.pdf`;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        
-        alert("PDF report generated and downloaded successfully!");
-      } else {
-        throw new Error(result.message || "Failed to generate PDF report");
-      }
-
-    } catch (error: any) {
-      console.error("Error downloading PDF report:", error);
-      alert(`Failed to download PDF report: ${error.message}`);
-    } finally {
-      setIsSendingReport(false);
-    }
-  };
-
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-ZA", {
       style: "currency",
@@ -1535,53 +1422,25 @@ export default function PropertyDetailModal({
                 )}
               </div>
               <div className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      disabled={isGeneratingReport || isSendingReport}
-                      variant="default"
-                      size="sm"
-                      className="gap-2"
-                    >
-                      {(isGeneratingReport || isSendingReport) ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <FileBarChart className="h-4 w-4" />
-                      )}
-                      {isGeneratingReport
-                        ? `Generating... ${generationTimer}s`
-                        : isSendingReport
-                        ? "Processing..."
-                        : "Actions"}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={generateValuationReport}
-                      disabled={isGeneratingReport || isSendingReport}
-                    >
-                      <FileBarChart className="h-4 w-4 mr-2" />
-                      Generate Report
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={sendPDFReport}
-                      disabled={isGeneratingReport || isSendingReport}
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Send Report
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={downloadPDFReport}
-                      disabled={isGeneratingReport || isSendingReport}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Download Report
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                {!isGeneratingReport && !isSendingReport && (
+                <Button
+                  onClick={generateValuationReport}
+                  disabled={isGeneratingReport}
+                  variant="default"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {isGeneratingReport ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileBarChart className="h-4 w-4" />
+                  )}
+                  {isGeneratingReport
+                    ? `Generating... ${generationTimer}s`
+                    : "Generate Report"}
+                </Button>
+                {!isGeneratingReport && (
                   <p className="text-xs text-muted-foreground mt-1">
+                    This should take about 20 seconds
                   </p>
                 )}
               </div>
@@ -2042,9 +1901,27 @@ export default function PropertyDetailModal({
                       including PriceLabs short-term rental analysis and
                       long-term rental estimates.
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      Use the Actions button in the top-right corner to generate, send, or download reports.
-                    </p>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={generateValuationReport}
+                        disabled={isGeneratingReport}
+                        className="gap-2"
+                      >
+                        {isGeneratingReport ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <FileBarChart className="h-4 w-4" />
+                        )}
+                        {isGeneratingReport
+                          ? `Generating... ${generationTimer}s`
+                          : "Generate Report"}
+                      </Button>
+                      {!isGeneratingReport && (
+                        <p className="text-xs text-muted-foreground">
+                          This should take about 20 seconds
+                        </p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
@@ -2728,9 +2605,28 @@ export default function PropertyDetailModal({
                       Generate a valuation report to see detailed property
                       appreciation forecasts and component analysis.
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      Use the Actions button in the top-right corner to generate, send, or download reports.
-                    </p>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={generateValuationReport}
+                        disabled={isGeneratingReport}
+                        className="gap-2"
+                      >
+                        {isGeneratingReport ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <FileBarChart className="h-4 w-4" />
+                        )}
+                        {isGeneratingReport
+                          ? `Generating... ${generationTimer}s`
+                          : "Generate Report"}
+                      </Button>
+                      {!isGeneratingReport && (
+                        <p className="text-xs text-muted-foreground">
+                          This will include appreciation analysis with levy
+                          impact assessment
+                        </p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -2945,8 +2841,30 @@ export default function PropertyDetailModal({
                       Generate Valuation Report
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Use the Actions button in the top-right corner to generate, send, or download your AI-powered property valuation analysis.
+                      Click "Generate Report" to get an AI-powered property
+                      valuation analysis
                     </p>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={generateValuationReport}
+                        disabled={isGeneratingReport}
+                        className="gap-2"
+                      >
+                        {isGeneratingReport ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <FileBarChart className="h-4 w-4" />
+                        )}
+                        {isGeneratingReport
+                          ? `Generating... ${generationTimer}s`
+                          : "Generate Report"}
+                      </Button>
+                      {!isGeneratingReport && (
+                        <p className="text-xs text-muted-foreground">
+                          This should take about 20 seconds
+                        </p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               )}

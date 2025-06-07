@@ -18,7 +18,6 @@ import {
   valuationReports,
   rentalPerformanceData,
   propdataListings,
-  pdfReports,
 } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -40,9 +39,7 @@ import fetchPropdataRouter from './routes/fetch-propdata';
 import valuationRouter from './routes/valuation';
 import { getRentalPerformance } from './routes/rental-performance';
 import { sendPasswordResetEmail } from './services/email';
-// PDF generation services
-import { pdfService } from './services/pdfService';
-import { emailService } from './services/emailService';
+import { sendDemoRequestEmail } from './services/emailService';
 import propdataDebugRouter from './routes/propdata-debug';
 import agenciesRouter from './routes/agencies';
 import { imageSyncService } from './services/imageSyncService';
@@ -2290,16 +2287,15 @@ export function registerRoutes(app: Express): Server {
         product,
       });
       
-      // Send email notification (temporarily disabled)
-      // const success = await sendDemoRequestEmail({
-      //   fullName,
-      //   email,
-      //   company,
-      //   phoneNumber,
-      //   product,
-      //   message: message || "No additional message provided."
-      // });
-      const success = true; // Placeholder for now
+      // Send email notification
+      const success = await sendDemoRequestEmail({
+        fullName,
+        email,
+        company,
+        phoneNumber,
+        product,
+        message: message || "No additional message provided."
+      });
       
       if (success) {
         res.json({ success: true, message: "Demo request submitted successfully" });
@@ -2441,155 +2437,6 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error updating property address:', error);
       res.status(500).json({ error: 'Failed to update address' });
-    }
-  });
-
-  // PDF Report Generation API Routes
-  
-  // Generate and send PDF report
-  app.post('/api/reports/generate-and-send/:propertyId', async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    try {
-      const { propertyId } = req.params;
-      const userId = req.user.id;
-
-      console.log(`Generating PDF report for property ${propertyId}, user ${userId}`);
-
-      // Generate PDF report
-      const { reportId, downloadUrl, filePath } = await pdfService.generateInvestmentAnalysisReport(
-        propertyId,
-        userId
-      );
-
-      // Get property address for email
-      const [property] = await db
-        .select()
-        .from(propdataListings)
-        .where(eq(propdataListings.propdataId, propertyId))
-        .limit(1);
-
-      const propertyAddress = property?.address || 'Property';
-
-      // Send email with PDF download link
-      const emailResult = await emailService.sendReportEmail(
-        reportId,
-        'wesley@proply.co.za', // Will be dynamic later
-        propertyAddress,
-        downloadUrl
-      );
-
-      if (emailResult.success) {
-        res.json({
-          success: true,
-          message: 'PDF report generated and email sent successfully',
-          reportId,
-          downloadUrl,
-          emailSent: true
-        });
-      } else {
-        res.json({
-          success: true,
-          message: 'PDF report generated successfully, but email delivery failed',
-          reportId,
-          downloadUrl,
-          emailSent: false,
-          emailError: emailResult.error
-        });
-      }
-    } catch (error: any) {
-      console.error('Error generating PDF report:', error);
-      res.status(500).json({ 
-        error: 'Failed to generate PDF report',
-        details: error.message 
-      });
-    }
-  });
-
-  // Download PDF report
-  app.get('/api/reports/download/:reportId', async (req, res) => {
-    try {
-      const { reportId } = req.params;
-
-      // Fetch report from database
-      const [report] = await db
-        .select()
-        .from(pdfReports)
-        .where(eq(pdfReports.id, reportId))
-        .limit(1);
-
-      if (!report) {
-        return res.status(404).json({ error: 'Report not found' });
-      }
-
-      // Check if report has expired
-      if (new Date() > report.expiresAt) {
-        return res.status(410).json({ error: 'Report has expired' });
-      }
-
-      // Update download tracking
-      await db
-        .update(pdfReports)
-        .set({
-          downloadedAt: report.downloadedAt || new Date(),
-          downloadCount: report.downloadCount + 1,
-        })
-        .where(eq(pdfReports.id, reportId));
-
-      // Serve the PDF file
-      const fs = await import('fs');
-      if (!fs.existsSync(report.filePath)) {
-        return res.status(404).json({ error: 'PDF file not found' });
-      }
-
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="investment-analysis-${reportId}.pdf"`);
-      res.sendFile(report.filePath, { root: '/' });
-
-    } catch (error: any) {
-      console.error('Error downloading PDF report:', error);
-      res.status(500).json({ 
-        error: 'Failed to download report',
-        details: error.message 
-      });
-    }
-  });
-
-  // Get report status and details
-  app.get('/api/reports/:reportId/status', async (req, res) => {
-    try {
-      const { reportId } = req.params;
-
-      const [report] = await db
-        .select()
-        .from(pdfReports)
-        .where(eq(pdfReports.id, reportId))
-        .limit(1);
-
-      if (!report) {
-        return res.status(404).json({ error: 'Report not found' });
-      }
-
-      res.json({
-        reportId: report.id,
-        propertyId: report.propertyId,
-        emailDeliveryStatus: report.emailDeliveryStatus,
-        emailSentAt: report.emailSentAt,
-        downloadCount: report.downloadCount,
-        downloadedAt: report.downloadedAt,
-        expiresAt: report.expiresAt,
-        isExpired: new Date() > report.expiresAt,
-        fileSize: report.fileSize,
-        createdAt: report.createdAt
-      });
-    } catch (error: any) {
-      console.error('Error fetching report status:', error);
-      res.status(500).json({ 
-        error: 'Failed to fetch report status',
-        details: error.message 
-      });
     }
   });
 

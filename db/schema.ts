@@ -420,59 +420,9 @@ export const valuationReports = pgTable("valuation_reports", {
   currentLoanAmount: decimal("current_loan_amount", { precision: 12, scale: 2 }),
   currentMonthlyRepayment: decimal("current_monthly_repayment", { precision: 10, scale: 2 }),
   
-  // NEW: Complete Financial Analysis Data Storage (Single Source of Truth for PDF Generation)
-  // These JSON columns store ALL calculated financial data to eliminate PDF mapping issues
-  // Data is automatically generated and saved when valuation reports are created or financing parameters are updated
-  annualPropertyAppreciationData: jsonb("annual_property_appreciation_data"), // Property value projections (Years 1-20)
-  cashflowAnalysisData: jsonb("cashflow_analysis_data"), // Revenue projections and investment strategy recommendations 
-  financingAnalysisData: jsonb("financing_analysis_data"), // Complete loan metrics, equity buildup, payment schedules
-
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
-
-// PDF Reports table - tracks generated PDF reports and email delivery
-export const pdfReports = pgTable("pdf_reports", {
-  id: text("id").primaryKey().$defaultFn(() => createId()), // UUID for secure download URLs
-  propertyId: text("property_id").notNull(), // PropData property ID
-  valuationReportId: integer("valuation_report_id").notNull(), // Link to valuation report
-  userId: integer("user_id").notNull(), // User who generated the report
-  
-  // File storage
-  filePath: text("file_path").notNull(), // Path to PDF file on server
-  downloadUrl: text("download_url").notNull(), // Public download URL
-  
-  // Email delivery tracking
-  emailSentTo: text("email_sent_to").notNull(), // Email address where report was sent
-  emailSentAt: timestamp("email_sent_at"), // When email was successfully sent
-  emailDeliveryStatus: text("email_delivery_status").default("pending").notNull(), // pending, sent, failed
-  emailErrorMessage: text("email_error_message"), // Error details if email failed
-  
-  // Download tracking
-  downloadedAt: timestamp("downloaded_at"), // First download timestamp
-  downloadCount: integer("download_count").default(0).notNull(), // Number of downloads
-  
-  // Report metadata
-  reportType: text("report_type").default("investment_analysis").notNull(), // Type of report generated
-  fileSize: integer("file_size"), // File size in bytes
-  
-  // Auto-cleanup
-  expiresAt: timestamp("expires_at").notNull(), // 30 days from creation
-  
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
-});
-
-export const pdfReportsRelations = relations(pdfReports, ({ one }) => ({
-  user: one(users, {
-    fields: [pdfReports.userId],
-    references: [users.id],
-  }),
-  valuationReport: one(valuationReports, {
-    fields: [pdfReports.valuationReportId],
-    references: [valuationReports.id],
-  }),
-}));
 
 export const valuationReportsRelations = relations(valuationReports, ({ one, many }) => ({
   user: one(users, {
@@ -577,8 +527,6 @@ export const insertInvoiceSchema = createInsertSchema(invoices);
 export const selectInvoiceSchema = createSelectSchema(invoices);
 export const insertDealScoreLeadSchema = createInsertSchema(dealScoreLeads);
 export const selectDealScoreLeadSchema = createSelectSchema(dealScoreLeads);
-export const insertPdfReportSchema = createInsertSchema(pdfReports);
-export const selectPdfReportSchema = createSelectSchema(pdfReports);
 
 
 // Types
@@ -601,8 +549,6 @@ export type SelectReportTracking = typeof reportTracking.$inferSelect;
 
 export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
 export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
-export type InsertPdfReport = typeof pdfReports.$inferInsert;
-export type SelectPdfReport = typeof pdfReports.$inferSelect;
 export type InsertApiUsage = typeof apiUsage.$inferInsert;
 export type SelectApiUsage = typeof apiUsage.$inferSelect;
 export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
