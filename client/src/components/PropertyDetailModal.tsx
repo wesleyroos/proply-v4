@@ -782,19 +782,7 @@ export default function PropertyDetailModal({
       <div className="space-y-4">
         {/* Financing Assumptions */}
         <div className="bg-gray-50 p-2 rounded-lg text-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-medium text-gray-700">Financing Assumptions</span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-6 px-2 text-xs"
-              onClick={() => setIsFinancingModalOpen(true)}
-            >
-              <Edit className="h-3 w-3 mr-1" />
-              Edit
-            </Button>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 items-center">
             <div>
               <span className="text-muted-foreground">Deposit:</span>
               <div className="font-medium">{formatCurrency(depositAmount)} ({financingParams.depositPercentage}%)</div>
@@ -810,6 +798,17 @@ export default function PropertyDetailModal({
             <div>
               <span className="text-muted-foreground">Term:</span>
               <div className="font-medium">{financingParams.loanTermYears} years</div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 px-2 text-xs"
+                onClick={() => setIsFinancingModalOpen(true)}
+              >
+                <Edit className="h-3 w-3 mr-1" />
+                Edit
+              </Button>
             </div>
           </div>
         </div>
@@ -2249,7 +2248,7 @@ export default function PropertyDetailModal({
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="depositPercentage">Deposit Percentage</Label>
+              <label htmlFor="depositPercentage" className="text-sm font-medium">Deposit Percentage</label>
               <Input
                 id="depositPercentage"
                 type="number"
@@ -2267,7 +2266,7 @@ export default function PropertyDetailModal({
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="interestRate">Interest Rate (%)</Label>
+              <label htmlFor="interestRate" className="text-sm font-medium">Interest Rate (%)</label>
               <Input
                 id="interestRate"
                 type="number"
@@ -2285,7 +2284,7 @@ export default function PropertyDetailModal({
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="loanTermYears">Loan Term (Years)</Label>
+              <label htmlFor="loanTermYears" className="text-sm font-medium">Loan Term (Years)</label>
               <Input
                 id="loanTermYears"
                 type="number"
