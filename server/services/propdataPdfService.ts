@@ -76,10 +76,25 @@ export class PropdataPdfService {
     try {
       console.log(`Fetching data for property ID: ${propertyId}`);
       
-      // Fetch property data using the correct primary key
-      const property = await db.query.propdataListings.findFirst({
-        where: eq(propdataListings.id, parseInt(propertyId))
+      // Fetch property data using PropData property ID with debugging
+      console.log(`Looking for property with PropData ID: "${propertyId}"`);
+      let property = await db.query.propdataListings.findFirst({
+        where: eq(propdataListings.propdataId, propertyId)
       });
+      
+      // Additional debugging: try raw SQL if Drizzle query fails
+      if (!property) {
+        console.log('Drizzle query failed, trying raw SQL...');
+        const rawResult = await db.execute(
+          `SELECT * FROM propdata_listings WHERE propdata_id = $1 LIMIT 1`,
+          [propertyId]
+        );
+        console.log('Raw SQL result count:', rawResult.length);
+        if (rawResult.length > 0) {
+          console.log('Found via raw SQL - using first result');
+          property = rawResult[0] as any;
+        }
+      }
       
       console.log('Property found:', !!property);
 
