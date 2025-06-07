@@ -2580,99 +2580,104 @@ export default function PropertyDetailModal({
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-6">
-                      {/* Valuation Summary */}
-                      {valuationReport.summary && (
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <h4 className="font-medium text-blue-900 mb-2">
-                            Analysis Summary
-                          </h4>
-                          <p className="text-blue-800 text-sm">
-                            {valuationReport.summary}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Valuation Table */}
+                    <div className="space-y-4">
+                      {/* Compact Valuation Table */}
                       {valuationReport.valuations && (
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-3 gap-4 text-sm font-medium text-muted-foreground">
-                            <div>Estimate Type</div>
-                            <div>Formula Used</div>
-                            <div>Outcome</div>
-                          </div>
-                          {(() => {
-                            // Reorder valuations to show Conservative, Midline, Optimistic
-                            const reorderedValuations = [
-                              ...valuationReport.valuations,
-                            ].sort((a, b) => {
-                              const order = {
-                                Conservative: 1,
-                                "Midline (Proply est.)": 2,
-                                Optimistic: 3,
-                              };
-                              return (
-                                (order[a.type] || 4) - (order[b.type] || 4)
-                              );
-                            });
+                        <div className="space-y-2">
+                          <table className="w-full text-xs border rounded-lg">
+                            <thead>
+                              <tr className="bg-gray-50 border-b">
+                                <th className="py-2 px-3 text-left font-medium">Estimate Type</th>
+                                <th className="py-2 px-3 text-left font-medium">Formula Used</th>
+                                <th className="py-2 px-3 text-right font-medium">Outcome</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                // Reorder valuations to show Conservative, Midline, Optimistic
+                                const reorderedValuations = [
+                                  ...valuationReport.valuations,
+                                ].sort((a, b) => {
+                                  const order = {
+                                    Conservative: 1,
+                                    "Midline (Proply est.)": 2,
+                                    Optimistic: 3,
+                                  };
+                                  return (
+                                    (order[a.type] || 4) - (order[b.type] || 4)
+                                  );
+                                });
 
-                            return reorderedValuations.map(
-                              (valuation: any, index: number) => {
-                                const isMidline =
-                                  valuation.type === "Midline (Proply est.)";
-                                return (
-                                  <div
-                                    key={index}
-                                    className={`grid grid-cols-3 gap-4 py-3 border-b last:border-b-0 ${
-                                      isMidline
-                                        ? "bg-blue-50 rounded-lg px-3 border border-blue-200"
-                                        : ""
-                                    }`}
-                                  >
-                                    <div
-                                      className={`font-medium ${isMidline ? "text-blue-900" : ""}`}
-                                    >
-                                      {valuation.type}
-                                    </div>
-                                    <div
-                                      className={`text-sm ${isMidline ? "text-blue-700" : "text-muted-foreground"}`}
-                                    >
-                                      {valuation.formula}
-                                    </div>
-                                    <div
-                                      className={`font-semibold text-lg ${isMidline ? "text-blue-900" : ""}`}
-                                    >
-                                      {formatCurrency(valuation.value)}
-                                    </div>
-                                  </div>
+                                return reorderedValuations.map(
+                                  (valuation: any, index: number) => {
+                                    const isMidline =
+                                      valuation.type === "Midline (Proply est.)";
+                                    return (
+                                      <tr
+                                        key={index}
+                                        className={`border-b last:border-b-0 ${
+                                          isMidline
+                                            ? "bg-blue-50 border-blue-200"
+                                            : "hover:bg-gray-50"
+                                        }`}
+                                      >
+                                        <td
+                                          className={`py-2 px-3 font-medium text-xs ${isMidline ? "text-blue-900" : ""}`}
+                                        >
+                                          {valuation.type}
+                                        </td>
+                                        <td
+                                          className={`py-2 px-3 text-xs ${isMidline ? "text-blue-700" : "text-muted-foreground"}`}
+                                        >
+                                          {valuation.formula}
+                                        </td>
+                                        <td
+                                          className={`py-2 px-3 text-right font-semibold text-xs ${isMidline ? "text-blue-900" : ""}`}
+                                        >
+                                          {formatCurrency(valuation.value)}
+                                        </td>
+                                      </tr>
+                                    );
+                                  },
                                 );
-                              },
-                            );
-                          })()}
+                              })()}
+                            </tbody>
+                          </table>
                         </div>
                       )}
 
-                      {/* Property Features Analysis */}
-                      {valuationReport.features && (
-                        <div className="bg-green-50 p-4 rounded-lg">
-                          <h4 className="font-medium text-green-900 mb-2">
-                            Property Features Analysis
-                          </h4>
-                          <p className="text-green-800 text-sm">
-                            {valuationReport.features}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Market Context */}
-                      {valuationReport.marketContext && (
-                        <div className="bg-yellow-50 p-4 rounded-lg">
-                          <h4 className="font-medium text-yellow-900 mb-2">
-                            Market Context
-                          </h4>
-                          <p className="text-yellow-800 text-sm">
-                            {valuationReport.marketContext}
-                          </p>
+                      {/* Compact Additional Information Table */}
+                      {(valuationReport.summary || valuationReport.features || valuationReport.marketContext) && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-xs text-gray-700">Additional Analysis</h4>
+                          <table className="w-full text-xs border rounded-lg">
+                            <tbody>
+                              {valuationReport.summary && (
+                                <tr className="border-b hover:bg-gray-50">
+                                  <td className="py-2 px-3 font-medium text-xs w-32">Analysis Summary</td>
+                                  <td className="py-2 px-3 text-xs text-muted-foreground">
+                                    {valuationReport.summary}
+                                  </td>
+                                </tr>
+                              )}
+                              {valuationReport.features && (
+                                <tr className="border-b hover:bg-gray-50">
+                                  <td className="py-2 px-3 font-medium text-xs w-32">Property Features</td>
+                                  <td className="py-2 px-3 text-xs text-muted-foreground">
+                                    {valuationReport.features}
+                                  </td>
+                                </tr>
+                              )}
+                              {valuationReport.marketContext && (
+                                <tr className="hover:bg-gray-50">
+                                  <td className="py-2 px-3 font-medium text-xs w-32">Market Context</td>
+                                  <td className="py-2 px-3 text-xs text-muted-foreground">
+                                    {valuationReport.marketContext}
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
                         </div>
                       )}
                     </div>
