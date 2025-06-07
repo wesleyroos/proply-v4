@@ -25,6 +25,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Home,
   Bed,
   Bath,
@@ -49,6 +55,8 @@ import {
   MapPin,
   TrendingUp,
   Calculator,
+  Download,
+  ChevronDown,
 } from "lucide-react";
 import {
   LineChart,
@@ -140,6 +148,8 @@ export default function PropertyDetailModal({
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isSendingReport, setIsSendingReport] = useState(false);
   // Replace local state with React Query for database consistency
   const { data: valuationReport, refetch: refetchValuation } = useQuery({
     queryKey: ['/api/valuation-reports', property?.propdataId],
@@ -921,6 +931,63 @@ export default function PropertyDetailModal({
     }
   };
 
+  // PDF Report Generation Handlers
+  const handleDownloadReport = async () => {
+    if (!property) return;
+    
+    setIsGeneratingPdf(true);
+    try {
+      const response = await fetch(`/api/propdata-reports/generate/${property.propdataId}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF report');
+      }
+      
+      // Download the PDF directly
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Proply_Report_${property.address.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading PDF report:', error);
+      alert('Failed to download PDF report. Please try again.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleSendReport = async () => {
+    if (!property) return;
+    
+    setIsSendingReport(true);
+    try {
+      const response = await fetch(`/api/propdata-reports/send/${property.propdataId}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to send PDF report');
+      }
+      
+      const result = await response.json();
+      alert('Report has been generated and sent to wesley@proply.co.za. The download link will be available for 30 days.');
+    } catch (error) {
+      console.error('Error sending PDF report:', error);
+      alert('Failed to send PDF report. Please try again.');
+    } finally {
+      setIsSendingReport(false);
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-ZA", {
       style: "currency",
@@ -1422,25 +1489,58 @@ export default function PropertyDetailModal({
                 )}
               </div>
               <div className="text-right">
-                <Button
-                  onClick={generateValuationReport}
-                  disabled={isGeneratingReport}
-                  variant="default"
-                  size="sm"
-                  className="gap-2"
-                >
-                  {isGeneratingReport ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <FileBarChart className="h-4 w-4" />
-                  )}
-                  {isGeneratingReport
-                    ? `Generating... ${generationTimer}s`
-                    : "Generate Report"}
-                </Button>
-                {!isGeneratingReport && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport}
+                      variant="default"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {isGeneratingReport ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : isGeneratingPdf || isSendingReport ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileBarChart className="h-4 w-4" />
+                      )}
+                      {isGeneratingReport
+                        ? `Generating... ${generationTimer}s`
+                        : isGeneratingPdf
+                        ? "Generating PDF..."
+                        : isSendingReport
+                        ? "Sending Report..."
+                        : "Generate Report"}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem
+                      onClick={generateValuationReport}
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport}
+                    >
+                      <FileBarChart className="h-4 w-4 mr-2" />
+                      Generate Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleDownloadReport}
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || !valuationReport}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleSendReport}
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || !valuationReport}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Report
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {!isGeneratingReport && !isGeneratingPdf && !isSendingReport && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    This should take about 20 seconds
+                    Generate valuation first, then download or send PDF
                   </p>
                 )}
               </div>
