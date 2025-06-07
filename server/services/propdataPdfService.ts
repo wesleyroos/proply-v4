@@ -794,12 +794,11 @@ export class PropdataPdfService {
     this.checkPageBreak();
     this.addSectionHeader("Financial Analysis");
 
-    // Financing parameters
-    if (data.savedValuationData?.financingAnalysisData) {
+    // Financing parameters from saved valuation data
+    if (data.valuationReport?.financingAnalysisData) {
       this.addSubsectionHeader("Financing Details");
 
-      const financing =
-        data.savedValuationData.financingAnalysisData.financingParameters;
+      const financing = data.valuationReport.financingAnalysisData.financingParameters;
       if (financing) {
         this.doc.setFontSize(10);
         this.doc.text(
@@ -809,13 +808,13 @@ export class PropdataPdfService {
         );
         this.currentY += 6;
         this.doc.text(
-          `Deposit (${financing.depositPercentage}%): R${financing.depositAmount?.toLocaleString()}`,
+          `Deposit (${financing.depositPercentage}%): R${Math.round(financing.depositAmount)?.toLocaleString()}`,
           this.margin,
           this.currentY,
         );
         this.currentY += 6;
         this.doc.text(
-          `Loan Amount: R${financing.loanAmount?.toLocaleString()}`,
+          `Loan Amount: R${Math.round(financing.loanAmount)?.toLocaleString()}`,
           this.margin,
           this.currentY,
         );
@@ -833,7 +832,7 @@ export class PropdataPdfService {
         );
         this.currentY += 6;
         this.doc.text(
-          `Monthly Payment: R${financing.monthlyPayment?.toLocaleString()}`,
+          `Monthly Payment: R${Math.round(financing.monthlyPayment)?.toLocaleString()}`,
           this.margin,
           this.currentY,
         );
@@ -841,14 +840,14 @@ export class PropdataPdfService {
       }
     }
 
-    // Revenue projections
+    // Revenue projections from saved valuation data
     if (
-      data.savedValuationData?.cashflowAnalysisData?.revenueGrowthTrajectory
+      data.valuationReport?.cashflowAnalysisData?.revenueGrowthTrajectory
     ) {
       this.addSubsectionHeader("Revenue Projections (8% Annual Growth)");
 
       const trajectory =
-        data.savedValuationData.cashflowAnalysisData.revenueGrowthTrajectory;
+        data.valuationReport.cashflowAnalysisData.revenueGrowthTrajectory;
 
       if (trajectory.shortTerm) {
         this.doc.text(
@@ -895,16 +894,54 @@ export class PropdataPdfService {
       }
     }
 
-    // Equity buildup
-    if (data.savedValuationData?.financingAnalysisData?.yearlyMetrics) {
+    // Property Appreciation Projections
+    if (data.valuationReport?.annualPropertyAppreciationData) {
+      this.addSubsectionHeader("Property Value Appreciation");
+      
+      const appreciation = data.valuationReport.annualPropertyAppreciationData;
+      
+      this.doc.setFontSize(10);
+      this.doc.text(
+        `Annual Appreciation Rate: ${appreciation.finalAppreciationRate}%`,
+        this.margin,
+        this.currentY,
+      );
+      this.currentY += 8;
+
+      if (appreciation.yearlyValues) {
+        this.doc.text(
+          "Property Value Projections:",
+          this.margin,
+          this.currentY,
+        );
+        this.currentY += 8;
+
+        // Display key years
+        const keyYears = ['year1', 'year2', 'year3', 'year5', 'year10', 'year20'];
+        keyYears.forEach(yearKey => {
+          if (appreciation.yearlyValues[yearKey]) {
+            const yearNum = yearKey.replace('year', '');
+            this.doc.text(
+              `Year ${yearNum}: R${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString()}`,
+              this.margin + 5,
+              this.currentY,
+            );
+            this.currentY += 6;
+          }
+        });
+        this.currentY += 10;
+      }
+    }
+
+    // Equity buildup from saved valuation data
+    if (data.valuationReport?.financingAnalysisData?.yearlyMetrics) {
       this.addSubsectionHeader("Equity Buildup Schedule");
 
-      const metrics =
-        data.savedValuationData.financingAnalysisData.yearlyMetrics;
+      const metrics = data.valuationReport.financingAnalysisData.yearlyMetrics;
       Object.entries(metrics).forEach(([year, data]: [string, any]) => {
         const yearNum = year.replace("year", "");
         this.doc.text(
-          `Year ${yearNum}: Equity Built R${data.equityBuildup?.toLocaleString()}, Loan Balance R${data.loanBalance?.toLocaleString()}`,
+          `Year ${yearNum}: Equity Built R${Math.round(data.equityBuildup)?.toLocaleString()}, Remaining Balance R${Math.round(data.remainingBalance)?.toLocaleString()}`,
           this.margin,
           this.currentY,
         );
