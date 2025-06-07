@@ -250,11 +250,8 @@ export default function PropertyDetailModal({
     };
   }, [isGeneratingReport]);
 
-  // Reset valuation report when property changes or modal closes, and load existing valuation
+  // Reset UI state when property changes or modal closes
   useEffect(() => {
-    setValuationReport(null);
-    setSavedValuationData(null);
-    setRentalData(null); // Clear rental data when switching properties
     setSelectedPercentile("percentile50"); // Reset to default percentile
     setActiveTab("overview");
     setGenerationTimer(0);
@@ -263,12 +260,6 @@ export default function PropertyDetailModal({
     setHasNewEstimate(false);
     setIsEditingAddress(false);
     setEditedAddress(property?.address || "");
-
-    // Load existing valuation if property is available
-    if (property?.propdataId && isOpen) {
-      loadExistingValuation(property.propdataId);
-      loadExistingRentalData(property.propdataId);
-    }
   }, [property?.propdataId, isOpen]);
 
   // Google Maps initialization - using PropertyMap.tsx pattern
@@ -328,85 +319,7 @@ export default function PropertyDetailModal({
     };
   }, [isOpen, property?.address, activeTab]);
 
-  // Load existing valuation from database
-  const loadExistingValuation = async (propertyId: string) => {
-    try {
-      const response = await fetch(`/api/valuation-reports/${propertyId}`);
-      if (response.ok) {
-        const savedValuation = await response.json();
-        setValuationReport(savedValuation.valuationData);
-        setSavedValuationData(savedValuation); // Store the complete saved data including calculated fields
-      }
-      // If 404, no existing valuation - that's fine
-    } catch (error) {
-      console.error("Error loading existing valuation:", error);
-    }
-  };
 
-  // Load existing rental data from database
-  const loadExistingRentalData = async (propertyId: string) => {
-    console.log("Loading rental data for property ID:", propertyId);
-    try {
-      const response = await fetch(`/api/rental-performance/${propertyId}`, {
-        credentials: "include",
-      });
-
-      console.log("Rental data response status:", response.status);
-
-      if (response.ok) {
-        const rawRentalData = await response.json();
-        console.log("Raw rental data received:", rawRentalData);
-
-        // Transform database format to frontend format
-        let shortTermData = null;
-        if (rawRentalData.short_term_data) {
-          const parsedData =
-            typeof rawRentalData.short_term_data === "string"
-              ? JSON.parse(rawRentalData.short_term_data)
-              : rawRentalData.short_term_data;
-
-          // Clean up infinity values in short-term data
-          if (
-            parsedData &&
-            typeof parsedData.yield === "number" &&
-            !isFinite(parsedData.yield)
-          ) {
-            parsedData.yield = null;
-          }
-          shortTermData = parsedData;
-        }
-
-        const transformedData = {
-          shortTerm: shortTermData,
-          longTerm: rawRentalData.long_term_min_rental
-            ? {
-                minRental: parseFloat(rawRentalData.long_term_min_rental),
-                maxRental: parseFloat(rawRentalData.long_term_max_rental),
-                minYield:
-                  rawRentalData.long_term_min_yield &&
-                  rawRentalData.long_term_min_yield !== "Infinity"
-                    ? parseFloat(rawRentalData.long_term_min_yield)
-                    : null,
-                maxYield:
-                  rawRentalData.long_term_max_yield &&
-                  rawRentalData.long_term_max_yield !== "Infinity"
-                    ? parseFloat(rawRentalData.long_term_max_yield)
-                    : null,
-                managementFee: "8-10%",
-                reasoning: rawRentalData.long_term_reasoning,
-              }
-            : null,
-        };
-
-        console.log("Transformed rental data:", transformedData);
-        setRentalData(transformedData);
-      } else {
-        console.log("No rental data found for property:", propertyId);
-      }
-    } catch (error) {
-      console.error("Error loading existing rental data:", error);
-    }
-  };
 
   // Save valuation to database
   const saveValuationToDatabase = async (valuationData: any) => {
@@ -630,7 +543,7 @@ export default function PropertyDetailModal({
     const latestMessageWithEstimate = chatMessages
       .reverse()
       .find((msg) => msg.newEstimate);
-    if (!latestMessageWithEstimate?.newEstimate) return;
+    if (!latestMessageWithEstimate?.newEstimate || !rentalData) return;
 
     try {
       const response = await fetch(
@@ -643,7 +556,7 @@ export default function PropertyDetailModal({
           credentials: "include",
           body: JSON.stringify({
             longTerm: {
-              ...rentalData.longTerm,
+              ...(rentalData.longTerm || {}),
               minRental: latestMessageWithEstimate.newEstimate.min,
               maxRental: latestMessageWithEstimate.newEstimate.max,
               reasoning: `Updated based on user feedback: ${latestMessageWithEstimate.content}`,
