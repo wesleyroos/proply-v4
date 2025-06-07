@@ -204,6 +204,7 @@ export class PropdataPdfService {
     // Add static Google Map
     console.log('Property location data:', data.property?.location);
     console.log('Property location type:', typeof data.property?.location);
+    console.log('Property address for geocoding:', data.property?.address);
     
     // Parse location data if it's stored as JSON string
     let locationData = data.property?.location;
@@ -264,6 +265,9 @@ export class PropdataPdfService {
           
           const geocodeResponse = await fetch(geocodeUrl);
           const geocodeData = await geocodeResponse.json();
+          
+          console.log('Geocoding API response status:', geocodeData.status);
+          console.log('Geocoding API results count:', geocodeData.results?.length || 0);
           
           if (geocodeData.results && geocodeData.results[0] && geocodeData.results[0].geometry) {
             const location = geocodeData.results[0].geometry.location;
