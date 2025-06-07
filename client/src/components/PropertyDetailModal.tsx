@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -140,10 +140,70 @@ export default function PropertyDetailModal({
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [valuationReport, setValuationReport] = useState<any>(null);
-  const [savedValuationData, setSavedValuationData] = useState<any>(null);
-  const [rentalData, setRentalData] = useState<any>(null);
-  const [isLoadingRental, setIsLoadingRental] = useState(false);
+  // Replace local state with React Query for database consistency
+  const { data: valuationReport, refetch: refetchValuation } = useQuery({
+    queryKey: ['/api/valuation-reports', property?.propdataId],
+    queryFn: async () => {
+      if (!property?.propdataId) return null;
+      const response = await fetch(`/api/valuation-reports/${property.propdataId}`);
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data.valuationData;
+    },
+    enabled: !!property?.propdataId && isOpen,
+  });
+
+  const { data: savedValuationData } = useQuery({
+    queryKey: ['/api/valuation-reports-raw', property?.propdataId],
+    queryFn: async () => {
+      if (!property?.propdataId) return null;
+      const response = await fetch(`/api/valuation-reports/${property.propdataId}`);
+      if (!response.ok) return null;
+      return await response.json();
+    },
+    enabled: !!property?.propdataId && isOpen,
+  });
+
+  const { data: rentalData, refetch: refetchRental, isLoading: isLoadingRental } = useQuery({
+    queryKey: ['/api/rental-performance', property?.propdataId],
+    queryFn: async () => {
+      if (!property?.propdataId) return null;
+      const response = await fetch(`/api/rental-performance/${property.propdataId}`, {
+        credentials: "include",
+      });
+      if (!response.ok) return null;
+      
+      const rawRentalData = await response.json();
+      
+      // Transform database format to frontend format
+      let shortTermData = null;
+      if (rawRentalData.short_term_data) {
+        const parsedData = typeof rawRentalData.short_term_data === "string"
+          ? JSON.parse(rawRentalData.short_term_data)
+          : rawRentalData.short_term_data;
+
+        if (parsedData && typeof parsedData.yield === "number" && !isFinite(parsedData.yield)) {
+          parsedData.yield = null;
+        }
+        shortTermData = parsedData;
+      }
+
+      return {
+        shortTerm: shortTermData,
+        longTerm: rawRentalData.long_term_min_rental ? {
+          minRental: parseFloat(rawRentalData.long_term_min_rental),
+          maxRental: parseFloat(rawRentalData.long_term_max_rental),
+          minYield: rawRentalData.long_term_min_yield && rawRentalData.long_term_min_yield !== "Infinity"
+            ? parseFloat(rawRentalData.long_term_min_yield) : null,
+          maxYield: rawRentalData.long_term_max_yield && rawRentalData.long_term_max_yield !== "Infinity"
+            ? parseFloat(rawRentalData.long_term_max_yield) : null,
+          managementFee: "8-10%",
+          reasoning: rawRentalData.long_term_reasoning,
+        } : null,
+      };
+    },
+    enabled: !!property?.propdataId && isOpen,
+  });
   const [selectedPercentile, setSelectedPercentile] = useState<
     "percentile25" | "percentile50" | "percentile75" | "percentile90"
   >("percentile50");
@@ -593,15 +653,8 @@ export default function PropertyDetailModal({
       );
 
       if (response.ok) {
-        // Update local data
-        setRentalData({
-          ...rentalData,
-          longTerm: {
-            ...rentalData.longTerm,
-            minRental: latestMessageWithEstimate.newEstimate.min,
-            maxRental: latestMessageWithEstimate.newEstimate.max,
-          },
-        });
+        // Reload data from database to ensure consistency
+        await refetchRental();
         setIsChatOpen(false);
         setChatMessages([]);
         setHasNewEstimate(false);
@@ -756,15 +809,13 @@ export default function PropertyDetailModal({
       }
 
       const report = await response.json();
-      setValuationReport(report);
-
-      // Set rental performance data if available
-      if (report.rentalPerformance) {
-        setRentalData(report.rentalPerformance);
-      }
-
-      // Save the valuation report to database
+      
+      // Save the valuation report to database first
       await saveValuationToDatabase(report);
+      
+      // Reload data from database to ensure consistency
+      await refetchValuation();
+      await refetchRental();
     } catch (error) {
       console.error("Error generating valuation report:", error);
       alert("Failed to generate valuation report. Please try again.");
