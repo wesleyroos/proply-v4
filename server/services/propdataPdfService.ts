@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
 // Extend jsPDF interface for autoTable
 declare module 'jspdf' {
