@@ -2114,7 +2114,50 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', valuationRouter);
   app.use('/api', agenciesRouter);
   app.use('/api/propdata-debug', propdataDebugRouter);
-  // PDF reports routes - no auth check since frontend handles authentication
+  // PDF reports routes - integrated directly to avoid Vite routing conflicts
+  // Test endpoint for basic PDF generation
+  app.get('/api/pdf-test', async (req, res) => {
+    try {
+      console.log('Testing basic PDF generation...');
+      const { SimplePdfTest } = await import('./services/simplePdfTest.js');
+      const pdfBuffer = await SimplePdfTest.createTestPdf();
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="test.pdf"');
+      res.send(pdfBuffer);
+    } catch (error: any) {
+      console.error('PDF test failed:', error);
+      res.status(500).json({ 
+        error: 'Test PDF generation failed',
+        details: error.message 
+      });
+    }
+  });
+
+  // Generate property PDF report
+  app.get('/api/pdf-generate/:propertyId', async (req, res) => {
+    try {
+      const { propertyId } = req.params;
+      console.log(`Generating PDF report for property ${propertyId}`);
+      
+      const { PropdataPdfService } = await import('./services/propdataPdfService.js');
+      const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
+      
+      const filename = `Proply_Report_${propertyId}_${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(pdfBuffer);
+    } catch (error: any) {
+      console.error('Error generating PDF report:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate PDF report',
+        details: error.message,
+        propertyId: req.params.propertyId
+      });
+    }
+  });
+
+  // PDF reports routes - keep original router for completeness
   app.use('/api/propdata-reports', propdataReportsRouter);
   
   // Image sync endpoint for comprehensive image processing
