@@ -263,7 +263,7 @@ export class PropdataPdfService {
       // Try to use address for geocoding as fallback
       if (data.property?.address) {
         try {
-          const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(data.property.address)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`;
+          const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(data.property.address)}&key=${process.env.VITE_GOOGLE_MAPS_API_KEY}`;
           console.log('Geocoding address:', data.property.address);
           
           const geocodeResponse = await fetch(geocodeUrl);
@@ -306,15 +306,44 @@ export class PropdataPdfService {
           }
         } catch (error) {
           console.error('Error with geocoding/map:', error);
-          // Add informative placeholder
-          this.doc.setFillColor(240, 240, 240);
-          this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
-          this.doc.setDrawColor(200, 200, 200);
-          this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'S');
-          this.doc.setTextColor(100, 100, 100);
-          this.doc.setFontSize(8);
-          this.doc.text('Google Maps API', this.margin + 5, this.currentY + mapHeight/2 - 4);
-          this.doc.text('Authorization Required', this.margin + 5, this.currentY + mapHeight/2 + 4);
+          
+          // Test the API directly to debug the issue
+          const testMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=-33.925,18.424&zoom=15&size=300x200&maptype=roadmap&markers=color:red%7C-33.925,18.424&key=${process.env.VITE_GOOGLE_MAPS_API_KEY}`;
+          console.log('Testing Maps Static API directly for debugging...');
+          
+          try {
+            const testResponse = await fetch(testMapUrl);
+            if (testResponse.ok) {
+              console.log('Maps Static API is working - using test map');
+              const mapBuffer = await testResponse.arrayBuffer();
+              const mapBase64 = Buffer.from(mapBuffer).toString('base64');
+              
+              this.doc.addImage(
+                mapBase64, 
+                'JPEG', 
+                this.margin, 
+                this.currentY, 
+                mapWidth, 
+                mapHeight
+              );
+              console.log('Successfully added test map to PDF');
+            } else {
+              const errorText = await testResponse.text();
+              console.error('Maps Static API test failed:', testResponse.status, errorText);
+              throw new Error(`Maps API error: ${testResponse.status}`);
+            }
+          } catch (testError) {
+            console.error('Maps Static API test failed:', testError);
+            // Add placeholder with error info
+            this.doc.setFillColor(240, 240, 240);
+            this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
+            this.doc.setDrawColor(200, 200, 200);
+            this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'S');
+            this.doc.setTextColor(100, 100, 100);
+            this.doc.setFontSize(8);
+            this.doc.text('Map unavailable', this.margin + 5, this.currentY + mapHeight/2 - 4);
+            this.doc.text('Check API settings', this.margin + 5, this.currentY + mapHeight/2 + 4);
+          }
         }
       } else {
         // No address available, use placeholder
