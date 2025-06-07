@@ -2252,8 +2252,8 @@ export default function PropertyDetailModal({
               <Input
                 id="depositPercentage"
                 type="number"
-                min="5"
-                max="50"
+                min="0"
+                max="100"
                 step="1"
                 value={financingParams.depositPercentage}
                 onChange={(e) => setFinancingParams(prev => ({
@@ -2262,7 +2262,7 @@ export default function PropertyDetailModal({
                 }))}
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground">Between 5% and 50%</p>
+              <p className="text-xs text-muted-foreground">0% = 100% financing, 100% = cash purchase</p>
             </div>
             
             <div className="space-y-2">
