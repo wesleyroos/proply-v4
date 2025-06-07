@@ -2382,7 +2382,7 @@ export default function PropertyDetailModal({
                                   <thead>
                                     <tr className="bg-blue-50 border-b">
                                       <th className="py-2 px-3 text-left font-medium text-blue-700">
-                                        Year and Value
+                                        Year
                                       </th>
                                       {valuationReport.propertyAppreciation.fiveYearProjection.map(
                                         (projection: any) => (
