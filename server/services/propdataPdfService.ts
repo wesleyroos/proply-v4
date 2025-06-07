@@ -395,12 +395,6 @@ export class PropdataPdfService {
             `R${(shortTerm.percentile90.annual || 0).toLocaleString('en-ZA')}`]);
         }
         
-        this.doc.setFontSize(10);
-        rentals.shortTerm.percentiles.forEach((p: any) => {
-          this.doc.text(`${p.level}: R${p.nightlyRate} (Monthly: R${(p.nightlyRate * 30).toLocaleString()}, Annual: R${(p.nightlyRate * 365).toLocaleString()})`, 
-            this.margin, this.currentY);
-          this.currentY += 8;
-        });
         this.currentY += 10;
       }
     }
