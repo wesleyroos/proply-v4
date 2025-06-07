@@ -410,7 +410,7 @@ export class PropdataPdfService {
   }
 
   private async generateStaticMapUrl(lat: number, lng: number, address: string): Promise<string> {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.VITE_GOOGLE_MAPS_API_KEY;
     const encodedAddress = encodeURIComponent(address);
     return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=400x300&markers=color:red%7Clabel:P%7C${lat},${lng}&style=feature:poi|visibility:off&key=${apiKey}`;
   }
