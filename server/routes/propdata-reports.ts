@@ -132,6 +132,13 @@ router.post('/send/:propertyId', async (req, res) => {
       filename
     );
     
+    const emailSent = await sendEmail({
+      to: 'wesley@proply.co.za',
+      from: 'reports@proply.co.za',
+      subject: `Proply Property Investment Report - ${property.address}`,
+      html: emailHtml
+    });
+    
     if (!emailSent) {
       return res.status(500).json({ error: 'Failed to send email' });
     }
