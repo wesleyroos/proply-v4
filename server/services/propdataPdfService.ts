@@ -259,53 +259,83 @@ export class PropdataPdfService {
       return;
     }
     
-    const valuation = data.valuationReport.valuationData;
+    const valuation = data.valuationReport.valuationData as any;
     
-    // Market Value Assessment
-    if (valuation.marketValueAssessment) {
-      this.addSubsectionHeader('Market Value Assessment');
-      
-      const assessment = valuation.marketValueAssessment;
+    // Property Summary
+    if (valuation.summary) {
+      this.addSubsectionHeader('Property Summary');
       this.doc.setFontSize(10);
-      this.doc.setFont('helvetica', 'normal');
+      this.addWrappedText(valuation.summary, this.margin, this.pageWidth - (2 * this.margin));
+      this.currentY += 10;
+    }
+    
+    // Valuation Estimates Table
+    if (valuation.valuations && Array.isArray(valuation.valuations)) {
+      this.addSubsectionHeader('Valuation Estimates');
       
-      if (assessment.valuationRange) {
-        this.doc.text(`Estimated Value Range: R${assessment.valuationRange.min?.toLocaleString()} - R${assessment.valuationRange.max?.toLocaleString()}`, 
-          this.margin, this.currentY);
-        this.currentY += 8;
-        
-        this.doc.text(`Confidence Level: ${assessment.valuationRange.confidence}`, this.margin, this.currentY);
-        this.currentY += 8;
+      const tableData = valuation.valuations.map((val: any) => [
+        val.type || '',
+        `R${(val.value || 0).toLocaleString('en-ZA')}`,
+        val.formula || ''
+      ]);
+      
+      (this.doc as any).autoTable({
+        startY: this.currentY,
+        head: [['Valuation Type', 'Estimated Value', 'Calculation']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 64, 175], textColor: 255 },
+        styles: { fontSize: 9 },
+        margin: { left: this.margin, right: this.margin }
+      });
+      
+      this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+    }
+    
+    // Property Appreciation Analysis
+    if (valuation.propertyAppreciation) {
+      this.addSubsectionHeader('Property Appreciation Forecast');
+      this.doc.setFontSize(10);
+      
+      const appreciation = valuation.propertyAppreciation;
+      if (appreciation.annualAppreciationRate) {
+        this.doc.text(`Annual Appreciation Rate: ${appreciation.annualAppreciationRate}%`, this.margin, this.currentY);
+        this.currentY += 12;
       }
       
-      if (assessment.reasoning) {
-        this.doc.text('Valuation Reasoning:', this.margin, this.currentY);
-        this.currentY += 6;
-        this.addWrappedText(assessment.reasoning, this.margin + 5, 160);
+      // 5-year projection table
+      if (appreciation.fiveYearProjection && Array.isArray(appreciation.fiveYearProjection)) {
+        const projectionData = appreciation.fiveYearProjection.map((proj: any) => [
+          proj.year?.toString() || '',
+          `R${(proj.estimatedValue || 0).toLocaleString('en-ZA')}`
+        ]);
+        
+        (this.doc as any).autoTable({
+          startY: this.currentY,
+          head: [['Year', 'Estimated Value']],
+          body: projectionData,
+          theme: 'grid',
+          headStyles: { fillColor: [30, 64, 175], textColor: 255 },
+          styles: { fontSize: 9 },
+          margin: { left: this.margin, right: this.margin },
+          columnStyles: { 0: { halign: 'center' }, 1: { halign: 'right' } }
+        });
+        
+        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+      }
+      
+      if (appreciation.summary) {
+        this.addWrappedText(appreciation.summary, this.margin, this.pageWidth - (2 * this.margin));
         this.currentY += 10;
       }
     }
     
-    // Property Appreciation
-    if (data.savedValuationData?.annualPropertyAppreciationData) {
-      this.addSubsectionHeader('Property Appreciation Forecast');
-      
-      const appreciation = data.savedValuationData.annualPropertyAppreciationData;
-      this.doc.text(`Annual Appreciation Rate: ${appreciation.finalAppreciationRate}%`, this.margin, this.currentY);
-      this.currentY += 8;
-      
-      if (appreciation.yearlyValues) {
-        this.doc.text('Property Value Projections:', this.margin, this.currentY);
-        this.currentY += 6;
-        
-        Object.entries(appreciation.yearlyValues).forEach(([year, value]: [string, any]) => {
-          const yearNum = year.replace('year', '');
-          this.doc.text(`Year ${yearNum}: R${value.toLocaleString()}`, this.margin + 5, this.currentY);
-          this.currentY += 6;
-        });
-      }
-      
-      this.currentY += 10;
+    // Market Context
+    if (valuation.marketContext) {
+      this.addSubsectionHeader('Market Context');
+      this.doc.setFontSize(10);
+      this.addWrappedText(valuation.marketContext, this.margin, this.pageWidth - (2 * this.margin));
+      this.currentY += 15;
     }
   }
 
@@ -313,64 +343,87 @@ export class PropdataPdfService {
     this.checkPageBreak();
     this.addSectionHeader('Rental Performance Analysis');
     
-    if (!data.rentalData) {
+    // Get rental data from valuation report
+    const valuationData = data.valuationReport?.valuationData as any;
+    if (!valuationData?.rentalPerformance) {
       this.doc.text('No rental performance data available', this.margin, this.currentY);
       this.currentY += 15;
       return;
     }
     
-    // Short-term rental analysis
-    if (data.rentalData.shortTerm) {
-      this.addSubsectionHeader('Short-Term Rental (Airbnb)');
-      
-      const shortTerm = data.rentalData.shortTerm;
-      this.doc.setFontSize(10);
-      
-      // Show percentile data
-      ['percentile25', 'percentile50', 'percentile75', 'percentile90'].forEach((percentile, index) => {
-        if (shortTerm[percentile]) {
-          const data = shortTerm[percentile];
-          const percentileLabel = ['Conservative (25th)', 'Average (50th)', 'Premium (75th)', 'Luxury (90th)'][index];
-          
-          this.doc.text(`${percentileLabel}:`, this.margin, this.currentY);
-          this.doc.text(`R${data.nightly?.toLocaleString()}/night, R${data.monthly?.toLocaleString()}/month, R${data.annual?.toLocaleString()}/year`, 
-            this.margin + 5, this.currentY + 6);
-          this.currentY += 14;
-        }
-      });
-      
-      this.currentY += 5;
-    }
+    const rentalPerformance = valuationData.rentalPerformance;
     
     // Long-term rental analysis
-    if (data.rentalData.longTerm) {
-      this.addSubsectionHeader('Long-Term Rental');
+    if (rentalPerformance.longTerm) {
+      this.addSubsectionHeader('Long-Term Rental Analysis');
+      const longTerm = rentalPerformance.longTerm;
+      this.doc.setFontSize(10);
       
-      const longTerm = data.rentalData.longTerm;
-      this.doc.text(`Monthly Rental Range: R${longTerm.minRental?.toLocaleString()} - R${longTerm.maxRental?.toLocaleString()}`, 
-        this.margin, this.currentY);
-      this.currentY += 8;
+      this.doc.text(`Monthly Rental Range: R${(longTerm.minRental || 0).toLocaleString('en-ZA')} - R${(longTerm.maxRental || 0).toLocaleString('en-ZA')}`, this.margin, this.currentY);
+      this.currentY += 10;
+      this.doc.text(`Yield Range: ${longTerm.minYield || 0}% - ${longTerm.maxYield || 0}%`, this.margin, this.currentY);
+      this.currentY += 10;
       
-      const annualMin = (longTerm.minRental || 0) * 12;
-      const annualMax = (longTerm.maxRental || 0) * 12;
-      this.doc.text(`Annual Income Range: R${annualMin.toLocaleString()} - R${annualMax.toLocaleString()}`, 
-        this.margin, this.currentY);
-      this.currentY += 15;
+      if (longTerm.reasoning) {
+        this.doc.text('Analysis:', this.margin, this.currentY);
+        this.currentY += 8;
+        this.addWrappedText(longTerm.reasoning, this.margin + 5, this.pageWidth - (2 * this.margin) - 5);
+        this.currentY += 10;
+      }
     }
     
-    // Recommended strategy
-    if (data.savedValuationData?.cashflowAnalysisData?.recommendedStrategy) {
-      this.addSubsectionHeader('Recommended Strategy');
-      const strategy = data.savedValuationData.cashflowAnalysisData.recommendedStrategy;
-      this.doc.text(`Recommended: ${strategy === 'shortTerm' ? 'Short-Term Rental (Airbnb)' : 'Long-Term Rental'}`, 
-        this.margin, this.currentY);
-      this.currentY += 8;
+    // Short-term rental analysis
+    if (rentalPerformance.shortTerm) {
+      this.addSubsectionHeader('Short-Term Rental (Airbnb) Analysis');
+      const shortTerm = rentalPerformance.shortTerm;
+      this.doc.setFontSize(10);
       
-      if (data.savedValuationData.cashflowAnalysisData.strategyReasoning) {
-        this.addWrappedText(data.savedValuationData.cashflowAnalysisData.strategyReasoning, this.margin, 160);
+      if (shortTerm.occupancy) {
+        this.doc.text(`Average Occupancy Rate: ${shortTerm.occupancy}%`, this.margin, this.currentY);
+        this.currentY += 10;
       }
       
-      this.currentY += 15;
+      // Create table for percentile data
+      if (shortTerm.percentile25 || shortTerm.percentile50 || shortTerm.percentile75 || shortTerm.percentile90) {
+        const percentileData = [];
+        
+        if (shortTerm.percentile25) {
+          percentileData.push(['25th Percentile (Conservative)', 
+            `R${(shortTerm.percentile25.nightly || 0).toLocaleString('en-ZA')}`, 
+            `R${(shortTerm.percentile25.monthly || 0).toLocaleString('en-ZA')}`,
+            `R${(shortTerm.percentile25.annual || 0).toLocaleString('en-ZA')}`]);
+        }
+        if (shortTerm.percentile50) {
+          percentileData.push(['50th Percentile (Average)', 
+            `R${(shortTerm.percentile50.nightly || 0).toLocaleString('en-ZA')}`, 
+            `R${(shortTerm.percentile50.monthly || 0).toLocaleString('en-ZA')}`,
+            `R${(shortTerm.percentile50.annual || 0).toLocaleString('en-ZA')}`]);
+        }
+        if (shortTerm.percentile75) {
+          percentileData.push(['75th Percentile (Premium)', 
+            `R${(shortTerm.percentile75.nightly || 0).toLocaleString('en-ZA')}`, 
+            `R${(shortTerm.percentile75.monthly || 0).toLocaleString('en-ZA')}`,
+            `R${(shortTerm.percentile75.annual || 0).toLocaleString('en-ZA')}`]);
+        }
+        if (shortTerm.percentile90) {
+          percentileData.push(['90th Percentile (Luxury)', 
+            `R${(shortTerm.percentile90.nightly || 0).toLocaleString('en-ZA')}`, 
+            `R${(shortTerm.percentile90.monthly || 0).toLocaleString('en-ZA')}`,
+            `R${(shortTerm.percentile90.annual || 0).toLocaleString('en-ZA')}`]);
+        }
+        
+        (this.doc as any).autoTable({
+          startY: this.currentY,
+          head: [['Performance Level', 'Nightly Rate', 'Monthly Est.', 'Annual Est.']],
+          body: percentileData,
+          theme: 'grid',
+          headStyles: { fillColor: [30, 64, 175], textColor: 255 },
+          styles: { fontSize: 9 },
+          margin: { left: this.margin, right: this.margin }
+        });
+        
+        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+      }
     }
   }
 
