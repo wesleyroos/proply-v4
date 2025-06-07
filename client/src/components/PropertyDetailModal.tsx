@@ -937,8 +937,9 @@ export default function PropertyDetailModal({
     
     setIsGeneratingPdf(true);
     try {
-      const response = await fetch(`/api/propdata-reports/generate/${property.propdataId}`, {
-        method: 'POST',
+      // Use the new working PDF endpoint with property ID from database
+      const response = await fetch(`/api/pdf-generate/${property.id}`, {
+        method: 'GET',
         credentials: 'include',
       });
       
