@@ -44,6 +44,7 @@ import propdataDebugRouter from './routes/propdata-debug';
 import agenciesRouter from './routes/agencies';
 import { imageSyncService } from './services/imageSyncService';
 import sharp from 'sharp';
+import propdataReportsRouter from './routes/propdata-reports';
 
 // Extend Express.User to include our schema
 declare global {
@@ -2112,6 +2113,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', valuationRouter);
   app.use('/api', agenciesRouter);
   app.use('/api/propdata-debug', propdataDebugRouter);
+  app.use('/api/propdata-reports', propdataReportsRouter);
   
   // Image sync endpoint for comprehensive image processing
   app.post("/api/sync-missing-images", async (req, res) => {
