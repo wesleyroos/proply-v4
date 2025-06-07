@@ -220,6 +220,9 @@ export class PropdataPdfService {
     }
     
     if (locationData?.latitude && locationData?.longitude) {
+      console.log(`Using stored coordinates: lat=${locationData.latitude}, lng=${locationData.longitude}`);
+      console.log(`Property address: ${data.property.address}`);
+      
       try {
         const mapUrl = await this.generateStaticMapUrl(
           locationData.latitude,
@@ -307,43 +310,15 @@ export class PropdataPdfService {
         } catch (error) {
           console.error('Error with geocoding/map:', error);
           
-          // Test the API directly to debug the issue
-          const testMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=-33.925,18.424&zoom=15&size=300x200&maptype=roadmap&markers=color:red%7C-33.925,18.424&key=${process.env.VITE_GOOGLE_MAPS_API_KEY}`;
-          console.log('Testing Maps Static API directly for debugging...');
-          
-          try {
-            const testResponse = await fetch(testMapUrl);
-            if (testResponse.ok) {
-              console.log('Maps Static API is working - using test map');
-              const mapBuffer = await testResponse.arrayBuffer();
-              const mapBase64 = Buffer.from(mapBuffer).toString('base64');
-              
-              this.doc.addImage(
-                mapBase64, 
-                'JPEG', 
-                this.margin, 
-                this.currentY, 
-                mapWidth, 
-                mapHeight
-              );
-              console.log('Successfully added test map to PDF');
-            } else {
-              const errorText = await testResponse.text();
-              console.error('Maps Static API test failed:', testResponse.status, errorText);
-              throw new Error(`Maps API error: ${testResponse.status}`);
-            }
-          } catch (testError) {
-            console.error('Maps Static API test failed:', testError);
-            // Add placeholder with error info
-            this.doc.setFillColor(240, 240, 240);
-            this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
-            this.doc.setDrawColor(200, 200, 200);
-            this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'S');
-            this.doc.setTextColor(100, 100, 100);
-            this.doc.setFontSize(8);
-            this.doc.text('Map unavailable', this.margin + 5, this.currentY + mapHeight/2 - 4);
-            this.doc.text('Check API settings', this.margin + 5, this.currentY + mapHeight/2 + 4);
-          }
+          // Add placeholder with geocoding error info
+          this.doc.setFillColor(240, 240, 240);
+          this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
+          this.doc.setDrawColor(200, 200, 200);
+          this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'S');
+          this.doc.setTextColor(100, 100, 100);
+          this.doc.setFontSize(8);
+          this.doc.text('Map unavailable', this.margin + 5, this.currentY + mapHeight/2 - 4);
+          this.doc.text('Geocoding failed', this.margin + 5, this.currentY + mapHeight/2 + 4);
         }
       } else {
         // No address available, use placeholder
@@ -412,7 +387,7 @@ export class PropdataPdfService {
   private async generateStaticMapUrl(lat: number, lng: number, address: string): Promise<string> {
     const apiKey = process.env.VITE_GOOGLE_MAPS_API_KEY;
     const encodedAddress = encodeURIComponent(address);
-    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=400x300&markers=color:red%7Clabel:P%7C${lat},${lng}&style=feature:poi|visibility:off&key=${apiKey}`;
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=400x300&maptype=satellite&markers=color:red%7Clabel:P%7C${lat},${lng}&key=${apiKey}`;
   }
 
   private addValuationSection(data: PropertyPdfData): void {
