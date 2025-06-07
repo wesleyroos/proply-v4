@@ -195,6 +195,7 @@ export class PropdataPdfService {
   }
 
   private async addMapAndImage(data: PropertyPdfData): Promise<void> {
+    console.log('=== Starting addMapAndImage method ===');
     const mapWidth = 85;
     const mapHeight = 60;
     const imageWidth = 85;
