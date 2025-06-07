@@ -1050,8 +1050,7 @@ export class PropdataPdfService {
   private checkPageBreak(requiredSpace: number = 20): void {
     if (this.currentY + requiredSpace > this.pageHeight - this.margin) {
       this.doc.addPage();
-      this.currentY = this.margin + 25; // Account for header space
-      this.addProplyHeader();
+      this.currentY = this.margin; // Start from top margin on new pages
     }
   }
 
@@ -1084,6 +1083,9 @@ export class PropdataPdfService {
         this.pageHeight - 15,
       );
     }
+    
+    // Reset to first page after footer processing
+    this.doc.setPage(1);
   }
 
   static async generateReport(propertyId: string): Promise<Buffer> {
