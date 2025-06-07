@@ -244,9 +244,24 @@ export default function PropertyDetailModal({
         loanTermYears: parseInt(valuationReport.currentLoanTerm || "20"),
       };
     }
-    // Fallback to temp params if no database data exists yet
-    return tempFinancingParams;
-  }, [valuationReport, tempFinancingParams]);
+    // Fallback to default values if no database data exists yet
+    return {
+      depositPercentage: 20,
+      interestRate: 11.75,
+      loanTermYears: 20,
+    };
+  }, [valuationReport]);
+
+  // Initialize temp financing params from database when valuation data loads
+  useEffect(() => {
+    if (valuationReport?.currentDepositPercentage) {
+      setTempFinancingParams({
+        depositPercentage: parseFloat(valuationReport.currentDepositPercentage),
+        interestRate: parseFloat(valuationReport.currentInterestRate || "11.75"),
+        loanTermYears: parseInt(valuationReport.currentLoanTerm || "20"),
+      });
+    }
+  }, [valuationReport]);
 
   // Timer effect for generation counter
   useEffect(() => {
