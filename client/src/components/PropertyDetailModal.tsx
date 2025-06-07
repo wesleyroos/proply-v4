@@ -775,8 +775,8 @@ export default function PropertyDetailModal({
     return (
       <div className="space-y-4">
         {/* Financing Assumptions */}
-        <div className="bg-gray-50 p-3 rounded-lg text-sm">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-gray-50 p-2 rounded-lg text-xs">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div>
               <span className="text-muted-foreground">Deposit:</span>
               <div className="font-medium">{formatCurrency(depositAmount)} (10%)</div>
@@ -798,7 +798,7 @@ export default function PropertyDetailModal({
 
         {/* Financing Table */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
+          <table className="w-full border-collapse text-xs">
             <thead>
               <tr className="border-b">
                 <th className="text-left py-2 px-3 font-medium">Financing Metric</th>
@@ -965,71 +965,69 @@ export default function PropertyDetailModal({
       <div className="space-y-6">
         {/* Revenue Growth Projections Table */}
         {(shortTermMetrics || longTermMetrics) && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">5-Year Revenue Growth Trajectory</CardTitle>
-              <CardDescription>Projected annual revenue and yields with 8% market growth</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-medium">Strategy</th>
-                      {[1, 2, 3, 4, 5].map(year => (
-                        <th key={year} className="text-center py-3 px-4 font-medium">Year {year}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Short-term Revenue Row */}
-                    {shortTermMetrics && (
-                      <>
-                        <tr className="border-b hover:bg-blue-50/50">
-                          <td className="py-3 px-4 font-medium text-blue-600">Short-term Revenue</td>
-                          {calculateRevenueGrowth(shortTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
-                            <td key={year} className="text-center py-3 px-4">
-                              {formatCurrency(revenue)}
-                            </td>
-                          ))}
-                        </tr>
-                        <tr className="border-b hover:bg-blue-50/50">
-                          <td className="py-3 px-4 font-medium text-blue-600">Short-term Gross Yield</td>
-                          {calculateRevenueGrowth(shortTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
-                            <td key={year} className="text-center py-3 px-4">
-                              {((revenue / parseFloat(property.price.toString())) * 100).toFixed(1)}%
-                            </td>
-                          ))}
-                        </tr>
-                      </>
-                    )}
-                    
-                    {/* Long-term Revenue Row */}
-                    {longTermMetrics && (
-                      <>
-                        <tr className="border-b hover:bg-green-50/50">
-                          <td className="py-3 px-4 font-medium text-green-600">Long-term Revenue</td>
-                          {calculateRevenueGrowth(longTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
-                            <td key={year} className="text-center py-3 px-4">
-                              {formatCurrency(revenue)}
-                            </td>
-                          ))}
-                        </tr>
-                        <tr className="border-b hover:bg-green-50/50">
-                          <td className="py-3 px-4 font-medium text-green-600">Long-term Gross Yield</td>
-                          {calculateRevenueGrowth(longTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
-                            <td key={year} className="text-center py-3 px-4">
-                              {((revenue / parseFloat(property.price.toString())) * 100).toFixed(1)}%
-                            </td>
-                          ))}
-                        </tr>
-                      </>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <div>
+            <div className="mb-3">
+              <h3 className="text-base font-semibold">5-Year Revenue Growth Trajectory</h3>
+              <p className="text-xs text-muted-foreground">Projected annual revenue and yields with 8% market growth</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-xs border rounded-lg">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left py-2 px-3 font-medium">Strategy</th>
+                    {[1, 2, 3, 4, 5].map(year => (
+                      <th key={year} className="text-center py-2 px-3 font-medium">Year {year}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Short-term Revenue Row */}
+                  {shortTermMetrics && (
+                    <>
+                      <tr className="border-b hover:bg-blue-50/50">
+                        <td className="py-2 px-3 font-medium text-blue-600">Short-term Revenue</td>
+                        {calculateRevenueGrowth(shortTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                          <td key={year} className="text-center py-2 px-3">
+                            {formatCurrency(revenue)}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-b hover:bg-blue-50/50">
+                        <td className="py-2 px-3 font-medium text-blue-600">Short-term Gross Yield</td>
+                        {calculateRevenueGrowth(shortTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                          <td key={year} className="text-center py-2 px-3">
+                            {((revenue / parseFloat(property.price.toString())) * 100).toFixed(1)}%
+                          </td>
+                        ))}
+                      </tr>
+                    </>
+                  )}
+                  
+                  {/* Long-term Revenue Row */}
+                  {longTermMetrics && (
+                    <>
+                      <tr className="border-b hover:bg-green-50/50">
+                        <td className="py-2 px-3 font-medium text-green-600">Long-term Revenue</td>
+                        {calculateRevenueGrowth(longTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                          <td key={year} className="text-center py-2 px-3">
+                            {formatCurrency(revenue)}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-b hover:bg-green-50/50">
+                        <td className="py-2 px-3 font-medium text-green-600">Long-term Gross Yield</td>
+                        {calculateRevenueGrowth(longTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                          <td key={year} className="text-center py-2 px-3">
+                            {((revenue / parseFloat(property.price.toString())) * 100).toFixed(1)}%
+                          </td>
+                        ))}
+                      </tr>
+                    </>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
 
         {/* Recommended Strategy */}
