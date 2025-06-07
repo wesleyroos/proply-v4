@@ -207,19 +207,11 @@ export class PropdataPdfService {
     console.log('Property location type:', typeof data.property?.location);
     console.log('Property address for geocoding:', data.property?.address);
     
-    // Parse location data if it's stored as JSON string
-    let locationData = data.property?.location;
-    if (typeof locationData === 'string') {
-      try {
-        locationData = JSON.parse(locationData);
-        console.log('Parsed location data:', locationData);
-      } catch (e) {
-        console.log('Failed to parse location JSON:', e);
-        locationData = null;
-      }
-    }
+    // Force geocoding instead of using stored coordinates for accurate location
+    let locationData = null;
+    console.log('Forcing geocoding for accurate property location');
     
-    if (locationData?.latitude && locationData?.longitude) {
+    if (false) { // Disable stored coordinates
       console.log(`Using stored coordinates: lat=${locationData.latitude}, lng=${locationData.longitude}`);
       console.log(`Property address: ${data.property.address}`);
       
@@ -262,6 +254,8 @@ export class PropdataPdfService {
       }
     } else {
       console.log('No property location coordinates found, trying to geocode address...');
+      console.log('Available property data:', Object.keys(data.property || {}));
+      console.log('Property address value:', data.property?.address);
       
       // Try to use address for geocoding as fallback
       if (data.property?.address) {
