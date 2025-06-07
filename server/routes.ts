@@ -18,6 +18,7 @@ import {
   valuationReports,
   rentalPerformanceData,
   propdataListings,
+  pdfReports,
 } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -39,7 +40,9 @@ import fetchPropdataRouter from './routes/fetch-propdata';
 import valuationRouter from './routes/valuation';
 import { getRentalPerformance } from './routes/rental-performance';
 import { sendPasswordResetEmail } from './services/email';
-import { sendDemoRequestEmail } from './services/emailService';
+// PDF generation services
+import { pdfService } from './services/pdfService';
+import { emailService } from './services/emailService';
 import propdataDebugRouter from './routes/propdata-debug';
 import agenciesRouter from './routes/agencies';
 import { imageSyncService } from './services/imageSyncService';
