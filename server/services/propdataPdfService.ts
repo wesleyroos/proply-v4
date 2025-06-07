@@ -466,11 +466,31 @@ export class PropdataPdfService {
     }
     
     // Property features
-    if (data.property.features && data.property.features.length > 0) {
+    // Handle features - could be array, string, or null
+    let featuresArray: string[] = [];
+    if (data.property.features) {
+      if (Array.isArray(data.property.features)) {
+        featuresArray = data.property.features;
+      } else if (typeof data.property.features === 'string') {
+        try {
+          // Try to parse as JSON if it's a string
+          const parsed = JSON.parse(data.property.features);
+          if (Array.isArray(parsed)) {
+            featuresArray = parsed;
+          } else {
+            featuresArray = [data.property.features]; // Single feature as string
+          }
+        } catch {
+          featuresArray = [data.property.features]; // Single feature as string
+        }
+      }
+    }
+    
+    if (featuresArray.length > 0) {
       this.addSubsectionHeader('Property Features');
       this.doc.setFontSize(10);
       
-      data.property.features.forEach((feature: string) => {
+      featuresArray.forEach((feature: string) => {
         this.doc.text(`• ${feature}`, this.margin, this.currentY);
         this.currentY += 6;
       });
