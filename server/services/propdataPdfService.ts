@@ -17,7 +17,7 @@ interface PdfGenerationOptions {
 }
 
 // Proply brand colors
-const PROPLY_BLUE = '#1e40af';
+const PROPLY_BLUE = '#1ba2ff';
 const PROPLY_LIGHT_BLUE = '#3b82f6';
 const PROPLY_GRAY = '#6b7280';
 const PROPLY_LIGHT_GRAY = '#f3f4f6';
@@ -134,15 +134,19 @@ export class PropdataPdfService {
   }
 
   private addProplyHeader(): void {
-    // Add Proply logo placeholder (blue rectangle for now)
-    this.doc.setFillColor(PROPLY_BLUE);
-    this.doc.rect(this.margin, this.margin, 40, 15, 'F');
+    // Add Proply logo on the right side (blue rectangle for now)
+    const logoWidth = 40;
+    const logoHeight = 15;
+    const logoX = this.pageWidth - this.margin - logoWidth;
     
-    // Add "PROPLY" text in white
+    this.doc.setFillColor(PROPLY_BLUE);
+    this.doc.rect(logoX, this.margin, logoWidth, logoHeight, 'F');
+    
+    // Add "PROPLY" text in white on the logo
     this.doc.setTextColor(255, 255, 255);
     this.doc.setFontSize(16);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('PROPLY', this.margin + 8, this.margin + 10);
+    this.doc.text('PROPLY', logoX + 8, this.margin + 10);
     
     // Reset text color
     this.doc.setTextColor(0, 0, 0);
@@ -159,11 +163,11 @@ export class PropdataPdfService {
       return;
     }
     
-    // Property address and basic info
-    this.doc.setFontSize(18);
+    // Property address with "Address:" prefix
+    this.doc.setFontSize(14);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(PROPLY_BLUE);
-    this.doc.text(data.property.address || 'Address not available', this.margin, this.currentY);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text(`Address: ${data.property.address || 'Address not available'}`, this.margin, this.currentY);
     this.currentY += 15;
     
     // Property details in two columns
@@ -686,15 +690,12 @@ export class PropdataPdfService {
   private addSectionHeader(title: string): void {
     this.checkPageBreak(30);
     
-    this.doc.setFillColor(PROPLY_BLUE);
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 12, 'F');
-    
-    this.doc.setTextColor(255, 255, 255);
+    // Remove blue background, just add text
+    this.doc.setTextColor(0, 0, 0);
     this.doc.setFontSize(14);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text(title, this.margin + 5, this.currentY + 8);
+    this.doc.text(title, this.margin, this.currentY + 8);
     
-    this.doc.setTextColor(0, 0, 0);
     this.currentY += 20;
   }
 
