@@ -1680,9 +1680,7 @@ export default function PropertyDetailModal({
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pb-4">
-                        <div className="py-8 text-center">
-                          <p className="text-muted-foreground">Cash flow analysis content coming soon</p>
-                        </div>
+                        {renderCashflowAnalysis()}
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
