@@ -25,6 +25,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
   Home,
   Bed,
   Bath,
@@ -225,6 +232,15 @@ export default function PropertyDetailModal({
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
+  
+  // PDF Report Generation State
+  const [isSendingReport, setIsSendingReport] = useState(false);
+  const [reportSendStatus, setReportSendStatus] = useState<{
+    success?: boolean;
+    message?: string;
+    reportId?: string;
+    emailSent?: boolean;
+  } | null>(null);
   // FINANCING PARAMETERS - Database-backed single source of truth
   // These parameters are loaded from valuation_reports table and saved on update
   // This ensures PDF generation uses exact same data user sees in modal
@@ -918,6 +934,57 @@ export default function PropertyDetailModal({
       alert("Failed to generate valuation report. Please try again.");
     } finally {
       setIsGeneratingReport(false);
+    }
+  };
+
+  // Send PDF Report Function
+  const sendPDFReport = async () => {
+    if (!property?.propdataId) {
+      alert("Property ID is required to generate report");
+      return;
+    }
+
+    setIsSendingReport(true);
+    setReportSendStatus(null);
+
+    try {
+      const response = await fetch(`/api/reports/generate-and-send/${property.propdataId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      setReportSendStatus({
+        success: result.success,
+        message: result.message,
+        reportId: result.reportId,
+        emailSent: result.emailSent
+      });
+
+      if (result.success && result.emailSent) {
+        alert("PDF report generated and sent successfully! Check your email for the download link.");
+      } else if (result.success && !result.emailSent) {
+        alert("PDF report generated successfully, but email delivery failed. Please contact support.");
+      } else {
+        throw new Error(result.message || "Failed to generate PDF report");
+      }
+
+    } catch (error: any) {
+      console.error("Error sending PDF report:", error);
+      setReportSendStatus({
+        success: false,
+        message: error.message || "Failed to send PDF report"
+      });
+      alert(`Failed to send PDF report: ${error.message}`);
+    } finally {
+      setIsSendingReport(false);
     }
   };
 
