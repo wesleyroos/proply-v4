@@ -55,6 +55,7 @@ import {
   TrendingUp,
   Calculator,
 } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { initGoogleMaps } from "@/lib/maps";
 
 // Utility function to create optimized image URLs for faster loading
@@ -848,6 +849,61 @@ export default function PropertyDetailModal({
             </tbody>
           </table>
         </div>
+
+        {/* Financing Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Equity Build-up vs Loan Balance</CardTitle>
+            <CardDescription>Visualization of loan paydown and equity accumulation over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={years.map(year => {
+                    const metrics = calculateFinancingMetrics(year);
+                    return {
+                      year: `Year ${year}`,
+                      equityBuildup: metrics.equityBuildup,
+                      remainingBalance: metrics.remainingBalance,
+                      totalLoanAmount: loanAmount
+                    };
+                  })}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="year" />
+                  <YAxis 
+                    tickFormatter={(value) => `R${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip 
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value), 
+                      name === 'equityBuildup' ? 'Equity Built' : 'Remaining Balance'
+                    ]}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="equityBuildup" 
+                    stroke="#10B981" 
+                    strokeWidth={3}
+                    name="Equity Built"
+                    dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="remainingBalance" 
+                    stroke="#EF4444" 
+                    strokeWidth={3}
+                    name="Remaining Balance"
+                    dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   };
