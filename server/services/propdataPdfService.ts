@@ -149,23 +149,33 @@ export class PropdataPdfService {
     this.doc.setFont("helvetica", "bold");
     this.doc.text("Property Report", this.margin, this.margin + 15);
 
-    // Load and add Proply logo on the right side
+    // Load and add actual Proply PNG logo on the right side
     try {
       const fs = await import("fs");
       const path = await import("path");
-      const logoPath = path.join(process.cwd(), "public", "proply-logo.svg");
+      const logoPath = path.join(process.cwd(), "client", "public", "proply-logo-auth.png");
 
       if (fs.existsSync(logoPath)) {
-        const logoSvg = fs.readFileSync(logoPath, "utf8");
+        console.log("Loading Proply logo from:", logoPath);
+        const logoBuffer = fs.readFileSync(logoPath);
+        const logoBase64 = logoBuffer.toString("base64");
 
-        // For now, add a placeholder for the logo since jsPDF SVG support is complex
-        // We'll add the logo as text until we implement proper SVG rendering
-        const logoX = this.pageWidth - this.margin - 50;
-        this.doc.setTextColor(PROPLY_BLUE);
-        this.doc.setFontSize(20);
-        this.doc.setFont("helvetica", "bold");
-        this.doc.text("PROPLY", logoX, this.margin + 15);
+        // Add the actual PNG logo
+        const logoWidth = 40;
+        const logoHeight = 20;
+        const logoX = this.pageWidth - this.margin - logoWidth;
+
+        this.doc.addImage(
+          logoBase64,
+          "PNG",
+          logoX,
+          this.margin,
+          logoWidth,
+          logoHeight
+        );
+        console.log("Successfully added Proply PNG logo to PDF");
       } else {
+        console.log("Logo file not found at:", logoPath);
         // Fallback logo text
         const logoX = this.pageWidth - this.margin - 50;
         this.doc.setTextColor(PROPLY_BLUE);
@@ -174,7 +184,7 @@ export class PropdataPdfService {
         this.doc.text("PROPLY", logoX, this.margin + 15);
       }
     } catch (error) {
-      console.log("Logo loading error, using text fallback");
+      console.error("Logo loading error:", error);
       // Fallback logo text
       const logoX = this.pageWidth - this.margin - 50;
       this.doc.setTextColor(PROPLY_BLUE);
