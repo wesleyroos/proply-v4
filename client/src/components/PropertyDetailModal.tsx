@@ -1552,7 +1552,7 @@ export default function PropertyDetailModal({
                         ? `Generating... ${generationTimer}s`
                         : isSendingReport
                         ? "Processing..."
-                        : "Generate Report"}
+                        : "Actions"}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -1582,7 +1582,6 @@ export default function PropertyDetailModal({
                 </DropdownMenu>
                 {!isGeneratingReport && !isSendingReport && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    This should take about 20 seconds
                   </p>
                 )}
               </div>
@@ -2059,7 +2058,7 @@ export default function PropertyDetailModal({
                               ? `Generating... ${generationTimer}s`
                               : isSendingReport
                               ? "Processing..."
-                              : "Generate Report"}
+                              : "Actions"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -2089,7 +2088,6 @@ export default function PropertyDetailModal({
                       </DropdownMenu>
                       {!isGeneratingReport && !isSendingReport && (
                         <p className="text-xs text-muted-foreground">
-                          This should take about 20 seconds
                         </p>
                       )}
                     </div>
@@ -2792,7 +2790,7 @@ export default function PropertyDetailModal({
                               ? `Generating... ${generationTimer}s`
                               : isSendingReport
                               ? "Processing..."
-                              : "Generate Report"}
+                              : "Actions"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -3060,7 +3058,7 @@ export default function PropertyDetailModal({
                               ? `Generating... ${generationTimer}s`
                               : isSendingReport
                               ? "Processing..."
-                              : "Generate Report"}
+                              : "Actions"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -3090,7 +3088,6 @@ export default function PropertyDetailModal({
                       </DropdownMenu>
                       {!isGeneratingReport && !isSendingReport && (
                         <p className="text-xs text-muted-foreground">
-                          This should take about 20 seconds
                         </p>
                       )}
                     </div>
