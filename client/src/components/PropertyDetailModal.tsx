@@ -2226,10 +2226,6 @@ export default function PropertyDetailModal({
                           <div className="space-y-4">
                             {/* Component Breakdown */}
                             <div className="space-y-2">
-                              <h4 className="font-medium text-xs">
-                                Components
-                              </h4>
-
                               <div className="overflow-x-auto">
                                 <table className="w-full text-xs">
                                   <thead>
