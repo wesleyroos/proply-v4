@@ -47,7 +47,7 @@ export class PropdataPdfService {
       }
 
       // Initialize PDF with Proply branding
-      this.initializePdf();
+      await this.initializePdf();
       
       // Generate each section
       await this.addOverviewSection(data);
@@ -121,7 +121,7 @@ export class PropdataPdfService {
     }
   }
 
-  private initializePdf(): void {
+  private async initializePdf(): Promise<void> {
     this.doc.setProperties({
       title: 'Proply Property Investment Report',
       subject: 'Property Investment Analysis',
@@ -130,28 +130,54 @@ export class PropdataPdfService {
     });
 
     // Add Proply header
-    this.addProplyHeader();
+    await this.addProplyHeader();
   }
 
-  private addProplyHeader(): void {
-    // Add Proply logo on the right side (blue rectangle for now)
-    const logoWidth = 40;
-    const logoHeight = 15;
-    const logoX = this.pageWidth - this.margin - logoWidth;
-    
-    this.doc.setFillColor(PROPLY_BLUE);
-    this.doc.rect(logoX, this.margin, logoWidth, logoHeight, 'F');
-    
-    // Add "PROPLY" text in white on the logo
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(16);
+  private async addProplyHeader(): Promise<void> {
+    // Add "Property Report" title on the left
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.setFontSize(24);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('PROPLY', logoX + 8, this.margin + 10);
+    this.doc.text('Property Report', this.margin, this.margin + 15);
+    
+    // Load and add Proply logo on the right side
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const logoPath = path.join(process.cwd(), 'public', 'proply-logo.svg');
+      
+      if (fs.existsSync(logoPath)) {
+        const logoSvg = fs.readFileSync(logoPath, 'utf8');
+        
+        // For now, add a placeholder for the logo since jsPDF SVG support is complex
+        // We'll add the logo as text until we implement proper SVG rendering
+        const logoX = this.pageWidth - this.margin - 50;
+        this.doc.setTextColor(PROPLY_BLUE);
+        this.doc.setFontSize(20);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('PROPLY', logoX, this.margin + 15);
+      } else {
+        // Fallback logo text
+        const logoX = this.pageWidth - this.margin - 50;
+        this.doc.setTextColor(PROPLY_BLUE);
+        this.doc.setFontSize(20);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('PROPLY', logoX, this.margin + 15);
+      }
+    } catch (error) {
+      console.log('Logo loading error, using text fallback');
+      // Fallback logo text
+      const logoX = this.pageWidth - this.margin - 50;
+      this.doc.setTextColor(PROPLY_BLUE);
+      this.doc.setFontSize(20);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.text('PROPLY', logoX, this.margin + 15);
+    }
     
     // Reset text color
     this.doc.setTextColor(0, 0, 0);
     
-    this.currentY = this.margin + 25;
+    this.currentY = this.margin + 35;
   }
 
   private async addOverviewSection(data: PropertyPdfData): Promise<void> {
