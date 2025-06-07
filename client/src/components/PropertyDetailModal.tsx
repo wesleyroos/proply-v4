@@ -2044,21 +2044,50 @@ export default function PropertyDetailModal({
                       long-term rental estimates.
                     </p>
                     <div className="space-y-2">
-                      <Button
-                        onClick={generateValuationReport}
-                        disabled={isGeneratingReport}
-                        className="gap-2"
-                      >
-                        {isGeneratingReport ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <FileBarChart className="h-4 w-4" />
-                        )}
-                        {isGeneratingReport
-                          ? `Generating... ${generationTimer}s`
-                          : "Generate Report"}
-                      </Button>
-                      {!isGeneratingReport && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            disabled={isGeneratingReport || isSendingReport}
+                            className="gap-2"
+                          >
+                            {(isGeneratingReport || isSendingReport) ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <FileBarChart className="h-4 w-4" />
+                            )}
+                            {isGeneratingReport
+                              ? `Generating... ${generationTimer}s`
+                              : isSendingReport
+                              ? "Processing..."
+                              : "Generate Report"}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={generateValuationReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <FileBarChart className="h-4 w-4 mr-2" />
+                            Generate Report
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={sendPDFReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <Send className="h-4 w-4 mr-2" />
+                            Send Report
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={downloadPDFReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Download Report
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      {!isGeneratingReport && !isSendingReport && (
                         <p className="text-xs text-muted-foreground">
                           This should take about 20 seconds
                         </p>
@@ -2748,21 +2777,50 @@ export default function PropertyDetailModal({
                       appreciation forecasts and component analysis.
                     </p>
                     <div className="space-y-2">
-                      <Button
-                        onClick={generateValuationReport}
-                        disabled={isGeneratingReport}
-                        className="gap-2"
-                      >
-                        {isGeneratingReport ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <FileBarChart className="h-4 w-4" />
-                        )}
-                        {isGeneratingReport
-                          ? `Generating... ${generationTimer}s`
-                          : "Generate Report"}
-                      </Button>
-                      {!isGeneratingReport && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            disabled={isGeneratingReport || isSendingReport}
+                            className="gap-2"
+                          >
+                            {(isGeneratingReport || isSendingReport) ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <FileBarChart className="h-4 w-4" />
+                            )}
+                            {isGeneratingReport
+                              ? `Generating... ${generationTimer}s`
+                              : isSendingReport
+                              ? "Processing..."
+                              : "Generate Report"}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={generateValuationReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <FileBarChart className="h-4 w-4 mr-2" />
+                            Generate Report
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={sendPDFReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <Send className="h-4 w-4 mr-2" />
+                            Send Report
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={downloadPDFReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Download Report
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      {!isGeneratingReport && !isSendingReport && (
                         <p className="text-xs text-muted-foreground">
                           This will include appreciation analysis with levy
                           impact assessment
@@ -2987,21 +3045,50 @@ export default function PropertyDetailModal({
                       valuation analysis
                     </p>
                     <div className="space-y-2">
-                      <Button
-                        onClick={generateValuationReport}
-                        disabled={isGeneratingReport}
-                        className="gap-2"
-                      >
-                        {isGeneratingReport ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <FileBarChart className="h-4 w-4" />
-                        )}
-                        {isGeneratingReport
-                          ? `Generating... ${generationTimer}s`
-                          : "Generate Report"}
-                      </Button>
-                      {!isGeneratingReport && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            disabled={isGeneratingReport || isSendingReport}
+                            className="gap-2"
+                          >
+                            {(isGeneratingReport || isSendingReport) ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <FileBarChart className="h-4 w-4" />
+                            )}
+                            {isGeneratingReport
+                              ? `Generating... ${generationTimer}s`
+                              : isSendingReport
+                              ? "Processing..."
+                              : "Generate Report"}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={generateValuationReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <FileBarChart className="h-4 w-4 mr-2" />
+                            Generate Report
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={sendPDFReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <Send className="h-4 w-4 mr-2" />
+                            Send Report
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={downloadPDFReport}
+                            disabled={isGeneratingReport || isSendingReport}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Download Report
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      {!isGeneratingReport && !isSendingReport && (
                         <p className="text-xs text-muted-foreground">
                           This should take about 20 seconds
                         </p>
