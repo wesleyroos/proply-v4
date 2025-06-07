@@ -202,15 +202,36 @@ export class PropdataPdfService {
     const spacing = 10;
     
     // Add static Google Map
-    if (data.property?.location?.latitude && data.property?.location?.longitude) {
+    console.log('Property location data:', data.property?.location);
+    console.log('Property location type:', typeof data.property?.location);
+    
+    // Parse location data if it's stored as JSON string
+    let locationData = data.property?.location;
+    if (typeof locationData === 'string') {
+      try {
+        locationData = JSON.parse(locationData);
+        console.log('Parsed location data:', locationData);
+      } catch (e) {
+        console.log('Failed to parse location JSON:', e);
+        locationData = null;
+      }
+    }
+    
+    if (locationData?.latitude && locationData?.longitude) {
       try {
         const mapUrl = await this.generateStaticMapUrl(
-          data.property.location.latitude,
-          data.property.location.longitude,
+          locationData.latitude,
+          locationData.longitude,
           data.property.address || 'Property Location'
         );
         
+        console.log('Generated map URL:', mapUrl);
         const mapResponse = await fetch(mapUrl);
+        
+        if (!mapResponse.ok) {
+          throw new Error(`Google Maps API error: ${mapResponse.status} ${mapResponse.statusText}`);
+        }
+        
         const mapBuffer = await mapResponse.arrayBuffer();
         const mapBase64 = Buffer.from(mapBuffer).toString('base64');
         
@@ -222,9 +243,71 @@ export class PropdataPdfService {
           mapWidth, 
           mapHeight
         );
+        console.log('Successfully added Google Map to PDF');
       } catch (error) {
         console.error('Error generating map:', error);
         // Fallback to placeholder
+        this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+        this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
+        this.doc.setTextColor(PROPLY_GRAY);
+        this.doc.setFontSize(9);
+        this.doc.text('Property Location Map', this.margin + 5, this.currentY + mapHeight/2);
+      }
+    } else {
+      console.log('No property location coordinates found, trying to geocode address...');
+      
+      // Try to use address for geocoding as fallback
+      if (data.property?.address) {
+        try {
+          const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(data.property.address)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`;
+          console.log('Geocoding address:', data.property.address);
+          
+          const geocodeResponse = await fetch(geocodeUrl);
+          const geocodeData = await geocodeResponse.json();
+          
+          if (geocodeData.results && geocodeData.results[0] && geocodeData.results[0].geometry) {
+            const location = geocodeData.results[0].geometry.location;
+            console.log('Geocoded location:', location);
+            
+            const mapUrl = await this.generateStaticMapUrl(
+              location.lat,
+              location.lng,
+              data.property.address
+            );
+            
+            console.log('Generated map URL from geocoding:', mapUrl);
+            const mapResponse = await fetch(mapUrl);
+            
+            if (mapResponse.ok) {
+              const mapBuffer = await mapResponse.arrayBuffer();
+              const mapBase64 = Buffer.from(mapBuffer).toString('base64');
+              
+              this.doc.addImage(
+                mapBase64, 
+                'JPEG', 
+                this.margin, 
+                this.currentY, 
+                mapWidth, 
+                mapHeight
+              );
+              console.log('Successfully added geocoded map to PDF');
+            } else {
+              throw new Error(`Map API error: ${mapResponse.status}`);
+            }
+          } else {
+            throw new Error('No geocoding results found');
+          }
+        } catch (error) {
+          console.error('Error with geocoding/map:', error);
+          // Fallback to placeholder
+          this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+          this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
+          this.doc.setTextColor(PROPLY_GRAY);
+          this.doc.setFontSize(9);
+          this.doc.text('Property Location Map', this.margin + 5, this.currentY + mapHeight/2);
+        }
+      } else {
+        // No address available, use placeholder
         this.doc.setFillColor(PROPLY_LIGHT_GRAY);
         this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
         this.doc.setTextColor(PROPLY_GRAY);
