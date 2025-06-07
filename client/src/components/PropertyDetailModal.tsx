@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -225,16 +225,28 @@ export default function PropertyDetailModal({
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
-  const [financingParams, setFinancingParams] = useState({
-    depositPercentage: 10,
-    interestRate: 10.75,
-    loanTermYears: 20,
-  });
+  // FINANCING PARAMETERS - Database-backed single source of truth
+  // These parameters are loaded from valuation_reports table and saved on update
+  // This ensures PDF generation uses exact same data user sees in modal
   const [tempFinancingParams, setTempFinancingParams] = useState({
-    depositPercentage: 10,
-    interestRate: 10.75,
+    depositPercentage: 20, // Default values until loaded from database
+    interestRate: 11.75,
     loanTermYears: 20,
   });
+
+  // Derive current financing parameters from database valuation data
+  // This creates the single source of truth that both modal and PDF will use
+  const financingParams = useMemo(() => {
+    if (valuationReport?.currentDepositPercentage) {
+      return {
+        depositPercentage: parseFloat(valuationReport.currentDepositPercentage),
+        interestRate: parseFloat(valuationReport.currentInterestRate || "11.75"),
+        loanTermYears: parseInt(valuationReport.currentLoanTerm || "20"),
+      };
+    }
+    // Fallback to temp params if no database data exists yet
+    return tempFinancingParams;
+  }, [valuationReport, tempFinancingParams]);
 
   // Timer effect for generation counter
   useEffect(() => {
@@ -574,6 +586,42 @@ export default function PropertyDetailModal({
       }
     } catch (error) {
       console.error("Error saving updated estimate:", error);
+    }
+  };
+
+  // FINANCING PARAMETERS - Save to database for single source of truth
+  // This function ensures PDF generation will use the same financing data user sees in modal
+  const saveFinancingParameters = async () => {
+    if (!property?.propdataId || !valuationReport?.price) return;
+
+    try {
+      const response = await fetch(
+        `/api/valuation-reports/${property.propdataId}/financing`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            depositPercentage: tempFinancingParams.depositPercentage,
+            interestRate: tempFinancingParams.interestRate,
+            loanTerm: tempFinancingParams.loanTermYears,
+            purchasePrice: parseFloat(valuationReport.price),
+          }),
+        },
+      );
+
+      if (response.ok) {
+        console.log('Successfully saved financing parameters to database');
+        // Reload valuation data from database to reflect updated financing parameters
+        await refetchValuation();
+        setIsFinancingModalOpen(false);
+      } else {
+        console.error('Failed to save financing parameters');
+      }
+    } catch (error) {
+      console.error("Error saving financing parameters:", error);
     }
   };
 
@@ -2871,10 +2919,7 @@ export default function PropertyDetailModal({
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                setFinancingParams(tempFinancingParams); // Apply temp values to actual state
-                setIsFinancingModalOpen(false);
-              }}
+              onClick={saveFinancingParameters}
             >
               Update
             </Button>
