@@ -155,6 +155,11 @@ export default function PropertyDetailModal({
     interestRate: 10.75,
     loanTermYears: 20
   });
+  const [tempFinancingParams, setTempFinancingParams] = useState({
+    depositPercentage: 10,
+    interestRate: 10.75,
+    loanTermYears: 20
+  });
 
   // Timer effect for generation counter
   useEffect(() => {
@@ -804,7 +809,10 @@ export default function PropertyDetailModal({
                 size="sm"
                 variant="outline"
                 className="h-6 px-2 text-xs"
-                onClick={() => setIsFinancingModalOpen(true)}
+                onClick={() => {
+                  setTempFinancingParams(financingParams);
+                  setIsFinancingModalOpen(true);
+                }}
               >
                 <Edit className="h-3 w-3 mr-1" />
                 Edit
@@ -2251,15 +2259,19 @@ export default function PropertyDetailModal({
               <label htmlFor="depositPercentage" className="text-sm font-medium">Deposit Percentage</label>
               <Input
                 id="depositPercentage"
-                type="number"
-                min="0"
-                max="100"
-                step="1"
-                value={financingParams.depositPercentage}
-                onChange={(e) => setFinancingParams(prev => ({
-                  ...prev,
-                  depositPercentage: parseFloat(e.target.value) || 10
-                }))}
+                type="text"
+                value={tempFinancingParams.depositPercentage}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty string or valid numbers
+                  if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0 && Number(value) <= 100)) {
+                    setTempFinancingParams(prev => ({
+                      ...prev,
+                      depositPercentage: value === '' ? 0 : Number(value)
+                    }));
+                  }
+                }}
+                placeholder="0"
                 className="w-full"
               />
               <p className="text-xs text-muted-foreground">0% = 100% financing, 100% = cash purchase</p>
@@ -2269,15 +2281,19 @@ export default function PropertyDetailModal({
               <label htmlFor="interestRate" className="text-sm font-medium">Interest Rate (%)</label>
               <Input
                 id="interestRate"
-                type="number"
-                min="1"
-                max="25"
-                step="0.25"
-                value={financingParams.interestRate}
-                onChange={(e) => setFinancingParams(prev => ({
-                  ...prev,
-                  interestRate: parseFloat(e.target.value) || 10.75
-                }))}
+                type="text"
+                value={tempFinancingParams.interestRate}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty string or valid numbers
+                  if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0 && Number(value) <= 50)) {
+                    setTempFinancingParams(prev => ({
+                      ...prev,
+                      interestRate: value === '' ? 0 : Number(value)
+                    }));
+                  }
+                }}
+                placeholder="10.75"
                 className="w-full"
               />
               <p className="text-xs text-muted-foreground">Current market rates typically 8-15%</p>
@@ -2287,32 +2303,39 @@ export default function PropertyDetailModal({
               <label htmlFor="loanTermYears" className="text-sm font-medium">Loan Term (Years)</label>
               <Input
                 id="loanTermYears"
-                type="number"
-                min="5"
-                max="30"
-                step="1"
-                value={financingParams.loanTermYears}
-                onChange={(e) => setFinancingParams(prev => ({
-                  ...prev,
-                  loanTermYears: parseInt(e.target.value) || 20
-                }))}
+                type="text"
+                value={tempFinancingParams.loanTermYears}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty string or valid numbers
+                  if (value === '' || (!isNaN(Number(value)) && Number(value) >= 1 && Number(value) <= 40)) {
+                    setTempFinancingParams(prev => ({
+                      ...prev,
+                      loanTermYears: value === '' ? 1 : Number(value)
+                    }));
+                  }
+                }}
+                placeholder="20"
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground">Between 5 and 30 years</p>
+              <p className="text-xs text-muted-foreground">Between 1 and 40 years</p>
             </div>
           </div>
           
           <div className="flex justify-end space-x-2">
             <Button
               variant="outline"
-              onClick={() => setIsFinancingModalOpen(false)}
+              onClick={() => {
+                setTempFinancingParams(financingParams); // Reset temp values
+                setIsFinancingModalOpen(false);
+              }}
             >
               Cancel
             </Button>
             <Button
               onClick={() => {
+                setFinancingParams(tempFinancingParams); // Apply temp values to actual state
                 setIsFinancingModalOpen(false);
-                // Parameters are already updated via state, charts will re-render automatically
               }}
             >
               Update
