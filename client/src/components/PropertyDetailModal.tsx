@@ -2385,12 +2385,12 @@ export default function PropertyDetailModal({
                                         Year
                                       </th>
                                       {valuationReport.propertyAppreciation.fiveYearProjection.map(
-                                        (projection: any) => (
+                                        (projection: any, index: number) => (
                                           <th
                                             key={projection.year}
                                             className="py-2 px-3 text-center font-medium text-blue-700"
                                           >
-                                            Year {projection.year}
+                                            Year {index + 1}
                                           </th>
                                         ),
                                       )}
