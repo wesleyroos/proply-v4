@@ -988,6 +988,52 @@ export default function PropertyDetailModal({
     }
   };
 
+  // Download PDF Report Function
+  const downloadPDFReport = async () => {
+    if (!property?.propdataId) {
+      alert("Property ID is required to generate report");
+      return;
+    }
+
+    setIsSendingReport(true);
+    setReportSendStatus(null);
+
+    try {
+      const response = await fetch(`/api/reports/generate-and-send/${property.propdataId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.downloadUrl) {
+        // Trigger direct download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = result.downloadUrl;
+        downloadLink.download = `investment-analysis-${property.address}.pdf`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        alert("PDF report generated and downloaded successfully!");
+      } else {
+        throw new Error(result.message || "Failed to generate PDF report");
+      }
+
+    } catch (error: any) {
+      console.error("Error downloading PDF report:", error);
+      alert(`Failed to download PDF report: ${error.message}`);
+    } finally {
+      setIsSendingReport(false);
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-ZA", {
       style: "currency",
@@ -1489,23 +1535,52 @@ export default function PropertyDetailModal({
                 )}
               </div>
               <div className="text-right">
-                <Button
-                  onClick={generateValuationReport}
-                  disabled={isGeneratingReport}
-                  variant="default"
-                  size="sm"
-                  className="gap-2"
-                >
-                  {isGeneratingReport ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <FileBarChart className="h-4 w-4" />
-                  )}
-                  {isGeneratingReport
-                    ? `Generating... ${generationTimer}s`
-                    : "Generate Report"}
-                </Button>
-                {!isGeneratingReport && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      disabled={isGeneratingReport || isSendingReport}
+                      variant="default"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {(isGeneratingReport || isSendingReport) ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileBarChart className="h-4 w-4" />
+                      )}
+                      {isGeneratingReport
+                        ? `Generating... ${generationTimer}s`
+                        : isSendingReport
+                        ? "Processing..."
+                        : "Generate Report"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={generateValuationReport}
+                      disabled={isGeneratingReport || isSendingReport}
+                    >
+                      <FileBarChart className="h-4 w-4 mr-2" />
+                      Generate Report
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={sendPDFReport}
+                      disabled={isGeneratingReport || isSendingReport}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={downloadPDFReport}
+                      disabled={isGeneratingReport || isSendingReport}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Download Report
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {!isGeneratingReport && !isSendingReport && (
                   <p className="text-xs text-muted-foreground mt-1">
                     This should take about 20 seconds
                   </p>
