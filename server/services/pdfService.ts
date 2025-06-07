@@ -32,9 +32,13 @@ interface ReportData {
 export class PDFService {
   private async fetchPropertyImage(imageUrl: string): Promise<string | null> {
     try {
-      // Use existing image optimization endpoint
-      const optimizedUrl = `/api/optimize-image?url=${encodeURIComponent(imageUrl)}&width=800&height=400&quality=85`;
-      const response = await fetch(`${process.env.REPLIT_DOMAIN || 'http://localhost:5000'}${optimizedUrl}`);
+      // Direct fetch from PropData with authentication
+      const response = await fetch(imageUrl, {
+        headers: {
+          'Authorization': `Bearer ${process.env.PROPDATA_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (!response.ok) {
         console.warn('Failed to fetch property image:', response.statusText);
@@ -177,10 +181,17 @@ export class PDFService {
     const pageHeight = pdf.internal.pageSize.getHeight();
     let yPosition = 20;
 
-    // Add Proply branding
+    // Add Proply branding with correct color
     pdf.setFontSize(24);
-    pdf.setTextColor(41, 128, 185); // Proply blue
+    pdf.setTextColor(30, 64, 175); // Proply blue #1e40af
     pdf.text('Proply Investment Analysis Report', 20, yPosition);
+    
+    // Add PROPLY logo text in top right
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('PROPLY', pageWidth - 40, yPosition);
+    pdf.setFont('helvetica', 'normal');
+    
     yPosition += 15;
 
     // Property address
@@ -276,7 +287,7 @@ export class PDFService {
       body: propertyData,
       theme: 'grid',
       styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185] },
+      headStyles: { fillColor: [30, 64, 175] },
     });
 
     return pdf.lastAutoTable.finalY + 15;
@@ -320,7 +331,7 @@ export class PDFService {
         body: rentalData,
         theme: 'grid',
         styles: { fontSize: 10 },
-        headStyles: { fillColor: [41, 128, 185] },
+        headStyles: { fillColor: [30, 64, 175] },
       });
 
       yPosition = pdf.lastAutoTable.finalY + 15;
@@ -353,25 +364,126 @@ export class PDFService {
         body: financingData,
         theme: 'grid',
         styles: { fontSize: 10 },
-        headStyles: { fillColor: [41, 128, 185] },
+        headStyles: { fillColor: [30, 64, 175] },
       });
 
       yPosition = pdf.lastAutoTable.finalY + 15;
     }
 
-    // Property appreciation projections
-    if (financialAnalysis.annualPropertyAppreciationData) {
-      if (yPosition > 200) {
+    // Investment Metrics from valuation
+    if (data.valuation?.analysis?.investmentMetrics) {
+      if (yPosition > 180) {
         pdf.addPage();
         yPosition = 20;
       }
 
       pdf.setFontSize(14);
-      pdf.text('Property Appreciation Forecast', 20, yPosition);
+      pdf.text('Investment Metrics', 20, yPosition);
       yPosition += 10;
 
-      const appreciation = financialAnalysis.annualPropertyAppreciationData;
-      if (appreciation.yearlyValues) {
+      const metrics = data.valuation.analysis.investmentMetrics;
+      const investmentData = [];
+
+      // Short-term metrics
+      if (metrics.shortTerm?.[0]) {
+        const st = metrics.shortTerm[0];
+        investmentData.push(['Short-term Gross Yield', `${st.grossYield?.toFixed(2) || 'N/A'}%`]);
+        investmentData.push(['Short-term Net Yield', `${st.netYield?.toFixed(2) || 'N/A'}%`]);
+        investmentData.push(['Short-term ROE', `${st.returnOnEquity?.toFixed(2) || 'N/A'}%`]);
+        investmentData.push(['Short-term Cash-on-Cash', `${st.cashOnCashReturn?.toFixed(2) || 'N/A'}%`]);
+      }
+
+      // Long-term metrics
+      if (metrics.longTerm?.[0]) {
+        const lt = metrics.longTerm[0];
+        investmentData.push(['Long-term Gross Yield', `${lt.grossYield?.toFixed(2) || 'N/A'}%`]);
+        investmentData.push(['Long-term Net Yield', `${lt.netYield?.toFixed(2) || 'N/A'}%`]);
+        investmentData.push(['Long-term ROE', `${lt.returnOnEquity?.toFixed(2) || 'N/A'}%`]);
+        investmentData.push(['Long-term Cash-on-Cash', `${lt.cashOnCashReturn?.toFixed(2) || 'N/A'}%`]);
+      }
+
+      if (investmentData.length > 0) {
+        pdf.autoTable({
+          startY: yPosition,
+          head: [['Investment Metric', 'Value']],
+          body: investmentData,
+          theme: 'grid',
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [30, 64, 175] },
+        });
+        yPosition = pdf.lastAutoTable.finalY + 15;
+      }
+    }
+
+    // Cash Flow Projections
+    if (data.valuation?.analysis?.netOperatingIncome) {
+      if (yPosition > 150) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+
+      pdf.setFontSize(14);
+      pdf.text('Cash Flow Projections (Short-term)', 20, yPosition);
+      yPosition += 10;
+
+      const noi = data.valuation.analysis.netOperatingIncome;
+      const cashflowData = [];
+
+      Object.entries(noi).forEach(([year, data]: [string, any]) => {
+        if (data && typeof data === 'object') {
+          cashflowData.push([
+            year.replace('year', 'Year '),
+            this.formatCurrency(data.annualCashflow || 0),
+            this.formatCurrency(data.cumulativeRentalIncome || 0)
+          ]);
+        }
+      });
+
+      if (cashflowData.length > 0) {
+        pdf.autoTable({
+          startY: yPosition,
+          head: [['Year', 'Annual Cashflow', 'Cumulative Income']],
+          body: cashflowData,
+          theme: 'grid',
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [30, 64, 175] },
+        });
+        yPosition = pdf.lastAutoTable.finalY + 15;
+      }
+    }
+
+    // Property appreciation projections
+    if (data.valuation?.propertyAppreciation || financialAnalysis.annualPropertyAppreciationData) {
+      if (yPosition > 150) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+
+      pdf.setFontSize(14);
+      pdf.text('Property Appreciation Analysis', 20, yPosition);
+      yPosition += 10;
+
+      const appreciation = data.valuation?.propertyAppreciation || financialAnalysis.annualPropertyAppreciationData;
+      
+      if (data.valuation?.propertyAppreciation) {
+        const appreciationData = [
+          ['Annual Appreciation Rate', `${data.valuation.propertyAppreciation.annualAppreciationRate?.toFixed(2) || 'N/A'}%`],
+          ['Current Value', this.formatCurrency(data.valuation.propertyAppreciation.currentValue || 0)],
+          ['5-Year Value', this.formatCurrency(data.valuation.propertyAppreciation.year5Value || 0)],
+          ['10-Year Value', this.formatCurrency(data.valuation.propertyAppreciation.year10Value || 0)],
+          ['20-Year Value', this.formatCurrency(data.valuation.propertyAppreciation.year20Value || 0)]
+        ];
+
+        pdf.autoTable({
+          startY: yPosition,
+          head: [['Appreciation Metric', 'Value']],
+          body: appreciationData,
+          theme: 'grid',
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [30, 64, 175] },
+        });
+        yPosition = pdf.lastAutoTable.finalY + 15;
+      } else if (appreciation?.yearlyValues) {
         const appreciationData = Object.entries(appreciation.yearlyValues).slice(0, 10).map(([year, value]: [string, any]) => [
           `Year ${year}`,
           this.formatCurrency(value)
@@ -383,9 +495,8 @@ export class PDFService {
           body: appreciationData,
           theme: 'grid',
           styles: { fontSize: 10 },
-          headStyles: { fillColor: [41, 128, 185] },
+          headStyles: { fillColor: [30, 64, 175] },
         });
-
         yPosition = pdf.lastAutoTable.finalY + 15;
       }
     }
