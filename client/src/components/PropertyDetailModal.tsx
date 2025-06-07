@@ -2376,40 +2376,67 @@ export default function PropertyDetailModal({
                               </div>
                             </div>
 
-                            {/* 5-Year Value Projection */}
+                            {/* Extended Value Projection */}
                             <div className="space-y-2">
                               <h4 className="font-medium text-xs">
-                                5-Year Projection
+                                Property Value Projection
                               </h4>
                               <div className="overflow-x-auto">
-                                <table className="w-full text-xs">
+                                <table className="w-full text-xs border rounded-lg">
                                   <thead>
-                                    <tr className="bg-blue-50">
+                                    <tr className="bg-blue-50 border-b">
+                                      <th className="py-2 px-3 text-left font-medium text-blue-700">
+                                        Year and Value
+                                      </th>
                                       {valuationReport.propertyAppreciation.fiveYearProjection.map(
                                         (projection: any) => (
                                           <th
                                             key={projection.year}
-                                            className="py-1 px-2 text-center font-medium text-blue-700"
+                                            className="py-2 px-3 text-center font-medium text-blue-700"
                                           >
-                                            {projection.year}
+                                            Year {projection.year}
                                           </th>
                                         ),
                                       )}
+                                      <th className="py-2 px-3 text-center font-medium text-blue-700">
+                                        Year 10
+                                      </th>
+                                      <th className="py-2 px-3 text-center font-medium text-blue-700">
+                                        Year 20
+                                      </th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    <tr>
+                                    <tr className="border-b">
+                                      <td className="py-2 px-3 font-medium text-blue-800">
+                                        Property Value
+                                      </td>
                                       {valuationReport.propertyAppreciation.fiveYearProjection.map(
                                         (projection: any) => (
                                           <td
                                             key={projection.year}
-                                            className="py-2 px-2 text-center font-medium text-blue-800"
+                                            className="py-2 px-3 text-center font-medium text-blue-800"
                                           >
-                                            R
-                                            {projection.estimatedValue.toLocaleString()}
+                                            R{projection.estimatedValue.toLocaleString()}
                                           </td>
                                         ),
                                       )}
+                                      <td className="py-2 px-3 text-center font-medium text-blue-800">
+                                        R{(() => {
+                                          const baseValue = property?.price || 0;
+                                          const appreciationRate = valuationReport.propertyAppreciation.annualAppreciationRate / 100;
+                                          const year10Value = baseValue * Math.pow(1 + appreciationRate, 10);
+                                          return Math.round(year10Value).toLocaleString();
+                                        })()}
+                                      </td>
+                                      <td className="py-2 px-3 text-center font-medium text-blue-800">
+                                        R{(() => {
+                                          const baseValue = property?.price || 0;
+                                          const appreciationRate = valuationReport.propertyAppreciation.annualAppreciationRate / 100;
+                                          const year20Value = baseValue * Math.pow(1 + appreciationRate, 20);
+                                          return Math.round(year20Value).toLocaleString();
+                                        })()}
+                                      </td>
                                     </tr>
                                   </tbody>
                                 </table>
