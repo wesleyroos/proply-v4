@@ -113,6 +113,11 @@ export class PropdataPdfService {
       });
 
       console.log("Rental data found:", !!rentalData);
+      console.log("Financial analysis data available:", {
+        hasAnnualAppreciationData: !!valuationReport?.annualPropertyAppreciationData,
+        hasCashflowAnalysisData: !!valuationReport?.cashflowAnalysisData,
+        hasFinancingAnalysisData: !!valuationReport?.financingAnalysisData
+      });
 
       if (!property) {
         throw new Error(`Property with ID ${propertyId} not found in database`);
