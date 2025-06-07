@@ -339,6 +339,7 @@ router.post("/propdata/listings/sync", async (req, res) => {
         const listingData = {
           propdataId: listing.id.toString(),
           agencyId: 1, // Default agency ID - replace with actual agency ID
+          branchId: 1, // Default to Sotheby's Atlantic Seaboard branch
           status: listing.status || "Active",
           listingData: listing, // Store full API response
           
