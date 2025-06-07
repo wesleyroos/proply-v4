@@ -1,11 +1,5 @@
 import { jsPDF } from 'jspdf';
-
-// Extend jsPDF interface for autoTable
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
+import 'jspdf-autotable';
 import { db } from '../../db';
 import { propdataListings, valuationReports, rentalPerformanceData } from '../../db/schema';
 import { eq } from 'drizzle-orm';
@@ -273,23 +267,12 @@ export class PropdataPdfService {
     if (valuation.valuations && Array.isArray(valuation.valuations)) {
       this.addSubsectionHeader('Valuation Estimates');
       
-      const tableData = valuation.valuations.map((val: any) => [
-        val.type || '',
-        `R${(val.value || 0).toLocaleString('en-ZA')}`,
-        val.formula || ''
-      ]);
-      
-      (this.doc as any).autoTable({
-        startY: this.currentY,
-        head: [['Valuation Type', 'Estimated Value', 'Calculation']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [30, 64, 175], textColor: 255 },
-        styles: { fontSize: 9 },
-        margin: { left: this.margin, right: this.margin }
+      this.doc.setFontSize(10);
+      valuation.valuations.forEach((val: any) => {
+        this.doc.text(`${val.type}: R${(val.value || 0).toLocaleString('en-ZA')} (${val.formula || ''})`, this.margin, this.currentY);
+        this.currentY += 12;
       });
-      
-      this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+      this.currentY += 5;
     }
     
     // Property Appreciation Analysis
@@ -412,17 +395,13 @@ export class PropdataPdfService {
             `R${(shortTerm.percentile90.annual || 0).toLocaleString('en-ZA')}`]);
         }
         
-        (this.doc as any).autoTable({
-          startY: this.currentY,
-          head: [['Performance Level', 'Nightly Rate', 'Monthly Est.', 'Annual Est.']],
-          body: percentileData,
-          theme: 'grid',
-          headStyles: { fillColor: [30, 64, 175], textColor: 255 },
-          styles: { fontSize: 9 },
-          margin: { left: this.margin, right: this.margin }
+        this.doc.setFontSize(10);
+        rentals.shortTerm.percentiles.forEach((p: any) => {
+          this.doc.text(`${p.level}: R${p.nightlyRate} (Monthly: R${(p.nightlyRate * 30).toLocaleString()}, Annual: R${(p.nightlyRate * 365).toLocaleString()})`, 
+            this.margin, this.currentY);
+          this.currentY += 8;
         });
-        
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+        this.currentY += 10;
       }
     }
   }
