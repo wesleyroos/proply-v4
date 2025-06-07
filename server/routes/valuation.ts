@@ -344,4 +344,97 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
   }
 });
 
+// PATCH /api/valuation-reports/:propertyId/financing - Update financing parameters
+// This endpoint updates the current working state of financing parameters for a property
+// Ensures single source of truth for PDF generation by storing user's current financing scenario
+router.patch("/:propertyId/financing", async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const { propertyId } = req.params;
+    const { 
+      depositPercentage, 
+      interestRate, 
+      loanTerm,
+      purchasePrice // Property price needed to calculate derived values
+    } = req.body;
+
+    // Validate required fields
+    if (!depositPercentage || !interestRate || !loanTerm || !purchasePrice) {
+      return res.status(400).json({ 
+        error: "Missing required financing parameters: depositPercentage, interestRate, loanTerm, purchasePrice" 
+      });
+    }
+
+    // Calculate derived financing values to store in database
+    // This avoids recalculation during PDF generation and ensures consistency
+    const depositAmount = (purchasePrice * depositPercentage) / 100;
+    const loanAmount = purchasePrice - depositAmount;
+    
+    // Calculate monthly repayment using standard mortgage formula
+    // M = P * [r(1+r)^n] / [(1+r)^n - 1]
+    const monthlyRate = interestRate / 100 / 12;
+    const numPayments = loanTerm * 12;
+    const monthlyRepayment = monthlyRate > 0 
+      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+      : loanAmount / numPayments; // Handle 0% interest case
+
+    console.log(`Updating financing parameters for property ${propertyId}:`, {
+      depositPercentage,
+      interestRate,
+      loanTerm,
+      purchasePrice,
+      calculatedDepositAmount: depositAmount,
+      calculatedLoanAmount: loanAmount,
+      calculatedMonthlyRepayment: monthlyRepayment
+    });
+
+    // Update the valuation report with new financing parameters
+    // This creates our single source of truth for PDF generation
+    const result = await db.execute(sql`
+      UPDATE valuation_reports 
+      SET 
+        current_deposit_percentage = ${depositPercentage.toString()},
+        current_interest_rate = ${interestRate.toString()},
+        current_loan_term = ${loanTerm},
+        current_deposit_amount = ${depositAmount.toString()},
+        current_loan_amount = ${loanAmount.toString()},
+        current_monthly_repayment = ${monthlyRepayment.toString()},
+        updated_at = NOW()
+      WHERE property_id = ${propertyId} 
+        AND user_id = ${req.user.id}
+      RETURNING *
+    `);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: "Valuation report not found for this property" 
+      });
+    }
+
+    console.log('Successfully updated financing parameters in database');
+
+    // Return the updated financing data
+    res.json({
+      success: true,
+      financing: {
+        depositPercentage: parseFloat(depositPercentage),
+        interestRate: parseFloat(interestRate),
+        loanTerm: parseInt(loanTerm),
+        depositAmount: depositAmount,
+        loanAmount: loanAmount,
+        monthlyRepayment: monthlyRepayment
+      }
+    });
+
+  } catch (error) {
+    console.error("Error updating financing parameters:", error);
+    return res.status(500).json({ 
+      error: "Failed to update financing parameters" 
+    });
+  }
+});
+
 export default router;

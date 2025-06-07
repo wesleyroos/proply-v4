@@ -406,6 +406,20 @@ export const valuationReports = pgTable("valuation_reports", {
   imagesAnalyzed: integer("images_analyzed").default(0),
   analysisModel: text("analysis_model").default("gpt-4o"),
   
+  // FINANCING PARAMETERS - Current Working State (Single Source of Truth for PDF)
+  // These fields store the user's current financing scenario for this property
+  // Updated whenever user modifies financing details in the modal
+  // PDF generation reads these values to ensure consistency with modal display
+  currentDepositPercentage: decimal("current_deposit_percentage", { precision: 5, scale: 2 }).default("20.00"), // Default 20% deposit
+  currentInterestRate: decimal("current_interest_rate", { precision: 5, scale: 2 }).default("11.75"), // Default prime rate
+  currentLoanTerm: integer("current_loan_term").default(20), // Default 20 year loan
+  
+  // Derived financing values (calculated from above parameters + property price)
+  // Stored to avoid recalculation during PDF generation
+  currentDepositAmount: decimal("current_deposit_amount", { precision: 12, scale: 2 }),
+  currentLoanAmount: decimal("current_loan_amount", { precision: 12, scale: 2 }),
+  currentMonthlyRepayment: decimal("current_monthly_repayment", { precision: 10, scale: 2 }),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
