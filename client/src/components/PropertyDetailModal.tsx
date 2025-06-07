@@ -776,99 +776,70 @@ export default function PropertyDetailModal({
 
     return (
       <div className="space-y-6">
-        {/* Strategy Comparison */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Short-term Strategy */}
-          {shortTermMetrics && (
-            <Card className="relative">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  Short-term Strategy
-                </CardTitle>
-                <CardDescription>Nightly rentals ({selectedPercentile.replace('percentile', '')}th percentile)</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">Monthly Gross Income</p>
-                  <p className="text-2xl font-bold">{formatCurrency(shortTermMetrics.monthlyGrossIncome)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Annual Gross Income</p>
-                  <p className="text-lg font-semibold">{formatCurrency(shortTermMetrics.annualGrossIncome)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Gross Rental Yield</p>
-                  <p className="text-lg font-semibold text-blue-600">{shortTermMetrics.grossRentalYield.toFixed(1)}%</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Long-term Strategy */}
-          {longTermMetrics && (
-            <Card className="relative">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  Long-term Strategy
-                </CardTitle>
-                <CardDescription>Monthly rentals (average estimate)</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">Monthly Gross Income</p>
-                  <p className="text-2xl font-bold">{formatCurrency(longTermMetrics.monthlyGrossIncome)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Annual Gross Income</p>
-                  <p className="text-lg font-semibold">{formatCurrency(longTermMetrics.annualGrossIncome)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Gross Rental Yield</p>
-                  <p className="text-lg font-semibold text-green-600">{longTermMetrics.grossRentalYield.toFixed(1)}%</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Revenue Growth Projections */}
+        {/* Revenue Growth Projections Table */}
         {(shortTermMetrics || longTermMetrics) && (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">5-Year Revenue Growth Trajectory</CardTitle>
-              <CardDescription>Projected annual revenue with 8% market growth</CardDescription>
+              <CardDescription>Projected annual revenue and yields with 8% market growth</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {shortTermMetrics && (
-                  <div>
-                    <h4 className="font-medium text-blue-600 mb-2">Short-term Strategy</h4>
-                    <div className="grid grid-cols-5 gap-2 text-sm">
-                      {calculateRevenueGrowth(shortTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
-                        <div key={year} className="text-center p-2 bg-blue-50 rounded">
-                          <p className="font-medium">Year {year}</p>
-                          <p className="text-xs text-muted-foreground">{formatCurrency(revenue)}</p>
-                        </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-medium">Strategy</th>
+                      {[1, 2, 3, 4, 5].map(year => (
+                        <th key={year} className="text-center py-3 px-4 font-medium">Year {year}</th>
                       ))}
-                    </div>
-                  </div>
-                )}
-                
-                {longTermMetrics && (
-                  <div>
-                    <h4 className="font-medium text-green-600 mb-2">Long-term Strategy</h4>
-                    <div className="grid grid-cols-5 gap-2 text-sm">
-                      {calculateRevenueGrowth(longTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
-                        <div key={year} className="text-center p-2 bg-green-50 rounded">
-                          <p className="font-medium">Year {year}</p>
-                          <p className="text-xs text-muted-foreground">{formatCurrency(revenue)}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Short-term Revenue Row */}
+                    {shortTermMetrics && (
+                      <>
+                        <tr className="border-b hover:bg-blue-50/50">
+                          <td className="py-3 px-4 font-medium text-blue-600">Short-term Revenue</td>
+                          {calculateRevenueGrowth(shortTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                            <td key={year} className="text-center py-3 px-4">
+                              {formatCurrency(revenue)}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr className="border-b hover:bg-blue-50/50">
+                          <td className="py-3 px-4 font-medium text-blue-600">Short-term Gross Yield</td>
+                          {calculateRevenueGrowth(shortTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                            <td key={year} className="text-center py-3 px-4">
+                              {((revenue / parseFloat(property.price.toString())) * 100).toFixed(1)}%
+                            </td>
+                          ))}
+                        </tr>
+                      </>
+                    )}
+                    
+                    {/* Long-term Revenue Row */}
+                    {longTermMetrics && (
+                      <>
+                        <tr className="border-b hover:bg-green-50/50">
+                          <td className="py-3 px-4 font-medium text-green-600">Long-term Revenue</td>
+                          {calculateRevenueGrowth(longTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                            <td key={year} className="text-center py-3 px-4">
+                              {formatCurrency(revenue)}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr className="border-b hover:bg-green-50/50">
+                          <td className="py-3 px-4 font-medium text-green-600">Long-term Gross Yield</td>
+                          {calculateRevenueGrowth(longTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                            <td key={year} className="text-center py-3 px-4">
+                              {((revenue / parseFloat(property.price.toString())) * 100).toFixed(1)}%
+                            </td>
+                          ))}
+                        </tr>
+                      </>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>
