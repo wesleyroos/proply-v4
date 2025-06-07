@@ -231,6 +231,8 @@ export class PropdataPdfService {
         const mapResponse = await fetch(mapUrl);
         
         if (!mapResponse.ok) {
+          const errorText = await mapResponse.text();
+          console.error(`Google Maps API error: ${mapResponse.status} ${mapResponse.statusText} - ${errorText}`);
           throw new Error(`Google Maps API error: ${mapResponse.status} ${mapResponse.statusText}`);
         }
         
@@ -304,12 +306,15 @@ export class PropdataPdfService {
           }
         } catch (error) {
           console.error('Error with geocoding/map:', error);
-          // Fallback to placeholder
-          this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+          // Add informative placeholder
+          this.doc.setFillColor(240, 240, 240);
           this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
-          this.doc.setTextColor(PROPLY_GRAY);
-          this.doc.setFontSize(9);
-          this.doc.text('Property Location Map', this.margin + 5, this.currentY + mapHeight/2);
+          this.doc.setDrawColor(200, 200, 200);
+          this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'S');
+          this.doc.setTextColor(100, 100, 100);
+          this.doc.setFontSize(8);
+          this.doc.text('Google Maps API', this.margin + 5, this.currentY + mapHeight/2 - 4);
+          this.doc.text('Authorization Required', this.margin + 5, this.currentY + mapHeight/2 + 4);
         }
       } else {
         // No address available, use placeholder
