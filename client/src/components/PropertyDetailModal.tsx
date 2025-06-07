@@ -721,6 +721,176 @@ export default function PropertyDetailModal({
   // Display exactly 8 images
   const imagesPerView = 8;
 
+  // Render Cash Flow Analysis content
+  const renderCashflowAnalysis = () => {
+    if (!rentalData || !property) {
+      return (
+        <div className="py-8 text-center">
+          <p className="text-muted-foreground">Generate rental performance data first to view cash flow analysis</p>
+        </div>
+      );
+    }
+
+    // Calculate metrics for both strategies
+    const calculateMetrics = (isShortTerm: boolean) => {
+      const propertyPrice = parseFloat(property.price.toString());
+      
+      if (isShortTerm && rentalData.shortTerm) {
+        const selectedData = rentalData.shortTerm[selectedPercentile];
+        const monthlyGrossIncome = selectedData.monthly;
+        const annualGrossIncome = selectedData.annual;
+        const grossRentalYield = ((annualGrossIncome / propertyPrice) * 100);
+        
+        return {
+          monthlyGrossIncome,
+          annualGrossIncome,
+          grossRentalYield,
+          strategy: 'Short-term Rental'
+        };
+      } else if (!isShortTerm && rentalData.longTerm) {
+        const monthlyGrossIncome = (rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2;
+        const annualGrossIncome = monthlyGrossIncome * 12;
+        const grossRentalYield = ((annualGrossIncome / propertyPrice) * 100);
+        
+        return {
+          monthlyGrossIncome,
+          annualGrossIncome,
+          grossRentalYield,
+          strategy: 'Long-term Rental'
+        };
+      }
+      
+      return null;
+    };
+
+    const shortTermMetrics = calculateMetrics(true);
+    const longTermMetrics = calculateMetrics(false);
+
+    // Calculate 5-year revenue growth (8% annual growth)
+    const calculateRevenueGrowth = (baseAnnual: number) => {
+      return [1, 2, 3, 4, 5].map(year => ({
+        year,
+        revenue: baseAnnual * Math.pow(1.08, year - 1)
+      }));
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Strategy Comparison */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Short-term Strategy */}
+          {shortTermMetrics && (
+            <Card className="relative">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  Short-term Strategy
+                </CardTitle>
+                <CardDescription>Nightly rentals ({selectedPercentile.replace('percentile', '')}th percentile)</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Monthly Gross Income</p>
+                  <p className="text-2xl font-bold">{formatCurrency(shortTermMetrics.monthlyGrossIncome)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Annual Gross Income</p>
+                  <p className="text-lg font-semibold">{formatCurrency(shortTermMetrics.annualGrossIncome)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Gross Rental Yield</p>
+                  <p className="text-lg font-semibold text-blue-600">{shortTermMetrics.grossRentalYield.toFixed(1)}%</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Long-term Strategy */}
+          {longTermMetrics && (
+            <Card className="relative">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  Long-term Strategy
+                </CardTitle>
+                <CardDescription>Monthly rentals (average estimate)</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Monthly Gross Income</p>
+                  <p className="text-2xl font-bold">{formatCurrency(longTermMetrics.monthlyGrossIncome)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Annual Gross Income</p>
+                  <p className="text-lg font-semibold">{formatCurrency(longTermMetrics.annualGrossIncome)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Gross Rental Yield</p>
+                  <p className="text-lg font-semibold text-green-600">{longTermMetrics.grossRentalYield.toFixed(1)}%</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Revenue Growth Projections */}
+        {(shortTermMetrics || longTermMetrics) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">5-Year Revenue Growth Trajectory</CardTitle>
+              <CardDescription>Projected annual revenue with 8% market growth</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {shortTermMetrics && (
+                  <div>
+                    <h4 className="font-medium text-blue-600 mb-2">Short-term Strategy</h4>
+                    <div className="grid grid-cols-5 gap-2 text-sm">
+                      {calculateRevenueGrowth(shortTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                        <div key={year} className="text-center p-2 bg-blue-50 rounded">
+                          <p className="font-medium">Year {year}</p>
+                          <p className="text-xs text-muted-foreground">{formatCurrency(revenue)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {longTermMetrics && (
+                  <div>
+                    <h4 className="font-medium text-green-600 mb-2">Long-term Strategy</h4>
+                    <div className="grid grid-cols-5 gap-2 text-sm">
+                      {calculateRevenueGrowth(longTermMetrics.annualGrossIncome).map(({ year, revenue }) => (
+                        <div key={year} className="text-center p-2 bg-green-50 rounded">
+                          <p className="font-medium">Year {year}</p>
+                          <p className="text-xs text-muted-foreground">{formatCurrency(revenue)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Recommended Strategy */}
+        {recommendedStrategy && (
+          <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <h4 className="font-semibold">Recommended Strategy</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Based on gross rental yields, {recommendedStrategy === 'shortTerm' ? 'short-term' : 'long-term'} rental 
+              appears to offer better returns for this property.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -1673,9 +1843,6 @@ export default function PropertyDetailModal({
                             >
                               <path d="m6 9 6 6 6-6" />
                             </svg>
-                            <Badge variant="secondary">
-                              Coming Soon
-                            </Badge>
                           </div>
                         </div>
                       </AccordionTrigger>
