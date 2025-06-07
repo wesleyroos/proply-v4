@@ -73,27 +73,44 @@ export class PropdataPdfService {
   }
 
   private async fetchPropertyData(propertyId: string): Promise<PropertyPdfData> {
-    // Fetch property data
-    const property = await db.query.propdataListings.findFirst({
-      where: eq(propdataListings.propdataId, propertyId)
-    });
+    try {
+      console.log(`Fetching data for property ID: ${propertyId}`);
+      
+      // Fetch property data
+      const property = await db.query.propdataListings.findFirst({
+        where: eq(propdataListings.propdataId, propertyId)
+      });
+      
+      console.log('Property found:', !!property);
 
-    // Fetch valuation report with all financial data
-    const valuationReport = await db.query.valuationReports.findFirst({
-      where: eq(valuationReports.propertyId, propertyId)
-    });
+      // Fetch valuation report with all financial data
+      const valuationReport = await db.query.valuationReports.findFirst({
+        where: eq(valuationReports.propertyId, propertyId)
+      });
+      
+      console.log('Valuation report found:', !!valuationReport);
 
-    // Fetch rental performance data
-    const rentalData = await db.query.rentalPerformanceData.findFirst({
-      where: eq(rentalPerformanceData.propertyId, propertyId)
-    });
+      // Fetch rental performance data
+      const rentalData = await db.query.rentalPerformanceData.findFirst({
+        where: eq(rentalPerformanceData.propertyId, propertyId)
+      });
+      
+      console.log('Rental data found:', !!rentalData);
 
-    return {
-      property,
-      valuationReport,
-      rentalData,
-      savedValuationData: valuationReport
-    };
+      if (!property) {
+        throw new Error(`Property with ID ${propertyId} not found in database`);
+      }
+
+      return {
+        property,
+        valuationReport,
+        rentalData,
+        savedValuationData: valuationReport
+      };
+    } catch (error) {
+      console.error('Error fetching property data:', error);
+      throw error;
+    }
   }
 
   private initializePdf(): void {
@@ -128,11 +145,17 @@ export class PropdataPdfService {
   private async addOverviewSection(data: PropertyPdfData): Promise<void> {
     this.addSectionHeader('Property Overview');
     
+    if (!data.property) {
+      this.doc.text('Property data not available', this.margin, this.currentY);
+      this.currentY += 15;
+      return;
+    }
+    
     // Property address and basic info
     this.doc.setFontSize(18);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setTextColor(PROPLY_BLUE);
-    this.doc.text(data.property.address, this.margin, this.currentY);
+    this.doc.text(data.property.address || 'Address not available', this.margin, this.currentY);
     this.currentY += 15;
     
     // Property details in two columns
@@ -171,12 +194,12 @@ export class PropdataPdfService {
     const spacing = 10;
     
     // Add static Google Map
-    if (data.property.location?.latitude && data.property.location?.longitude) {
+    if (data.property?.location?.latitude && data.property?.location?.longitude) {
       try {
         const mapUrl = await this.generateStaticMapUrl(
           data.property.location.latitude,
           data.property.location.longitude,
-          data.property.address
+          data.property.address || 'Property Location'
         );
         
         // Add map placeholder for now (will implement actual map loading)
@@ -191,7 +214,7 @@ export class PropdataPdfService {
     }
     
     // Add property image
-    if (data.property.images && data.property.images.length > 0) {
+    if (data.property?.images && data.property.images.length > 0) {
       try {
         // Add image placeholder for now (will implement actual image loading)
         this.doc.setFillColor(PROPLY_LIGHT_GRAY);

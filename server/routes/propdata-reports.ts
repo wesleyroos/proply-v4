@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PropdataPdfService } from '../services/propdataPdfService';
+import { SimplePdfTest } from '../services/simplePdfTest';
 import sgMail from '@sendgrid/mail';
 import { createId } from '@paralleldrive/cuid2';
 import fs from 'fs/promises';
@@ -38,6 +39,8 @@ router.post('/generate/:propertyId', async (req, res) => {
     
     // Generate PDF using the service
     const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
+    
+    console.log(`PDF generated successfully, size: ${pdfBuffer.length} bytes`);
     
     // Set response headers for PDF download
     res.setHeader('Content-Type', 'application/pdf');
