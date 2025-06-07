@@ -210,29 +210,78 @@ export class PropdataPdfService {
           data.property.address || 'Property Location'
         );
         
-        // Add map placeholder for now (will implement actual map loading)
+        const mapResponse = await fetch(mapUrl);
+        const mapBuffer = await mapResponse.arrayBuffer();
+        const mapBase64 = Buffer.from(mapBuffer).toString('base64');
+        
+        this.doc.addImage(
+          mapBase64, 
+          'JPEG', 
+          this.margin, 
+          this.currentY, 
+          mapWidth, 
+          mapHeight
+        );
+      } catch (error) {
+        console.error('Error generating map:', error);
+        // Fallback to placeholder
         this.doc.setFillColor(PROPLY_LIGHT_GRAY);
         this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, 'F');
         this.doc.setTextColor(PROPLY_GRAY);
         this.doc.setFontSize(9);
         this.doc.text('Property Location Map', this.margin + 5, this.currentY + mapHeight/2);
-      } catch (error) {
-        console.error('Error generating map:', error);
       }
     }
     
     // Add property image
-    if (data.property?.images && data.property.images.length > 0) {
+    console.log('Property images data:', data.property?.images);
+    console.log('Property data structure:', Object.keys(data.property || {}));
+    
+    // Check multiple possible image field names
+    const images = data.property?.images || data.property?.imageUrls || data.property?.propertyImages;
+    const imageUrl = images?.[0] || data.property?.mainImage || data.property?.primaryImage;
+    
+    if (imageUrl) {
       try {
-        // Add image placeholder for now (will implement actual image loading)
+        console.log('Attempting to load image from URL:', imageUrl);
+        const response = await fetch(imageUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const imageBuffer = await response.arrayBuffer();
+        const imageBase64 = Buffer.from(imageBuffer).toString('base64');
+        
+        // Determine image format
+        const format = imageUrl.toLowerCase().includes('.png') ? 'PNG' : 'JPEG';
+        
+        this.doc.addImage(
+          imageBase64, 
+          format, 
+          this.margin + mapWidth + spacing, 
+          this.currentY, 
+          imageWidth, 
+          imageHeight
+        );
+        console.log('Successfully added property image to PDF');
+      } catch (error) {
+        console.error('Error loading property image:', error);
+        // Fallback to placeholder
         this.doc.setFillColor(PROPLY_LIGHT_GRAY);
         this.doc.rect(this.margin + mapWidth + spacing, this.currentY, imageWidth, imageHeight, 'F');
         this.doc.setTextColor(PROPLY_GRAY);
         this.doc.setFontSize(9);
         this.doc.text('Property Image', this.margin + mapWidth + spacing + 5, this.currentY + imageHeight/2);
-      } catch (error) {
-        console.error('Error adding property image:', error);
       }
+    } else {
+      console.log('No property image URL found in data');
+      // Placeholder when no image available
+      this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+      this.doc.rect(this.margin + mapWidth + spacing, this.currentY, imageWidth, imageHeight, 'F');
+      this.doc.setTextColor(PROPLY_GRAY);
+      this.doc.setFontSize(9);
+      this.doc.text('Property Image', this.margin + mapWidth + spacing + 5, this.currentY + imageHeight/2);
     }
     
     this.currentY += mapHeight;
