@@ -900,6 +900,19 @@ export default function PropertyDetailModal({
       // Reload data from database to ensure consistency
       await refetchValuation();
       await refetchRental();
+      
+      // AUTOMATICALLY SAVE ALL FINANCIAL ANALYSIS DATA
+      // This ensures complete single source of truth for PDF generation
+      // Financial data is calculated and saved immediately after valuation generation
+      setTimeout(async () => {
+        try {
+          console.log('Auto-generating and saving financial analysis data...');
+          await calculateAndSaveFinancialData();
+          console.log('Financial analysis data automatically saved to database');
+        } catch (error) {
+          console.error('Error auto-saving financial data:', error);
+        }
+      }, 1000); // Small delay to ensure valuation and rental data are loaded
     } catch (error) {
       console.error("Error generating valuation report:", error);
       alert("Failed to generate valuation report. Please try again.");
