@@ -721,6 +721,137 @@ export default function PropertyDetailModal({
   // Display exactly 8 images
   const imagesPerView = 8;
 
+  // Render Financing Analysis content
+  const renderFinancingAnalysis = () => {
+    if (!property) {
+      return (
+        <div className="py-8 text-center">
+          <p className="text-muted-foreground">Property data required for financing analysis</p>
+        </div>
+      );
+    }
+
+    // Financing parameters
+    const propertyPrice = parseFloat(property.price.toString());
+    const depositPercentage = 0.10; // 10% deposit
+    const loanToValue = 0.90; // 90% LTV
+    const interestRate = 0.1075; // 10.75% annual interest rate
+    const loanTermYears = 20;
+    const loanTermMonths = loanTermYears * 12;
+
+    // Calculate loan amount and monthly payment
+    const depositAmount = propertyPrice * depositPercentage;
+    const loanAmount = propertyPrice * loanToValue;
+    const monthlyInterestRate = interestRate / 12;
+    
+    // Monthly payment calculation using standard mortgage formula
+    const monthlyPayment = loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTermMonths)) / 
+                          (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
+
+    // Calculate financing metrics for each year
+    const calculateFinancingMetrics = (year: number) => {
+      const monthsElapsed = year * 12;
+      let remainingBalance = loanAmount;
+      let totalPrincipalPaid = 0;
+
+      // Calculate principal paid and remaining balance
+      for (let month = 1; month <= monthsElapsed && month <= loanTermMonths; month++) {
+        const interestPayment = remainingBalance * monthlyInterestRate;
+        const principalPayment = monthlyPayment - interestPayment;
+        totalPrincipalPaid += principalPayment;
+        remainingBalance -= principalPayment;
+      }
+
+      return {
+        monthlyPayment,
+        equityBuildup: totalPrincipalPaid,
+        remainingBalance: Math.max(0, remainingBalance)
+      };
+    };
+
+    const years = [1, 2, 3, 4, 5, 10, 20];
+
+    return (
+      <div className="space-y-4">
+        {/* Financing Assumptions */}
+        <div className="bg-gray-50 p-3 rounded-lg text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <span className="text-muted-foreground">Deposit:</span>
+              <div className="font-medium">{formatCurrency(depositAmount)} (10%)</div>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Loan Amount:</span>
+              <div className="font-medium">{formatCurrency(loanAmount)}</div>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Interest Rate:</span>
+              <div className="font-medium">10.75%</div>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Term:</span>
+              <div className="font-medium">20 years</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Financing Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 px-3 font-medium">Financing Metric</th>
+                {years.map(year => (
+                  <th key={year} className="text-center py-2 px-3 font-medium">Year {year}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {/* Monthly Bond Payment */}
+              <tr className="border-b hover:bg-gray-50/50">
+                <td className="py-2 px-3 font-medium">Monthly Bond Payment</td>
+                {years.map(year => {
+                  const metrics = calculateFinancingMetrics(year);
+                  return (
+                    <td key={year} className="text-center py-2 px-3">
+                      {formatCurrency(metrics.monthlyPayment)}
+                    </td>
+                  );
+                })}
+              </tr>
+
+              {/* Equity Build-up */}
+              <tr className="border-b hover:bg-green-50/50">
+                <td className="py-2 px-3 font-medium text-green-600">Equity Build-up</td>
+                {years.map(year => {
+                  const metrics = calculateFinancingMetrics(year);
+                  return (
+                    <td key={year} className="text-center py-2 px-3">
+                      {formatCurrency(metrics.equityBuildup)}
+                    </td>
+                  );
+                })}
+              </tr>
+
+              {/* Remaining Loan Balance */}
+              <tr className="border-b hover:bg-red-50/50">
+                <td className="py-2 px-3 font-medium text-red-600">Remaining Loan Balance</td>
+                {years.map(year => {
+                  const metrics = calculateFinancingMetrics(year);
+                  return (
+                    <td key={year} className="text-center py-2 px-3">
+                      {formatCurrency(metrics.remainingBalance)}
+                    </td>
+                  );
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   // Render Cash Flow Analysis content
   const renderCashflowAnalysis = () => {
     if (!rentalData || !property) {
@@ -1825,16 +1956,16 @@ export default function PropertyDetailModal({
                 </CardContent>
               </Card>
 
-              {/* Investment Metrics */}
+              {/* Financing Analysis */}
               <Card>
                 <CardContent className="p-0">
                   <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="investment-metrics" className="border-none">
+                    <AccordionItem value="financing-analysis" className="border-none">
                       <AccordionTrigger className="px-6 py-4 hover:no-underline [&>svg]:hidden">
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3">
                             <Calculator className="h-5 w-5" />
-                            <div className="font-semibold">Investment Metrics</div>
+                            <div className="font-semibold">Financing Analysis</div>
                           </div>
                           <div className="flex items-center gap-2">
                             <svg
@@ -1851,16 +1982,11 @@ export default function PropertyDetailModal({
                             >
                               <path d="m6 9 6 6 6-6" />
                             </svg>
-                            <Badge variant="secondary">
-                              Coming Soon
-                            </Badge>
                           </div>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pb-4">
-                        <div className="py-8 text-center">
-                          <p className="text-muted-foreground">Investment metrics content coming soon</p>
-                        </div>
+                        {renderFinancingAnalysis()}
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
