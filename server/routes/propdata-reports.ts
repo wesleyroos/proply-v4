@@ -1,17 +1,15 @@
 import { Router } from 'express';
 import { PropdataPdfService } from '../services/propdataPdfService';
 import { SimplePdfTest } from '../services/simplePdfTest';
-import sgMail from '@sendgrid/mail';
+import { sendEmail, generatePropertyReportEmailTemplate } from '../services/emailService';
 import { createId } from '@paralleldrive/cuid2';
 import fs from 'fs/promises';
 import path from 'path';
+import { db } from '../../db';
+import { propdataListings } from '../../db/schema';
+import { eq } from 'drizzle-orm';
 
 const router = Router();
-
-// Configure SendGrid
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
 
 // Store for temporary PDF files (in production, use cloud storage)
 const PDF_STORAGE_PATH = path.join(process.cwd(), 'temp_pdfs');
@@ -102,6 +100,15 @@ router.post('/send/:propertyId', async (req, res) => {
 
     console.log(`Generating and sending PDF report for property ${propertyId}`);
     
+    // Fetch property details for email
+    const property = await db.query.propdataListings.findFirst({
+      where: eq(propdataListings.propdataId, propertyId)
+    });
+    
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+    
     // Generate PDF
     const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
     
@@ -118,20 +125,16 @@ router.post('/send/:propertyId', async (req, res) => {
     // Create download URL
     const downloadUrl = `${req.protocol}://${req.get('host')}/api/propdata-reports/download/${reportId}`;
     
-    // Send email with download link
-    const emailHtml = generateEmailTemplate(propertyId, downloadUrl, filename);
+    // Send email using the new email service
+    const emailHtml = generatePropertyReportEmailTemplate(
+      property.address,
+      downloadUrl,
+      filename
+    );
     
-    const mailOptions = {
-      to: 'wesley@proply.co.za',
-      from: {
-        email: 'reports@proply.co.za',
-        name: 'Proply Reports'
-      },
-      subject: `Proply Property Investment Report - ${propertyId}`,
-      html: emailHtml
-    };
-
-    await sgMail.send(mailOptions);
+    if (!emailSent) {
+      return res.status(500).json({ error: 'Failed to send email' });
+    }
     
     // Schedule cleanup after 30 days
     setTimeout(async () => {

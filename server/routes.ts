@@ -39,7 +39,6 @@ import fetchPropdataRouter from './routes/fetch-propdata';
 import valuationRouter from './routes/valuation';
 import { getRentalPerformance } from './routes/rental-performance';
 import { sendPasswordResetEmail } from './services/email';
-import { sendDemoRequestEmail } from './services/emailService';
 import propdataDebugRouter from './routes/propdata-debug';
 import agenciesRouter from './routes/agencies';
 import { imageSyncService } from './services/imageSyncService';

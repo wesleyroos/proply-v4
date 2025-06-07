@@ -86,13 +86,12 @@ export class PropdataPdfService {
       if (!property) {
         console.log('Drizzle query failed, trying raw SQL...');
         const rawResult = await db.execute(
-          `SELECT * FROM propdata_listings WHERE propdata_id = $1 LIMIT 1`,
-          [propertyId]
+          `SELECT * FROM propdata_listings WHERE propdata_id = '${propertyId}' LIMIT 1`
         );
-        console.log('Raw SQL result count:', rawResult.length);
-        if (rawResult.length > 0) {
+        console.log('Raw SQL result count:', rawResult.rows.length);
+        if (rawResult.rows.length > 0) {
           console.log('Found via raw SQL - using first result');
-          property = rawResult[0] as any;
+          property = rawResult.rows[0] as any;
         }
       }
       
