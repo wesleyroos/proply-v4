@@ -76,9 +76,9 @@ export class PropdataPdfService {
     try {
       console.log(`Fetching data for property ID: ${propertyId}`);
       
-      // Fetch property data
+      // Fetch property data using the correct primary key
       const property = await db.query.propdataListings.findFirst({
-        where: eq(propdataListings.propdataId, propertyId)
+        where: eq(propdataListings.id, parseInt(propertyId))
       });
       
       console.log('Property found:', !!property);

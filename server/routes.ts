@@ -115,7 +115,9 @@ export function registerRoutes(app: Express): Server {
       req.path === "/download-pdf" || // PDF download endpoint
       req.path === "/download-property-analysis-pdf" || // Property analysis PDF download endpoint
       req.path.startsWith("/propdata-debug/") || // PropData debug endpoint
-      req.path.startsWith("/propdata-reports/") // PropData PDF reports
+      req.path.startsWith("/propdata-reports/") || // PropData PDF reports
+      req.path === "/pdf-test" || // PDF test endpoint
+      req.path.startsWith("/pdf-generate/") // PDF generation endpoint
     ) {
       return next();
     }
