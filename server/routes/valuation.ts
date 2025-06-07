@@ -437,4 +437,110 @@ router.patch("/:propertyId/financing", async (req, res) => {
   }
 });
 
+// PATCH /api/valuation-reports/:propertyId/financial-data - Save all financial analysis data
+// This endpoint saves the complete financial analysis data to ensure single source of truth for PDF generation
+// Includes: annual property appreciation, cashflow analysis, and financing analysis data
+router.patch("/:propertyId/financial-data", async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const { propertyId } = req.params;
+    const { 
+      annualPropertyAppreciationData,
+      cashflowAnalysisData,
+      financingAnalysisData,
+      // Optional financing parameter updates
+      depositPercentage,
+      interestRate,
+      loanTerm,
+      purchasePrice
+    } = req.body;
+
+    // Validate required financial data
+    if (!annualPropertyAppreciationData || !cashflowAnalysisData || !financingAnalysisData) {
+      return res.status(400).json({ 
+        error: "Missing required financial analysis data" 
+      });
+    }
+
+    console.log(`Saving complete financial analysis data for property ${propertyId}:`, {
+      hasAnnualAppreciation: !!annualPropertyAppreciationData,
+      hasCashflowAnalysis: !!cashflowAnalysisData,
+      hasFinancingAnalysis: !!financingAnalysisData,
+      updatingFinancingParams: !!(depositPercentage && interestRate && loanTerm)
+    });
+
+    // Calculate financing parameters if provided
+    let depositAmount, loanAmount, monthlyRepayment;
+    if (depositPercentage && interestRate && loanTerm && purchasePrice) {
+      depositAmount = (purchasePrice * depositPercentage) / 100;
+      loanAmount = purchasePrice - depositAmount;
+      
+      const monthlyRate = interestRate / 100 / 12;
+      const numPayments = loanTerm * 12;
+      monthlyRepayment = monthlyRate > 0 
+        ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+        : loanAmount / numPayments;
+    }
+
+    // Update the valuation report with all financial analysis data
+    const result = depositPercentage && interestRate && loanTerm && purchasePrice
+      ? await db.execute(sql`
+          UPDATE valuation_reports 
+          SET 
+            annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
+            cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
+            financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
+            current_deposit_percentage = ${depositPercentage.toString()},
+            current_interest_rate = ${interestRate.toString()},
+            current_loan_term = ${loanTerm},
+            current_deposit_amount = ${depositAmount!.toString()},
+            current_loan_amount = ${loanAmount!.toString()},
+            current_monthly_repayment = ${monthlyRepayment!.toString()},
+            updated_at = NOW()
+          WHERE property_id = ${propertyId} 
+            AND user_id = ${req.user.id}
+          RETURNING *
+        `)
+      : await db.execute(sql`
+          UPDATE valuation_reports 
+          SET 
+            annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
+            cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
+            financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
+            updated_at = NOW()
+          WHERE property_id = ${propertyId} 
+            AND user_id = ${req.user.id}
+          RETURNING *
+        `);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: "Valuation report not found for this property" 
+      });
+    }
+
+    console.log('Successfully saved complete financial analysis data to database');
+
+    // Return confirmation with data summary
+    res.json({
+      success: true,
+      financialDataSaved: {
+        annualPropertyAppreciation: !!annualPropertyAppreciationData,
+        cashflowAnalysis: !!cashflowAnalysisData, 
+        financingAnalysis: !!financingAnalysisData,
+        financingParametersUpdated: !!(depositPercentage && interestRate && loanTerm)
+      }
+    });
+
+  } catch (error) {
+    console.error("Error saving financial analysis data:", error);
+    return res.status(500).json({ 
+      error: "Failed to save financial analysis data" 
+    });
+  }
+});
+
 export default router;

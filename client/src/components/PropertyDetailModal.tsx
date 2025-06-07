@@ -604,39 +604,147 @@ export default function PropertyDetailModal({
     }
   };
 
+  // CALCULATE AND SAVE ALL FINANCIAL ANALYSIS DATA
+  // This function generates all financial data shown in the Financials tab and saves it to database
+  // Ensures single source of truth for PDF generation
+  const calculateAndSaveFinancialData = async (updatedFinancingParams?: any) => {
+    if (!property || !rentalData || !valuationReport) return;
+
+    const financingToUse = updatedFinancingParams || financingParams;
+    const propertyPrice = parseFloat(property.price.toString());
+
+    // 1. ANNUAL PROPERTY APPRECIATION DATA
+    const annualAppreciationData = {
+      baseSuburbRate: valuationReport.propertyAppreciation?.suburbAppreciationRate || 8.0,
+      propertyAdjustments: valuationReport.propertyAppreciation?.adjustments || {},
+      finalAppreciationRate: valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0,
+      yearlyValues: (() => {
+        const rate = (valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0) / 100;
+        return [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+          acc[`year${year}`] = propertyPrice * Math.pow(1 + rate, year);
+          return acc;
+        }, {} as Record<string, number>);
+      })(),
+      reasoning: valuationReport.propertyAppreciation?.reasoning || "Standard market appreciation"
+    };
+
+    // 2. CASHFLOW ANALYSIS DATA
+    const cashflowAnalysisData = {
+      revenueGrowthTrajectory: {
+        shortTerm: rentalData.shortTerm ? (() => {
+          const selectedData = rentalData.shortTerm[selectedPercentile];
+          const baseAnnual = selectedData.annual;
+          return [1, 2, 3, 4, 5].reduce((acc, year) => {
+            const revenue = baseAnnual * Math.pow(1.08, year - 1);
+            const grossYield = (revenue / propertyPrice) * 100;
+            acc[`year${year}`] = { revenue, grossYield };
+            return acc;
+          }, {} as Record<string, { revenue: number; grossYield: number }>);
+        })() : null,
+        longTerm: rentalData.longTerm ? (() => {
+          const monthlyAvg = (rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2;
+          const baseAnnual = monthlyAvg * 12;
+          return [1, 2, 3, 4, 5].reduce((acc, year) => {
+            const revenue = baseAnnual * Math.pow(1.08, year - 1);
+            const grossYield = (revenue / propertyPrice) * 100;
+            acc[`year${year}`] = { revenue, grossYield };
+            return acc;
+          }, {} as Record<string, { revenue: number; grossYield: number }>);
+        })() : null
+      },
+      recommendedStrategy: (() => {
+        if (!rentalData.shortTerm || !rentalData.longTerm) return null;
+        const shortTermYield = (rentalData.shortTerm[selectedPercentile].annual / propertyPrice) * 100;
+        const longTermYield = ((rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2 * 12 / propertyPrice) * 100;
+        return shortTermYield > longTermYield ? "shortTerm" : "longTerm";
+      })(),
+      strategyReasoning: "Based on gross rental yields comparison"
+    };
+
+    // 3. FINANCING ANALYSIS DATA
+    const depositPercentage = financingToUse.depositPercentage / 100;
+    const loanToValue = 1 - depositPercentage;
+    const interestRate = financingToUse.interestRate / 100;
+    const loanTermYears = financingToUse.loanTermYears;
+    const loanTermMonths = loanTermYears * 12;
+    
+    const depositAmount = propertyPrice * depositPercentage;
+    const loanAmount = propertyPrice * loanToValue;
+    const monthlyInterestRate = interestRate / 12;
+    
+    const monthlyPayment = (loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTermMonths))) / (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
+
+    const financingAnalysisData = {
+      financingParameters: {
+        depositAmount,
+        depositPercentage: financingToUse.depositPercentage,
+        loanAmount,
+        interestRate: financingToUse.interestRate,
+        loanTerm: loanTermYears,
+        monthlyPayment
+      },
+      yearlyMetrics: [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+        const monthsElapsed = year * 12;
+        let remainingBalance = loanAmount;
+        let totalPrincipalPaid = 0;
+
+        for (let month = 1; month <= monthsElapsed && month <= loanTermMonths; month++) {
+          const interestPayment = remainingBalance * monthlyInterestRate;
+          const principalPayment = monthlyPayment - interestPayment;
+          totalPrincipalPaid += principalPayment;
+          remainingBalance -= principalPayment;
+        }
+
+        acc[`year${year}`] = {
+          monthlyPayment,
+          equityBuildup: totalPrincipalPaid,
+          remainingBalance: Math.max(0, remainingBalance)
+        };
+        return acc;
+      }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
+    };
+
+    // SAVE ALL FINANCIAL DATA TO DATABASE
+    try {
+      const response = await fetch(`/api/valuation-reports/${property.propdataId}/financial-data`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          annualPropertyAppreciationData: annualAppreciationData,
+          cashflowAnalysisData,
+          financingAnalysisData,
+          // Also update financing parameters if provided
+          ...(updatedFinancingParams && {
+            depositPercentage: updatedFinancingParams.depositPercentage,
+            interestRate: updatedFinancingParams.interestRate,
+            loanTerm: updatedFinancingParams.loanTermYears,
+            purchasePrice: propertyPrice
+          })
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Successfully saved all financial analysis data to database');
+        await refetchValuation();
+        return true;
+      } else {
+        console.error('Failed to save financial analysis data');
+        return false;
+      }
+    } catch (error) {
+      console.error("Error saving financial analysis data:", error);
+      return false;
+    }
+  };
+
   // FINANCING PARAMETERS - Save to database for single source of truth
-  // This function ensures PDF generation will use the same financing data user sees in modal
   const saveFinancingParameters = async () => {
     if (!property?.propdataId || !valuationReport?.price) return;
 
-    try {
-      const response = await fetch(
-        `/api/valuation-reports/${property.propdataId}/financing`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            depositPercentage: tempFinancingParams.depositPercentage,
-            interestRate: tempFinancingParams.interestRate,
-            loanTerm: tempFinancingParams.loanTermYears,
-            purchasePrice: parseFloat(valuationReport.price),
-          }),
-        },
-      );
-
-      if (response.ok) {
-        console.log('Successfully saved financing parameters to database');
-        // Reload valuation data from database to reflect updated financing parameters
-        await refetchValuation();
-        setIsFinancingModalOpen(false);
-      } else {
-        console.error('Failed to save financing parameters');
-      }
-    } catch (error) {
-      console.error("Error saving financing parameters:", error);
+    const success = await calculateAndSaveFinancialData(tempFinancingParams);
+    if (success) {
+      setIsFinancingModalOpen(false);
     }
   };
 
