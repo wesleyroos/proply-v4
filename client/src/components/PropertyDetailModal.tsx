@@ -2042,55 +2042,9 @@ export default function PropertyDetailModal({
                       including PriceLabs short-term rental analysis and
                       long-term rental estimates.
                     </p>
-                    <div className="space-y-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            disabled={isGeneratingReport || isSendingReport}
-                            className="gap-2"
-                          >
-                            {(isGeneratingReport || isSendingReport) ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <FileBarChart className="h-4 w-4" />
-                            )}
-                            {isGeneratingReport
-                              ? `Generating... ${generationTimer}s`
-                              : isSendingReport
-                              ? "Processing..."
-                              : "Actions"}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={generateValuationReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <FileBarChart className="h-4 w-4 mr-2" />
-                            Generate Report
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={sendPDFReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <Send className="h-4 w-4 mr-2" />
-                            Send Report
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={downloadPDFReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Download Report
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      {!isGeneratingReport && !isSendingReport && (
-                        <p className="text-xs text-muted-foreground">
-                        </p>
-                      )}
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Use the Actions button in the top-right corner to generate, send, or download reports.
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
@@ -2774,57 +2728,9 @@ export default function PropertyDetailModal({
                       Generate a valuation report to see detailed property
                       appreciation forecasts and component analysis.
                     </p>
-                    <div className="space-y-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            disabled={isGeneratingReport || isSendingReport}
-                            className="gap-2"
-                          >
-                            {(isGeneratingReport || isSendingReport) ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <FileBarChart className="h-4 w-4" />
-                            )}
-                            {isGeneratingReport
-                              ? `Generating... ${generationTimer}s`
-                              : isSendingReport
-                              ? "Processing..."
-                              : "Actions"}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={generateValuationReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <FileBarChart className="h-4 w-4 mr-2" />
-                            Generate Report
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={sendPDFReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <Send className="h-4 w-4 mr-2" />
-                            Send Report
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={downloadPDFReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Download Report
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      {!isGeneratingReport && !isSendingReport && (
-                        <p className="text-xs text-muted-foreground">
-                          This will include appreciation analysis with levy
-                          impact assessment
-                        </p>
-                      )}
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Use the Actions button in the top-right corner to generate, send, or download reports.
+                    </p>
                   </CardContent>
                 </Card>
               )}
@@ -3039,58 +2945,8 @@ export default function PropertyDetailModal({
                       Generate Valuation Report
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Click "Generate Report" to get an AI-powered property
-                      valuation analysis
+                      Use the Actions button in the top-right corner to generate, send, or download your AI-powered property valuation analysis.
                     </p>
-                    <div className="space-y-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            disabled={isGeneratingReport || isSendingReport}
-                            className="gap-2"
-                          >
-                            {(isGeneratingReport || isSendingReport) ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <FileBarChart className="h-4 w-4" />
-                            )}
-                            {isGeneratingReport
-                              ? `Generating... ${generationTimer}s`
-                              : isSendingReport
-                              ? "Processing..."
-                              : "Actions"}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={generateValuationReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <FileBarChart className="h-4 w-4 mr-2" />
-                            Generate Report
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={sendPDFReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <Send className="h-4 w-4 mr-2" />
-                            Send Report
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={downloadPDFReport}
-                            disabled={isGeneratingReport || isSendingReport}
-                          >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Download Report
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      {!isGeneratingReport && !isSendingReport && (
-                        <p className="text-xs text-muted-foreground">
-                        </p>
-                      )}
-                    </div>
                   </CardContent>
                 </Card>
               )}
