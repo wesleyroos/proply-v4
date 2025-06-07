@@ -114,7 +114,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/demo-request" || // Demo request endpoint
       req.path === "/download-pdf" || // PDF download endpoint
       req.path === "/download-property-analysis-pdf" || // Property analysis PDF download endpoint
-      req.path.startsWith("/propdata-debug/") // PropData debug endpoint
+      req.path.startsWith("/propdata-debug/") || // PropData debug endpoint
+      req.path.startsWith("/propdata-reports/") // PropData PDF reports
     ) {
       return next();
     }
@@ -2113,6 +2114,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', valuationRouter);
   app.use('/api', agenciesRouter);
   app.use('/api/propdata-debug', propdataDebugRouter);
+  // PDF reports routes - no auth check since frontend handles authentication
   app.use('/api/propdata-reports', propdataReportsRouter);
   
   // Image sync endpoint for comprehensive image processing

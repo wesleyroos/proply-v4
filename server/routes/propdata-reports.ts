@@ -25,6 +25,21 @@ async function ensureTempDirectory() {
   }
 }
 
+// Test endpoint for basic PDF generation (no auth required for debugging)
+router.get('/test', async (req, res) => {
+  try {
+    console.log('Testing basic PDF generation...');
+    const pdfBuffer = await SimplePdfTest.createTestPdf();
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="test.pdf"');
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('Test PDF generation failed:', error);
+    res.status(500).json({ error: 'Test PDF generation failed', details: error.message });
+  }
+});
+
 // Generate and return PDF directly
 router.post('/generate/:propertyId', async (req, res) => {
   // Note: Authentication handled by frontend session
@@ -36,6 +51,15 @@ router.post('/generate/:propertyId', async (req, res) => {
     }
 
     console.log(`Generating PDF report for property ${propertyId}`);
+    
+    // First try simple test
+    try {
+      const testBuffer = await SimplePdfTest.createTestPdf();
+      console.log('Basic PDF generation works, proceeding with full report...');
+    } catch (testError) {
+      console.error('Basic PDF test failed:', testError);
+      throw new Error('PDF library not working: ' + testError.message);
+    }
     
     // Generate PDF using the service
     const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
