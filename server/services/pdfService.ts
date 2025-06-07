@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { createId } from '@paralleldrive/cuid2';
 import { db } from '@db';
