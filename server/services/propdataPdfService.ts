@@ -249,13 +249,13 @@ export class PropdataPdfService {
       Number(data.property.price).toLocaleString('en-ZA') : "N/A";
     addLabelValue("Price: ", `R${formattedPrice}`, leftColumn, this.currentY);
     addLabelValue("Property Type: ", data.property.propertyType || "N/A", leftColumn, this.currentY + 8);
-    addLabelValue("Bedrooms: ", data.property.bedrooms || "N/A", leftColumn, this.currentY + 16);
-    addLabelValue("Bathrooms: ", data.property.bathrooms || "N/A", leftColumn, this.currentY + 24);
+    addLabelValue("Bedrooms: ", String(data.property.bedrooms || "N/A"), leftColumn, this.currentY + 16);
+    addLabelValue("Bathrooms: ", String(data.property.bathrooms || "N/A"), leftColumn, this.currentY + 24);
 
     // Right column
-    addLabelValue("Floor Size: ", `${data.property.floorSize || "N/A"} m²`, rightColumn, this.currentY);
-    addLabelValue("Land Size: ", `${data.property.landSize || "N/A"} m²`, rightColumn, this.currentY + 8);
-    addLabelValue("Parking: ", `${data.property.parkingSpaces || "N/A"} spaces`, rightColumn, this.currentY + 16);
+    addLabelValue("Floor Size: ", `${String(data.property.floorSize || "N/A")} m²`, rightColumn, this.currentY);
+    addLabelValue("Land Size: ", `${String(data.property.landSize || "N/A")} m²`, rightColumn, this.currentY + 8);
+    addLabelValue("Parking: ", `${String(data.property.parkingSpaces || "N/A")} spaces`, rightColumn, this.currentY + 16);
     const formattedLevy = data.property.monthlyLevy ? 
       Number(data.property.monthlyLevy).toLocaleString('en-ZA') : "N/A";
     addLabelValue("Monthly Levy: ", `R${formattedLevy}`, rightColumn, this.currentY + 24);
@@ -597,31 +597,35 @@ export class PropdataPdfService {
         this.currentY += 12;
       }
 
-      // 5-year projection table
+      // 5-year projection table - transposed with years as columns
       if (
         appreciation.fiveYearProjection &&
         Array.isArray(appreciation.fiveYearProjection)
       ) {
-        const projectionData = appreciation.fiveYearProjection.map(
-          (proj: any) => [
-            proj.year?.toString() || "",
-            `R${(proj.estimatedValue || 0).toLocaleString("en-ZA")}`,
-          ],
-        );
+        const yearHeaders = appreciation.fiveYearProjection.map((proj: any) => proj.year?.toString() || "");
+        const valueRow = ["Estimated Value", ...appreciation.fiveYearProjection.map((proj: any) => 
+          `R${(proj.estimatedValue || 0).toLocaleString("en-ZA")}`
+        )];
 
         (this.doc as any).autoTable({
           startY: this.currentY,
-          head: [["Year", "Estimated Value"]],
-          body: projectionData,
+          head: [["Metric", ...yearHeaders]],
+          body: [valueRow],
           theme: "grid",
           headStyles: { 
             fillColor: [27, 162, 255], 
             textColor: 255,
             fontStyle: 'bold'
           },
-          styles: { fontSize: 8 },
+          styles: { 
+            fontSize: 8,
+            cellPadding: 1
+          },
           margin: { left: this.margin, right: this.margin },
-          columnStyles: { 0: { halign: "center" }, 1: { halign: "right" } },
+          columnStyles: { 
+            0: { halign: "left" },
+            ...Object.fromEntries(Array.from({length: yearHeaders.length}, (_, i) => [i + 1, { halign: "right" }]))
+          },
         });
 
         this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
