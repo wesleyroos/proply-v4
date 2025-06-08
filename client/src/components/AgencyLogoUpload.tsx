@@ -152,8 +152,12 @@ export function AgencyLogoUpload({ agencyId, agencyName, currentLogoUrl }: Agenc
       if (!open) resetForm();
     }}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <Image className="h-4 w-4" />
+        <Button 
+          variant={currentLogoUrl ? "default" : "ghost"} 
+          size="sm" 
+          className={`h-8 w-8 p-0 ${currentLogoUrl ? 'bg-green-600 hover:bg-green-700' : ''}`}
+        >
+          <Image className={`h-4 w-4 ${currentLogoUrl ? 'text-white' : ''}`} />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

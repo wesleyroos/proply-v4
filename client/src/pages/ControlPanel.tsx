@@ -38,6 +38,10 @@ interface Agency {
   provider: string;
   status: 'active' | 'syncing' | 'error' | 'inactive';
   lastSync: string | null;
+  logoUrl?: string | null;
+  franchiseName?: string;
+  branchName?: string;
+  mainBranchId?: string;
   totalProperties: number;
   lastSyncResult: {
     newListings: number;
@@ -47,9 +51,6 @@ interface Agency {
   } | null;
   autoSyncEnabled: boolean;
   syncFrequency: string;
-  logoUrl?: string | null;
-  franchiseName?: string;
-  branchName?: string;
 }
 
 interface SyncHistory {
@@ -186,6 +187,7 @@ export function ControlPanel() {
                 <TableHead>Agency</TableHead>
                 <TableHead>Syndication Platform</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Logo</TableHead>
                 <TableHead>Last Sync</TableHead>
                 <TableHead>Properties</TableHead>
                 <TableHead>Last Result</TableHead>
@@ -207,6 +209,21 @@ export function ControlPanel() {
                     </TableCell>
                     <TableCell>{agency.provider}</TableCell>
                     <TableCell>{getStatusBadge(agency.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {agency.logoUrl ? (
+                          <>
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm text-green-700">Uploaded</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                            <span className="text-sm text-muted-foreground">None</span>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       {agency.lastSync ? format(new Date(agency.lastSync), 'MMM d, HH:mm') : 'Never'}
                     </TableCell>
