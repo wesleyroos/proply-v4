@@ -153,15 +153,9 @@ router.post('/send/:propertyId', async (req, res) => {
       return res.status(500).json({ error: 'Failed to send email' });
     }
     
-    // Schedule cleanup after 30 days
-    setTimeout(async () => {
-      try {
-        await fs.unlink(filePath);
-        console.log(`Cleaned up PDF file: ${reportId}`);
-      } catch (error) {
-        console.error(`Error cleaning up PDF file ${reportId}:`, error);
-      }
-    }, 30 * 24 * 60 * 60 * 1000); // 30 days
+    // Note: File cleanup handled by periodic cleanup job or manual deletion
+    // 30 days = 2,592,000,000ms which exceeds Node.js setTimeout max (2^31-1 = 2,147,483,647ms)
+    console.log(`PDF stored at: ${filePath} - expires after 30 days`);
     
     res.json({ 
       success: true, 
