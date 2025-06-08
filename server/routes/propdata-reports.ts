@@ -83,7 +83,7 @@ async function calculateAndSaveFinancialDataForProperty(propertyId: string) {
         const data = typeof rentalData.shortTermData === 'string' 
           ? JSON.parse(rentalData.shortTermData) 
           : rentalData.shortTermData;
-        const baseAnnual = data?.Conservative?.annual || (propertyPrice * 0.08); // 8% fallback
+        const baseAnnual = data?.Conservative?.annual || (propertyPrice * 0.08);
         return [1, 2, 3, 4, 5].reduce((acc, year) => {
           const revenue = baseAnnual * Math.pow(1.08, year - 1);
           const grossYield = (revenue / propertyPrice) * 100;
@@ -91,11 +91,8 @@ async function calculateAndSaveFinancialDataForProperty(propertyId: string) {
           return acc;
         }, {} as Record<string, { revenue: number; grossYield: number }>);
       })() : null,
-      longTerm: rentalData?.longTermData ? (() => {
-        const data = typeof rentalData.longTermData === 'string' 
-          ? JSON.parse(rentalData.longTermData) 
-          : rentalData.longTermData;
-        const monthlyAvg = data?.averageRental || (propertyPrice * 0.006); // 0.6% monthly fallback
+      longTerm: (rentalData?.longTermMinRental && rentalData?.longTermMaxRental) ? (() => {
+        const monthlyAvg = (parseFloat(rentalData.longTermMinRental.toString()) + parseFloat(rentalData.longTermMaxRental.toString())) / 2;
         const baseAnnual = monthlyAvg * 12;
         return [1, 2, 3, 4, 5].reduce((acc, year) => {
           const revenue = baseAnnual * Math.pow(1.08, year - 1);
