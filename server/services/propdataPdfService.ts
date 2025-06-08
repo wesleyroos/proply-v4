@@ -63,6 +63,9 @@ export class PropdataPdfService {
       await this.addFinancialsSection(data);
       await this.addDetailsSection(data);
 
+      // Add disclaimers section
+      this.addDisclaimersSection();
+
       // Add footer to all pages
       this.addFooterToAllPages();
 
@@ -1298,8 +1301,35 @@ export class PropdataPdfService {
     this.currentY += 15;
   }
 
+  private addDisclaimersSection(): void {
+    this.checkPageBreak(100); // Ensure enough space for disclaimers
+    this.addSectionHeader("Important Disclaimers & Legal Notices");
+
+    this.doc.setFontSize(9);
+    this.doc.setTextColor(60, 60, 60);
+
+    const disclaimerText = `DISCLAIMER: The information contained in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While we make best efforts to ensure the accuracy and reliability of all data presented, including sourcing information from trusted third-party providers, we cannot guarantee its absolute accuracy or completeness.
+
+This report is intended to serve as a general guide and should not be considered as financial, investment, legal, or professional advice.
+
+Any decisions made based on this information are solely the responsibility of the user. Property investment carries inherent risks, and market conditions can change rapidly.
+
+Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liability for any direct, indirect, incidental, or consequential damages arising from the use of this information. Actual results may vary significantly from the projections and estimates presented.
+
+By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.`;
+
+    this.addWrappedText(
+      disclaimerText,
+      this.margin,
+      this.pageWidth - 2 * this.margin,
+    );
+
+    this.currentY += 20;
+  }
+
   private addFooterToAllPages(): void {
     const totalPages = this.doc.getNumberOfPages();
+    const currentYear = new Date().getFullYear();
 
     for (let i = 1; i <= totalPages; i++) {
       this.doc.setPage(i);
@@ -1313,14 +1343,38 @@ export class PropdataPdfService {
         this.pageHeight - 25,
       );
 
-      // Footer text
+      // Add Proply logo on the left
+      try {
+        const logoPath = "/home/runner/workspace/client/public/proply-logo-auth.png";
+        const logoHeight = 8; // Smaller for footer
+        const logoWidth = logoHeight * 3.79; // Maintain 3.79:1 aspect ratio
+        
+        this.doc.addImage(
+          logoPath,
+          "PNG",
+          this.margin,
+          this.pageHeight - 20,
+          logoWidth,
+          logoHeight
+        );
+      } catch (error) {
+        console.log("Could not add footer logo:", error);
+      }
+
+      // Center copyright text
       this.doc.setFontSize(8);
       this.doc.setTextColor(107, 114, 128);
+      const copyrightText = `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`;
+      const textWidth = this.doc.getTextWidth(copyrightText);
+      const centerX = (this.pageWidth - textWidth) / 2;
+      
       this.doc.text(
-        "Proply Investment Platform • wesley@proply.co.za",
-        this.margin,
+        copyrightText,
+        centerX,
         this.pageHeight - 15,
       );
+
+      // Page number on the right
       this.doc.text(
         `Page ${i} of ${totalPages}`,
         this.pageWidth - this.margin - 20,
