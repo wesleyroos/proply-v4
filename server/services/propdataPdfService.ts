@@ -228,58 +228,37 @@ export class PropdataPdfService {
     this.currentY += 15;
 
     // Property details in two columns
-    this.doc.setFontSize(11);
-    this.doc.setFont("helvetica", "normal");
+    this.doc.setFontSize(10);
     this.doc.setTextColor(0, 0, 0);
 
     const leftColumn = this.margin;
     const rightColumn = this.margin + 90;
 
+    // Helper function to add text with bold label and normal value
+    const addLabelValue = (label: string, value: string, x: number, y: number) => {
+      this.doc.setFont("helvetica", "bold");
+      const labelWidth = this.doc.getTextWidth(label);
+      this.doc.text(label, x, y);
+      
+      this.doc.setFont("helvetica", "normal");
+      this.doc.text(value, x + labelWidth, y);
+    };
+
     // Left column
     const formattedPrice = data.property.price ? 
       Number(data.property.price).toLocaleString('en-ZA') : "N/A";
-    this.doc.text(
-      `Price: R${formattedPrice}`,
-      leftColumn,
-      this.currentY,
-    );
-    this.doc.text(
-      `Property Type: ${data.property.propertyType || "N/A"}`,
-      leftColumn,
-      this.currentY + 8,
-    );
-    this.doc.text(
-      `Bedrooms: ${data.property.bedrooms || "N/A"}`,
-      leftColumn,
-      this.currentY + 16,
-    );
-    this.doc.text(
-      `Bathrooms: ${data.property.bathrooms || "N/A"}`,
-      leftColumn,
-      this.currentY + 24,
-    );
+    addLabelValue("Price: ", `R${formattedPrice}`, leftColumn, this.currentY);
+    addLabelValue("Property Type: ", data.property.propertyType || "N/A", leftColumn, this.currentY + 8);
+    addLabelValue("Bedrooms: ", data.property.bedrooms || "N/A", leftColumn, this.currentY + 16);
+    addLabelValue("Bathrooms: ", data.property.bathrooms || "N/A", leftColumn, this.currentY + 24);
 
     // Right column
-    this.doc.text(
-      `Floor Size: ${data.property.floorSize || "N/A"} m²`,
-      rightColumn,
-      this.currentY,
-    );
-    this.doc.text(
-      `Land Size: ${data.property.landSize || "N/A"} m²`,
-      rightColumn,
-      this.currentY + 8,
-    );
-    this.doc.text(
-      `Parking: ${data.property.parkingSpaces || "N/A"} spaces`,
-      rightColumn,
-      this.currentY + 16,
-    );
-    this.doc.text(
-      `Monthly Levy: R${data.property.monthlyLevy?.toLocaleString() || "N/A"}`,
-      rightColumn,
-      this.currentY + 24,
-    );
+    addLabelValue("Floor Size: ", `${data.property.floorSize || "N/A"} m²`, rightColumn, this.currentY);
+    addLabelValue("Land Size: ", `${data.property.landSize || "N/A"} m²`, rightColumn, this.currentY + 8);
+    addLabelValue("Parking: ", `${data.property.parkingSpaces || "N/A"} spaces`, rightColumn, this.currentY + 16);
+    const formattedLevy = data.property.monthlyLevy ? 
+      Number(data.property.monthlyLevy).toLocaleString('en-ZA') : "N/A";
+    addLabelValue("Monthly Levy: ", `R${formattedLevy}`, rightColumn, this.currentY + 24);
 
     this.currentY += 40;
 
