@@ -235,13 +235,15 @@ export class PropdataPdfService {
     const rightColumn = this.margin + 90;
 
     // Helper function to add text with bold label and normal value
-    const addLabelValue = (label: string, value: string, x: number, y: number) => {
+    const addLabelValue = (label: string, value: any, x: number, y: number) => {
       this.doc.setFont("helvetica", "bold");
       const labelWidth = this.doc.getTextWidth(label);
       this.doc.text(label, x, y);
       
       this.doc.setFont("helvetica", "normal");
-      this.doc.text(value, x + labelWidth, y);
+      // Ensure value is always a string
+      const stringValue = value === null || value === undefined ? "N/A" : String(value);
+      this.doc.text(stringValue, x + labelWidth, y);
     };
 
     // Left column
@@ -249,13 +251,13 @@ export class PropdataPdfService {
       Number(data.property.price).toLocaleString('en-ZA') : "N/A";
     addLabelValue("Price: ", `R${formattedPrice}`, leftColumn, this.currentY);
     addLabelValue("Property Type: ", data.property.propertyType || "N/A", leftColumn, this.currentY + 8);
-    addLabelValue("Bedrooms: ", String(data.property.bedrooms || "N/A"), leftColumn, this.currentY + 16);
-    addLabelValue("Bathrooms: ", String(data.property.bathrooms || "N/A"), leftColumn, this.currentY + 24);
+    addLabelValue("Bedrooms: ", data.property.bedrooms || "N/A", leftColumn, this.currentY + 16);
+    addLabelValue("Bathrooms: ", data.property.bathrooms || "N/A", leftColumn, this.currentY + 24);
 
     // Right column
-    addLabelValue("Floor Size: ", `${String(data.property.floorSize || "N/A")} m²`, rightColumn, this.currentY);
-    addLabelValue("Land Size: ", `${String(data.property.landSize || "N/A")} m²`, rightColumn, this.currentY + 8);
-    addLabelValue("Parking: ", `${String(data.property.parkingSpaces || "N/A")} spaces`, rightColumn, this.currentY + 16);
+    addLabelValue("Floor Size: ", `${data.property.floorSize || "N/A"} m²`, rightColumn, this.currentY);
+    addLabelValue("Land Size: ", `${data.property.landSize || "N/A"} m²`, rightColumn, this.currentY + 8);
+    addLabelValue("Parking: ", `${data.property.parkingSpaces || "N/A"} spaces`, rightColumn, this.currentY + 16);
     const formattedLevy = data.property.monthlyLevy ? 
       Number(data.property.monthlyLevy).toLocaleString('en-ZA') : "N/A";
     addLabelValue("Monthly Levy: ", `R${formattedLevy}`, rightColumn, this.currentY + 24);
