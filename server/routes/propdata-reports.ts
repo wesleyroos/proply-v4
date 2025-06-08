@@ -65,8 +65,25 @@ router.post('/generate/:propertyId', async (req, res) => {
     // Financial data should already be calculated and saved during valuation generation
     console.log(`Reading pre-saved financial data for property ${propertyId}`);
     
-    // Generate PDF using the service (reading saved financial data)
-    const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
+    // Get property and financial data
+    const property = await db.query.propdataListings.findFirst({
+      where: eq(propdataListings.propdataId, propertyId.toString())
+    });
+
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+
+    // Get financial analysis data
+    const analysisData = {
+      annualPropertyAppreciationData: property.annualPropertyAppreciationData,
+      cashflowAnalysisData: property.cashflowAnalysisData,
+      financingAnalysisData: property.financingAnalysisData
+    };
+
+    // Generate PDF using professional service
+    const pdfService = new ProfessionalPdfService(property, analysisData);
+    const pdfBuffer = await pdfService.generatePDF();
     
     console.log(`PDF generated successfully, size: ${pdfBuffer.length} bytes`);
     

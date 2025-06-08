@@ -35,6 +35,16 @@ export class ProfessionalPdfService {
   private propertyData: PropertyData;
   private analysisData: PropertyAnalysisData;
 
+  // Consistent typography system
+  private typography = {
+    h1: { size: 24, style: 'bold' as const },
+    h2: { size: 18, style: 'bold' as const },
+    h3: { size: 14, style: 'bold' as const },
+    body: { size: 11, style: 'normal' as const },
+    small: { size: 9, style: 'normal' as const },
+    caption: { size: 8, style: 'normal' as const }
+  };
+
   // Professional color palette
   private colors = {
     primary: { r: 31, g: 41, b: 55 },      // Dark gray
@@ -47,6 +57,15 @@ export class ProfessionalPdfService {
     border: { r: 229, g: 231, b: 235 },    // Light border
     text: { r: 107, g: 114, b: 128 }       // Text gray
   };
+
+  // Content area calculations
+  private get contentWidth(): number {
+    return this.pageWidth - (2 * this.margin);
+  }
+
+  private get contentX(): number {
+    return this.margin;
+  }
 
   constructor(propertyData: PropertyData, analysisData: PropertyAnalysisData) {
     this.doc = new jsPDF('portrait', 'mm', 'a4');
