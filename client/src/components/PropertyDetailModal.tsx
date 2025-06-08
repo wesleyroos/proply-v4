@@ -236,6 +236,7 @@ export default function PropertyDetailModal({
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [editedAddress, setEditedAddress] = useState("");
   const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [lastAddressSaveTime, setLastAddressSaveTime] = useState<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
@@ -808,6 +809,9 @@ export default function PropertyDetailModal({
           });
         }
 
+        // Track when address was successfully saved for data freshness validation
+        setLastAddressSaveTime(Date.now());
+
         // Invalidate the property listings query in background (no UI blocking)
         setTimeout(() => {
           queryClient.invalidateQueries({ queryKey: ["/api/propdata/listings"] });
@@ -872,6 +876,12 @@ export default function PropertyDetailModal({
 
   const generateValuationReport = async () => {
     if (!property) return;
+
+    // Check for data freshness - prevent race conditions with recent address updates
+    if (lastAddressSaveTime && Date.now() - lastAddressSaveTime < 5000) {
+      alert("Address was recently updated. Please wait 5 seconds before generating report to ensure data consistency.");
+      return;
+    }
 
     setIsGeneratingReport(true);
     try {
