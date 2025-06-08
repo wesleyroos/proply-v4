@@ -24,6 +24,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -150,6 +152,8 @@ export default function PropertyDetailModal({
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isSendingReport, setIsSendingReport] = useState(false);
+  const [showSendReportDialog, setShowSendReportDialog] = useState(false);
+  const [sendToAgent, setSendToAgent] = useState(false);
   // Replace local state with React Query for database consistency
   const { data: valuationReport, refetch: refetchValuation } = useQuery({
     queryKey: ['/api/valuation-reports', property?.propdataId],
@@ -965,14 +969,32 @@ export default function PropertyDetailModal({
     }
   };
 
-  const handleSendReport = async () => {
+  const handleSendReport = () => {
+    if (!property) return;
+    setShowSendReportDialog(true);
+  };
+
+  const handleConfirmSendReport = async () => {
     if (!property) return;
     
     setIsSendingReport(true);
+    setShowSendReportDialog(false);
+    
     try {
+      const recipients = ['wesley@proply.co.za'];
+      if (sendToAgent && property.agentEmail) {
+        recipients.push(property.agentEmail);
+      }
+      
       const response = await fetch(`/api/propdata-reports/send/${property.propdataId}`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
+        body: JSON.stringify({
+          recipients: recipients
+        }),
       });
       
       if (!response.ok) {
@@ -980,12 +1002,16 @@ export default function PropertyDetailModal({
       }
       
       const result = await response.json();
-      alert('Report has been generated and sent to wesley@proply.co.za. The download link will be available for 30 days.');
+      const recipientText = recipients.length > 1 
+        ? `wesley@proply.co.za and ${property.agentEmail}` 
+        : 'wesley@proply.co.za';
+      alert(`Report has been generated and sent to ${recipientText}. The download link will be available for 30 days.`);
     } catch (error) {
       console.error('Error sending PDF report:', error);
       alert('Failed to send PDF report. Please try again.');
     } finally {
       setIsSendingReport(false);
+      setSendToAgent(false);
     }
   };
 
@@ -3159,6 +3185,82 @@ export default function PropertyDetailModal({
               onClick={saveFinancingParameters}
             >
               Update
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Report Dialog */}
+      <Dialog open={showSendReportDialog} onOpenChange={setShowSendReportDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Property Report</DialogTitle>
+            <DialogDescription>
+              Choose who should receive the property investment report for {property?.address}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+                <span className="text-sm font-medium">wesley@proply.co.za</span>
+                <span className="text-xs text-muted-foreground">(Always included)</span>
+              </div>
+              
+              {property?.agentEmail && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="send-to-agent" 
+                    checked={sendToAgent}
+                    onCheckedChange={(checked) => setSendToAgent(checked as boolean)}
+                  />
+                  <Label 
+                    htmlFor="send-to-agent" 
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    {property.agentEmail}
+                  </Label>
+                  <span className="text-xs text-muted-foreground">
+                    ({property.agentName || 'Property Agent'})
+                  </span>
+                </div>
+              )}
+              
+              {!property?.agentEmail && (
+                <div className="text-sm text-muted-foreground">
+                  No agent email available for this property.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowSendReportDialog(false)}
+              disabled={isSendingReport}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmSendReport}
+              disabled={isSendingReport}
+              className="bg-[#1ba2ff] hover:bg-[#1ba2ff]/90"
+            >
+              {isSendingReport ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Send Report
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>

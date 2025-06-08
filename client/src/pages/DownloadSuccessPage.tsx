@@ -100,7 +100,7 @@ export default function DownloadSuccessPage() {
             </h4>
             <ul className="space-y-1">
               <li>• Property overview and specifications</li>
-              <li>• AI-powered valuation analysis</li>
+              <li>• Valuation Estimates</li>
               <li>• Rental performance metrics</li>
               <li>• Financial projections and yield calculations</li>
               <li>• Investment recommendations</li>
