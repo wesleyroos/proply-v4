@@ -921,22 +921,16 @@ export class PropdataPdfService {
         );
         this.currentY += 8;
 
-        // Convert to table format
-        const shortTermData = Object.entries(trajectory.shortTerm).map(
-          ([year, data]: [string, any]) => {
-            const yearNum = year.replace("year", "");
-            return [
-              `Year ${yearNum}`,
-              `R${data.revenue?.toLocaleString() || 0}`,
-              `${data.grossYield?.toFixed(1) || 0}%`
-            ];
-          }
-        );
+        // Convert to transposed table format (years as columns)
+        const shortTermEntries = Object.entries(trajectory.shortTerm);
+        const yearHeaders = shortTermEntries.map(([year]) => `Year ${year.replace("year", "")}`);
+        const revenueRow = ["Revenue", ...shortTermEntries.map(([, data]: [string, any]) => `R${data.revenue?.toLocaleString() || 0}`)];
+        const yieldRow = ["Yield", ...shortTermEntries.map(([, data]: [string, any]) => `${data.grossYield?.toFixed(1) || 0}%`)];
 
         (this.doc as any).autoTable({
           startY: this.currentY,
-          head: [["Year", "Revenue", "Yield"]],
-          body: shortTermData,
+          head: [["Metric", ...yearHeaders]],
+          body: [revenueRow, yieldRow],
           theme: "grid",
           headStyles: { 
             fillColor: [27, 162, 255], 
@@ -946,9 +940,8 @@ export class PropdataPdfService {
           styles: { fontSize: 8 },
           margin: { left: this.margin, right: this.margin },
           columnStyles: { 
-            0: { halign: "left" }, 
-            1: { halign: "right" },
-            2: { halign: "right" }
+            0: { halign: "left" },
+            ...Object.fromEntries(Array.from({length: yearHeaders.length}, (_, i) => [i + 1, { halign: "right" }]))
           },
         });
 
@@ -963,22 +956,16 @@ export class PropdataPdfService {
         );
         this.currentY += 8;
 
-        // Convert to table format
-        const longTermData = Object.entries(trajectory.longTerm).map(
-          ([year, data]: [string, any]) => {
-            const yearNum = year.replace("year", "");
-            return [
-              `Year ${yearNum}`,
-              `R${data.revenue?.toLocaleString() || 0}`,
-              `${data.grossYield?.toFixed(1) || 0}%`
-            ];
-          }
-        );
+        // Convert to transposed table format (years as columns)
+        const longTermEntries = Object.entries(trajectory.longTerm);
+        const yearHeaders = longTermEntries.map(([year]) => `Year ${year.replace("year", "")}`);
+        const revenueRow = ["Revenue", ...longTermEntries.map(([, data]: [string, any]) => `R${data.revenue?.toLocaleString() || 0}`)];
+        const yieldRow = ["Yield", ...longTermEntries.map(([, data]: [string, any]) => `${data.grossYield?.toFixed(1) || 0}%`)];
 
         (this.doc as any).autoTable({
           startY: this.currentY,
-          head: [["Year", "Revenue", "Yield"]],
-          body: longTermData,
+          head: [["Metric", ...yearHeaders]],
+          body: [revenueRow, yieldRow],
           theme: "grid",
           headStyles: { 
             fillColor: [27, 162, 255], 
@@ -988,9 +975,8 @@ export class PropdataPdfService {
           styles: { fontSize: 8 },
           margin: { left: this.margin, right: this.margin },
           columnStyles: { 
-            0: { halign: "left" }, 
-            1: { halign: "right" },
-            2: { halign: "right" }
+            0: { halign: "left" },
+            ...Object.fromEntries(Array.from({length: yearHeaders.length}, (_, i) => [i + 1, { halign: "right" }]))
           },
         });
 
@@ -1020,22 +1006,18 @@ export class PropdataPdfService {
         );
         this.currentY += 8;
 
-        // Convert to table format
+        // Convert to transposed table format (years as columns)
         const keyYears = ['year1', 'year2', 'year3', 'year5', 'year10', 'year20'];
-        const appreciationData = keyYears
-          .filter(yearKey => appreciation.yearlyValues[yearKey])
-          .map(yearKey => {
-            const yearNum = yearKey.replace('year', '');
-            return [
-              `Year ${yearNum}`,
-              `R${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString()}`
-            ];
-          });
+        const validYears = keyYears.filter(yearKey => appreciation.yearlyValues[yearKey]);
+        const yearHeaders = validYears.map(yearKey => `Year ${yearKey.replace('year', '')}`);
+        const valueRow = ["Property Value", ...validYears.map(yearKey => 
+          `R${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString()}`
+        )];
 
         (this.doc as any).autoTable({
           startY: this.currentY,
-          head: [["Year", "Property Value"]],
-          body: appreciationData,
+          head: [["Metric", ...yearHeaders]],
+          body: [valueRow],
           theme: "grid",
           headStyles: { 
             fillColor: [27, 162, 255], 
@@ -1045,8 +1027,8 @@ export class PropdataPdfService {
           styles: { fontSize: 8 },
           margin: { left: this.margin, right: this.margin },
           columnStyles: { 
-            0: { halign: "left" }, 
-            1: { halign: "right" }
+            0: { halign: "left" },
+            ...Object.fromEntries(Array.from({length: yearHeaders.length}, (_, i) => [i + 1, { halign: "right" }]))
           },
         });
 
@@ -1059,19 +1041,19 @@ export class PropdataPdfService {
       this.addSubsectionHeader("Equity Buildup Schedule");
 
       const metrics = data.valuationReport.financingAnalysisData.yearlyMetrics;
-      const equityData = Object.entries(metrics).map(([year, data]: [string, any]) => {
-        const yearNum = year.replace("year", "");
-        return [
-          `Year ${yearNum}`,
-          `R${Math.round(data.equityBuildup)?.toLocaleString()}`,
-          `R${Math.round(data.remainingBalance)?.toLocaleString()}`
-        ];
-      });
+      const metricEntries = Object.entries(metrics);
+      const yearHeaders = metricEntries.map(([year]) => `Year ${year.replace("year", "")}`);
+      const equityRow = ["Equity Built", ...metricEntries.map(([, data]: [string, any]) => 
+        `R${Math.round(data.equityBuildup)?.toLocaleString()}`
+      )];
+      const balanceRow = ["Remaining Balance", ...metricEntries.map(([, data]: [string, any]) => 
+        `R${Math.round(data.remainingBalance)?.toLocaleString()}`
+      )];
 
       (this.doc as any).autoTable({
         startY: this.currentY,
-        head: [["Year", "Equity Built", "Remaining Balance"]],
-        body: equityData,
+        head: [["Metric", ...yearHeaders]],
+        body: [equityRow, balanceRow],
         theme: "grid",
         headStyles: { 
           fillColor: [27, 162, 255], 
@@ -1081,9 +1063,8 @@ export class PropdataPdfService {
         styles: { fontSize: 8 },
         margin: { left: this.margin, right: this.margin },
         columnStyles: { 
-          0: { halign: "left" }, 
-          1: { halign: "right" },
-          2: { halign: "right" }
+          0: { halign: "left" },
+          ...Object.fromEntries(Array.from({length: yearHeaders.length}, (_, i) => [i + 1, { halign: "right" }]))
         },
       });
 
@@ -1126,6 +1107,12 @@ export class PropdataPdfService {
     this.doc.setFontSize(10);
     this.doc.text(
       `Property ID: ${data.property.propdataId}`,
+      this.margin,
+      this.currentY,
+    );
+    this.currentY += 6;
+    this.doc.text(
+      `Agent: ${data.property.agentName || "N/A"}`,
       this.margin,
       this.currentY,
     );
