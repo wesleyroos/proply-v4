@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import fs from 'fs';
 import path from 'path';
@@ -59,7 +59,7 @@ export class RealEstatePdfService {
   };
 
   constructor(propertyData: PropertyData, financialData: FinancialData) {
-    this.doc = new jsPDF('portrait', 'mm', 'a4');
+    this.doc = new jsPDF("portrait", "mm", "a4");
     this.pageWidth = this.doc.internal.pageSize.getWidth();
     this.pageHeight = this.doc.internal.pageSize.getHeight();
     this.propertyData = propertyData;
