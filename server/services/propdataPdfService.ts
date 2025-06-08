@@ -1343,8 +1343,8 @@ export class PropdataPdfService {
   }
 
   private checkPageBreak(requiredSpace: number = 20): void {
-    // Reserve space at bottom for footer (25pt for normal content, 40pt for large sections)
-    const footerSpace = requiredSpace > 100 ? 40 : 25;
+    // Reserve space at bottom for footer (20pt for normal content, 35pt for large sections)
+    const footerSpace = requiredSpace > 100 ? 35 : 20;
     if (
       this.currentY + requiredSpace >
       this.pageHeight - this.margin - footerSpace
