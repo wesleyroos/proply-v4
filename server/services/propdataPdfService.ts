@@ -148,14 +148,15 @@ export class PropdataPdfService {
   }
 
   private async addProplyHeader(): Promise<void> {
-    // Modern header with gradient-like effect using rectangles
-    this.doc.setFillColor(27, 162, 255);
-    this.doc.rect(0, 0, this.pageWidth, 35, "F");
+    // Simple clean header without colorful background
+    
+    // Add report title on the left
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.setFontSize(24);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("Property Report", this.margin, this.margin + 15);
 
-    this.doc.setFillColor(59, 130, 246);
-    this.doc.rect(0, 30, this.pageWidth, 5, "F");
-
-    // Load and add actual Proply PNG logo on the left side
+    // Load and add actual Proply PNG logo on the top right
     try {
       const fs = await import("fs");
       const path = await import("path");
@@ -166,60 +167,43 @@ export class PropdataPdfService {
         const logoBuffer = fs.readFileSync(logoPath);
         const logoBase64 = logoBuffer.toString("base64");
 
-        // White background for logo
-        this.doc.setFillColor(255, 255, 255);
-        this.doc.rect(this.margin, 8, 40, 20, "F");
-        
-        // Add the actual PNG logo
-        const logoWidth = 35;
-        const logoHeight = 15;
+        // Logo dimensions - locked to prevent distortion
+        const logoWidth = 40;
+        const logoHeight = 20;
+        const logoX = this.pageWidth - this.margin - logoWidth;
         
         this.doc.addImage(
           logoBase64,
           "PNG",
-          this.margin + 2.5,
-          this.margin - 8,
+          logoX,
+          this.margin,
           logoWidth,
           logoHeight
         );
         console.log("Successfully added Proply PNG logo to PDF");
       } else {
         console.log("Logo file not found at:", logoPath);
-        // Fallback logo with white background
-        this.doc.setFillColor(255, 255, 255);
-        this.doc.rect(this.margin, 8, 40, 20, "F");
+        // Fallback text logo
+        const logoX = this.pageWidth - this.margin - 50;
         this.doc.setTextColor(27, 162, 255);
-        this.doc.setFontSize(14);
+        this.doc.setFontSize(20);
         this.doc.setFont("helvetica", "bold");
-        this.doc.text("PROPLY", this.margin + 5, 20);
+        this.doc.text("PROPLY", logoX, this.margin + 15);
       }
     } catch (error) {
       console.error("Logo loading error:", error);
-      // Fallback logo with white background
-      this.doc.setFillColor(255, 255, 255);
-      this.doc.rect(this.margin, 8, 40, 20, "F");
+      // Fallback text logo
+      const logoX = this.pageWidth - this.margin - 50;
       this.doc.setTextColor(27, 162, 255);
-      this.doc.setFontSize(14);
+      this.doc.setFontSize(20);
       this.doc.setFont("helvetica", "bold");
-      this.doc.text("PROPLY", this.margin + 5, 20);
+      this.doc.text("PROPLY", logoX, this.margin + 15);
     }
 
-    // Report title (center-right)
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(20);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text("PROPERTY INVESTMENT REPORT", this.margin + 50, 20);
-
-    // Generation date (right)
-    this.doc.setFontSize(8);
-    this.doc.setFont("helvetica", "normal");
-    const today = new Date().toLocaleDateString("en-ZA");
-    this.doc.text(`Generated: ${today}`, this.pageWidth - this.margin - 30, 25);
-
-    // Reset colors
+    // Reset text color
     this.doc.setTextColor(0, 0, 0);
 
-    this.currentY = 50;
+    this.currentY = this.margin + 35;
   }
 
   private async addOverviewSection(data: PropertyPdfData): Promise<void> {
