@@ -30,6 +30,19 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
       text: params.text,
       html: params.html,
       attachments: params.attachments,
+      // Disable click tracking to prevent URL wrapping issues
+      trackingSettings: {
+        clickTracking: {
+          enable: false,
+          enableText: false
+        },
+        openTracking: {
+          enable: true
+        },
+        subscriptionTracking: {
+          enable: false
+        }
+      }
     });
     return true;
   } catch (error) {
