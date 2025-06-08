@@ -288,11 +288,13 @@ export class PropdataPdfService {
 
   private async addMapAndImage(data: PropertyPdfData): Promise<void> {
     console.log("=== Starting addMapAndImage method ===");
-    const mapWidth = 85;
-    const mapHeight = 60;
-    const imageWidth = 85;
-    const imageHeight = 60;
+    // Calculate dimensions to fit within page margins
+    const availableWidth = this.pageWidth - (2 * this.margin);
     const spacing = 10;
+    const mapWidth = (availableWidth - spacing) / 2;
+    const mapHeight = 60;
+    const imageWidth = (availableWidth - spacing) / 2;
+    const imageHeight = 60;
 
     // Add static Google Map
     console.log("Property location data:", data.property?.location);
