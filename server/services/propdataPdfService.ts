@@ -467,9 +467,9 @@ export class PropdataPdfService {
         }
       } else {
         // No address available, use placeholder
-        this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+        this.doc.setFillColor(...COLORS.background.gray);
         this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, "F");
-        this.doc.setTextColor(PROPLY_GRAY);
+        this.doc.setTextColor(...COLORS.text.secondary);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Location Map",
@@ -518,7 +518,7 @@ export class PropdataPdfService {
       } catch (error) {
         console.error("Error loading property image:", error);
         // Fallback to placeholder
-        this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+        this.doc.setFillColor(...COLORS.background.gray);
         this.doc.rect(
           this.margin + mapWidth + spacing,
           this.currentY,
@@ -526,7 +526,7 @@ export class PropdataPdfService {
           imageHeight,
           "F",
         );
-        this.doc.setTextColor(PROPLY_GRAY);
+        this.doc.setTextColor(...COLORS.text.secondary);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Image",
@@ -537,7 +537,7 @@ export class PropdataPdfService {
     } else {
       console.log("No property image URL found in data");
       // Placeholder when no image available
-      this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+      this.doc.setFillColor(...COLORS.background.gray);
       this.doc.rect(
         this.margin + mapWidth + spacing,
         this.currentY,
@@ -545,7 +545,7 @@ export class PropdataPdfService {
         imageHeight,
         "F",
       );
-      this.doc.setTextColor(PROPLY_GRAY);
+      this.doc.setTextColor(...COLORS.text.secondary);
       this.doc.setFontSize(9);
       this.doc.text(
         "Property Image",
@@ -1129,7 +1129,7 @@ export class PropdataPdfService {
 
     // Report generation info
     this.doc.setFontSize(8);
-    this.doc.setTextColor(PROPLY_GRAY);
+    this.doc.setTextColor(...COLORS.text.secondary);
     this.doc.text(
       `Report generated on ${new Date().toLocaleDateString()} by Proply Investment Platform`,
       this.margin,
@@ -1159,7 +1159,7 @@ export class PropdataPdfService {
 
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(PROPLY_BLUE);
+    this.doc.setTextColor(...COLORS.primary);
     this.doc.text(title, this.margin, this.currentY);
 
     this.doc.setTextColor(0, 0, 0);
@@ -1315,7 +1315,7 @@ export class PropdataPdfService {
       this.doc.setPage(i);
 
       // Footer line
-      this.doc.setDrawColor(PROPLY_BLUE);
+      this.doc.setDrawColor(...COLORS.primary);
       this.doc.line(
         this.margin,
         this.pageHeight - 25,
