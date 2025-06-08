@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { RealEstatePdfService } from '../services/realEstatePdfService';
+import { PropdataPdfService } from '../services/propdataPdfService';
 import { SimplePdfTest } from '../services/simplePdfTest';
 import { sendEmail, generatePropertyReportEmailTemplate } from '../services/emailService';
 import { createId } from '@paralleldrive/cuid2';
@@ -65,47 +65,8 @@ router.post('/generate/:propertyId', async (req, res) => {
     // Financial data should already be calculated and saved during valuation generation
     console.log(`Reading pre-saved financial data for property ${propertyId}`);
     
-    // Get property data from propdataListings table
-    const property = await db.query.propdataListings.findFirst({
-      where: eq(propdataListings.propdataId, propertyId.toString())
-    });
-
-    if (!property) {
-      return res.status(404).json({ error: 'Property not found' });
-    }
-
-    // Map property data to expected format
-    const propertyData = {
-      id: property.id,
-      propdataId: property.propdataId,
-      address: property.address,
-      price: parseInt(property.price) || 0,
-      purchasePrice: parseInt(property.price) || 0, // Use price as purchase price
-      propertyType: property.propertyType,
-      bedrooms: parseInt(property.bedrooms) || 0,
-      bathrooms: parseInt(property.bathrooms) || 0,
-      parkingSpaces: property.parkingSpaces || 0,
-      floorSize: property.floorSize || 0,
-      landSize: property.landSize || 0,
-      floorArea: property.floorSize || 0,
-      monthlyLevy: typeof property.monthlyLevy === 'string' ? parseInt(property.monthlyLevy) || 0 : property.monthlyLevy || 0,
-      images: (property.images as string[]) || []
-    };
-
-    // Get financial analysis data from valuation reports table
-    const valuationReport = await db.query.valuationReports.findFirst({
-      where: eq(valuationReports.propertyId, property.propdataId)
-    });
-
-    const financialData = {
-      annualPropertyAppreciationData: valuationReport?.annualPropertyAppreciationData,
-      cashflowAnalysisData: valuationReport?.cashflowAnalysisData,
-      financingAnalysisData: valuationReport?.financingAnalysisData
-    };
-
-    // Generate PDF using real estate service
-    const pdfService = new RealEstatePdfService(propertyData, financialData);
-    const pdfBuffer = await pdfService.generateReport();
+    // Generate PDF using the service (reading saved financial data)
+    const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
     
     console.log(`PDF generated successfully, size: ${pdfBuffer.length} bytes`);
     

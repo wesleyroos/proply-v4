@@ -20,44 +20,25 @@ interface PdfGenerationOptions {
   includeImages?: boolean;
 }
 
-// Professional real estate PDF design system
-const DESIGN_SYSTEM = {
-  colors: {
-    primary: [24, 47, 79] as const,      // Dark navy blue
-    secondary: [59, 130, 246] as const,  // Professional blue
-    success: [34, 197, 94] as const,     // Success green
-    warning: [245, 158, 11] as const,    // Warning orange
-    text: {
-      heading: [17, 24, 39] as const,    // Very dark gray
-      body: [55, 65, 81] as const,       // Dark gray
-      muted: [107, 114, 128] as const,   // Medium gray
-    },
-    background: {
-      white: [255, 255, 255] as const,
-      light: [248, 250, 252] as const,
-      card: [249, 250, 251] as const,
-    },
-    border: [229, 231, 235] as const,
+// Enhanced Proply brand colors and design system
+const COLORS = {
+  primary: [27, 162, 255],      // #1ba2ff
+  primaryDark: [13, 123, 212],  // #0d7bd4
+  secondary: [59, 130, 246],    // #3b82f6
+  accent: [16, 185, 129],       // #10b981
+  danger: [239, 68, 68],        // #ef4444
+  warning: [245, 158, 11],      // #f59e0b
+  text: {
+    primary: [31, 41, 55],      // #1f2937
+    secondary: [107, 114, 128], // #6b7280
+    muted: [156, 163, 175],     // #9ca3af
   },
-  typography: {
-    title: { size: 24, weight: 'bold' as const },
-    heading: { size: 16, weight: 'bold' as const },
-    subheading: { size: 12, weight: 'bold' as const },
-    body: { size: 10, weight: 'normal' as const },
-    caption: { size: 8, weight: 'normal' as const },
+  background: {
+    white: [255, 255, 255],     // #ffffff
+    light: [248, 250, 252],     // #f8fafc
+    gray: [241, 245, 249],      // #f1f5f9
   },
-  spacing: {
-    section: 20,
-    subsection: 12,
-    element: 8,
-    tight: 4,
-  },
-  layout: {
-    margin: 25,
-    contentWidth: 160, // A4 width minus margins
-    tableRowHeight: 8,
-    imageHeight: 80,
-  }
+  border: [226, 232, 240],      // #e2e8f0
 };
 
 export class PropdataPdfService {
@@ -68,33 +49,11 @@ export class PropdataPdfService {
   private currentY: number;
 
   constructor() {
-    this.doc = new jsPDF("portrait", "mm", "a4");
+    this.doc = new jsPDF();
     this.pageWidth = this.doc.internal.pageSize.getWidth();
     this.pageHeight = this.doc.internal.pageSize.getHeight();
-    this.margin = DESIGN_SYSTEM.layout.margin;
+    this.margin = 20;
     this.currentY = this.margin;
-  }
-
-  // Consistent typography helper
-  private setTypography(type: keyof typeof DESIGN_SYSTEM.typography): void {
-    const style = DESIGN_SYSTEM.typography[type];
-    this.doc.setFontSize(style.size);
-    this.doc.setFont('helvetica', style.weight);
-  }
-
-  // Color helper
-  private setColor(colorPath: string): void {
-    const color = this.getNestedColor(DESIGN_SYSTEM.colors, colorPath);
-    this.doc.setTextColor(color[0], color[1], color[2]);
-  }
-
-  private getNestedColor(obj: any, path: string): [number, number, number] {
-    return path.split('.').reduce((current, key) => current[key], obj);
-  }
-
-  // Content width respecting margins
-  private get contentWidth(): number {
-    return this.pageWidth - (2 * this.margin);
   }
 
   async generatePropertyReport(
@@ -109,446 +68,24 @@ export class PropdataPdfService {
         throw new Error("Property not found");
       }
 
-      // Create professional cover page
-      await this.createProfessionalCoverPage(data);
-      
-      // Add executive summary page
-      this.addNewPage();
-      this.createExecutiveSummary(data);
-      
-      // Add financial analysis page
-      this.addNewPage();
-      this.createFinancialAnalysis(data);
-      
-      // Add property details page
-      this.addNewPage();
-      await this.createPropertyDetails(data);
+      // Initialize PDF with Proply branding
+      await this.initializePdf();
 
-      // Add consistent professional footers
-      this.addProfessionalFooters();
+      // Generate each section
+      await this.addOverviewSection(data);
+      await this.addValuationSection(data);
+      await this.addRentalPerformanceSection(data);
+      await this.addFinancialsSection(data);
+      await this.addDetailsSection(data);
+
+      // Add footer to all pages
+      this.addFooterToAllPages();
 
       return Buffer.from(this.doc.output("arraybuffer"));
     } catch (error) {
       console.error("Error generating PDF report:", error);
       throw error;
     }
-  }
-
-  // Add new page helper
-  private addNewPage(): void {
-    this.doc.addPage();
-    this.currentY = this.margin;
-  }
-
-  // Professional cover page
-  private async createProfessionalCoverPage(data: PropertyPdfData): Promise<void> {
-    // Clean header section
-    this.doc.setFillColor(...DESIGN_SYSTEM.colors.primary);
-    this.doc.rect(0, 0, this.pageWidth, 60, 'F');
-    
-    // Company branding
-    this.doc.setTextColor(255, 255, 255);
-    this.setTypography('title');
-    this.doc.text('PROPLY', this.margin, 35);
-    
-    this.setTypography('body');
-    this.doc.text('Investment Property Report', this.margin, 45);
-    
-    // Add logo if available
-    await this.addCompanyLogo();
-    
-    // Property title section
-    this.currentY = 80;
-    this.setColor('text.heading');
-    this.setTypography('title');
-    
-    const address = data.property?.address || 'Property Address';
-    const wrappedAddress = this.doc.splitTextToSize(address, this.contentWidth);
-    
-    if (Array.isArray(wrappedAddress)) {
-      wrappedAddress.forEach((line: string, index: number) => {
-        this.doc.text(line, this.margin, this.currentY + (index * 12));
-      });
-      this.currentY += wrappedAddress.length * 12 + DESIGN_SYSTEM.spacing.section;
-    } else {
-      this.doc.text(wrappedAddress, this.margin, this.currentY);
-      this.currentY += DESIGN_SYSTEM.spacing.section;
-    }
-    
-    // Purchase price highlight
-    this.setColor('success');
-    this.setTypography('title');
-    const price = data.property?.price || 0;
-    this.doc.text(this.formatCurrency(price), this.margin, this.currentY);
-    this.currentY += DESIGN_SYSTEM.spacing.section;
-    
-    // Property specifications table
-    this.createPropertySpecsTable(data);
-    
-    // Report metadata
-    this.currentY = this.pageHeight - 60;
-    this.setColor('text.muted');
-    this.setTypography('caption');
-    this.doc.text(`Report Generated: ${new Date().toLocaleDateString('en-ZA')}`, this.margin, this.currentY);
-    this.doc.text('Prepared by Proply Investment Analytics', this.margin, this.currentY + 10);
-  }
-
-  // Executive summary page
-  private createExecutiveSummary(data: PropertyPdfData): void {
-    this.setColor('text.heading');
-    this.setTypography('title');
-    this.doc.text('Executive Summary', this.margin, this.currentY);
-    this.currentY += DESIGN_SYSTEM.spacing.section;
-    
-    // Key metrics cards
-    this.createKeyMetricsCards(data);
-    
-    this.currentY += DESIGN_SYSTEM.spacing.section;
-    
-    // Investment highlights
-    this.createInvestmentHighlights(data);
-  }
-
-  // Financial analysis page
-  private createFinancialAnalysis(data: PropertyPdfData): void {
-    this.setColor('text.heading');
-    this.setTypography('title');
-    this.doc.text('Financial Analysis', this.margin, this.currentY);
-    this.currentY += DESIGN_SYSTEM.spacing.section;
-    
-    // Financing structure
-    this.createFinancingStructureTable(data);
-    
-    this.currentY += DESIGN_SYSTEM.spacing.section;
-    
-    // Investment projections
-    this.createInvestmentProjectionsTable(data);
-  }
-
-  // Property details page
-  private async createPropertyDetails(data: PropertyPdfData): Promise<void> {
-    this.setColor('text.heading');
-    this.setTypography('title');
-    this.doc.text('Property Details', this.margin, this.currentY);
-    this.currentY += DESIGN_SYSTEM.spacing.section;
-    
-    // Property images and map
-    await this.addPropertyVisuals(data);
-    
-    this.currentY += DESIGN_SYSTEM.spacing.section;
-    
-    // Detailed specifications
-    this.createDetailedSpecsTable(data);
-  }
-
-  // Professional table helper methods
-  private createPropertySpecsTable(data: PropertyPdfData): void {
-    const property = data.property;
-    if (!property) return;
-
-    const specs = [
-      ['Property Type', property.propertyType || 'N/A'],
-      ['Bedrooms', property.bedrooms || 'N/A'],
-      ['Bathrooms', property.bathrooms || 'N/A'],
-      ['Parking Spaces', property.parkingSpaces?.toString() || 'N/A'],
-      ['Floor Area', property.floorSize ? `${property.floorSize} m²` : 'N/A'],
-      ['Monthly Levy', property.monthlyLevy ? this.formatCurrency(parseInt(property.monthlyLevy.toString())) : 'N/A']
-    ];
-
-    (this.doc as any).autoTable({
-      startY: this.currentY,
-      head: [['Feature', 'Details']],
-      body: specs,
-      headStyles: {
-        fillColor: DESIGN_SYSTEM.colors.primary,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: DESIGN_SYSTEM.typography.body.size,
-        cellPadding: 6
-      },
-      bodyStyles: {
-        fontSize: DESIGN_SYSTEM.typography.body.size,
-        cellPadding: 6
-      },
-      alternateRowStyles: { 
-        fillColor: DESIGN_SYSTEM.colors.background.light
-      },
-      margin: { left: this.margin, right: this.margin },
-      tableWidth: 'auto'
-    });
-
-    this.currentY = (this.doc as any).lastAutoTable.finalY + DESIGN_SYSTEM.spacing.element;
-  }
-
-  private createKeyMetricsCards(data: PropertyPdfData): void {
-    const cardWidth = this.contentWidth / 3 - 5;
-    const cardHeight = 40;
-    
-    const metrics = [
-      { label: 'Gross Yield', value: this.calculateGrossYield(data), color: DESIGN_SYSTEM.colors.success },
-      { label: 'Monthly Cashflow', value: this.calculateMonthlyCashflow(data), color: DESIGN_SYSTEM.colors.secondary },
-      { label: 'Total Return', value: '15.2%', color: DESIGN_SYSTEM.colors.primary }
-    ];
-
-    metrics.forEach((metric, index) => {
-      const x = this.margin + (index * (cardWidth + 5));
-      
-      // Card background
-      this.doc.setFillColor(...DESIGN_SYSTEM.colors.background.card);
-      this.doc.rect(x, this.currentY, cardWidth, cardHeight, 'F');
-      
-      // Card border
-      this.doc.setDrawColor(...DESIGN_SYSTEM.colors.border);
-      this.doc.setLineWidth(0.5);
-      this.doc.rect(x, this.currentY, cardWidth, cardHeight, 'S');
-      
-      // Accent bar
-      this.doc.setFillColor(...metric.color);
-      this.doc.rect(x, this.currentY, cardWidth, 3, 'F');
-      
-      // Value
-      this.doc.setTextColor(...metric.color);
-      this.setTypography('heading');
-      this.doc.text(metric.value, x + 8, this.currentY + 20);
-      
-      // Label
-      this.setColor('text.muted');
-      this.setTypography('caption');
-      this.doc.text(metric.label, x + 8, this.currentY + 30);
-    });
-
-    this.currentY += cardHeight + DESIGN_SYSTEM.spacing.element;
-  }
-
-  private createFinancingStructureTable(data: PropertyPdfData): void {
-    const property = data.property;
-    const financing = data.financingAnalysis;
-    
-    if (!property) return;
-
-    const price = parseInt(property.price?.toString() || '0');
-    const deposit = price * 0.2;
-    const loanAmount = price * 0.8;
-    const monthlyPayment = financing?.monthlyBondPayment || this.calculateMonthlyPayment(loanAmount);
-
-    const tableData = [
-      ['Purchase Price', this.formatCurrency(price)],
-      ['Deposit (20%)', this.formatCurrency(deposit)],
-      ['Loan Amount', this.formatCurrency(loanAmount)],
-      ['Interest Rate', '11.75% p.a.'],
-      ['Loan Term', '20 years'],
-      ['Monthly Payment', this.formatCurrency(monthlyPayment)]
-    ];
-
-    this.setColor('text.heading');
-    this.setTypography('heading');
-    this.doc.text('Loan Structure', this.margin, this.currentY);
-    this.currentY += DESIGN_SYSTEM.spacing.subsection;
-
-    (this.doc as any).autoTable({
-      startY: this.currentY,
-      head: [['Item', 'Amount']],
-      body: tableData,
-      headStyles: {
-        fillColor: DESIGN_SYSTEM.colors.primary,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: DESIGN_SYSTEM.typography.body.size,
-        cellPadding: 6
-      },
-      bodyStyles: {
-        fontSize: DESIGN_SYSTEM.typography.body.size,
-        cellPadding: 6
-      },
-      alternateRowStyles: { 
-        fillColor: DESIGN_SYSTEM.colors.background.light
-      },
-      margin: { left: this.margin, right: this.margin },
-      tableWidth: 'auto'
-    });
-
-    this.currentY = (this.doc as any).lastAutoTable.finalY + DESIGN_SYSTEM.spacing.element;
-  }
-
-  private createInvestmentProjectionsTable(data: PropertyPdfData): void {
-    const cashflow = data.cashflowAnalysis;
-    const projections = cashflow?.revenueProjections?.shortTerm;
-
-    this.setColor('text.heading');
-    this.setTypography('heading');
-    this.doc.text('20-Year Investment Projections', this.margin, this.currentY);
-    this.currentY += DESIGN_SYSTEM.spacing.subsection;
-
-    if (!projections) {
-      this.setColor('text.muted');
-      this.setTypography('body');
-      this.doc.text('Financial projections not available', this.margin, this.currentY);
-      this.currentY += DESIGN_SYSTEM.spacing.element;
-      return;
-    }
-
-    const tableData = [
-      ['Year 1', this.formatCurrency(projections.year1 || 0), this.formatCurrency((projections.year1 || 0) * 0.15)],
-      ['Year 2', this.formatCurrency(projections.year2 || 0), this.formatCurrency((projections.year2 || 0) * 0.15)],
-      ['Year 3', this.formatCurrency(projections.year3 || 0), this.formatCurrency((projections.year3 || 0) * 0.15)],
-      ['Year 5', this.formatCurrency(projections.year5 || 0), this.formatCurrency((projections.year5 || 0) * 0.15)],
-      ['Year 10', this.formatCurrency(projections.year10 || 0), this.formatCurrency((projections.year10 || 0) * 0.15)],
-      ['Year 20', this.formatCurrency(projections.year20 || 0), this.formatCurrency((projections.year20 || 0) * 0.15)]
-    ];
-
-    (this.doc as any).autoTable({
-      startY: this.currentY,
-      head: [['Year', 'Annual Revenue', 'Net Cashflow']],
-      body: tableData,
-      headStyles: {
-        fillColor: DESIGN_SYSTEM.colors.success,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: DESIGN_SYSTEM.typography.body.size,
-        cellPadding: 6
-      },
-      bodyStyles: {
-        fontSize: DESIGN_SYSTEM.typography.body.size,
-        cellPadding: 6
-      },
-      alternateRowStyles: { 
-        fillColor: DESIGN_SYSTEM.colors.background.light
-      },
-      margin: { left: this.margin, right: this.margin },
-      tableWidth: 'auto'
-    });
-
-    this.currentY = (this.doc as any).lastAutoTable.finalY + DESIGN_SYSTEM.spacing.element;
-  }
-
-  private createInvestmentHighlights(data: PropertyPdfData): void {
-    this.setColor('text.heading');
-    this.setTypography('subheading');
-    this.doc.text('Investment Highlights', this.margin, this.currentY);
-    this.currentY += DESIGN_SYSTEM.spacing.subsection;
-
-    const highlights = [
-      `• Strong rental yield of ${this.calculateGrossYield(data)}`,
-      '• Projected capital growth of 8% per annum',
-      `• Monthly net cashflow of ${this.calculateMonthlyCashflow(data)}`,
-      '• Located in established, high-demand area',
-      '• Strong rental market with consistent occupancy rates'
-    ];
-
-    this.setColor('text.body');
-    this.setTypography('body');
-
-    highlights.forEach((highlight, index) => {
-      this.doc.text(highlight, this.margin, this.currentY + (index * DESIGN_SYSTEM.spacing.tight));
-    });
-
-    this.currentY += highlights.length * DESIGN_SYSTEM.spacing.tight + DESIGN_SYSTEM.spacing.element;
-  }
-
-  private async addCompanyLogo(): Promise<void> {
-    try {
-      const logoPath = path.join(process.cwd(), 'client', 'public', 'proply-logo-auth.png');
-      if (fs.existsSync(logoPath)) {
-        const logoBuffer = fs.readFileSync(logoPath);
-        this.doc.addImage(logoBuffer, 'PNG', this.pageWidth - 70, 15, 45, 18);
-      }
-    } catch (error) {
-      console.log('Logo not found');
-    }
-  }
-
-  private async addPropertyVisuals(data: PropertyPdfData): Promise<void> {
-    const imageWidth = this.contentWidth / 2 - 5;
-    const imageHeight = DESIGN_SYSTEM.layout.imageHeight;
-
-    try {
-      // Property image
-      if (data.property?.images && data.property.images.length > 0) {
-        const response = await fetch(data.property.images[0]);
-        if (response.ok) {
-          const imageBuffer = await response.buffer();
-          this.doc.addImage(imageBuffer, 'JPEG', this.margin, this.currentY, imageWidth, imageHeight);
-        }
-      }
-
-      // Map
-      const mapUrl = this.generateMapUrl(data.property?.address);
-      if (mapUrl) {
-        const mapResponse = await fetch(mapUrl);
-        if (mapResponse.ok) {
-          const mapBuffer = await mapResponse.buffer();
-          this.doc.addImage(mapBuffer, 'PNG', this.margin + imageWidth + 10, this.currentY, imageWidth, imageHeight);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading images:', error);
-    }
-
-    this.currentY += imageHeight;
-  }
-
-  private createDetailedSpecsTable(data: PropertyPdfData): void {
-    // Implementation similar to createPropertySpecsTable but with more details
-    this.createPropertySpecsTable(data);
-  }
-
-  private addProfessionalFooters(): void {
-    const pageCount = this.doc.getNumberOfPages();
-    
-    for (let i = 1; i <= pageCount; i++) {
-      this.doc.setPage(i);
-      
-      // Footer background
-      this.doc.setFillColor(...DESIGN_SYSTEM.colors.background.light);
-      this.doc.rect(0, this.pageHeight - 15, this.pageWidth, 15, 'F');
-      
-      // Footer content
-      this.setColor('text.muted');
-      this.setTypography('caption');
-      this.doc.text('Proply Investment Analytics', this.margin, this.pageHeight - 6);
-      this.doc.text(`Page ${i} of ${pageCount}`, this.pageWidth - this.margin - 20, this.pageHeight - 6);
-      this.doc.text('Confidential Report', (this.pageWidth / 2) - 25, this.pageHeight - 6);
-    }
-  }
-
-  // Calculation helpers
-  private calculateGrossYield(data: PropertyPdfData): string {
-    const cashflow = data.cashflowAnalysis;
-    if (cashflow?.shortTermGrossYield) {
-      return `${cashflow.shortTermGrossYield.toFixed(1)}%`;
-    }
-    return '7.2%';
-  }
-
-  private calculateMonthlyCashflow(data: PropertyPdfData): string {
-    const cashflow = data.cashflowAnalysis;
-    if (cashflow?.netOperatingIncome?.year1?.annualCashflow) {
-      const monthly = cashflow.netOperatingIncome.year1.annualCashflow / 12;
-      return this.formatCurrency(monthly);
-    }
-    return 'R 4,500';
-  }
-
-  private calculateMonthlyPayment(loanAmount: number): number {
-    const monthlyRate = 0.1175 / 12; // 11.75% annual rate
-    const numPayments = 20 * 12; // 20 years
-    return (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
-           (Math.pow(1 + monthlyRate, numPayments) - 1);
-  }
-
-  private generateMapUrl(address?: string): string | null {
-    if (!address) return null;
-    const apiKey = 'AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M';
-    return `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(address)}&zoom=16&size=400x300&maptype=roadmap&markers=color:red%7Clabel:P%7C${encodeURIComponent(address)}&key=${apiKey}`;
-  }
-
-  private formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: 'ZAR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
   }
 
   private async fetchPropertyData(
@@ -627,10 +164,10 @@ export class PropdataPdfService {
 
   private async addProplyHeader(): Promise<void> {
     // Modern header with gradient-like effect using rectangles
-    this.doc.setFillColor(27, 162, 255);
+    this.doc.setFillColor(...COLORS.primary);
     this.doc.rect(0, 0, this.pageWidth, 35, "F");
 
-    this.doc.setFillColor(59, 130, 246);
+    this.doc.setFillColor(...COLORS.secondary);
     this.doc.rect(0, 30, this.pageWidth, 5, "F");
 
     // Load and add actual Proply PNG logo on the left side
@@ -645,7 +182,7 @@ export class PropdataPdfService {
         const logoBase64 = logoBuffer.toString("base64");
 
         // White background for logo
-        this.doc.setFillColor(255, 255, 255);
+        this.doc.setFillColor(...COLORS.background.white);
         this.doc.rect(this.margin, 8, 40, 20, "F");
         
         // Add the actual PNG logo
@@ -664,9 +201,9 @@ export class PropdataPdfService {
       } else {
         console.log("Logo file not found at:", logoPath);
         // Fallback logo with white background
-        this.doc.setFillColor(255, 255, 255);
+        this.doc.setFillColor(...COLORS.background.white);
         this.doc.rect(this.margin, 8, 40, 20, "F");
-        this.doc.setTextColor(27, 162, 255);
+        this.doc.setTextColor(...COLORS.primary);
         this.doc.setFontSize(14);
         this.doc.setFont("helvetica", "bold");
         this.doc.text("PROPLY", this.margin + 5, 20);
@@ -674,16 +211,16 @@ export class PropdataPdfService {
     } catch (error) {
       console.error("Logo loading error:", error);
       // Fallback logo with white background
-      this.doc.setFillColor(255, 255, 255);
+      this.doc.setFillColor(...COLORS.background.white);
       this.doc.rect(this.margin, 8, 40, 20, "F");
-      this.doc.setTextColor(27, 162, 255);
+      this.doc.setTextColor(...COLORS.primary);
       this.doc.setFontSize(14);
       this.doc.setFont("helvetica", "bold");
       this.doc.text("PROPLY", this.margin + 5, 20);
     }
 
     // Report title (center-right)
-    this.doc.setTextColor(255, 255, 255);
+    this.doc.setTextColor(...COLORS.background.white);
     this.doc.setFontSize(20);
     this.doc.setFont("helvetica", "bold");
     this.doc.text("PROPERTY INVESTMENT REPORT", this.margin + 50, 20);
@@ -695,13 +232,13 @@ export class PropdataPdfService {
     this.doc.text(`Generated: ${today}`, this.pageWidth - this.margin - 30, 25);
 
     // Reset colors
-    this.doc.setTextColor(31, 41, 55);
+    this.doc.setTextColor(...COLORS.text.primary);
 
     this.currentY = 50;
   }
 
   private async addOverviewSection(data: PropertyPdfData): Promise<void> {
-    this.addSectionHeader("PROPERTY OVERVIEW");
+    this.addSectionHeader("Property Overview");
 
     if (!data.property) {
       this.doc.text("Property data not available", this.margin, this.currentY);
@@ -709,80 +246,75 @@ export class PropdataPdfService {
       return;
     }
 
-    // Property address - prominent display with card background
-    this.doc.setFillColor(248, 250, 252);
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 15, "F");
-    this.doc.setDrawColor(226, 232, 240);
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 15, "S");
-
-    this.doc.setTextColor(31, 41, 55);
+    // Property address with "Address:" prefix
     this.doc.setFontSize(14);
     this.doc.setFont("helvetica", "bold");
-    this.doc.text(data.property.address || "Address not available", this.margin + 5, this.currentY + 10);
-    this.currentY += 25;
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text(
+      `Address: ${data.property.address || "Address not available"}`,
+      this.margin,
+      this.currentY,
+    );
+    this.currentY += 15;
 
-    // Property details in modern card layout
-    this.addPropertyDetailsCard(data.property);
+    // Property details in two columns
+    this.doc.setFontSize(11);
+    this.doc.setFont("helvetica", "normal");
+    this.doc.setTextColor(0, 0, 0);
+
+    const leftColumn = this.margin;
+    const rightColumn = this.margin + 90;
+
+    // Left column
+    this.doc.text(
+      `Price: R${data.property.price?.toLocaleString() || "N/A"}`,
+      leftColumn,
+      this.currentY,
+    );
+    this.doc.text(
+      `Property Type: ${data.property.propertyType || "N/A"}`,
+      leftColumn,
+      this.currentY + 8,
+    );
+    this.doc.text(
+      `Bedrooms: ${data.property.bedrooms || "N/A"}`,
+      leftColumn,
+      this.currentY + 16,
+    );
+    this.doc.text(
+      `Bathrooms: ${data.property.bathrooms || "N/A"}`,
+      leftColumn,
+      this.currentY + 24,
+    );
+
+    // Right column
+    this.doc.text(
+      `Floor Size: ${data.property.floorSize || "N/A"} m²`,
+      rightColumn,
+      this.currentY,
+    );
+    this.doc.text(
+      `Land Size: ${data.property.landSize || "N/A"} m²`,
+      rightColumn,
+      this.currentY + 8,
+    );
+    this.doc.text(
+      `Parking: ${data.property.parkingSpaces || "N/A"} spaces`,
+      rightColumn,
+      this.currentY + 16,
+    );
+    this.doc.text(
+      `Monthly Levy: R${data.property.monthlyLevy?.toLocaleString() || "N/A"}`,
+      rightColumn,
+      this.currentY + 24,
+    );
+
+    this.currentY += 40;
 
     // Add static map and property image side by side
     await this.addMapAndImage(data);
 
     this.currentY += 20;
-  }
-
-  private addPropertyDetailsCard(property: any): void {
-    const cardHeight = 45;
-
-    // Card background
-    this.doc.setFillColor(255, 255, 255);
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, cardHeight, "F");
-    this.doc.setDrawColor(226, 232, 240);
-    this.doc.setLineWidth(0.5);
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, cardHeight, "S");
-
-    // Price - prominent display
-    this.doc.setTextColor(27, 162, 255);
-    this.doc.setFontSize(18);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text(`R ${property.price?.toLocaleString("en-ZA") || "N/A"}`, this.margin + 5, this.currentY + 12);
-
-    // Property type
-    this.doc.setTextColor(107, 114, 128);
-    this.doc.setFontSize(10);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.text(property.propertyType || "N/A", this.margin + 5, this.currentY + 20);
-
-    // Details in grid layout
-    const details = [
-      { label: "Bedrooms", value: property.bedrooms || "N/A" },
-      { label: "Bathrooms", value: property.bathrooms || "N/A" },
-      { label: "Floor Size", value: `${property.floorSize || "N/A"} m²` },
-      { label: "Land Size", value: `${property.landSize || "N/A"} m²` },
-      { label: "Parking", value: `${property.parkingSpaces || "N/A"} spaces` },
-      { label: "Monthly Levy", value: `R ${property.monthlyLevy?.toLocaleString("en-ZA") || "N/A"}` },
-    ];
-
-    const startX = this.margin + 5;
-    const startY = this.currentY + 28;
-    const colWidth = (this.pageWidth - 2 * this.margin - 10) / 3;
-
-    details.forEach((detail, index) => {
-      const col = index % 3;
-      const row = Math.floor(index / 3);
-      const x = startX + col * colWidth;
-      const y = startY + row * 8;
-
-      this.doc.setTextColor(107, 114, 128);
-      this.doc.setFontSize(8);
-      this.doc.text(detail.label + ":", x, y);
-
-      this.doc.setTextColor(31, 41, 55);
-      this.doc.setFont("helvetica", "bold");
-      this.doc.text(String(detail.value), x + 25, y);
-      this.doc.setFont("helvetica", "normal");
-    });
-
-    this.currentY += cardHeight + 15;
   }
 
   private async addMapAndImage(data: PropertyPdfData): Promise<void> {
@@ -844,9 +376,9 @@ export class PropdataPdfService {
       } catch (error) {
         console.error("Error generating map:", error);
         // Fallback to placeholder
-        this.doc.setFillColor(241, 245, 249);
+        this.doc.setFillColor(...COLORS.background.gray);
         this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, "F");
-        this.doc.setTextColor(107, 114, 128);
+        this.doc.setTextColor(...COLORS.text.secondary);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Location Map",
@@ -935,9 +467,9 @@ export class PropdataPdfService {
         }
       } else {
         // No address available, use placeholder
-        this.doc.setFillColor(241, 245, 249);
+        this.doc.setFillColor(PROPLY_LIGHT_GRAY);
         this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, "F");
-        this.doc.setTextColor(107, 114, 128);
+        this.doc.setTextColor(PROPLY_GRAY);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Location Map",
@@ -986,7 +518,7 @@ export class PropdataPdfService {
       } catch (error) {
         console.error("Error loading property image:", error);
         // Fallback to placeholder
-        this.doc.setFillColor(241, 245, 249);
+        this.doc.setFillColor(PROPLY_LIGHT_GRAY);
         this.doc.rect(
           this.margin + mapWidth + spacing,
           this.currentY,
@@ -994,7 +526,7 @@ export class PropdataPdfService {
           imageHeight,
           "F",
         );
-        this.doc.setTextColor(107, 114, 128);
+        this.doc.setTextColor(PROPLY_GRAY);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Image",
@@ -1005,7 +537,7 @@ export class PropdataPdfService {
     } else {
       console.log("No property image URL found in data");
       // Placeholder when no image available
-      this.doc.setFillColor(241, 245, 249);
+      this.doc.setFillColor(PROPLY_LIGHT_GRAY);
       this.doc.rect(
         this.margin + mapWidth + spacing,
         this.currentY,
@@ -1013,7 +545,7 @@ export class PropdataPdfService {
         imageHeight,
         "F",
       );
-      this.doc.setTextColor(107, 114, 128);
+      this.doc.setTextColor(PROPLY_GRAY);
       this.doc.setFontSize(9);
       this.doc.text(
         "Property Image",
@@ -1036,7 +568,7 @@ export class PropdataPdfService {
   }
 
   private addValuationSection(data: PropertyPdfData): void {
-    this.checkPageBreak(50);
+    this.checkPageBreak();
     this.addSectionHeader("Valuation Analysis");
 
     if (!data.valuationReport?.valuationData) {
@@ -1078,28 +610,19 @@ export class PropdataPdfService {
         body: tableData,
         theme: "grid",
         headStyles: { 
-          fillColor: [27, 162, 255], 
+          fillColor: proplyBlueRGB, 
           textColor: 255,
-          fontStyle: 'bold',
-          fontSize: 10
-        },
-        bodyStyles: {
-          fontSize: 9,
-          cellPadding: 4
-        },
-        alternateRowStyles: {
-          fillColor: [248, 250, 252]
+          fontStyle: 'bold'
         },
         styles: { 
           fontSize: 10,
           cellPadding: 3
         },
         margin: { left: this.margin, right: this.margin },
-        tableWidth: this.pageWidth - (2 * this.margin) - 5,
         columnStyles: { 
-          0: { halign: "left", cellWidth: 45 }, 
-          1: { halign: "center", cellWidth: 55 },
-          2: { halign: "right", cellWidth: 55 }
+          0: { halign: "left", cellWidth: 50 }, 
+          1: { halign: "center", cellWidth: 60 },
+          2: { halign: "right", cellWidth: 60 }
         },
       });
 
@@ -1175,7 +698,7 @@ export class PropdataPdfService {
   }
 
   private addRentalPerformanceSection(data: PropertyPdfData): void {
-    this.checkPageBreak(50);
+    this.checkPageBreak();
     this.addSectionHeader("Rental Performance Analysis");
 
     // Get rental data from valuation report
@@ -1286,21 +809,12 @@ export class PropdataPdfService {
           body: percentileData,
           theme: "grid",
           headStyles: { 
-            fillColor: [245, 158, 11], 
+            fillColor: [27, 162, 255], 
             textColor: 255,
-            fontStyle: 'bold',
-            fontSize: 9
-          },
-          bodyStyles: {
-            fontSize: 8,
-            cellPadding: 3
-          },
-          alternateRowStyles: {
-            fillColor: [254, 252, 232]
+            fontStyle: 'bold'
           },
           styles: { fontSize: 9 },
           margin: { left: this.margin, right: this.margin },
-          tableWidth: this.pageWidth - (2 * this.margin) - 5,
           columnStyles: { 
             0: { halign: "left" }, 
             1: { halign: "right" },
@@ -1315,7 +829,7 @@ export class PropdataPdfService {
   }
 
   private addFinancialsSection(data: PropertyPdfData): void {
-    this.checkPageBreak(50);
+    this.checkPageBreak();
     this.addSectionHeader("Financial Analysis");
 
     // Financing parameters from saved valuation data
@@ -1376,8 +890,6 @@ export class PropdataPdfService {
           });
           tableData.push(balanceRow);
 
-          this.checkPageBreak(60); // Ensure table has space
-
           (this.doc as any).autoTable({
             startY: this.currentY,
             head: [["Metric", "Y1", "Y2", "Y3", "Y4", "Y5", "Y10", "Y20"]],
@@ -1390,20 +902,20 @@ export class PropdataPdfService {
               fontSize: 6
             },
             styles: { 
-              fontSize: 5,
-              cellPadding: 1
+              fontSize: 6,
+              cellPadding: 1.5
             },
             margin: { left: this.margin, right: this.margin },
-            tableWidth: 'wrap',
+            tableWidth: 'auto',
             columnStyles: { 
-              0: { halign: "left", cellWidth: 25 },
-              1: { halign: "right", cellWidth: 14 },
-              2: { halign: "right", cellWidth: 14 },
-              3: { halign: "right", cellWidth: 14 },
-              4: { halign: "right", cellWidth: 14 },
-              5: { halign: "right", cellWidth: 14 },
-              6: { halign: "right", cellWidth: 14 },
-              7: { halign: "right", cellWidth: 14 }
+              0: { halign: "left" },
+              1: { halign: "right" },
+              2: { halign: "right" },
+              3: { halign: "right" },
+              4: { halign: "right" },
+              5: { halign: "right" },
+              6: { halign: "right" },
+              7: { halign: "right" }
             },
             bodyStyles: {
               0: { fillColor: [245, 245, 245] }, // Light gray for bond payment
@@ -1533,7 +1045,7 @@ export class PropdataPdfService {
   }
 
   private addDetailsSection(data: PropertyPdfData): void {
-    this.checkPageBreak(50);
+    this.checkPageBreak();
     this.addSectionHeader("Property Details");
 
     // Agent information
@@ -1617,7 +1129,7 @@ export class PropdataPdfService {
 
     // Report generation info
     this.doc.setFontSize(8);
-    this.doc.setTextColor(107, 114, 128);
+    this.doc.setTextColor(PROPLY_GRAY);
     this.doc.text(
       `Report generated on ${new Date().toLocaleDateString()} by Proply Investment Platform`,
       this.margin,
@@ -1643,36 +1155,31 @@ export class PropdataPdfService {
   }
 
   private addSubsectionHeader(title: string): void {
-    this.checkPageBreak(35); // More space for subsection headers
+    this.checkPageBreak(20);
 
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(27, 162, 255);
+    this.doc.setTextColor(PROPLY_BLUE);
     this.doc.text(title, this.margin, this.currentY);
 
     this.doc.setTextColor(0, 0, 0);
     this.doc.setFont("helvetica", "normal");
-    this.currentY += 15; // Increased spacing after subsection headers
+    this.currentY += 10;
   }
 
   private addWrappedText(text: string, x: number, maxWidth: number): void {
-    // Ensure text doesn't exceed page margins
-    const safeMaxWidth = Math.min(maxWidth, this.pageWidth - this.margin - x);
-    const lines = this.doc.splitTextToSize(text, safeMaxWidth);
+    const lines = this.doc.splitTextToSize(text, maxWidth);
     lines.forEach((line: string) => {
       this.checkPageBreak();
       this.doc.text(line, x, this.currentY);
-      this.currentY += 8; // Increased line spacing
+      this.currentY += 6;
     });
-    this.currentY += 5; // Extra space after text blocks
   }
 
-  private checkPageBreak(requiredSpace: number = 30): void {
-    // More conservative page break with increased bottom margin
-    const bottomMargin = this.margin + 10; // Extra space at bottom
-    if (this.currentY + requiredSpace > this.pageHeight - bottomMargin) {
+  private checkPageBreak(requiredSpace: number = 20): void {
+    if (this.currentY + requiredSpace > this.pageHeight - this.margin) {
       this.doc.addPage();
-      this.currentY = this.margin + 40; // Start below header area on new pages
+      this.currentY = this.margin; // Start from top margin on new pages
     }
   }
 
@@ -1808,7 +1315,7 @@ export class PropdataPdfService {
       this.doc.setPage(i);
 
       // Footer line
-      this.doc.setDrawColor(27, 162, 255);
+      this.doc.setDrawColor(PROPLY_BLUE);
       this.doc.line(
         this.margin,
         this.pageHeight - 25,
@@ -1818,7 +1325,7 @@ export class PropdataPdfService {
 
       // Footer text
       this.doc.setFontSize(8);
-      this.doc.setTextColor(107, 114, 128);
+      this.doc.setTextColor(PROPLY_GRAY);
       this.doc.text(
         "Proply Investment Platform • wesley@proply.co.za",
         this.margin,
