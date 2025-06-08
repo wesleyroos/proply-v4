@@ -323,7 +323,7 @@ export class PropdataPdfService {
     // Add static map and property image side by side
     await this.addMapAndImage(data);
 
-    this.currentY += 20;
+    this.currentY += 10;
   }
 
   private async addMapAndImage(data: PropertyPdfData): Promise<void> {
@@ -875,37 +875,30 @@ export class PropdataPdfService {
         data.valuationReport.financingAnalysisData.yearlyMetrics;
 
       if (financing) {
-        // Financing overview in two columns
+        // Financing overview in left-aligned single column format
         this.doc.setFontSize(10);
         const leftColumn = this.margin;
-        const rightColumn = this.margin + 140;
 
-        this.doc.text(`Deposit:`, leftColumn, this.currentY);
-        this.doc.text(`Loan Amount:`, rightColumn, this.currentY);
-        this.currentY += 6;
+        // Bold labels with normal values helper function
+        const addFinancingDetail = (label: string, value: string, yPos: number) => {
+          this.doc.setFont("helvetica", "bold");
+          this.doc.text(`${label} `, leftColumn, yPos);
+          
+          const labelWidth = this.doc.getTextWidth(`${label} `);
+          this.doc.setFont("helvetica", "normal");
+          this.doc.text(value, leftColumn + labelWidth, yPos);
+        };
 
-        this.doc.text(
-          `R${Math.round(financing.depositAmount)?.toLocaleString()} (${financing.depositPercentage}%)`,
-          leftColumn,
-          this.currentY,
-        );
-        this.doc.text(
-          `R${Math.round(financing.loanAmount)?.toLocaleString()}`,
-          rightColumn,
-          this.currentY,
-        );
-        this.currentY += 10;
+        addFinancingDetail("Deposit:", `R${Math.round(financing.depositAmount)?.toLocaleString()} (${financing.depositPercentage}%)`, this.currentY);
+        this.currentY += 8;
 
-        this.doc.text(`Interest Rate:`, leftColumn, this.currentY);
-        this.doc.text(`Term:`, rightColumn, this.currentY);
-        this.currentY += 6;
+        addFinancingDetail("Loan Amount:", `R${Math.round(financing.loanAmount)?.toLocaleString()}`, this.currentY);
+        this.currentY += 8;
 
-        this.doc.text(`${financing.interestRate}%`, leftColumn, this.currentY);
-        this.doc.text(
-          `${financing.loanTerm} years`,
-          rightColumn,
-          this.currentY,
-        );
+        addFinancingDetail("Interest Rate:", `${financing.interestRate}%`, this.currentY);
+        this.currentY += 8;
+
+        addFinancingDetail("Term:", `${financing.loanTerm} years`, this.currentY);
         this.currentY += 15;
 
         // Financing metrics table
