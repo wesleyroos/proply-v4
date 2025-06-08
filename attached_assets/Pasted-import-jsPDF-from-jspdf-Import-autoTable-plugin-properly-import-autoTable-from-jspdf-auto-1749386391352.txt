@@ -1,0 +1,906 @@
+import { jsPDF } from "jspdf"
+
+// Import autoTable plugin properly
+import autoTable from "jspdf-autotable"
+
+// Extend jsPDF type to include autoTable
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: typeof autoTable
+  }
+}
+
+// Enhanced Proply brand colors and design system
+const COLORS = {
+  primary: "#1ba2ff",
+  primaryDark: "#0d7bd4",
+  secondary: "#3b82f6",
+  accent: "#10b981",
+  danger: "#ef4444",
+  warning: "#f59e0b",
+  text: {
+    primary: "#1f2937",
+    secondary: "#6b7280",
+    muted: "#9ca3af",
+  },
+  background: {
+    white: "#ffffff",
+    light: "#f8fafc",
+    gray: "#f1f5f9",
+  },
+  border: "#e2e8f0",
+}
+
+interface PropertyData {
+  property: {
+    address: string
+    price: number
+    propertyType: string
+    bedrooms: number
+    bathrooms: number
+    floorSize: number
+    landSize: number
+    parkingSpaces: number
+    monthlyLevy: number
+    images?: string[]
+    agent?: {
+      name: string
+      phone: string
+      email: string
+    }
+    features?: string[]
+    propdataId: string
+    lastModified: string
+    status: string
+  }
+  valuationReport?: {
+    valuationData?: {
+      summary?: string
+      valuations?: Array<{
+        type: string
+        formula: string
+        value: number
+      }>
+      propertyAppreciation?: {
+        annualAppreciationRate: number
+        fiveYearProjection?: Array<{
+          year: number
+          estimatedValue: number
+        }>
+        summary?: string
+      }
+      marketContext?: string
+      rentalPerformance?: {
+        longTerm?: {
+          minRental: number
+          maxRental: number
+          minYield: number
+          maxYield: number
+          reasoning: string
+        }
+        shortTerm?: {
+          occupancy: number
+          percentile25?: { nightly: number; monthly: number; annual: number }
+          percentile50?: { nightly: number; monthly: number; annual: number }
+          percentile75?: { nightly: number; monthly: number; annual: number }
+          percentile90?: { nightly: number; monthly: number; annual: number }
+        }
+      }
+    }
+    financingAnalysisData?: {
+      financingParameters?: {
+        depositAmount: number
+        depositPercentage: number
+        loanAmount: number
+        interestRate: number
+        loanTerm: number
+      }
+      yearlyMetrics?: Record<
+        string,
+        {
+          monthlyPayment: number
+          equityBuildup: number
+          remainingBalance: number
+        }
+      >
+    }
+    cashflowAnalysisData?: {
+      revenueGrowthTrajectory?: {
+        shortTerm?: Record<string, { revenue: number; grossYield: number }>
+        longTerm?: Record<string, { revenue: number; grossYield: number }>
+      }
+    }
+    annualPropertyAppreciationData?: {
+      finalAppreciationRate: number
+      yearlyValues?: Record<string, number>
+    }
+  }
+}
+
+export class EnhancedPropertyPdfGenerator {
+  private doc: jsPDF
+  private pageWidth: number
+  private pageHeight: number
+  private margin: number
+  private currentY: number
+  private contentWidth: number
+
+  constructor() {
+    this.doc = new jsPDF("p", "mm", "a4")
+    this.pageWidth = this.doc.internal.pageSize.getWidth()
+    this.pageHeight = this.doc.internal.pageSize.getHeight()
+    this.margin = 20
+    this.currentY = this.margin
+    this.contentWidth = this.pageWidth - 2 * this.margin
+  }
+
+  async generateReport(data: PropertyData): Promise<Buffer> {
+    try {
+      await this.initializeDocument()
+      await this.addHeader()
+      await this.addPropertyOverview(data)
+      await this.addMapAndImageSection(data)
+      await this.addValuationAnalysis(data)
+      await this.addRentalPerformanceAnalysis(data)
+      await this.addFinancialAnalysis(data)
+      await this.addPropertyDetails(data)
+      this.addFooterToAllPages()
+
+      return Buffer.from(this.doc.output("arraybuffer"))
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      throw error
+    }
+  }
+
+  private async initializeDocument(): Promise<void> {
+    this.doc.setProperties({
+      title: "Proply Property Investment Report",
+      subject: "Comprehensive Property Analysis",
+      author: "Proply Investment Platform",
+      creator: "Proply",
+    })
+  }
+
+  private async addHeader(): Promise<void> {
+    // Modern header with gradient-like effect using rectangles
+    this.doc.setFillColor(27, 162, 255) // Primary blue
+    this.doc.rect(0, 0, this.pageWidth, 35, "F")
+
+    this.doc.setFillColor(59, 130, 246) // Slightly different blue for depth
+    this.doc.rect(0, 30, this.pageWidth, 5, "F")
+
+    // Logo placeholder (left side)
+    this.doc.setFillColor(255, 255, 255)
+    this.doc.rect(this.margin, 8, 40, 20, "F")
+    this.doc.setTextColor(27, 162, 255)
+    this.doc.setFontSize(14)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text("PROPLY", this.margin + 5, 20)
+
+    // Report title (center-right)
+    this.doc.setTextColor(255, 255, 255)
+    this.doc.setFontSize(20)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text("PROPERTY INVESTMENT REPORT", this.margin + 50, 20)
+
+    // Generation date (right)
+    this.doc.setFontSize(8)
+    this.doc.setFont("helvetica", "normal")
+    const today = new Date().toLocaleDateString("en-ZA")
+    this.doc.text(`Generated: ${today}`, this.pageWidth - this.margin - 30, 25)
+
+    this.currentY = 50
+  }
+
+  private async addPropertyOverview(data: PropertyData): Promise<void> {
+    this.addSectionTitle("PROPERTY OVERVIEW")
+
+    // Property address - prominent display
+    this.doc.setFillColor(248, 250, 252)
+    this.doc.rect(this.margin, this.currentY, this.contentWidth, 15, "F")
+    this.doc.setDrawColor(226, 232, 240)
+    this.doc.rect(this.margin, this.currentY, this.contentWidth, 15, "S")
+
+    this.doc.setTextColor(31, 41, 55)
+    this.doc.setFontSize(14)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text(data.property.address || "Address not available", this.margin + 5, this.currentY + 10)
+    this.currentY += 25
+
+    // Property details in modern card layout
+    this.addPropertyDetailsCard(data.property)
+  }
+
+  private addPropertyDetailsCard(property: PropertyData["property"]): void {
+    const cardHeight = 45
+
+    // Card background
+    this.doc.setFillColor(255, 255, 255)
+    this.doc.rect(this.margin, this.currentY, this.contentWidth, cardHeight, "F")
+    this.doc.setDrawColor(226, 232, 240)
+    this.doc.setLineWidth(0.5)
+    this.doc.rect(this.margin, this.currentY, this.contentWidth, cardHeight, "S")
+
+    // Price - prominent display
+    this.doc.setTextColor(27, 162, 255)
+    this.doc.setFontSize(18)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text(`R ${property.price?.toLocaleString("en-ZA") || "N/A"}`, this.margin + 5, this.currentY + 12)
+
+    // Property type
+    this.doc.setTextColor(107, 114, 128)
+    this.doc.setFontSize(10)
+    this.doc.setFont("helvetica", "normal")
+    this.doc.text(property.propertyType || "N/A", this.margin + 5, this.currentY + 20)
+
+    // Details in grid layout
+    const details = [
+      { label: "Bedrooms", value: property.bedrooms || "N/A" },
+      { label: "Bathrooms", value: property.bathrooms || "N/A" },
+      { label: "Floor Size", value: `${property.floorSize || "N/A"} m²` },
+      { label: "Land Size", value: `${property.landSize || "N/A"} m²` },
+      { label: "Parking", value: `${property.parkingSpaces || "N/A"} spaces` },
+      { label: "Monthly Levy", value: `R ${property.monthlyLevy?.toLocaleString("en-ZA") || "N/A"}` },
+    ]
+
+    const startX = this.margin + 5
+    const startY = this.currentY + 28
+    const colWidth = (this.contentWidth - 10) / 3
+
+    details.forEach((detail, index) => {
+      const col = index % 3
+      const row = Math.floor(index / 3)
+      const x = startX + col * colWidth
+      const y = startY + row * 8
+
+      this.doc.setTextColor(107, 114, 128)
+      this.doc.setFontSize(8)
+      this.doc.text(detail.label + ":", x, y)
+
+      this.doc.setTextColor(31, 41, 55)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(String(detail.value), x + 25, y)
+      this.doc.setFont("helvetica", "normal")
+    })
+
+    this.currentY += cardHeight + 15
+  }
+
+  private async addMapAndImageSection(data: PropertyData): Promise<void> {
+    this.addSectionTitle("LOCATION & IMAGES")
+
+    const imageWidth = (this.contentWidth - 10) / 2
+    const imageHeight = 60
+
+    // Map placeholder
+    this.doc.setFillColor(241, 245, 249)
+    this.doc.rect(this.margin, this.currentY, imageWidth, imageHeight, "F")
+    this.doc.setDrawColor(203, 213, 225)
+    this.doc.rect(this.margin, this.currentY, imageWidth, imageHeight, "S")
+
+    this.doc.setTextColor(107, 114, 128)
+    this.doc.setFontSize(10)
+    this.doc.text("Satellite Map", this.margin + 5, this.currentY + 8)
+    this.doc.setFontSize(8)
+    this.doc.text("data.property.address", this.margin + 5, this.currentY + 16)
+
+    // Property image placeholder
+    this.doc.setFillColor(241, 245, 249)
+    this.doc.rect(this.margin + imageWidth + 10, this.currentY, imageWidth, imageHeight, "F")
+    this.doc.setDrawColor(203, 213, 225)
+    this.doc.rect(this.margin + imageWidth + 10, this.currentY, imageWidth, imageHeight, "S")
+
+    this.doc.text("Main Property Photo", this.margin + imageWidth + 15, this.currentY + 8)
+    this.doc.text("data.property.images[0]", this.margin + imageWidth + 15, this.currentY + 16)
+
+    this.currentY += imageHeight + 20
+  }
+
+  private async addValuationAnalysis(data: PropertyData): Promise<void> {
+    this.addSectionTitle("VALUATION ANALYSIS")
+
+    // Property Summary
+    if (data.valuationReport?.valuationData?.summary) {
+      this.addSubsection("Property Summary")
+      this.addTextBlock(data.valuationReport.valuationData.summary)
+    }
+
+    // Valuation Estimates Table
+    this.addSubsection("Valuation Estimates")
+    this.addValuationTable(data.valuationReport?.valuationData?.valuations || [])
+
+    // Property Appreciation
+    if (data.valuationReport?.valuationData?.propertyAppreciation) {
+      this.addSubsection("Property Appreciation Forecast")
+      const appreciation = data.valuationReport.valuationData.propertyAppreciation
+
+      this.doc.setTextColor(31, 41, 55)
+      this.doc.setFontSize(10)
+      this.doc.text(`Annual Appreciation Rate: ${appreciation.annualAppreciationRate}%`, this.margin, this.currentY)
+      this.currentY += 10
+
+      // 5-year projection table
+      if (appreciation.fiveYearProjection) {
+        this.addProjectionTable(appreciation.fiveYearProjection)
+      }
+
+      if (appreciation.summary) {
+        this.addTextBlock(appreciation.summary)
+      }
+    }
+
+    // Market Context
+    if (data.valuationReport?.valuationData?.marketContext) {
+      this.addSubsection("Market Context Analysis")
+      this.addTextBlock(data.valuationReport.valuationData.marketContext)
+    }
+  }
+
+  private addValuationTable(valuations: Array<{ type: string; formula: string; value: number }>): void {
+    if (!valuations.length) {
+      this.doc.setTextColor(107, 114, 128)
+      this.doc.setFontSize(10)
+      this.doc.text("No valuation data available", this.margin, this.currentY)
+      this.currentY += 15
+      return
+    }
+
+    try {
+      const tableData = valuations.map((val) => [
+        val.type || "N/A",
+        val.formula || "N/A",
+        `R ${val.value?.toLocaleString("en-ZA") || "0"}`,
+      ])
+
+      autoTable(this.doc, {
+        startY: this.currentY,
+        head: [["Estimate Type", "Size × Rate Formula", "Valuation Amount"]],
+        body: tableData,
+        theme: "grid",
+        headStyles: {
+          fillColor: [27, 162, 255],
+          textColor: 255,
+          fontStyle: "bold",
+          fontSize: 10,
+        },
+        bodyStyles: {
+          fontSize: 9,
+          cellPadding: 4,
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252],
+        },
+        margin: { left: this.margin, right: this.margin },
+        tableWidth: "auto",
+      })
+
+      this.currentY = (this.doc as any).lastAutoTable.finalY + 15
+    } catch (error) {
+      console.error("Error creating valuation table:", error)
+      // Fallback to manual table creation
+      this.addManualTable(
+        ["Estimate Type", "Size × Rate Formula", "Valuation Amount"],
+        valuations.map((val) => [
+          val.type || "N/A",
+          val.formula || "N/A",
+          `R ${val.value?.toLocaleString("en-ZA") || "0"}`,
+        ]),
+      )
+    }
+  }
+
+  private addProjectionTable(projections: Array<{ year: number; estimatedValue: number }>): void {
+    try {
+      const tableData = projections.map((proj) => [
+        `Year ${proj.year}`,
+        `R ${proj.estimatedValue?.toLocaleString("en-ZA") || "0"}`,
+      ])
+
+      autoTable(this.doc, {
+        startY: this.currentY,
+        head: [["Projection Year", "Estimated Value"]],
+        body: tableData,
+        theme: "striped",
+        headStyles: {
+          fillColor: [16, 185, 129],
+          textColor: 255,
+          fontStyle: "bold",
+        },
+        styles: { fontSize: 9 },
+        margin: { left: this.margin, right: this.margin },
+        tableWidth: "auto",
+      })
+
+      this.currentY = (this.doc as any).lastAutoTable.finalY + 15
+    } catch (error) {
+      console.error("Error creating projection table:", error)
+      // Fallback to manual table creation
+      this.addManualTable(
+        ["Projection Year", "Estimated Value"],
+        projections.map((proj) => [`Year ${proj.year}`, `R ${proj.estimatedValue?.toLocaleString("en-ZA") || "0"}`]),
+      )
+    }
+  }
+
+  private async addRentalPerformanceAnalysis(data: PropertyData): Promise<void> {
+    this.addSectionTitle("RENTAL PERFORMANCE ANALYSIS")
+
+    const rentalPerformance = data.valuationReport?.valuationData?.rentalPerformance
+    if (!rentalPerformance) {
+      this.doc.setTextColor(107, 114, 128)
+      this.doc.setFontSize(10)
+      this.doc.text("No rental performance data available", this.margin, this.currentY)
+      this.currentY += 15
+      return
+    }
+
+    // Long-term rental analysis
+    if (rentalPerformance.longTerm) {
+      this.addSubsection("Long-Term Rental Analysis")
+      const longTerm = rentalPerformance.longTerm
+
+      this.addMetricCard([
+        {
+          label: "Monthly Rental Range",
+          value: `R ${longTerm.minRental?.toLocaleString("en-ZA")} - R ${longTerm.maxRental?.toLocaleString("en-ZA")}`,
+        },
+        { label: "Yield Range", value: `${longTerm.minYield}% - ${longTerm.maxYield}%` },
+      ])
+
+      if (longTerm.reasoning) {
+        this.addTextBlock(longTerm.reasoning, "Analysis Reasoning")
+      }
+    }
+
+    // Short-term rental analysis
+    if (rentalPerformance.shortTerm) {
+      this.addSubsection("Short-Term Rental (Airbnb) Analysis")
+      const shortTerm = rentalPerformance.shortTerm
+
+      this.doc.setTextColor(31, 41, 55)
+      this.doc.setFontSize(10)
+      this.doc.text(`Average Occupancy Rate: ${shortTerm.occupancy}%`, this.margin, this.currentY)
+      this.currentY += 15
+
+      // Percentile performance table
+      this.addShortTermRentalTable(shortTerm)
+    }
+  }
+
+  private addShortTermRentalTable(shortTerm: any): void {
+    const tableData = []
+
+    if (shortTerm.percentile25) {
+      tableData.push([
+        "25th Percentile (Conservative)",
+        `R ${shortTerm.percentile25.nightly?.toLocaleString("en-ZA")}`,
+        `R ${shortTerm.percentile25.monthly?.toLocaleString("en-ZA")}`,
+        `R ${shortTerm.percentile25.annual?.toLocaleString("en-ZA")}`,
+      ])
+    }
+
+    if (shortTerm.percentile50) {
+      tableData.push([
+        "50th Percentile (Average)",
+        `R ${shortTerm.percentile50.nightly?.toLocaleString("en-ZA")}`,
+        `R ${shortTerm.percentile50.monthly?.toLocaleString("en-ZA")}`,
+        `R ${shortTerm.percentile50.annual?.toLocaleString("en-ZA")}`,
+      ])
+    }
+
+    if (shortTerm.percentile75) {
+      tableData.push([
+        "75th Percentile (Premium)",
+        `R ${shortTerm.percentile75.nightly?.toLocaleString("en-ZA")}`,
+        `R ${shortTerm.percentile75.monthly?.toLocaleString("en-ZA")}`,
+        `R ${shortTerm.percentile75.annual?.toLocaleString("en-ZA")}`,
+      ])
+    }
+
+    if (shortTerm.percentile90) {
+      tableData.push([
+        "90th Percentile (Luxury)",
+        `R ${shortTerm.percentile90.nightly?.toLocaleString("en-ZA")}`,
+        `R ${shortTerm.percentile90.monthly?.toLocaleString("en-ZA")}`,
+        `R ${shortTerm.percentile90.annual?.toLocaleString("en-ZA")}`,
+      ])
+    }
+
+    if (tableData.length > 0) {
+      try {
+        autoTable(this.doc, {
+          startY: this.currentY,
+          head: [["Performance Level", "Nightly Rate", "Monthly Income", "Annual Income"]],
+          body: tableData,
+          theme: "grid",
+          headStyles: {
+            fillColor: [245, 158, 11],
+            textColor: 255,
+            fontStyle: "bold",
+          },
+          styles: { fontSize: 9 },
+          alternateRowStyles: {
+            fillColor: [254, 252, 232],
+          },
+          margin: { left: this.margin, right: this.margin },
+        })
+
+        this.currentY = (this.doc as any).lastAutoTable.finalY + 15
+      } catch (error) {
+        console.error("Error creating short-term rental table:", error)
+        // Fallback to manual table creation
+        this.addManualTable(["Performance Level", "Nightly Rate", "Monthly Income", "Annual Income"], tableData)
+      }
+    }
+  }
+
+  private async addFinancialAnalysis(data: PropertyData): Promise<void> {
+    this.addSectionTitle("FINANCIAL ANALYSIS")
+
+    // Financing Details
+    const financing = data.valuationReport?.financingAnalysisData?.financingParameters
+    if (financing) {
+      this.addSubsection("Financing Details")
+
+      this.addMetricCard([
+        {
+          label: "Deposit Amount",
+          value: `R ${financing.depositAmount?.toLocaleString("en-ZA")} (${financing.depositPercentage}%)`,
+        },
+        { label: "Loan Amount", value: `R ${financing.loanAmount?.toLocaleString("en-ZA")}` },
+        { label: "Interest Rate", value: `${financing.interestRate}%` },
+        { label: "Loan Term", value: `${financing.loanTerm} years` },
+      ])
+
+      // Yearly metrics table
+      const yearlyMetrics = data.valuationReport?.financingAnalysisData?.yearlyMetrics
+      if (yearlyMetrics) {
+        this.addFinancingMetricsTable(yearlyMetrics)
+      }
+    }
+
+    // Revenue Projections
+    const revenueTrajectory = data.valuationReport?.cashflowAnalysisData?.revenueGrowthTrajectory
+    if (revenueTrajectory) {
+      this.addSubsection("Revenue Projections (8% Annual Growth)")
+      this.addRevenueProjections(revenueTrajectory)
+    }
+
+    // Property Appreciation
+    const appreciation = data.valuationReport?.annualPropertyAppreciationData
+    if (appreciation) {
+      this.addSubsection("Property Value Appreciation")
+      this.addPropertyAppreciation(appreciation)
+    }
+  }
+
+  private addFinancingMetricsTable(yearlyMetrics: Record<string, any>): void {
+    const years = [1, 2, 3, 4, 5, 10, 20]
+    const tableData = []
+
+    // Monthly Bond Payment row
+    const bondPaymentRow = ["Monthly Bond Payment"]
+    years.forEach((year) => {
+      const metric = yearlyMetrics[`year${year}`]
+      bondPaymentRow.push(`R ${Math.round(metric?.monthlyPayment || 0).toLocaleString("en-ZA")}`)
+    })
+    tableData.push(bondPaymentRow)
+
+    // Equity Build-up row
+    const equityRow = ["Equity Build-up"]
+    years.forEach((year) => {
+      const metric = yearlyMetrics[`year${year}`]
+      equityRow.push(`R ${Math.round(metric?.equityBuildup || 0).toLocaleString("en-ZA")}`)
+    })
+    tableData.push(equityRow)
+
+    // Remaining Balance row
+    const balanceRow = ["Remaining Loan Balance"]
+    years.forEach((year) => {
+      const metric = yearlyMetrics[`year${year}`]
+      balanceRow.push(`R ${Math.round(metric?.remainingBalance || 0).toLocaleString("en-ZA")}`)
+    })
+    tableData.push(balanceRow)
+
+    try {
+      autoTable(this.doc, {
+        startY: this.currentY,
+        head: [["Metric", "Y1", "Y2", "Y3", "Y4", "Y5", "Y10", "Y20"]],
+        body: tableData,
+        theme: "grid",
+        headStyles: {
+          fillColor: [27, 162, 255],
+          textColor: 255,
+          fontStyle: "bold",
+          fontSize: 8,
+        },
+        styles: {
+          fontSize: 7,
+          cellPadding: 2,
+        },
+        bodyStyles: {
+          0: { fillColor: [245, 245, 245] },
+          1: { fillColor: [220, 255, 220] },
+          2: { fillColor: [255, 220, 220] },
+        },
+        margin: { left: this.margin, right: this.margin },
+      })
+
+      this.currentY = (this.doc as any).lastAutoTable.finalY + 15
+    } catch (error) {
+      console.error("Error creating financing metrics table:", error)
+      // Fallback to manual table creation
+      this.addManualTable(["Metric", "Y1", "Y2", "Y3", "Y4", "Y5", "Y10", "Y20"], tableData)
+    }
+  }
+
+  private addRevenueProjections(trajectory: any): void {
+    if (trajectory.shortTerm) {
+      this.doc.setTextColor(31, 41, 55)
+      this.doc.setFontSize(11)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("Short-Term Rental Projections:", this.margin, this.currentY)
+      this.currentY += 8
+
+      this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "normal")
+      Object.entries(trajectory.shortTerm).forEach(([year, data]: [string, any]) => {
+        const yearNum = year.replace("year", "")
+        this.doc.text(
+          `Year ${yearNum}: R ${data.revenue?.toLocaleString("en-ZA")} (${data.grossYield?.toFixed(1)}% yield)`,
+          this.margin + 5,
+          this.currentY,
+        )
+        this.currentY += 6
+      })
+      this.currentY += 8
+    }
+
+    if (trajectory.longTerm) {
+      this.doc.setFontSize(11)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("Long-Term Rental Projections:", this.margin, this.currentY)
+      this.currentY += 8
+
+      this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "normal")
+      Object.entries(trajectory.longTerm).forEach(([year, data]: [string, any]) => {
+        const yearNum = year.replace("year", "")
+        this.doc.text(
+          `Year ${yearNum}: R ${data.revenue?.toLocaleString("en-ZA")} (${data.grossYield?.toFixed(1)}% yield)`,
+          this.margin + 5,
+          this.currentY,
+        )
+        this.currentY += 6
+      })
+      this.currentY += 15
+    }
+  }
+
+  private addPropertyAppreciation(appreciation: any): void {
+    this.doc.setTextColor(31, 41, 55)
+    this.doc.setFontSize(10)
+    this.doc.text(`Final Appreciation Rate: ${appreciation.finalAppreciationRate}%`, this.margin, this.currentY)
+    this.currentY += 10
+
+    if (appreciation.yearlyValues) {
+      this.doc.text("Property Value Projections:", this.margin, this.currentY)
+      this.currentY += 8
+
+      const keyYears = ["year1", "year2", "year3", "year5", "year10", "year20"]
+      keyYears.forEach((yearKey) => {
+        if (appreciation.yearlyValues[yearKey]) {
+          const yearNum = yearKey.replace("year", "")
+          this.doc.text(
+            `Year ${yearNum}: R ${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString("en-ZA")}`,
+            this.margin + 5,
+            this.currentY,
+          )
+          this.currentY += 6
+        }
+      })
+      this.currentY += 15
+    }
+  }
+
+  private async addPropertyDetails(data: PropertyData): Promise<void> {
+    this.addSectionTitle("PROPERTY DETAILS")
+
+    // Agent Information
+    if (data.property.agent) {
+      this.addSubsection("Agent Information")
+      this.addMetricCard([
+        { label: "Agent Name", value: data.property.agent.name || "N/A" },
+        { label: "Phone", value: data.property.agent.phone || "N/A" },
+        { label: "Email", value: data.property.agent.email || "N/A" },
+      ])
+    }
+
+    // Property Features
+    if (data.property.features && data.property.features.length > 0) {
+      this.addSubsection("Property Features")
+
+      this.doc.setTextColor(31, 41, 55)
+      this.doc.setFontSize(9)
+      data.property.features.forEach((feature) => {
+        this.doc.text(`• ${feature}`, this.margin + 5, this.currentY)
+        this.currentY += 6
+      })
+      this.currentY += 10
+    }
+
+    // Additional Information
+    this.addSubsection("Additional Information")
+    this.addMetricCard([
+      { label: "Property ID", value: data.property.propdataId },
+      { label: "Last Updated", value: new Date(data.property.lastModified).toLocaleDateString("en-ZA") },
+      { label: "Listing Status", value: data.property.status },
+      { label: "Report Generated", value: new Date().toLocaleDateString("en-ZA") },
+    ])
+  }
+
+  // Manual table creation as fallback
+  private addManualTable(headers: string[], rows: string[][]): void {
+    const tableWidth = this.contentWidth
+    const colWidth = tableWidth / headers.length
+    const rowHeight = 8
+
+    // Draw headers
+    this.doc.setFillColor(27, 162, 255)
+    this.doc.rect(this.margin, this.currentY, tableWidth, rowHeight, "F")
+
+    this.doc.setTextColor(255, 255, 255)
+    this.doc.setFontSize(9)
+    this.doc.setFont("helvetica", "bold")
+
+    headers.forEach((header, index) => {
+      const x = this.margin + index * colWidth + 2
+      this.doc.text(header, x, this.currentY + 6)
+    })
+
+    this.currentY += rowHeight
+
+    // Draw rows
+    this.doc.setTextColor(31, 41, 55)
+    this.doc.setFont("helvetica", "normal")
+
+    rows.forEach((row, rowIndex) => {
+      if (rowIndex % 2 === 0) {
+        this.doc.setFillColor(248, 250, 252)
+        this.doc.rect(this.margin, this.currentY, tableWidth, rowHeight, "F")
+      }
+
+      row.forEach((cell, colIndex) => {
+        const x = this.margin + colIndex * colWidth + 2
+        this.doc.text(cell, x, this.currentY + 6)
+      })
+
+      this.currentY += rowHeight
+    })
+
+    // Draw table border
+    this.doc.setDrawColor(226, 232, 240)
+    this.doc.rect(
+      this.margin,
+      this.currentY - (rows.length + 1) * rowHeight,
+      tableWidth,
+      (rows.length + 1) * rowHeight,
+      "S",
+    )
+
+    this.currentY += 15
+  }
+
+  // Helper methods for consistent styling
+  private addSectionTitle(title: string): void {
+    this.checkPageBreak(25)
+
+    // Section title with accent line
+    this.doc.setFillColor(27, 162, 255)
+    this.doc.rect(this.margin, this.currentY, 4, 12, "F")
+
+    this.doc.setTextColor(31, 41, 55)
+    this.doc.setFontSize(16)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text(title, this.margin + 8, this.currentY + 8)
+
+    this.currentY += 20
+  }
+
+  private addSubsection(title: string): void {
+    this.checkPageBreak(15)
+
+    this.doc.setTextColor(27, 162, 255)
+    this.doc.setFontSize(12)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text(title, this.margin, this.currentY)
+
+    this.currentY += 12
+  }
+
+  private addTextBlock(text: string, label?: string): void {
+    if (label) {
+      this.doc.setTextColor(107, 114, 128)
+      this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(label + ":", this.margin, this.currentY)
+      this.currentY += 8
+    }
+
+    this.doc.setTextColor(31, 41, 55)
+    this.doc.setFontSize(9)
+    this.doc.setFont("helvetica", "normal")
+
+    const lines = this.doc.splitTextToSize(text, this.contentWidth - 10)
+    lines.forEach((line: string) => {
+      this.checkPageBreak()
+      this.doc.text(line, this.margin + 5, this.currentY)
+      this.currentY += 5
+    })
+    this.currentY += 8
+  }
+
+  private addMetricCard(metrics: Array<{ label: string; value: string }>): void {
+    const cardHeight = Math.max(20, metrics.length * 8 + 10)
+
+    // Card background
+    this.doc.setFillColor(248, 250, 252)
+    this.doc.rect(this.margin, this.currentY, this.contentWidth, cardHeight, "F")
+    this.doc.setDrawColor(226, 232, 240)
+    this.doc.setLineWidth(0.3)
+    this.doc.rect(this.margin, this.currentY, this.contentWidth, cardHeight, "S")
+
+    let yOffset = 8
+    metrics.forEach((metric) => {
+      this.doc.setTextColor(107, 114, 128)
+      this.doc.setFontSize(8)
+      this.doc.text(metric.label + ":", this.margin + 5, this.currentY + yOffset)
+
+      this.doc.setTextColor(31, 41, 55)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(metric.value, this.margin + 60, this.currentY + yOffset)
+      this.doc.setFont("helvetica", "normal")
+
+      yOffset += 8
+    })
+
+    this.currentY += cardHeight + 10
+  }
+
+  private checkPageBreak(requiredSpace = 20): void {
+    if (this.currentY + requiredSpace > this.pageHeight - 30) {
+      this.doc.addPage()
+      this.currentY = this.margin
+    }
+  }
+
+  private addFooterToAllPages(): void {
+    const totalPages = this.doc.getNumberOfPages()
+
+    for (let i = 1; i <= totalPages; i++) {
+      this.doc.setPage(i)
+
+      // Footer line
+      this.doc.setDrawColor(27, 162, 255)
+      this.doc.setLineWidth(1)
+      this.doc.line(this.margin, this.pageHeight - 25, this.pageWidth - this.margin, this.pageHeight - 25)
+
+      // Footer content
+      this.doc.setFontSize(8)
+      this.doc.setTextColor(107, 114, 128)
+      this.doc.text("Generated by Proply Investment Platform", this.margin, this.pageHeight - 15)
+      this.doc.text(`Page ${i} of ${totalPages}`, this.pageWidth - this.margin - 20, this.pageHeight - 15)
+
+      // Disclaimer
+      this.doc.setFontSize(7)
+      this.doc.text("This report is valid for 30 days from generation date.", this.margin, this.pageHeight - 8)
+    }
+  }
+}
+
+// Export a function to create and generate the PDF
+export async function generatePropertyPdf(data: PropertyData): Promise<Buffer> {
+  const generator = new EnhancedPropertyPdfGenerator()
+  return await generator.generateReport(data)
+}

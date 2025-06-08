@@ -20,11 +20,26 @@ interface PdfGenerationOptions {
   includeImages?: boolean;
 }
 
-// Proply brand colors
-const PROPLY_BLUE = "#1ba2ff";
-const PROPLY_LIGHT_BLUE = "#3b82f6";
-const PROPLY_GRAY = "#6b7280";
-const PROPLY_LIGHT_GRAY = "#f3f4f6";
+// Enhanced Proply brand colors and design system
+const COLORS = {
+  primary: [27, 162, 255],      // #1ba2ff
+  primaryDark: [13, 123, 212],  // #0d7bd4
+  secondary: [59, 130, 246],    // #3b82f6
+  accent: [16, 185, 129],       // #10b981
+  danger: [239, 68, 68],        // #ef4444
+  warning: [245, 158, 11],      // #f59e0b
+  text: {
+    primary: [31, 41, 55],      // #1f2937
+    secondary: [107, 114, 128], // #6b7280
+    muted: [156, 163, 175],     // #9ca3af
+  },
+  background: {
+    white: [255, 255, 255],     // #ffffff
+    light: [248, 250, 252],     // #f8fafc
+    gray: [241, 245, 249],      // #f1f5f9
+  },
+  border: [226, 232, 240],      // #e2e8f0
+};
 
 export class PropdataPdfService {
   private doc: jsPDF;
@@ -148,13 +163,14 @@ export class PropdataPdfService {
   }
 
   private async addProplyHeader(): Promise<void> {
-    // Add "Property Report" title on the left
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(24);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text("Property Report", this.margin, this.margin + 15);
+    // Modern header with gradient-like effect using rectangles
+    this.doc.setFillColor(...COLORS.primary);
+    this.doc.rect(0, 0, this.pageWidth, 35, "F");
 
-    // Load and add actual Proply PNG logo on the right side
+    this.doc.setFillColor(...COLORS.secondary);
+    this.doc.rect(0, 30, this.pageWidth, 5, "F");
+
+    // Load and add actual Proply PNG logo on the left side
     try {
       const fs = await import("fs");
       const path = await import("path");
@@ -165,43 +181,60 @@ export class PropdataPdfService {
         const logoBuffer = fs.readFileSync(logoPath);
         const logoBase64 = logoBuffer.toString("base64");
 
+        // White background for logo
+        this.doc.setFillColor(...COLORS.background.white);
+        this.doc.rect(this.margin, 8, 40, 20, "F");
+        
         // Add the actual PNG logo
-        const logoWidth = 40;
-        const logoHeight = 20;
-        const logoX = this.pageWidth - this.margin - logoWidth;
-
+        const logoWidth = 35;
+        const logoHeight = 15;
+        
         this.doc.addImage(
           logoBase64,
           "PNG",
-          logoX,
-          this.margin,
+          this.margin + 2.5,
+          this.margin - 8,
           logoWidth,
           logoHeight
         );
         console.log("Successfully added Proply PNG logo to PDF");
       } else {
         console.log("Logo file not found at:", logoPath);
-        // Fallback logo text
-        const logoX = this.pageWidth - this.margin - 50;
-        this.doc.setTextColor(PROPLY_BLUE);
-        this.doc.setFontSize(20);
+        // Fallback logo with white background
+        this.doc.setFillColor(...COLORS.background.white);
+        this.doc.rect(this.margin, 8, 40, 20, "F");
+        this.doc.setTextColor(...COLORS.primary);
+        this.doc.setFontSize(14);
         this.doc.setFont("helvetica", "bold");
-        this.doc.text("PROPLY", logoX, this.margin + 15);
+        this.doc.text("PROPLY", this.margin + 5, 20);
       }
     } catch (error) {
       console.error("Logo loading error:", error);
-      // Fallback logo text
-      const logoX = this.pageWidth - this.margin - 50;
-      this.doc.setTextColor(PROPLY_BLUE);
-      this.doc.setFontSize(20);
+      // Fallback logo with white background
+      this.doc.setFillColor(...COLORS.background.white);
+      this.doc.rect(this.margin, 8, 40, 20, "F");
+      this.doc.setTextColor(...COLORS.primary);
+      this.doc.setFontSize(14);
       this.doc.setFont("helvetica", "bold");
-      this.doc.text("PROPLY", logoX, this.margin + 15);
+      this.doc.text("PROPLY", this.margin + 5, 20);
     }
 
-    // Reset text color
-    this.doc.setTextColor(0, 0, 0);
+    // Report title (center-right)
+    this.doc.setTextColor(...COLORS.background.white);
+    this.doc.setFontSize(20);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("PROPERTY INVESTMENT REPORT", this.margin + 50, 20);
 
-    this.currentY = this.margin + 35;
+    // Generation date (right)
+    this.doc.setFontSize(8);
+    this.doc.setFont("helvetica", "normal");
+    const today = new Date().toLocaleDateString("en-ZA");
+    this.doc.text(`Generated: ${today}`, this.pageWidth - this.margin - 30, 25);
+
+    // Reset colors
+    this.doc.setTextColor(...COLORS.text.primary);
+
+    this.currentY = 50;
   }
 
   private async addOverviewSection(data: PropertyPdfData): Promise<void> {
@@ -343,9 +376,9 @@ export class PropdataPdfService {
       } catch (error) {
         console.error("Error generating map:", error);
         // Fallback to placeholder
-        this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+        this.doc.setFillColor(...COLORS.background.gray);
         this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, "F");
-        this.doc.setTextColor(PROPLY_GRAY);
+        this.doc.setTextColor(...COLORS.text.secondary);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Location Map",
