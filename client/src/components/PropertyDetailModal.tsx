@@ -1529,7 +1529,7 @@ export default function PropertyDetailModal({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport}
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress}
                       variant="default"
                       size="sm"
                       className="gap-2"
@@ -1541,7 +1541,9 @@ export default function PropertyDetailModal({
                       ) : (
                         <FileBarChart className="h-4 w-4" />
                       )}
-                      {isGeneratingReport
+                      {isSavingAddress
+                        ? "Saving address..."
+                        : isGeneratingReport
                         ? `Generating... ${generationTimer}s`
                         : isGeneratingPdf
                         ? "Generating PDF..."
@@ -1554,21 +1556,21 @@ export default function PropertyDetailModal({
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem
                       onClick={generateValuationReport}
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport}
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress}
                     >
                       <FileBarChart className="h-4 w-4 mr-2" />
                       Generate Report
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleDownloadReport}
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || !valuationReport}
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress || !valuationReport}
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Download Report
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleSendReport}
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || !valuationReport}
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress || !valuationReport}
                     >
                       <Send className="h-4 w-4 mr-2" />
                       Send Report
@@ -2745,19 +2747,23 @@ export default function PropertyDetailModal({
                     <div className="space-y-2">
                       <Button
                         onClick={generateValuationReport}
-                        disabled={isGeneratingReport}
+                        disabled={isGeneratingReport || isSavingAddress}
                         className="gap-2"
                       >
-                        {isGeneratingReport ? (
+                        {isSavingAddress ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : isGeneratingReport ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <FileBarChart className="h-4 w-4" />
                         )}
-                        {isGeneratingReport
+                        {isSavingAddress
+                          ? "Saving address..."
+                          : isGeneratingReport
                           ? `Generating... ${generationTimer}s`
                           : "Generate Report"}
                       </Button>
-                      {!isGeneratingReport && (
+                      {!isGeneratingReport && !isSavingAddress && (
                         <p className="text-xs text-muted-foreground">
                           This will include appreciation analysis with levy
                           impact assessment
