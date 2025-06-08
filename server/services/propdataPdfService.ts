@@ -238,7 +238,7 @@ export class PropdataPdfService {
   }
 
   private async addOverviewSection(data: PropertyPdfData): Promise<void> {
-    this.addSectionHeader("Property Overview");
+    this.addSectionHeader("PROPERTY OVERVIEW");
 
     if (!data.property) {
       this.doc.text("Property data not available", this.margin, this.currentY);
@@ -246,75 +246,80 @@ export class PropdataPdfService {
       return;
     }
 
-    // Property address with "Address:" prefix
+    // Property address - prominent display with card background
+    this.doc.setFillColor(248, 250, 252);
+    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 15, "F");
+    this.doc.setDrawColor(226, 232, 240);
+    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 15, "S");
+
+    this.doc.setTextColor(31, 41, 55);
     this.doc.setFontSize(14);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.text(
-      `Address: ${data.property.address || "Address not available"}`,
-      this.margin,
-      this.currentY,
-    );
-    this.currentY += 15;
+    this.doc.text(data.property.address || "Address not available", this.margin + 5, this.currentY + 10);
+    this.currentY += 25;
 
-    // Property details in two columns
-    this.doc.setFontSize(11);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.setTextColor(0, 0, 0);
-
-    const leftColumn = this.margin;
-    const rightColumn = this.margin + 90;
-
-    // Left column
-    this.doc.text(
-      `Price: R${data.property.price?.toLocaleString() || "N/A"}`,
-      leftColumn,
-      this.currentY,
-    );
-    this.doc.text(
-      `Property Type: ${data.property.propertyType || "N/A"}`,
-      leftColumn,
-      this.currentY + 8,
-    );
-    this.doc.text(
-      `Bedrooms: ${data.property.bedrooms || "N/A"}`,
-      leftColumn,
-      this.currentY + 16,
-    );
-    this.doc.text(
-      `Bathrooms: ${data.property.bathrooms || "N/A"}`,
-      leftColumn,
-      this.currentY + 24,
-    );
-
-    // Right column
-    this.doc.text(
-      `Floor Size: ${data.property.floorSize || "N/A"} m²`,
-      rightColumn,
-      this.currentY,
-    );
-    this.doc.text(
-      `Land Size: ${data.property.landSize || "N/A"} m²`,
-      rightColumn,
-      this.currentY + 8,
-    );
-    this.doc.text(
-      `Parking: ${data.property.parkingSpaces || "N/A"} spaces`,
-      rightColumn,
-      this.currentY + 16,
-    );
-    this.doc.text(
-      `Monthly Levy: R${data.property.monthlyLevy?.toLocaleString() || "N/A"}`,
-      rightColumn,
-      this.currentY + 24,
-    );
-
-    this.currentY += 40;
+    // Property details in modern card layout
+    this.addPropertyDetailsCard(data.property);
 
     // Add static map and property image side by side
     await this.addMapAndImage(data);
 
     this.currentY += 20;
+  }
+
+  private addPropertyDetailsCard(property: any): void {
+    const cardHeight = 45;
+
+    // Card background
+    this.doc.setFillColor(255, 255, 255);
+    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, cardHeight, "F");
+    this.doc.setDrawColor(226, 232, 240);
+    this.doc.setLineWidth(0.5);
+    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, cardHeight, "S");
+
+    // Price - prominent display
+    this.doc.setTextColor(27, 162, 255);
+    this.doc.setFontSize(18);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text(`R ${property.price?.toLocaleString("en-ZA") || "N/A"}`, this.margin + 5, this.currentY + 12);
+
+    // Property type
+    this.doc.setTextColor(107, 114, 128);
+    this.doc.setFontSize(10);
+    this.doc.setFont("helvetica", "normal");
+    this.doc.text(property.propertyType || "N/A", this.margin + 5, this.currentY + 20);
+
+    // Details in grid layout
+    const details = [
+      { label: "Bedrooms", value: property.bedrooms || "N/A" },
+      { label: "Bathrooms", value: property.bathrooms || "N/A" },
+      { label: "Floor Size", value: `${property.floorSize || "N/A"} m²` },
+      { label: "Land Size", value: `${property.landSize || "N/A"} m²` },
+      { label: "Parking", value: `${property.parkingSpaces || "N/A"} spaces` },
+      { label: "Monthly Levy", value: `R ${property.monthlyLevy?.toLocaleString("en-ZA") || "N/A"}` },
+    ];
+
+    const startX = this.margin + 5;
+    const startY = this.currentY + 28;
+    const colWidth = (this.pageWidth - 2 * this.margin - 10) / 3;
+
+    details.forEach((detail, index) => {
+      const col = index % 3;
+      const row = Math.floor(index / 3);
+      const x = startX + col * colWidth;
+      const y = startY + row * 8;
+
+      this.doc.setTextColor(107, 114, 128);
+      this.doc.setFontSize(8);
+      this.doc.text(detail.label + ":", x, y);
+
+      this.doc.setTextColor(31, 41, 55);
+      this.doc.setFont("helvetica", "bold");
+      this.doc.text(String(detail.value), x + 25, y);
+      this.doc.setFont("helvetica", "normal");
+    });
+
+    this.currentY += cardHeight + 15;
   }
 
   private async addMapAndImage(data: PropertyPdfData): Promise<void> {
@@ -518,7 +523,7 @@ export class PropdataPdfService {
       } catch (error) {
         console.error("Error loading property image:", error);
         // Fallback to placeholder
-        this.doc.setFillColor(PROPLY_LIGHT_GRAY);
+        this.doc.setFillColor(241, 245, 249);
         this.doc.rect(
           this.margin + mapWidth + spacing,
           this.currentY,
@@ -526,7 +531,7 @@ export class PropdataPdfService {
           imageHeight,
           "F",
         );
-        this.doc.setTextColor(PROPLY_GRAY);
+        this.doc.setTextColor(107, 114, 128);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Image",
@@ -1129,7 +1134,7 @@ export class PropdataPdfService {
 
     // Report generation info
     this.doc.setFontSize(8);
-    this.doc.setTextColor(PROPLY_GRAY);
+    this.doc.setTextColor(107, 114, 128);
     this.doc.text(
       `Report generated on ${new Date().toLocaleDateString()} by Proply Investment Platform`,
       this.margin,
@@ -1159,7 +1164,7 @@ export class PropdataPdfService {
 
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(PROPLY_BLUE);
+    this.doc.setTextColor(27, 162, 255);
     this.doc.text(title, this.margin, this.currentY);
 
     this.doc.setTextColor(0, 0, 0);
@@ -1315,7 +1320,7 @@ export class PropdataPdfService {
       this.doc.setPage(i);
 
       // Footer line
-      this.doc.setDrawColor(PROPLY_BLUE);
+      this.doc.setDrawColor(27, 162, 255);
       this.doc.line(
         this.margin,
         this.pageHeight - 25,
@@ -1325,7 +1330,7 @@ export class PropdataPdfService {
 
       // Footer text
       this.doc.setFontSize(8);
-      this.doc.setTextColor(PROPLY_GRAY);
+      this.doc.setTextColor(107, 114, 128);
       this.doc.text(
         "Proply Investment Platform • wesley@proply.co.za",
         this.margin,
