@@ -880,25 +880,45 @@ export class PropdataPdfService {
         const leftColumn = this.margin;
 
         // Bold labels with normal values helper function
-        const addFinancingDetail = (label: string, value: string, yPos: number) => {
+        const addFinancingDetail = (
+          label: string,
+          value: string,
+          yPos: number,
+        ) => {
           this.doc.setFont("helvetica", "bold");
           this.doc.text(`${label} `, leftColumn, yPos);
-          
+
           const labelWidth = this.doc.getTextWidth(`${label} `);
           this.doc.setFont("helvetica", "normal");
           this.doc.text(value, leftColumn + labelWidth, yPos);
         };
 
-        addFinancingDetail("Deposit:", `R${Math.round(financing.depositAmount)?.toLocaleString()} (${financing.depositPercentage}%)`, this.currentY);
+        addFinancingDetail(
+          "Deposit:",
+          `R${Math.round(financing.depositAmount)?.toLocaleString()} (${financing.depositPercentage}%)`,
+          this.currentY,
+        );
         this.currentY += 8;
 
-        addFinancingDetail("Loan Amount:", `R${Math.round(financing.loanAmount)?.toLocaleString()}`, this.currentY);
+        addFinancingDetail(
+          "Loan Amount:",
+          `R${Math.round(financing.loanAmount)?.toLocaleString()}`,
+          this.currentY,
+        );
         this.currentY += 8;
 
-        addFinancingDetail("Interest Rate:", `${financing.interestRate}%`, this.currentY);
+        addFinancingDetail(
+          "Interest Rate:",
+          `${financing.interestRate}%`,
+          this.currentY,
+        );
         this.currentY += 8;
 
-        addFinancingDetail("Term:", `${financing.loanTerm} years`, this.currentY);
+        addFinancingDetail(
+          "Term:",
+          `${financing.loanTerm} years`,
+          this.currentY,
+        );
         this.currentY += 15;
 
         // Financing metrics table
@@ -1217,7 +1237,7 @@ export class PropdataPdfService {
 
   private addDetailsSection(data: PropertyPdfData): void {
     this.checkPageBreak();
-    this.addSectionHeader("Property Details");
+    this.addSectionHeader("Additional Details");
 
     // Agent information
     if (data.property.agent) {
@@ -1323,9 +1343,12 @@ export class PropdataPdfService {
   }
 
   private checkPageBreak(requiredSpace: number = 20): void {
-    // Reserve extra space at bottom for footer (40pt total)
-    const footerSpace = 40;
-    if (this.currentY + requiredSpace > this.pageHeight - this.margin - footerSpace) {
+    // Reserve space at bottom for footer (25pt for normal content, 40pt for large sections)
+    const footerSpace = requiredSpace > 100 ? 40 : 25;
+    if (
+      this.currentY + requiredSpace >
+      this.pageHeight - this.margin - footerSpace
+    ) {
       this.doc.addPage();
       this.currentY = this.margin; // Start from top margin on new pages
     }
@@ -1489,8 +1512,8 @@ Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liabilit
 By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.`;
 
     // Split disclaimer into paragraphs and handle each one properly
-    const paragraphs = disclaimerText.split('\n\n');
-    
+    const paragraphs = disclaimerText.split("\n\n");
+
     paragraphs.forEach((paragraph, index) => {
       this.checkPageBreak(30); // Check before each paragraph
       this.addWrappedText(
@@ -1498,7 +1521,7 @@ By using this report, you acknowledge that the calculations and projections are 
         this.margin,
         this.pageWidth - 2 * this.margin,
       );
-      
+
       // Add spacing between paragraphs (except last one)
       if (index < paragraphs.length - 1) {
         this.currentY += 8;
