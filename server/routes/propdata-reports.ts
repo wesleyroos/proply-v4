@@ -210,16 +210,11 @@ router.post('/generate/:propertyId', async (req, res) => {
 
     console.log(`Generating PDF report for property ${propertyId}`);
     
-    // AUTOMATICALLY CALCULATE AND SAVE ALL FINANCIAL DATA BEFORE PDF GENERATION
-    try {
-      await calculateAndSaveFinancialDataForProperty(propertyId);
-      console.log(`Financial data calculated and saved for property ${propertyId}`);
-    } catch (financialError) {
-      console.warn(`Warning: Could not save financial data for property ${propertyId}:`, financialError);
-      // Continue with PDF generation even if financial data saving fails
-    }
+    // PDF generation now only reads pre-saved financial data from database
+    // Financial data should already be calculated and saved during valuation generation
+    console.log(`Reading pre-saved financial data for property ${propertyId}`);
     
-    // Generate PDF using the service (now with saved financial data)
+    // Generate PDF using the service (reading saved financial data)
     const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
     
     console.log(`PDF generated successfully, size: ${pdfBuffer.length} bytes`);
@@ -269,16 +264,10 @@ router.post('/send/:propertyId', async (req, res) => {
       return res.status(404).json({ error: 'Property not found' });
     }
 
-    // AUTOMATICALLY CALCULATE AND SAVE ALL FINANCIAL DATA BEFORE PDF GENERATION
-    try {
-      await calculateAndSaveFinancialDataForProperty(propertyId);
-      console.log(`Financial data calculated and saved for property ${propertyId}`);
-    } catch (financialError) {
-      console.warn(`Warning: Could not save financial data for property ${propertyId}:`, financialError);
-      // Continue with PDF generation even if financial data saving fails
-    }
+    // PDF generation reads pre-saved financial data from database
+    console.log(`Reading pre-saved financial data for property ${propertyId}`);
     
-    // Generate PDF (now with saved financial data)
+    // Generate PDF using saved financial data
     const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
     
     // Create unique report ID and store PDF temporarily

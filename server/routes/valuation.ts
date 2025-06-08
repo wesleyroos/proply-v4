@@ -387,10 +387,12 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
 
     console.log('Final rental performance data:', rentalPerformance);
 
+    // Define propertyId to use for database operations
+    const propertyIdToUse = propertyId || address.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+
     // Save rental performance data to database for persistence
     if (rentalPerformance.longTerm || rentalPerformance.shortTerm) {
       try {
-        const propertyIdToUse = propertyId || address.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
         
         // Check if rental data already exists for this property
         const existingRentalData = await db.execute(sql`
@@ -446,7 +448,11 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
 
     // CALCULATE AND SAVE ALL FINANCIAL DATA IMMEDIATELY AFTER AI VALUATION
     // This ensures single source of truth - all financial data is calculated once during valuation generation
-    await calculateAndSaveFinancialDataAfterValuation(propertyIdToUse, price || 0, valuationReport, req.user.id);
+    try {
+      await calculateAndSaveFinancialDataAfterValuation(propertyIdToUse, price || 0, valuationReport, req.user.id);
+    } catch (error) {
+      console.error('Error saving financial data:', error);
+    }
 
     // Include rental performance data in the response
     return res.json({
