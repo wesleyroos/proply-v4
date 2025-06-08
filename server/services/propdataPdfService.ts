@@ -637,7 +637,7 @@ export class PropdataPdfService {
             textColor: 255,
             fontStyle: 'bold'
           },
-          styles: { fontSize: 9 },
+          styles: { fontSize: 8 },
           margin: { left: this.margin, right: this.margin },
           columnStyles: { 0: { halign: "center" }, 1: { halign: "right" } },
         });
@@ -784,7 +784,7 @@ export class PropdataPdfService {
             textColor: 255,
             fontStyle: 'bold'
           },
-          styles: { fontSize: 9 },
+          styles: { fontSize: 8 },
           margin: { left: this.margin, right: this.margin },
           columnStyles: { 
             0: { halign: "left" }, 
@@ -870,10 +870,10 @@ export class PropdataPdfService {
               fillColor: [27, 162, 255], 
               textColor: 255,
               fontStyle: 'bold',
-              fontSize: 6
+              fontSize: 8
             },
             styles: { 
-              fontSize: 6,
+              fontSize: 8,
               cellPadding: 1.5
             },
             margin: { left: this.margin, right: this.margin },
