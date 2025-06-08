@@ -5,6 +5,7 @@ import {
   propdataListings,
   valuationReports,
   rentalPerformanceData,
+  agencyBranches,
 } from "../../db/schema";
 import { eq } from "drizzle-orm";
 
@@ -13,6 +14,7 @@ interface PropertyPdfData {
   valuationReport: any;
   rentalData: any;
   savedValuationData: any;
+  agencyLogo?: string | null;
 }
 
 interface PdfGenerationOptions {
@@ -53,8 +55,8 @@ export class PropdataPdfService {
         throw new Error("Property not found");
       }
 
-      // Initialize PDF with Proply branding
-      await this.initializePdf();
+      // Initialize PDF with appropriate branding
+      await this.initializePdf(data);
 
       // Generate each section
       await this.addOverviewSection(data);
@@ -127,11 +129,28 @@ export class PropdataPdfService {
         throw new Error(`Property with ID ${propertyId} not found in database`);
       }
 
+      // Fetch agency logo based on property's branch ID
+      let agencyLogo: string | null = null;
+      if (property.branchId) {
+        console.log(`Fetching agency logo for branch ID: ${property.branchId}`);
+        const agencyBranch = await db.query.agencyBranches.findFirst({
+          where: eq(agencyBranches.id, property.branchId),
+        });
+        
+        if (agencyBranch?.logoUrl) {
+          agencyLogo = agencyBranch.logoUrl;
+          console.log(`Agency logo found: ${agencyLogo}`);
+        } else {
+          console.log("No agency logo found for this property");
+        }
+      }
+
       return {
         property,
         valuationReport,
         rentalData,
         savedValuationData: valuationReport,
+        agencyLogo,
       };
     } catch (error) {
       console.error("Error fetching property data:", error);
@@ -139,19 +158,19 @@ export class PropdataPdfService {
     }
   }
 
-  private async initializePdf(): Promise<void> {
+  private async initializePdf(data: PropertyPdfData): Promise<void> {
     this.doc.setProperties({
-      title: "Proply Property Investment Report",
+      title: "Property Report",
       subject: "Property Investment Analysis",
       author: "Proply",
       creator: "Proply Tech (Pty) Ltd",
     });
 
-    // Add Proply header
-    await this.addProplyHeader();
+    // Add header with appropriate logo
+    await this.addHeader(data);
   }
 
-  private async addProplyHeader(): Promise<void> {
+  private async addHeader(data: PropertyPdfData): Promise<void> {
     // Simple clean header without colorful background
 
     // Add report title on the left
@@ -160,55 +179,8 @@ export class PropdataPdfService {
     this.doc.setFont("helvetica", "bold");
     this.doc.text("Property Report", this.margin, this.margin + 15);
 
-    // Load and add actual Proply PNG logo on the top right
-    try {
-      const fs = await import("fs");
-      const path = await import("path");
-      const logoPath = path.join(
-        process.cwd(),
-        "client",
-        "public",
-        "proply-logo-auth.png",
-      );
-
-      if (fs.existsSync(logoPath)) {
-        console.log("Loading Proply logo from:", logoPath);
-        const logoBuffer = fs.readFileSync(logoPath);
-        const logoBase64 = logoBuffer.toString("base64");
-
-        // Logo dimensions - using actual file dimensions (868 x 229)
-        const logoHeight = 12;
-        const logoAspectRatio = 868 / 229; // Actual aspect ratio: 3.79:1
-        const logoWidth = logoHeight * logoAspectRatio;
-        const logoX = this.pageWidth - this.margin - logoWidth;
-
-        this.doc.addImage(
-          logoBase64,
-          "PNG",
-          logoX,
-          this.margin,
-          logoWidth,
-          logoHeight,
-        );
-        console.log("Successfully added Proply PNG logo to PDF");
-      } else {
-        console.log("Logo file not found at:", logoPath);
-        // Fallback text logo
-        const logoX = this.pageWidth - this.margin - 50;
-        this.doc.setTextColor(27, 162, 255);
-        this.doc.setFontSize(20);
-        this.doc.setFont("helvetica", "bold");
-        this.doc.text("PROPLY", logoX, this.margin + 15);
-      }
-    } catch (error) {
-      console.error("Logo loading error:", error);
-      // Fallback text logo
-      const logoX = this.pageWidth - this.margin - 50;
-      this.doc.setTextColor(27, 162, 255);
-      this.doc.setFontSize(20);
-      this.doc.setFont("helvetica", "bold");
-      this.doc.text("PROPLY", logoX, this.margin + 15);
-    }
+    // Load and add logo on the top right (agency logo with Proply fallback)
+    await this.addLogo(data.agencyLogo);
 
     // Add thin blue divider line below the heading
     this.doc.setDrawColor(27, 162, 255);
