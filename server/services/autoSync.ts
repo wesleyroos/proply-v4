@@ -15,105 +15,7 @@ class AutoSyncService {
     this.startAutoSync();
   }
 
-  /**
-   * Fetch branch information from PropData API
-   */
-  private async fetchBranchFromPropData(branchId: string): Promise<{franchiseName: string, branchName: string} | null> {
-    try {
-      const response = await fetch(`https://staging.api-gw.propdata.net/branches/api/v1/branches/${branchId}/`, {
-        headers: {
-          'Authorization': `Token ${process.env.PROPDATA_API_TOKEN}`
-        }
-      });
 
-      if (!response.ok) {
-        throw new Error(`PropData API returned ${response.status}`);
-      }
-
-      const branchData = await response.json();
-      
-      // Fetch franchise information
-      let franchiseName = "Sotheby's International Realty";
-      if (branchData.franchise) {
-        try {
-          const franchiseResponse = await fetch(`https://staging.api-gw.propdata.net/branches/api/v1/franchises/${branchData.franchise}/`, {
-            headers: {
-              'Authorization': `Token ${process.env.PROPDATA_API_TOKEN}`
-            }
-          });
-          
-          if (franchiseResponse.ok) {
-            const franchiseData = await franchiseResponse.json();
-            franchiseName = franchiseData.name || franchiseName;
-          }
-        } catch (franchiseError) {
-          console.error(`Error fetching franchise data for branch ${branchId}:`, franchiseError);
-        }
-      }
-
-      return {
-        franchiseName: franchiseName,
-        branchName: branchData.name || "Branch"
-      };
-    } catch (error) {
-      console.error(`Error fetching branch ${branchId} from PropData:`, error);
-      return null;
-    }
-  }
-
-  /**
-   * Look up or create agency branch record for PropData branch
-   */
-  private async getOrCreateAgencyBranch(propdataBranchId: string): Promise<number | null> {
-    try {
-      // Check cache first
-      if (this.branchCache.has(propdataBranchId)) {
-        return this.branchCache.get(propdataBranchId)!;
-      }
-
-      // Look up existing branch by PropData branch ID
-      const [existingBranch] = await db
-        .select({ id: agencyBranches.id })
-        .from(agencyBranches)
-        .where(eq(agencyBranches.propdataBranchId, propdataBranchId))
-        .limit(1);
-
-      if (existingBranch) {
-        this.branchCache.set(propdataBranchId, existingBranch.id);
-        return existingBranch.id;
-      }
-
-      // Fetch actual branch information from PropData API
-      const branchInfo = await this.fetchBranchFromPropData(propdataBranchId);
-      
-      const finalFranchiseName = branchInfo?.franchiseName || "Sotheby's International Realty";
-      const finalBranchName = branchInfo?.branchName || "Atlantic Seaboard";
-      const slug = finalFranchiseName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-      // Create new branch record
-      const [newBranch] = await db
-        .insert(agencyBranches)
-        .values({
-          franchiseName: finalFranchiseName,
-          slug: slug,
-          branchName: finalBranchName,
-          propdataFranchiseId: "1", // Default - could be enhanced to use actual franchise ID
-          propdataBranchId: propdataBranchId,
-          provider: "PropData",
-          status: "active",
-          autoSyncEnabled: true,
-          syncFrequency: "5 minutes"
-        })
-        .returning({ id: agencyBranches.id });
-
-      this.branchCache.set(propdataBranchId, newBranch.id);
-      console.log(`Created new agency branch: ${finalFranchiseName} - ${finalBranchName} (PropData ID: ${propdataBranchId})`);
-      return newBranch.id;
-    } catch (error) {
-      console.error(`Error getting/creating agency branch for PropData ID ${propdataBranchId}:`, error);
-      return null;
-    }
-  }
 
   startAutoSync() {
     if (this.syncInterval) {
@@ -236,10 +138,28 @@ class AutoSyncService {
 
 
 
-          // Map PropData branch to our agency branch
-          const branchId = listing.branch ? 
-            await this.getOrCreateAgencyBranch(listing.branch.toString()) : 
-            null;
+          // Map PropData branch to our agency branch (default to Sotheby's Atlantic Seaboard)
+          let branchId = null;
+          if (listing.branch) {
+            // Look up existing branch by PropData branch ID
+            const [existingBranch] = await db
+              .select({ id: agencyBranches.id })
+              .from(agencyBranches)
+              .where(eq(agencyBranches.propdataBranchId, listing.branch.toString()))
+              .limit(1);
+            
+            if (existingBranch) {
+              branchId = existingBranch.id;
+            } else {
+              // Default to first Sotheby's branch if no specific branch found
+              const [defaultBranch] = await db
+                .select({ id: agencyBranches.id })
+                .from(agencyBranches)
+                .where(eq(agencyBranches.franchiseName, "Sotheby's International Realty"))
+                .limit(1);
+              branchId = defaultBranch?.id || null;
+            }
+          }
 
           const listingData = {
             propdataId: listing.id.toString(),
