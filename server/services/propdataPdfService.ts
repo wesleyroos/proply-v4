@@ -920,18 +920,38 @@ export class PropdataPdfService {
         );
         this.currentY += 8;
 
-        Object.entries(trajectory.shortTerm).forEach(
+        // Convert to table format
+        const shortTermData = Object.entries(trajectory.shortTerm).map(
           ([year, data]: [string, any]) => {
             const yearNum = year.replace("year", "");
-            this.doc.text(
-              `Year ${yearNum}: R${data.revenue?.toLocaleString()} (${data.grossYield?.toFixed(1)}% yield)`,
-              this.margin + 5,
-              this.currentY,
-            );
-            this.currentY += 6;
-          },
+            return [
+              `Year ${yearNum}`,
+              `R${data.revenue?.toLocaleString() || 0}`,
+              `${data.grossYield?.toFixed(1) || 0}%`
+            ];
+          }
         );
-        this.currentY += 8;
+
+        (this.doc as any).autoTable({
+          startY: this.currentY,
+          head: [["Year", "Revenue", "Yield"]],
+          body: shortTermData,
+          theme: "grid",
+          headStyles: { 
+            fillColor: [27, 162, 255], 
+            textColor: 255,
+            fontStyle: 'bold'
+          },
+          styles: { fontSize: 8 },
+          margin: { left: this.margin, right: this.margin },
+          columnStyles: { 
+            0: { halign: "left" }, 
+            1: { halign: "right" },
+            2: { halign: "right" }
+          },
+        });
+
+        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
       }
 
       if (trajectory.longTerm) {
@@ -942,18 +962,38 @@ export class PropdataPdfService {
         );
         this.currentY += 8;
 
-        Object.entries(trajectory.longTerm).forEach(
+        // Convert to table format
+        const longTermData = Object.entries(trajectory.longTerm).map(
           ([year, data]: [string, any]) => {
             const yearNum = year.replace("year", "");
-            this.doc.text(
-              `Year ${yearNum}: R${data.revenue?.toLocaleString()} (${data.grossYield?.toFixed(1)}% yield)`,
-              this.margin + 5,
-              this.currentY,
-            );
-            this.currentY += 6;
-          },
+            return [
+              `Year ${yearNum}`,
+              `R${data.revenue?.toLocaleString() || 0}`,
+              `${data.grossYield?.toFixed(1) || 0}%`
+            ];
+          }
         );
-        this.currentY += 15;
+
+        (this.doc as any).autoTable({
+          startY: this.currentY,
+          head: [["Year", "Revenue", "Yield"]],
+          body: longTermData,
+          theme: "grid",
+          headStyles: { 
+            fillColor: [27, 162, 255], 
+            textColor: 255,
+            fontStyle: 'bold'
+          },
+          styles: { fontSize: 8 },
+          margin: { left: this.margin, right: this.margin },
+          columnStyles: { 
+            0: { halign: "left" }, 
+            1: { halign: "right" },
+            2: { halign: "right" }
+          },
+        });
+
+        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
       }
     }
 
@@ -979,20 +1019,37 @@ export class PropdataPdfService {
         );
         this.currentY += 8;
 
-        // Display key years
+        // Convert to table format
         const keyYears = ['year1', 'year2', 'year3', 'year5', 'year10', 'year20'];
-        keyYears.forEach(yearKey => {
-          if (appreciation.yearlyValues[yearKey]) {
+        const appreciationData = keyYears
+          .filter(yearKey => appreciation.yearlyValues[yearKey])
+          .map(yearKey => {
             const yearNum = yearKey.replace('year', '');
-            this.doc.text(
-              `Year ${yearNum}: R${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString()}`,
-              this.margin + 5,
-              this.currentY,
-            );
-            this.currentY += 6;
-          }
+            return [
+              `Year ${yearNum}`,
+              `R${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString()}`
+            ];
+          });
+
+        (this.doc as any).autoTable({
+          startY: this.currentY,
+          head: [["Year", "Property Value"]],
+          body: appreciationData,
+          theme: "grid",
+          headStyles: { 
+            fillColor: [27, 162, 255], 
+            textColor: 255,
+            fontStyle: 'bold'
+          },
+          styles: { fontSize: 8 },
+          margin: { left: this.margin, right: this.margin },
+          columnStyles: { 
+            0: { halign: "left" }, 
+            1: { halign: "right" }
+          },
         });
-        this.currentY += 10;
+
+        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
       }
     }
 
@@ -1001,17 +1058,35 @@ export class PropdataPdfService {
       this.addSubsectionHeader("Equity Buildup Schedule");
 
       const metrics = data.valuationReport.financingAnalysisData.yearlyMetrics;
-      Object.entries(metrics).forEach(([year, data]: [string, any]) => {
+      const equityData = Object.entries(metrics).map(([year, data]: [string, any]) => {
         const yearNum = year.replace("year", "");
-        this.doc.text(
-          `Year ${yearNum}: Equity Built R${Math.round(data.equityBuildup)?.toLocaleString()}, Remaining Balance R${Math.round(data.remainingBalance)?.toLocaleString()}`,
-          this.margin,
-          this.currentY,
-        );
-        this.currentY += 6;
+        return [
+          `Year ${yearNum}`,
+          `R${Math.round(data.equityBuildup)?.toLocaleString()}`,
+          `R${Math.round(data.remainingBalance)?.toLocaleString()}`
+        ];
       });
 
-      this.currentY += 15;
+      (this.doc as any).autoTable({
+        startY: this.currentY,
+        head: [["Year", "Equity Built", "Remaining Balance"]],
+        body: equityData,
+        theme: "grid",
+        headStyles: { 
+          fillColor: [27, 162, 255], 
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        styles: { fontSize: 8 },
+        margin: { left: this.margin, right: this.margin },
+        columnStyles: { 
+          0: { halign: "left" }, 
+          1: { halign: "right" },
+          2: { halign: "right" }
+        },
+      });
+
+      this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
     }
   }
 
@@ -1043,38 +1118,7 @@ export class PropdataPdfService {
       this.currentY += 15;
     }
 
-    // Property features
-    // Handle features - could be array, string, or null
-    let featuresArray: string[] = [];
-    if (data.property.features) {
-      if (Array.isArray(data.property.features)) {
-        featuresArray = data.property.features;
-      } else if (typeof data.property.features === "string") {
-        try {
-          // Try to parse as JSON if it's a string
-          const parsed = JSON.parse(data.property.features);
-          if (Array.isArray(parsed)) {
-            featuresArray = parsed;
-          } else {
-            featuresArray = [data.property.features]; // Single feature as string
-          }
-        } catch {
-          featuresArray = [data.property.features]; // Single feature as string
-        }
-      }
-    }
-
-    if (featuresArray.length > 0) {
-      this.addSubsectionHeader("Property Features");
-      this.doc.setFontSize(10);
-
-      featuresArray.forEach((feature: string) => {
-        this.doc.text(`• ${feature}`, this.margin, this.currentY);
-        this.currentY += 6;
-      });
-
-      this.currentY += 10;
-    }
+    // Property features section removed per user request
 
     // Additional property information
     this.addSubsectionHeader("Additional Information");
@@ -1204,7 +1248,7 @@ export class PropdataPdfService {
 
     // Plot equity line (green)
     this.doc.setDrawColor(34, 197, 94); // Green
-    this.doc.setLineWidth(2);
+    this.doc.setLineWidth(0.5);
     
     for (let i = 0; i < years.length - 1; i++) {
       const x1 = chartX + (chartWidth * i / (years.length - 1));
@@ -1226,7 +1270,7 @@ export class PropdataPdfService {
 
     // Plot balance line (red)
     this.doc.setDrawColor(239, 68, 68); // Red
-    this.doc.setLineWidth(2);
+    this.doc.setLineWidth(0.5);
     
     for (let i = 0; i < years.length - 1; i++) {
       const x1 = chartX + (chartWidth * i / (years.length - 1));
