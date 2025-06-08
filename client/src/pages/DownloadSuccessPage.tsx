@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useLocation } from 'wouter';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Download, ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Download, ArrowLeft } from "lucide-react";
 
 export default function DownloadSuccessPage() {
   const [location] = useLocation();
-  const [reportId, setReportId] = useState<string>('');
+  const [reportId, setReportId] = useState<string>("");
   const [downloadStarted, setDownloadStarted] = useState(false);
 
   useEffect(() => {
     // Extract report ID from URL path
-    const pathParts = location.split('/');
+    const pathParts = location.split("/");
     const id = pathParts[pathParts.length - 1];
     setReportId(id);
 
@@ -28,17 +28,17 @@ export default function DownloadSuccessPage() {
   const startDownload = async (id: string) => {
     try {
       setDownloadStarted(true);
-      
+
       // Create download link with direct parameter to bypass redirect
       const downloadUrl = `/api/propdata-reports/download/${id}?direct=true`;
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `Proply_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = `Proply_Report_${new Date().toISOString().split("T")[0]}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error("Download failed:", error);
     }
   };
 
@@ -59,7 +59,7 @@ export default function DownloadSuccessPage() {
             Report Ready!
           </CardTitle>
           <p className="text-gray-600 mt-2">
-            Your Proply property investment report has been generated successfully.
+            Your Proply property report has been generated successfully.
           </p>
         </CardHeader>
 
@@ -67,9 +67,10 @@ export default function DownloadSuccessPage() {
           {downloadStarted ? (
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-4">
-                Your download should start automatically. If it doesn't start, click the button below.
+                Your download should start automatically. If it doesn't start,
+                click the button below.
               </p>
-              <Button 
+              <Button
                 onClick={handleManualDownload}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
@@ -90,7 +91,9 @@ export default function DownloadSuccessPage() {
           )}
 
           <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
-            <h4 className="font-medium text-gray-900 mb-2">Your report includes:</h4>
+            <h4 className="font-medium text-gray-900 mb-2">
+              Your report includes:
+            </h4>
             <ul className="space-y-1">
               <li>• Property overview and specifications</li>
               <li>• AI-powered valuation analysis</li>
@@ -100,8 +103,8 @@ export default function DownloadSuccessPage() {
             </ul>
           </div>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full"
             onClick={() => window.close()}
           >
