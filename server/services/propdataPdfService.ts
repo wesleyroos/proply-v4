@@ -615,9 +615,17 @@ export class PropdataPdfService {
         body: tableData,
         theme: "grid",
         headStyles: { 
-          fillColor: proplyBlueRGB, 
+          fillColor: [27, 162, 255], 
           textColor: 255,
-          fontStyle: 'bold'
+          fontStyle: 'bold',
+          fontSize: 10
+        },
+        bodyStyles: {
+          fontSize: 9,
+          cellPadding: 4
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
         },
         styles: { 
           fontSize: 10,
@@ -814,9 +822,17 @@ export class PropdataPdfService {
           body: percentileData,
           theme: "grid",
           headStyles: { 
-            fillColor: [27, 162, 255], 
+            fillColor: [245, 158, 11], 
             textColor: 255,
-            fontStyle: 'bold'
+            fontStyle: 'bold',
+            fontSize: 9
+          },
+          bodyStyles: {
+            fontSize: 8,
+            cellPadding: 3
+          },
+          alternateRowStyles: {
+            fillColor: [254, 252, 232]
           },
           styles: { fontSize: 9 },
           margin: { left: this.margin, right: this.margin },
