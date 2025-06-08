@@ -859,28 +859,30 @@ export class PropdataPdfService {
 
           (this.doc as any).autoTable({
             startY: this.currentY,
-            head: [["Financing Metric", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 10", "Year 20"]],
+            head: [["Metric", "Y1", "Y2", "Y3", "Y4", "Y5", "Y10", "Y20"]],
             body: tableData,
             theme: "grid",
             headStyles: { 
               fillColor: [27, 162, 255], 
               textColor: 255,
-              fontStyle: 'bold'
+              fontStyle: 'bold',
+              fontSize: 6
             },
             styles: { 
-              fontSize: 9,
-              cellPadding: 3
+              fontSize: 6,
+              cellPadding: 1.5
             },
             margin: { left: this.margin, right: this.margin },
+            tableWidth: 'auto',
             columnStyles: { 
-              0: { halign: "left", cellWidth: 45 },
-              1: { halign: "right", cellWidth: 20 },
-              2: { halign: "right", cellWidth: 20 },
-              3: { halign: "right", cellWidth: 20 },
-              4: { halign: "right", cellWidth: 20 },
-              5: { halign: "right", cellWidth: 20 },
-              6: { halign: "right", cellWidth: 20 },
-              7: { halign: "right", cellWidth: 20 }
+              0: { halign: "left" },
+              1: { halign: "right" },
+              2: { halign: "right" },
+              3: { halign: "right" },
+              4: { halign: "right" },
+              5: { halign: "right" },
+              6: { halign: "right" },
+              7: { halign: "right" }
             },
             bodyStyles: {
               0: { fillColor: [245, 245, 245] }, // Light gray for bond payment
@@ -1149,23 +1151,24 @@ export class PropdataPdfService {
   }
 
   private addEquityVsBalanceChart(yearlyMetrics: any): void {
-    this.checkPageBreak(120);
+    this.checkPageBreak(100);
     
     // Chart title
-    this.doc.setFontSize(12);
+    this.doc.setFontSize(11);
     this.doc.setFont("helvetica", "bold");
     this.doc.text("Equity Build-up vs Loan Balance", this.margin, this.currentY);
-    this.currentY += 8;
+    this.currentY += 6;
     
-    this.doc.setFontSize(9);
+    this.doc.setFontSize(8);
     this.doc.setFont("helvetica", "normal");
     this.doc.text("Visualization of loan paydown and equity accumulation over time", this.margin, this.currentY);
-    this.currentY += 20;
+    this.currentY += 15;
 
-    // Chart dimensions
-    const chartWidth = 160;
-    const chartHeight = 80;
-    const chartX = this.margin;
+    // Chart dimensions - made more compact
+    const availableWidth = this.pageWidth - (2 * this.margin);
+    const chartWidth = Math.min(150, availableWidth - 20); // Leave margin for y-axis labels
+    const chartHeight = 60; // Reduced height
+    const chartX = this.margin + 15; // Space for y-axis labels
     const chartY = this.currentY;
 
     // Draw chart background
@@ -1240,10 +1243,10 @@ export class PropdataPdfService {
 
     // Add year labels on x-axis
     this.doc.setTextColor(100, 100, 100);
-    this.doc.setFontSize(8);
+    this.doc.setFontSize(7);
     years.forEach((year, index) => {
       const x = chartX + (chartWidth * index / (years.length - 1));
-      this.doc.text(`Year ${year}`, x - 8, chartY + chartHeight + 8);
+      this.doc.text(`Y${year}`, x - 4, chartY + chartHeight + 6);
     });
 
     // Add y-axis labels
@@ -1251,25 +1254,25 @@ export class PropdataPdfService {
       const value = (maxValue * i / 4);
       const label = `R${Math.round(value / 1000)}k`;
       const y = chartY + chartHeight - (chartHeight * i / 4);
-      this.doc.text(label, chartX - 15, y + 1);
+      this.doc.text(label, chartX - 12, y + 1);
     }
 
-    // Add legend
-    this.currentY = chartY + chartHeight + 20;
+    // Add compact legend
+    this.currentY = chartY + chartHeight + 15;
     
     // Equity Built legend
     this.doc.setFillColor(34, 197, 94);
-    this.doc.circle(chartX + 10, this.currentY, 2, 'F');
+    this.doc.circle(chartX + 5, this.currentY, 1.5, 'F');
     this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(9);
-    this.doc.text("Equity Built", chartX + 16, this.currentY + 2);
+    this.doc.setFontSize(8);
+    this.doc.text("Equity Built", chartX + 10, this.currentY + 1);
     
     // Remaining Balance legend
     this.doc.setFillColor(239, 68, 68);
-    this.doc.circle(chartX + 80, this.currentY, 2, 'F');
-    this.doc.text("Remaining Balance", chartX + 86, this.currentY + 2);
+    this.doc.circle(chartX + 60, this.currentY, 1.5, 'F');
+    this.doc.text("Remaining Balance", chartX + 65, this.currentY + 1);
     
-    this.currentY += 20;
+    this.currentY += 15;
   }
 
   private addFooterToAllPages(): void {
