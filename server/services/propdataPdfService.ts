@@ -569,7 +569,7 @@ export class PropdataPdfService {
         },
         styles: { 
           fontSize: 8,
-          cellPadding: 3
+          cellPadding: 1.5
         },
         margin: { left: this.margin, right: this.margin },
         columnStyles: { 
