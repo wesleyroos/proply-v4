@@ -95,6 +95,7 @@ router.post('/generate/:propertyId', async (req, res) => {
 router.post('/send/:propertyId', async (req, res) => {
   try {
     const { propertyId } = req.params;
+    const { recipients } = req.body;
     
     if (!propertyId) {
       return res.status(400).json({ error: 'Property ID is required' });
@@ -104,7 +105,12 @@ router.post('/send/:propertyId', async (req, res) => {
       return res.status(500).json({ error: 'Email service not configured' });
     }
 
-    console.log(`Generating and sending PDF report for property ${propertyId}`);
+    // Default to wesley@proply.co.za if no recipients specified
+    const emailRecipients = recipients && Array.isArray(recipients) && recipients.length > 0 
+      ? recipients 
+      : ['wesley@proply.co.za'];
+
+    console.log(`Generating and sending PDF report for property ${propertyId} to:`, emailRecipients);
     
     // Fetch property details for email
     const property = await db.query.propdataListings.findFirst({
@@ -142,15 +148,22 @@ router.post('/send/:propertyId', async (req, res) => {
       filename
     );
     
-    const emailSent = await sendEmail({
-      to: 'wesley@proply.co.za',
-      from: 'reports@proply.co.za',
-      subject: `Proply Property Investment Report - ${property.address}`,
-      html: emailHtml
-    });
+    // Send emails to all recipients
+    const emailPromises = emailRecipients.map(recipient => 
+      sendEmail({
+        to: recipient,
+        from: 'reports@proply.co.za',
+        subject: `Proply Property Investment Report - ${property.address}`,
+        html: emailHtml
+      })
+    );
     
-    if (!emailSent) {
-      return res.status(500).json({ error: 'Failed to send email' });
+    const emailResults = await Promise.all(emailPromises);
+    const failedEmails = emailResults.filter(result => !result);
+    
+    if (failedEmails.length > 0) {
+      console.error(`Failed to send ${failedEmails.length} out of ${emailRecipients.length} emails`);
+      return res.status(500).json({ error: 'Failed to send some emails' });
     }
     
     // Note: File cleanup handled by periodic cleanup job or manual deletion
