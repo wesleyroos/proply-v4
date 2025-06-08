@@ -48,6 +48,7 @@ import OnevapRiskIndexPage from "./pages/OnevapRiskIndexPage";
 import OnevapResidentialRiskIndexPage from "./pages/OnevapResidentialRiskIndexPage";
 import AgentsPage from "./pages/AgentsPage";
 import PropdataListingsPage from "./pages/PropdataListingsPage";
+import DownloadSuccessPage from "./pages/DownloadSuccessPage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -245,6 +246,11 @@ function App() {
             <Route path="/agents" component={() => (
               <PageTransition>
                 <AgentsPage />
+              </PageTransition>
+            )} />
+            <Route path="/download/:reportId" component={() => (
+              <PageTransition>
+                <DownloadSuccessPage />
               </PageTransition>
             )} />
 
