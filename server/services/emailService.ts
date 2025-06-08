@@ -85,7 +85,7 @@ export function generatePropertyReportEmailTemplate(
         }
         
         .header {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          background: linear-gradient(135deg, #1ba2ff 0%, #0d8bff 100%);
           color: white;
           padding: 40px 30px;
           text-align: center;
@@ -140,7 +140,7 @@ export function generatePropertyReportEmailTemplate(
         }
         
         .property-address {
-          color: #2563eb;
+          color: #1ba2ff;
           font-weight: 600;
           text-decoration: none;
         }
@@ -193,7 +193,7 @@ export function generatePropertyReportEmailTemplate(
           padding: 32px;
           background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
           border-radius: 16px;
-          border: 2px solid #0ea5e9;
+          border: 2px solid #1ba2ff;
         }
         
         .cta-text {
@@ -205,7 +205,7 @@ export function generatePropertyReportEmailTemplate(
         
         .download-button {
           display: inline-block;
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          background: linear-gradient(135deg, #1ba2ff 0%, #0d8bff 100%);
           color: white;
           padding: 16px 32px;
           text-decoration: none;
@@ -213,14 +213,14 @@ export function generatePropertyReportEmailTemplate(
           font-size: 16px;
           font-weight: 600;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+          box-shadow: 0 4px 15px rgba(27, 162, 255, 0.3);
           border: none;
           cursor: pointer;
         }
         
         .download-button:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+          box-shadow: 0 8px 25px rgba(27, 162, 255, 0.4);
         }
         
         .download-icon {
@@ -253,7 +253,7 @@ export function generatePropertyReportEmailTemplate(
         }
         
         .contact-link {
-          color: #2563eb;
+          color: #1ba2ff;
           text-decoration: none;
           font-weight: 600;
         }
@@ -266,7 +266,7 @@ export function generatePropertyReportEmailTemplate(
         
         .team-name {
           font-weight: 600;
-          color: #2563eb;
+          color: #1ba2ff;
         }
         
         .footer {
