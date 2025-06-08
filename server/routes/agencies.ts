@@ -99,6 +99,9 @@ router.get("/agencies", async (req, res) => {
           propertyCount = { count: 0 };
         }
 
+        // Get the main branch (first one) for franchise-level data
+        const mainBranch = franchise.branches[0];
+        
         return {
           ...franchise,
           totalProperties: propertyCount?.count || 0,
@@ -109,6 +112,10 @@ router.get("/agencies", async (req, res) => {
             errors: lastSync.errors || 0,
             errorMessage: lastSync.errorMessage
           } : null,
+          logoUrl: mainBranch?.logoUrl || null,
+          franchiseName: mainBranch?.franchiseName || franchise.name,
+          branchName: mainBranch?.branchName || null,
+          mainBranchId: mainBranch?.id || null,
         };
       })
     );

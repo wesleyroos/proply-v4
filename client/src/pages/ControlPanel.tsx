@@ -30,6 +30,7 @@ import {
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { AddAgencyModal } from "@/components/AddAgencyModal";
+import { AgencyLogoUpload } from "@/components/AgencyLogoUpload";
 
 interface Agency {
   id: string;
@@ -46,6 +47,9 @@ interface Agency {
   } | null;
   autoSyncEnabled: boolean;
   syncFrequency: string;
+  logoUrl?: string | null;
+  franchiseName?: string;
+  branchName?: string;
 }
 
 interface SyncHistory {
@@ -257,6 +261,13 @@ export function ControlPanel() {
                         >
                           <Database className="w-3 h-3" />
                         </Button>
+                        {agency.mainBranchId && (
+                          <AgencyLogoUpload
+                            agencyId={parseInt(agency.mainBranchId)}
+                            agencyName={agency.franchiseName || agency.name}
+                            currentLogoUrl={agency.logoUrl}
+                          />
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
