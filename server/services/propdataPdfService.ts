@@ -361,9 +361,9 @@ export class PropdataPdfService {
       } catch (error) {
         console.error("Error generating map:", error);
         // Fallback to placeholder
-        this.docsetFillColor(COLORS.background.gray);
+        this.doc.setFillColor(241, 245, 249);
         this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, "F");
-        this.docsetTextColor(COLORS.text.secondary);
+        this.doc.setTextColor(107, 114, 128);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Location Map",
@@ -452,9 +452,9 @@ export class PropdataPdfService {
         }
       } else {
         // No address available, use placeholder
-        this.docsetFillColor(COLORS.background.gray);
+        this.doc.setFillColor(241, 245, 249);
         this.doc.rect(this.margin, this.currentY, mapWidth, mapHeight, "F");
-        this.docsetTextColor(COLORS.text.secondary);
+        this.doc.setTextColor(107, 114, 128);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Location Map",
@@ -503,7 +503,7 @@ export class PropdataPdfService {
       } catch (error) {
         console.error("Error loading property image:", error);
         // Fallback to placeholder
-        this.docsetFillColor(COLORS.background.gray);
+        this.doc.setFillColor(241, 245, 249);
         this.doc.rect(
           this.margin + mapWidth + spacing,
           this.currentY,
@@ -511,7 +511,7 @@ export class PropdataPdfService {
           imageHeight,
           "F",
         );
-        this.docsetTextColor(COLORS.text.secondary);
+        this.doc.setTextColor(107, 114, 128);
         this.doc.setFontSize(9);
         this.doc.text(
           "Property Image",
@@ -522,7 +522,7 @@ export class PropdataPdfService {
     } else {
       console.log("No property image URL found in data");
       // Placeholder when no image available
-      this.docsetFillColor(COLORS.background.gray);
+      this.doc.setFillColor(241, 245, 249);
       this.doc.rect(
         this.margin + mapWidth + spacing,
         this.currentY,
@@ -530,7 +530,7 @@ export class PropdataPdfService {
         imageHeight,
         "F",
       );
-      this.docsetTextColor(COLORS.text.secondary);
+      this.doc.setTextColor(107, 114, 128);
       this.doc.setFontSize(9);
       this.doc.text(
         "Property Image",
@@ -1114,7 +1114,7 @@ export class PropdataPdfService {
 
     // Report generation info
     this.doc.setFontSize(8);
-    this.docsetTextColor(COLORS.text.secondary);
+    this.doc.setTextColor(107, 114, 128);
     this.doc.text(
       `Report generated on ${new Date().toLocaleDateString()} by Proply Investment Platform`,
       this.margin,
@@ -1144,7 +1144,7 @@ export class PropdataPdfService {
 
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.docsetTextColor(COLORS.primary);
+    this.doc.setTextColor(27, 162, 255);
     this.doc.text(title, this.margin, this.currentY);
 
     this.doc.setTextColor(0, 0, 0);
@@ -1300,7 +1300,7 @@ export class PropdataPdfService {
       this.doc.setPage(i);
 
       // Footer line
-      this.docsetDrawColor(COLORS.primary);
+      this.doc.setDrawColor(27, 162, 255);
       this.doc.line(
         this.margin,
         this.pageHeight - 25,
@@ -1310,7 +1310,7 @@ export class PropdataPdfService {
 
       // Footer text
       this.doc.setFontSize(8);
-      this.docsetTextColor(COLORS.text.secondary);
+      this.doc.setTextColor(107, 114, 128);
       this.doc.text(
         "Proply Investment Platform • wesley@proply.co.za",
         this.margin,
