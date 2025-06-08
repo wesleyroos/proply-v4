@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PropdataPdfService } from '../services/propdataPdfService';
+import { ProfessionalPdfService } from '../services/professionalPdfService';
 import { SimplePdfTest } from '../services/simplePdfTest';
 import { sendEmail, generatePropertyReportEmailTemplate } from '../services/emailService';
 import { createId } from '@paralleldrive/cuid2';
