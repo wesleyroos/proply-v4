@@ -52,7 +52,7 @@ export class PropdataPdfService {
     this.doc = new jsPDF();
     this.pageWidth = this.doc.internal.pageSize.getWidth();
     this.pageHeight = this.doc.internal.pageSize.getHeight();
-    this.margin = 20;
+    this.margin = 25; // Increased margin for better padding
     this.currentY = this.margin;
   }
 
@@ -573,7 +573,7 @@ export class PropdataPdfService {
   }
 
   private addValuationSection(data: PropertyPdfData): void {
-    this.checkPageBreak();
+    this.checkPageBreak(50);
     this.addSectionHeader("Valuation Analysis");
 
     if (!data.valuationReport?.valuationData) {
@@ -711,7 +711,7 @@ export class PropdataPdfService {
   }
 
   private addRentalPerformanceSection(data: PropertyPdfData): void {
-    this.checkPageBreak();
+    this.checkPageBreak(50);
     this.addSectionHeader("Rental Performance Analysis");
 
     // Get rental data from valuation report
@@ -850,7 +850,7 @@ export class PropdataPdfService {
   }
 
   private addFinancialsSection(data: PropertyPdfData): void {
-    this.checkPageBreak();
+    this.checkPageBreak(50);
     this.addSectionHeader("Financial Analysis");
 
     // Financing parameters from saved valuation data
@@ -1066,7 +1066,7 @@ export class PropdataPdfService {
   }
 
   private addDetailsSection(data: PropertyPdfData): void {
-    this.checkPageBreak();
+    this.checkPageBreak(50);
     this.addSectionHeader("Property Details");
 
     // Agent information
@@ -1176,7 +1176,7 @@ export class PropdataPdfService {
   }
 
   private addSubsectionHeader(title: string): void {
-    this.checkPageBreak(20);
+    this.checkPageBreak(35); // More space for subsection headers
 
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
@@ -1185,7 +1185,7 @@ export class PropdataPdfService {
 
     this.doc.setTextColor(0, 0, 0);
     this.doc.setFont("helvetica", "normal");
-    this.currentY += 10;
+    this.currentY += 15; // Increased spacing after subsection headers
   }
 
   private addWrappedText(text: string, x: number, maxWidth: number): void {
@@ -1197,10 +1197,12 @@ export class PropdataPdfService {
     });
   }
 
-  private checkPageBreak(requiredSpace: number = 20): void {
-    if (this.currentY + requiredSpace > this.pageHeight - this.margin) {
+  private checkPageBreak(requiredSpace: number = 30): void {
+    // More conservative page break with increased bottom margin
+    const bottomMargin = this.margin + 10; // Extra space at bottom
+    if (this.currentY + requiredSpace > this.pageHeight - bottomMargin) {
       this.doc.addPage();
-      this.currentY = this.margin; // Start from top margin on new pages
+      this.currentY = this.margin + 40; // Start below header area on new pages
     }
   }
 
