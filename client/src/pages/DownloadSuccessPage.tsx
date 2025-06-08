@@ -29,8 +29,8 @@ export default function DownloadSuccessPage() {
     try {
       setDownloadStarted(true);
       
-      // Create download link
-      const downloadUrl = `/api/propdata-reports/download/${id}`;
+      // Create download link with direct parameter to bypass redirect
+      const downloadUrl = `/api/propdata-reports/download/${id}?direct=true`;
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = `Proply_Report_${new Date().toISOString().split('T')[0]}.pdf`;
