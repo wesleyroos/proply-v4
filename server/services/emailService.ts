@@ -1,4 +1,4 @@
-import { MailService } from '@sendgrid/mail';
+import { MailService } from "@sendgrid/mail";
 
 if (!process.env.SENDGRID_API_KEY) {
   throw new Error("SENDGRID_API_KEY environment variable must be set");
@@ -34,19 +34,19 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
       trackingSettings: {
         clickTracking: {
           enable: false,
-          enableText: false
+          enableText: false,
         },
         openTracking: {
-          enable: true
+          enable: true,
         },
         subscriptionTracking: {
-          enable: false
-        }
-      }
+          enable: false,
+        },
+      },
     });
     return true;
   } catch (error) {
-    console.error('SendGrid email error:', error);
+    console.error("SendGrid email error:", error);
     return false;
   }
 }
@@ -54,7 +54,7 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
 export function generatePropertyReportEmailTemplate(
   propertyAddress: string,
   downloadUrl: string,
-  filename: string
+  filename: string,
 ): string {
   return `
     <!DOCTYPE html>
@@ -310,23 +310,22 @@ export function generatePropertyReportEmailTemplate(
       <div class="email-container">
         <div class="header">
           <div class="header-content">
-            <div class="logo">PROPLY</div>
-            <div class="subtitle">AI-Powered Property Intelligence</div>
+            <div class="logo">DOWNLOAD REPORT</div>
           </div>
         </div>
         
         <div class="content">
           <div class="greeting">
-            🏡 Your Investment Report is Ready!
+            🏡 Your Property Report is Ready!
           </div>
           
           <div class="description">
-            Your comprehensive property investment analysis for <strong class="property-address">${propertyAddress}</strong> has been generated using our advanced AI algorithms and market intelligence.
+            Your comprehensive property report for <strong class="property-address">${propertyAddress}</strong> has been generated and is ready for download.
           </div>
           
           <div class="features-grid">
             <div class="feature">Property Overview & Specs</div>
-            <div class="feature">AI-Powered Valuation</div>
+            <div class="feature">Valuation Estimates</div>
             <div class="feature">Rental Performance Analysis</div>
             <div class="feature">Financial Projections</div>
             <div class="feature">Yield Calculations</div>
@@ -351,19 +350,19 @@ export function generatePropertyReportEmailTemplate(
             <div class="support-text">
               Need help interpreting your report or have questions about the analysis?
             </div>
-            <a href="mailto:support@proply.co.za" class="contact-link">Contact Our Investment Team</a>
+            <a href="mailto:support@proply.co.za" class="contact-link">Contact Our Team</a>
           </div>
           
           <div class="signature">
             Best regards,<br>
-            <span class="team-name">The Proply Investment Intelligence Team</span>
+            <span class="team-name">The Proply   Team</span>
           </div>
         </div>
         
         <div class="footer">
           <div class="footer-logo">PROPLY</div>
-          <div class="footer-text">Transforming Real Estate Investment Through AI</div>
-          <div class="footer-text">© 2025 Proply Property Intelligence Platform. All rights reserved.</div>
+          <div class="footer-text">Make Smarter Property Decisions</div>
+          <div class="footer-text">© 2025 Proply Tech (Pty) Ltd. All rights reserved.</div>
         </div>
       </div>
     </body>

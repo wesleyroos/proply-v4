@@ -49,7 +49,7 @@ export default function DownloadSuccessPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md mx-auto shadow-lg">
         <CardHeader className="text-center pb-4">
           <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -72,7 +72,11 @@ export default function DownloadSuccessPage() {
               </p>
               <Button
                 onClick={handleManualDownload}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full text-white"
+                style={{ 
+                  background: 'linear-gradient(135deg, #1ba2ff 0%, #0080ff 100%)',
+                  borderColor: '#1ba2ff'
+                }}
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download Report
