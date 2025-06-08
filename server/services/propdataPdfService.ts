@@ -804,44 +804,96 @@ export class PropdataPdfService {
       this.addSubsectionHeader("Financing Details");
 
       const financing = data.valuationReport.financingAnalysisData.financingParameters;
+      const yearlyMetrics = data.valuationReport.financingAnalysisData.yearlyMetrics;
+      
       if (financing) {
+        // Financing overview in two columns
         this.doc.setFontSize(10);
-        this.doc.text(
-          `Purchase Price: R${data.property.price?.toLocaleString()}`,
-          this.margin,
-          this.currentY,
-        );
+        const leftColumn = this.margin;
+        const rightColumn = this.margin + 140;
+        
+        this.doc.text(`Deposit:`, leftColumn, this.currentY);
+        this.doc.text(`Loan Amount:`, rightColumn, this.currentY);
         this.currentY += 6;
-        this.doc.text(
-          `Deposit (${financing.depositPercentage}%): R${Math.round(financing.depositAmount)?.toLocaleString()}`,
-          this.margin,
-          this.currentY,
-        );
+        
+        this.doc.text(`R${Math.round(financing.depositAmount)?.toLocaleString()} (${financing.depositPercentage}%)`, leftColumn, this.currentY);
+        this.doc.text(`R${Math.round(financing.loanAmount)?.toLocaleString()}`, rightColumn, this.currentY);
+        this.currentY += 10;
+        
+        this.doc.text(`Interest Rate:`, leftColumn, this.currentY);
+        this.doc.text(`Term:`, rightColumn, this.currentY);
         this.currentY += 6;
-        this.doc.text(
-          `Loan Amount: R${Math.round(financing.loanAmount)?.toLocaleString()}`,
-          this.margin,
-          this.currentY,
-        );
-        this.currentY += 6;
-        this.doc.text(
-          `Interest Rate: ${financing.interestRate}%`,
-          this.margin,
-          this.currentY,
-        );
-        this.currentY += 6;
-        this.doc.text(
-          `Loan Term: ${financing.loanTerm} years`,
-          this.margin,
-          this.currentY,
-        );
-        this.currentY += 6;
-        this.doc.text(
-          `Monthly Payment: R${Math.round(financing.monthlyPayment)?.toLocaleString()}`,
-          this.margin,
-          this.currentY,
-        );
+        
+        this.doc.text(`${financing.interestRate}%`, leftColumn, this.currentY);
+        this.doc.text(`${financing.loanTerm} years`, rightColumn, this.currentY);
         this.currentY += 15;
+
+        // Financing metrics table
+        if (yearlyMetrics) {
+          const tableData = [];
+          const years = [1, 2, 3, 4, 5, 10, 20];
+          
+          // Monthly Bond Payment row
+          const bondPaymentRow = ["Monthly Bond Payment"];
+          years.forEach(year => {
+            const metric = yearlyMetrics[`year${year}`];
+            bondPaymentRow.push(`R${Math.round(metric?.monthlyPayment || 0).toLocaleString()}`);
+          });
+          tableData.push(bondPaymentRow);
+          
+          // Equity Build-up row
+          const equityRow = ["Equity Build-up"];
+          years.forEach(year => {
+            const metric = yearlyMetrics[`year${year}`];
+            equityRow.push(`R${Math.round(metric?.equityBuildup || 0).toLocaleString()}`);
+          });
+          tableData.push(equityRow);
+          
+          // Remaining Loan Balance row
+          const balanceRow = ["Remaining Loan Balance"];
+          years.forEach(year => {
+            const metric = yearlyMetrics[`year${year}`];
+            balanceRow.push(`R${Math.round(metric?.remainingBalance || 0).toLocaleString()}`);
+          });
+          tableData.push(balanceRow);
+
+          (this.doc as any).autoTable({
+            startY: this.currentY,
+            head: [["Financing Metric", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 10", "Year 20"]],
+            body: tableData,
+            theme: "grid",
+            headStyles: { 
+              fillColor: [27, 162, 255], 
+              textColor: 255,
+              fontStyle: 'bold'
+            },
+            styles: { 
+              fontSize: 9,
+              cellPadding: 3
+            },
+            margin: { left: this.margin, right: this.margin },
+            columnStyles: { 
+              0: { halign: "left", cellWidth: 45 },
+              1: { halign: "right", cellWidth: 20 },
+              2: { halign: "right", cellWidth: 20 },
+              3: { halign: "right", cellWidth: 20 },
+              4: { halign: "right", cellWidth: 20 },
+              5: { halign: "right", cellWidth: 20 },
+              6: { halign: "right", cellWidth: 20 },
+              7: { halign: "right", cellWidth: 20 }
+            },
+            bodyStyles: {
+              0: { fillColor: [245, 245, 245] }, // Light gray for bond payment
+              1: { fillColor: [220, 255, 220] }, // Light green for equity
+              2: { fillColor: [255, 220, 220] }  // Light red for remaining balance
+            }
+          });
+
+          this.currentY = (this.doc as any).lastAutoTable.finalY + 20;
+          
+          // Add equity build-up vs loan balance chart
+          this.addEquityVsBalanceChart(yearlyMetrics);
+        }
       }
     }
 
@@ -1094,6 +1146,130 @@ export class PropdataPdfService {
       this.doc.addPage();
       this.currentY = this.margin; // Start from top margin on new pages
     }
+  }
+
+  private addEquityVsBalanceChart(yearlyMetrics: any): void {
+    this.checkPageBreak(120);
+    
+    // Chart title
+    this.doc.setFontSize(12);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("Equity Build-up vs Loan Balance", this.margin, this.currentY);
+    this.currentY += 8;
+    
+    this.doc.setFontSize(9);
+    this.doc.setFont("helvetica", "normal");
+    this.doc.text("Visualization of loan paydown and equity accumulation over time", this.margin, this.currentY);
+    this.currentY += 20;
+
+    // Chart dimensions
+    const chartWidth = 160;
+    const chartHeight = 80;
+    const chartX = this.margin;
+    const chartY = this.currentY;
+
+    // Draw chart background
+    this.doc.setFillColor(248, 249, 250);
+    this.doc.rect(chartX, chartY, chartWidth, chartHeight, 'F');
+    this.doc.setDrawColor(200, 200, 200);
+    this.doc.rect(chartX, chartY, chartWidth, chartHeight, 'S');
+
+    // Extract data points
+    const years = [1, 2, 3, 4, 5, 10, 20];
+    const equityData = years.map(year => yearlyMetrics[`year${year}`]?.equityBuildup || 0);
+    const balanceData = years.map(year => yearlyMetrics[`year${year}`]?.remainingBalance || 0);
+    
+    const maxValue = Math.max(...equityData, ...balanceData);
+    const scale = chartHeight / maxValue;
+
+    // Draw grid lines
+    this.doc.setDrawColor(220, 220, 220);
+    for (let i = 1; i <= 4; i++) {
+      const y = chartY + (chartHeight * i / 4);
+      this.doc.line(chartX, y, chartX + chartWidth, y);
+    }
+
+    // Draw vertical grid lines
+    years.forEach((year, index) => {
+      const x = chartX + (chartWidth * index / (years.length - 1));
+      this.doc.line(x, chartY, x, chartY + chartHeight);
+    });
+
+    // Plot equity line (green)
+    this.doc.setDrawColor(34, 197, 94); // Green
+    this.doc.setLineWidth(2);
+    
+    for (let i = 0; i < years.length - 1; i++) {
+      const x1 = chartX + (chartWidth * i / (years.length - 1));
+      const y1 = chartY + chartHeight - (equityData[i] * scale);
+      const x2 = chartX + (chartWidth * (i + 1) / (years.length - 1));
+      const y2 = chartY + chartHeight - (equityData[i + 1] * scale);
+      
+      this.doc.line(x1, y1, x2, y2);
+      
+      // Add data point circles
+      this.doc.setFillColor(34, 197, 94);
+      this.doc.circle(x1, y1, 1, 'F');
+    }
+    
+    // Last point
+    const lastX = chartX + chartWidth;
+    const lastY = chartY + chartHeight - (equityData[equityData.length - 1] * scale);
+    this.doc.circle(lastX, lastY, 1, 'F');
+
+    // Plot balance line (red)
+    this.doc.setDrawColor(239, 68, 68); // Red
+    this.doc.setLineWidth(2);
+    
+    for (let i = 0; i < years.length - 1; i++) {
+      const x1 = chartX + (chartWidth * i / (years.length - 1));
+      const y1 = chartY + chartHeight - (balanceData[i] * scale);
+      const x2 = chartX + (chartWidth * (i + 1) / (years.length - 1));
+      const y2 = chartY + chartHeight - (balanceData[i + 1] * scale);
+      
+      this.doc.line(x1, y1, x2, y2);
+      
+      // Add data point circles
+      this.doc.setFillColor(239, 68, 68);
+      this.doc.circle(x1, y1, 1, 'F');
+    }
+    
+    // Last point
+    const lastBalanceY = chartY + chartHeight - (balanceData[balanceData.length - 1] * scale);
+    this.doc.circle(lastX, lastBalanceY, 1, 'F');
+
+    // Add year labels on x-axis
+    this.doc.setTextColor(100, 100, 100);
+    this.doc.setFontSize(8);
+    years.forEach((year, index) => {
+      const x = chartX + (chartWidth * index / (years.length - 1));
+      this.doc.text(`Year ${year}`, x - 8, chartY + chartHeight + 8);
+    });
+
+    // Add y-axis labels
+    for (let i = 0; i <= 4; i++) {
+      const value = (maxValue * i / 4);
+      const label = `R${Math.round(value / 1000)}k`;
+      const y = chartY + chartHeight - (chartHeight * i / 4);
+      this.doc.text(label, chartX - 15, y + 1);
+    }
+
+    // Add legend
+    this.currentY = chartY + chartHeight + 20;
+    
+    // Equity Built legend
+    this.doc.setFillColor(34, 197, 94);
+    this.doc.circle(chartX + 10, this.currentY, 2, 'F');
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.setFontSize(9);
+    this.doc.text("Equity Built", chartX + 16, this.currentY + 2);
+    
+    // Remaining Balance legend
+    this.doc.setFillColor(239, 68, 68);
+    this.doc.circle(chartX + 80, this.currentY, 2, 'F');
+    this.doc.text("Remaining Balance", chartX + 86, this.currentY + 2);
+    
+    this.currentY += 20;
   }
 
   private addFooterToAllPages(): void {
