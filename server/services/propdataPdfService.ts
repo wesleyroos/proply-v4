@@ -67,7 +67,7 @@ export class PropdataPdfService {
       this.addDisclaimersSection();
 
       // Add footer to all pages
-      this.addFooterToAllPages();
+      await this.addFooterToAllPages();
 
       return Buffer.from(this.doc.output("arraybuffer"));
     } catch (error) {
@@ -1327,7 +1327,7 @@ By using this report, you acknowledge that the calculations and projections are 
     this.currentY += 20;
   }
 
-  private addFooterToAllPages(): void {
+  private async addFooterToAllPages(): Promise<void> {
     const totalPages = this.doc.getNumberOfPages();
     const currentYear = new Date().getFullYear();
 
@@ -1343,22 +1343,43 @@ By using this report, you acknowledge that the calculations and projections are 
         this.pageHeight - 25,
       );
 
-      // Add Proply logo on the left
+      // Add Proply logo on the left - using same method as header
       try {
-        const logoPath = "/home/runner/workspace/client/public/proply-logo-auth.png";
-        const logoHeight = 8; // Smaller for footer
-        const logoWidth = logoHeight * 3.79; // Maintain 3.79:1 aspect ratio
-        
-        this.doc.addImage(
-          logoPath,
-          "PNG",
-          this.margin,
-          this.pageHeight - 20,
-          logoWidth,
-          logoHeight
-        );
+        const fs = await import("fs");
+        const path = await import("path");
+        const logoPath = path.join(process.cwd(), "client", "public", "proply-logo-auth.png");
+
+        if (fs.existsSync(logoPath)) {
+          const logoBuffer = fs.readFileSync(logoPath);
+          const logoBase64 = logoBuffer.toString("base64");
+
+          // Logo dimensions for footer - smaller than header
+          const logoHeight = 8;
+          const logoAspectRatio = 868 / 229; // Same aspect ratio as header
+          const logoWidth = logoHeight * logoAspectRatio;
+          
+          this.doc.addImage(
+            logoBase64,
+            "PNG",
+            this.margin,
+            this.pageHeight - 20,
+            logoWidth,
+            logoHeight
+          );
+        } else {
+          // Fallback: Add text-based branding
+          this.doc.setFontSize(8);
+          this.doc.setFont("helvetica", "bold");
+          this.doc.setTextColor(27, 162, 255);
+          this.doc.text("proply", this.margin, this.pageHeight - 15);
+        }
       } catch (error) {
         console.log("Could not add footer logo:", error);
+        // Fallback: Add text-based branding
+        this.doc.setFontSize(8);
+        this.doc.setFont("helvetica", "bold");
+        this.doc.setTextColor(27, 162, 255);
+        this.doc.text("proply", this.margin, this.pageHeight - 15);
       }
 
       // Center copyright text

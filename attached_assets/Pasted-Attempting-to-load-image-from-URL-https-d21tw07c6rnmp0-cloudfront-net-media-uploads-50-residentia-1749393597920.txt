@@ -1,0 +1,22 @@
+Attempting to load image from URL: https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/4/50_d2bfeba0c69542d8bbf79788f42195b8.jpg
+Successfully added property image to PDF
+Could not add footer logo: Error: Incomplete or corrupt PNG file
+    at new a (/home/runner/workspace/node_modules/jspdf/src/libs/png.js:209:15)
+    at toUpperCase (/home/runner/workspace/node_modules/jspdf/src/modules/png_support.js:311:15)
+    at call (/home/runner/workspace/node_modules/jspdf/src/modules/addimage.js:919:40)
+    at Object.e.addImage (/home/runner/workspace/node_modules/jspdf/src/modules/addimage.js:855:34)
+    at PropdataPdfService.addFooterToAllPages (/home/runner/workspace/server/services/propdataPdfService.ts:1352:18)
+    at PropdataPdfService.generatePropertyReport (/home/runner/workspace/server/services/propdataPdfService.ts:70:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Function.generateReport (/home/runner/workspace/server/services/propdataPdfService.ts:1391:12)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:2145:25)
+Could not add footer logo: Error: Incomplete or corrupt PNG file
+    at new a (/home/runner/workspace/node_modules/jspdf/src/libs/png.js:209:15)
+    at toUpperCase (/home/runner/workspace/node_modules/jspdf/src/modules/png_support.js:311:15)
+    at call (/home/runner/workspace/node_modules/jspdf/src/modules/addimage.js:919:40)
+    at Object.e.addImage (/home/runner/workspace/node_modules/jspdf/src/modules/addimage.js:855:34)
+    at PropdataPdfService.addFooterToAllPages (/home/runner/workspace/server/services/propdataPdfService.ts:1352:18)
+    at PropdataPdfService.generatePropertyReport (/home/runner/workspace/server/services/propdataPdfService.ts:70:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Function.generateReport (/home/runner/workspace/server/services/propdataPdfService.ts:1391:12)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:2145:25)
