@@ -167,9 +167,10 @@ export class PropdataPdfService {
         const logoBuffer = fs.readFileSync(logoPath);
         const logoBase64 = logoBuffer.toString("base64");
 
-        // Logo dimensions - locked to prevent distortion
-        const logoWidth = 40;
-        const logoHeight = 20;
+        // Logo dimensions - properly locked with aspect ratio preservation
+        const logoHeight = 15;
+        const logoAspectRatio = 2.5; // Width/Height ratio for Proply logo
+        const logoWidth = logoHeight * logoAspectRatio;
         const logoX = this.pageWidth - this.margin - logoWidth;
         
         this.doc.addImage(
@@ -586,7 +587,7 @@ export class PropdataPdfService {
           fontStyle: 'bold'
         },
         styles: { 
-          fontSize: 10,
+          fontSize: 8,
           cellPadding: 3
         },
         margin: { left: this.margin, right: this.margin },
