@@ -197,6 +197,102 @@ export class PropdataPdfService {
     this.currentY = this.margin + 35;
   }
 
+  private async addLogo(agencyLogoUrl?: string | null): Promise<void> {
+    try {
+      let logoBase64: string | null = null;
+      let logoFormat = "PNG";
+
+      // Try to load agency logo first
+      if (agencyLogoUrl) {
+        console.log("Loading agency logo from:", agencyLogoUrl);
+        try {
+          // Convert agency logo URL to file path and load it
+          const fs = await import("fs");
+          const path = await import("path");
+          
+          // Handle both relative and absolute URLs
+          const logoPath = agencyLogoUrl.startsWith('/static-assets/') 
+            ? path.join(process.cwd(), 'public', agencyLogoUrl.replace('/static-assets/', ''))
+            : path.join(process.cwd(), 'public', agencyLogoUrl.replace('/', ''));
+          
+          if (fs.existsSync(logoPath)) {
+            const logoBuffer = fs.readFileSync(logoPath);
+            logoBase64 = logoBuffer.toString("base64");
+            // Determine format from file extension
+            const ext = path.extname(logoPath).toLowerCase();
+            if (ext === '.jpg' || ext === '.jpeg') logoFormat = "JPEG";
+            else if (ext === '.gif') logoFormat = "GIF";
+            else if (ext === '.webp') logoFormat = "WEBP";
+            console.log("Successfully loaded agency logo");
+          } else {
+            console.log("Agency logo file not found at:", logoPath);
+          }
+        } catch (error) {
+          console.error("Error loading agency logo:", error);
+        }
+      }
+
+      // Fallback to Proply logo if agency logo not available
+      if (!logoBase64) {
+        console.log("Loading Proply fallback logo");
+        try {
+          const fs = await import("fs");
+          const path = await import("path");
+          const logoPath = path.join(
+            process.cwd(),
+            "client",
+            "public",
+            "proply-logo-auth.png",
+          );
+
+          if (fs.existsSync(logoPath)) {
+            const logoBuffer = fs.readFileSync(logoPath);
+            logoBase64 = logoBuffer.toString("base64");
+            logoFormat = "PNG";
+            console.log("Successfully loaded Proply fallback logo");
+          }
+        } catch (error) {
+          console.error("Error loading Proply logo:", error);
+        }
+      }
+
+      // Add logo to PDF if loaded successfully
+      if (logoBase64) {
+        // Logo dimensions - maintaining same proportions as before
+        const logoHeight = 12;
+        const logoAspectRatio = 868 / 229; // Standard aspect ratio
+        const logoWidth = logoHeight * logoAspectRatio;
+        const logoX = this.pageWidth - this.margin - logoWidth;
+
+        this.doc.addImage(
+          logoBase64,
+          logoFormat,
+          logoX,
+          this.margin,
+          logoWidth,
+          logoHeight,
+        );
+        console.log("Successfully added logo to PDF");
+      } else {
+        // Text fallback if no logo could be loaded
+        console.log("Using text fallback logo");
+        const logoX = this.pageWidth - this.margin - 50;
+        this.doc.setTextColor(27, 162, 255);
+        this.doc.setFontSize(20);
+        this.doc.setFont("helvetica", "bold");
+        this.doc.text("PROPLY", logoX, this.margin + 15);
+      }
+    } catch (error) {
+      console.error("Logo loading error:", error);
+      // Text fallback
+      const logoX = this.pageWidth - this.margin - 50;
+      this.doc.setTextColor(27, 162, 255);
+      this.doc.setFontSize(20);
+      this.doc.setFont("helvetica", "bold");
+      this.doc.text("PROPLY", logoX, this.margin + 15);
+    }
+  }
+
   private async addOverviewSection(data: PropertyPdfData): Promise<void> {
     this.addSectionHeader("Property Overview");
 
@@ -1503,7 +1599,7 @@ By using this report, you acknowledge that the calculations and projections are 
     this.currentY += 20;
   }
 
-  private async addFooterToAllPages(): Promise<void> {
+  private async addFooterToAllPages(data: PropertyPdfData): Promise<void> {
     const totalPages = this.doc.getNumberOfPages();
     const currentYear = new Date().getFullYear();
 
@@ -1519,49 +1615,8 @@ By using this report, you acknowledge that the calculations and projections are 
         this.pageHeight - 25,
       );
 
-      // Add Proply logo on the left - using same method as header
-      try {
-        const fs = await import("fs");
-        const path = await import("path");
-        const logoPath = path.join(
-          process.cwd(),
-          "client",
-          "public",
-          "proply-logo-auth.png",
-        );
-
-        if (fs.existsSync(logoPath)) {
-          const logoBuffer = fs.readFileSync(logoPath);
-          const logoBase64 = logoBuffer.toString("base64");
-
-          // Logo dimensions for footer - smaller than header
-          const logoHeight = 8;
-          const logoAspectRatio = 868 / 229; // Same aspect ratio as header
-          const logoWidth = logoHeight * logoAspectRatio;
-
-          this.doc.addImage(
-            logoBase64,
-            "PNG",
-            this.margin,
-            this.pageHeight - 20,
-            logoWidth,
-            logoHeight,
-          );
-        } else {
-          // Fallback: Add text-based branding
-          this.doc.setFontSize(8);
-          this.doc.setFont("helvetica", "bold");
-          this.doc.setTextColor(27, 162, 255);
-          this.doc.text("proply", this.margin, this.pageHeight - 15);
-        }
-      } catch (error) {
-        console.log("Could not add footer logo:", error);
-        // Fallback: Add text-based branding
-        this.doc.setFontSize(8);
-        this.doc.setFont("helvetica", "bold");
-        this.doc.setTextColor(27, 162, 255);
-        this.doc.text("proply", this.margin, this.pageHeight - 15);
-      }
+      // Add logo on the left - use agency logo with Proply fallback
+      await this.addFooterLogo(data.agencyLogo);
 
       // Center copyright text
       this.doc.setFontSize(8);
@@ -1582,6 +1637,90 @@ By using this report, you acknowledge that the calculations and projections are 
 
     // Reset to first page after footer processing
     this.doc.setPage(1);
+  }
+
+  private async addFooterLogo(agencyLogoUrl?: string | null): Promise<void> {
+    try {
+      let logoBase64: string | null = null;
+      let logoFormat = "PNG";
+
+      // Try to load agency logo first
+      if (agencyLogoUrl) {
+        try {
+          const fs = await import("fs");
+          const path = await import("path");
+          
+          // Handle both relative and absolute URLs
+          const logoPath = agencyLogoUrl.startsWith('/static-assets/') 
+            ? path.join(process.cwd(), 'public', agencyLogoUrl.replace('/static-assets/', ''))
+            : path.join(process.cwd(), 'public', agencyLogoUrl.replace('/', ''));
+          
+          if (fs.existsSync(logoPath)) {
+            const logoBuffer = fs.readFileSync(logoPath);
+            logoBase64 = logoBuffer.toString("base64");
+            // Determine format from file extension
+            const ext = path.extname(logoPath).toLowerCase();
+            if (ext === '.jpg' || ext === '.jpeg') logoFormat = "JPEG";
+            else if (ext === '.gif') logoFormat = "GIF";
+            else if (ext === '.webp') logoFormat = "WEBP";
+          }
+        } catch (error) {
+          console.error("Error loading agency logo for footer:", error);
+        }
+      }
+
+      // Fallback to Proply logo if agency logo not available
+      if (!logoBase64) {
+        try {
+          const fs = await import("fs");
+          const path = await import("path");
+          const logoPath = path.join(
+            process.cwd(),
+            "client",
+            "public",
+            "proply-logo-auth.png",
+          );
+
+          if (fs.existsSync(logoPath)) {
+            const logoBuffer = fs.readFileSync(logoPath);
+            logoBase64 = logoBuffer.toString("base64");
+            logoFormat = "PNG";
+          }
+        } catch (error) {
+          console.error("Error loading Proply logo for footer:", error);
+        }
+      }
+
+      // Add logo to PDF footer if loaded successfully
+      if (logoBase64) {
+        // Logo dimensions for footer - smaller than header
+        const logoHeight = 8;
+        const logoAspectRatio = 868 / 229; // Standard aspect ratio
+        const logoWidth = logoHeight * logoAspectRatio;
+
+        this.doc.addImage(
+          logoBase64,
+          logoFormat,
+          this.margin,
+          this.pageHeight - 20,
+          logoWidth,
+          logoHeight,
+        );
+      } else {
+        // Fallback: Add text-based branding
+        this.doc.setFontSize(8);
+        this.doc.setFont("helvetica", "bold");
+        this.doc.setTextColor(27, 162, 255);
+        this.doc.text("proply", this.margin, this.pageHeight - 15);
+      }
+    } catch (error) {
+      console.log("Could not add footer logo:", error);
+      // Fallback: Add text-based branding
+      this.doc.setFontSize(8);
+      this.doc.setFont("helvetica", "bold");
+      this.doc.setTextColor(27, 162, 255);
+      this.doc.text("proply", this.margin, this.pageHeight - 15);
+    }
   }
 
   static async generateReport(propertyId: string): Promise<Buffer> {
