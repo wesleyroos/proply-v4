@@ -6,13 +6,176 @@ import { createId } from '@paralleldrive/cuid2';
 import fs from 'fs/promises';
 import path from 'path';
 import { db } from '../../db';
-import { propdataListings } from '../../db/schema';
-import { eq } from 'drizzle-orm';
+import { propdataListings, valuationReports, rentalPerformanceData } from '../../db/schema';
+import { eq, sql } from 'drizzle-orm';
 
 const router = Router();
 
 // Store for temporary PDF files (in production, use cloud storage)
 const PDF_STORAGE_PATH = path.join(process.cwd(), 'temp_pdfs');
+
+// Default financing parameters
+const DEFAULT_FINANCING_PARAMS = {
+  depositPercentage: 10,
+  interestRate: 11.5,
+  loanTermYears: 20
+};
+
+// Function to automatically calculate and save all financial data for a property
+async function calculateAndSaveFinancialDataForProperty(propertyId: string) {
+  console.log(`Starting automatic financial data calculation for property ${propertyId}`);
+
+  // Fetch required data
+  const property = await db.query.propdataListings.findFirst({
+    where: eq(propdataListings.propdataId, propertyId)
+  });
+
+  if (!property) {
+    throw new Error(`Property ${propertyId} not found`);
+  }
+
+  // Fetch or create valuation report
+  let valuationReport = await db.query.valuationReports.findFirst({
+    where: eq(valuationReports.propertyId, propertyId)
+  });
+
+  // Create valuation report if it doesn't exist
+  if (!valuationReport) {
+    console.log(`Creating new valuation report for property ${propertyId}`);
+    const newReport = await db.insert(valuationReports).values({
+      propertyId: propertyId,
+      userId: 1, // Default user - modify as needed
+      address: property.address,
+      price: property.price.toString(),
+      valuationData: { automated: true }, // Required field
+    }).returning();
+    valuationReport = newReport[0];
+  }
+
+  // Fetch rental data
+  const rentalData = await db.query.rentalPerformanceData.findFirst({
+    where: eq(rentalPerformanceData.propertyId, propertyId)
+  });
+
+  const propertyPrice = parseFloat(property.price.toString());
+  const financingParams = DEFAULT_FINANCING_PARAMS;
+
+  // 1. ANNUAL PROPERTY APPRECIATION DATA
+  const defaultAppreciationRate = 8.0;
+  const annualPropertyAppreciationData = {
+    baseSuburbRate: defaultAppreciationRate,
+    propertyAdjustments: {},
+    finalAppreciationRate: defaultAppreciationRate,
+    yearlyValues: (() => {
+      const rate = defaultAppreciationRate / 100;
+      return [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+        acc[`year${year}`] = propertyPrice * Math.pow(1 + rate, year);
+        return acc;
+      }, {} as Record<string, number>);
+    })(),
+    reasoning: "Standard market appreciation rate applied automatically"
+  };
+
+  // 2. CASHFLOW ANALYSIS DATA
+  const cashflowAnalysisData = {
+    revenueGrowthTrajectory: {
+      shortTerm: rentalData?.shortTermData ? (() => {
+        const data = typeof rentalData.shortTermData === 'string' 
+          ? JSON.parse(rentalData.shortTermData) 
+          : rentalData.shortTermData;
+        const baseAnnual = data?.Conservative?.annual || (propertyPrice * 0.08); // 8% fallback
+        return [1, 2, 3, 4, 5].reduce((acc, year) => {
+          const revenue = baseAnnual * Math.pow(1.08, year - 1);
+          const grossYield = (revenue / propertyPrice) * 100;
+          acc[`year${year}`] = { revenue, grossYield };
+          return acc;
+        }, {} as Record<string, { revenue: number; grossYield: number }>);
+      })() : null,
+      longTerm: rentalData?.longTermData ? (() => {
+        const data = typeof rentalData.longTermData === 'string' 
+          ? JSON.parse(rentalData.longTermData) 
+          : rentalData.longTermData;
+        const monthlyAvg = data?.averageRental || (propertyPrice * 0.006); // 0.6% monthly fallback
+        const baseAnnual = monthlyAvg * 12;
+        return [1, 2, 3, 4, 5].reduce((acc, year) => {
+          const revenue = baseAnnual * Math.pow(1.08, year - 1);
+          const grossYield = (revenue / propertyPrice) * 100;
+          acc[`year${year}`] = { revenue, grossYield };
+          return acc;
+        }, {} as Record<string, { revenue: number; grossYield: number }>);
+      })() : null
+    },
+    recommendedStrategy: "shortTerm", // Default recommendation
+    strategyReasoning: "Automatically calculated based on available rental data"
+  };
+
+  // 3. FINANCING ANALYSIS DATA
+  const depositPercentage = financingParams.depositPercentage / 100;
+  const loanToValue = 1 - depositPercentage;
+  const interestRate = financingParams.interestRate / 100;
+  const loanTermYears = financingParams.loanTermYears;
+  const loanTermMonths = loanTermYears * 12;
+  
+  const depositAmount = propertyPrice * depositPercentage;
+  const loanAmount = propertyPrice * loanToValue;
+  const monthlyInterestRate = interestRate / 12;
+  
+  const monthlyPayment = (loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTermMonths))) / (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
+
+  const financingAnalysisData = {
+    financingParameters: {
+      depositAmount,
+      depositPercentage: financingParams.depositPercentage,
+      loanAmount,
+      interestRate: financingParams.interestRate,
+      loanTerm: loanTermYears,
+      monthlyPayment
+    },
+    yearlyMetrics: [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+      const monthsElapsed = year * 12;
+      let remainingBalance = loanAmount;
+      let totalPrincipalPaid = 0;
+
+      for (let month = 1; month <= monthsElapsed && month <= loanTermMonths; month++) {
+        const interestPayment = remainingBalance * monthlyInterestRate;
+        const principalPayment = monthlyPayment - interestPayment;
+        totalPrincipalPaid += principalPayment;
+        remainingBalance -= principalPayment;
+      }
+
+      acc[`year${year}`] = {
+        monthlyPayment,
+        equityBuildup: totalPrincipalPaid,
+        remainingBalance: Math.max(0, remainingBalance)
+      };
+      return acc;
+    }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
+  };
+
+  // SAVE ALL FINANCIAL DATA TO DATABASE
+  await db.execute(sql`
+    UPDATE valuation_reports 
+    SET 
+      annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
+      cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
+      financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
+      current_deposit_percentage = ${financingParams.depositPercentage.toString()},
+      current_interest_rate = ${financingParams.interestRate.toString()},
+      current_loan_term = ${loanTermYears},
+      current_deposit_amount = ${depositAmount.toString()},
+      current_loan_amount = ${loanAmount.toString()},
+      current_monthly_repayment = ${monthlyPayment.toString()},
+      updated_at = NOW()
+    WHERE property_id = ${propertyId}
+  `);
+
+  console.log(`Successfully saved comprehensive financial data for property ${propertyId}`);
+  return {
+    annualPropertyAppreciationData,
+    cashflowAnalysisData,
+    financingAnalysisData
+  };
+}
 
 // Ensure temp directory exists
 async function ensureTempDirectory() {
@@ -50,16 +213,16 @@ router.post('/generate/:propertyId', async (req, res) => {
 
     console.log(`Generating PDF report for property ${propertyId}`);
     
-    // First try simple test
+    // AUTOMATICALLY CALCULATE AND SAVE ALL FINANCIAL DATA BEFORE PDF GENERATION
     try {
-      const testBuffer = await SimplePdfTest.createTestPdf();
-      console.log('Basic PDF generation works, proceeding with full report...');
-    } catch (testError) {
-      console.error('Basic PDF test failed:', testError);
-      throw new Error('PDF library not working: ' + testError.message);
+      await calculateAndSaveFinancialDataForProperty(propertyId);
+      console.log(`Financial data calculated and saved for property ${propertyId}`);
+    } catch (financialError) {
+      console.warn(`Warning: Could not save financial data for property ${propertyId}:`, financialError);
+      // Continue with PDF generation even if financial data saving fails
     }
     
-    // Generate PDF using the service
+    // Generate PDF using the service (now with saved financial data)
     const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
     
     console.log(`PDF generated successfully, size: ${pdfBuffer.length} bytes`);
@@ -108,8 +271,17 @@ router.post('/send/:propertyId', async (req, res) => {
     if (!property) {
       return res.status(404).json({ error: 'Property not found' });
     }
+
+    // AUTOMATICALLY CALCULATE AND SAVE ALL FINANCIAL DATA BEFORE PDF GENERATION
+    try {
+      await calculateAndSaveFinancialDataForProperty(propertyId);
+      console.log(`Financial data calculated and saved for property ${propertyId}`);
+    } catch (financialError) {
+      console.warn(`Warning: Could not save financial data for property ${propertyId}:`, financialError);
+      // Continue with PDF generation even if financial data saving fails
+    }
     
-    // Generate PDF
+    // Generate PDF (now with saved financial data)
     const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
     
     // Create unique report ID and store PDF temporarily
