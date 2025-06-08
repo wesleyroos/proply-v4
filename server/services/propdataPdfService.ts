@@ -632,10 +632,11 @@ export class PropdataPdfService {
           cellPadding: 3
         },
         margin: { left: this.margin, right: this.margin },
+        tableWidth: this.pageWidth - (2 * this.margin) - 5,
         columnStyles: { 
-          0: { halign: "left", cellWidth: 50 }, 
-          1: { halign: "center", cellWidth: 60 },
-          2: { halign: "right", cellWidth: 60 }
+          0: { halign: "left", cellWidth: 45 }, 
+          1: { halign: "center", cellWidth: 55 },
+          2: { halign: "right", cellWidth: 55 }
         },
       });
 
@@ -836,6 +837,7 @@ export class PropdataPdfService {
           },
           styles: { fontSize: 9 },
           margin: { left: this.margin, right: this.margin },
+          tableWidth: this.pageWidth - (2 * this.margin) - 5,
           columnStyles: { 
             0: { halign: "left" }, 
             1: { halign: "right" },
@@ -911,6 +913,8 @@ export class PropdataPdfService {
           });
           tableData.push(balanceRow);
 
+          this.checkPageBreak(60); // Ensure table has space
+
           (this.doc as any).autoTable({
             startY: this.currentY,
             head: [["Metric", "Y1", "Y2", "Y3", "Y4", "Y5", "Y10", "Y20"]],
@@ -923,20 +927,20 @@ export class PropdataPdfService {
               fontSize: 6
             },
             styles: { 
-              fontSize: 6,
-              cellPadding: 1.5
+              fontSize: 5,
+              cellPadding: 1
             },
             margin: { left: this.margin, right: this.margin },
-            tableWidth: 'auto',
+            tableWidth: 'wrap',
             columnStyles: { 
-              0: { halign: "left" },
-              1: { halign: "right" },
-              2: { halign: "right" },
-              3: { halign: "right" },
-              4: { halign: "right" },
-              5: { halign: "right" },
-              6: { halign: "right" },
-              7: { halign: "right" }
+              0: { halign: "left", cellWidth: 25 },
+              1: { halign: "right", cellWidth: 14 },
+              2: { halign: "right", cellWidth: 14 },
+              3: { halign: "right", cellWidth: 14 },
+              4: { halign: "right", cellWidth: 14 },
+              5: { halign: "right", cellWidth: 14 },
+              6: { halign: "right", cellWidth: 14 },
+              7: { halign: "right", cellWidth: 14 }
             },
             bodyStyles: {
               0: { fillColor: [245, 245, 245] }, // Light gray for bond payment
@@ -1189,12 +1193,15 @@ export class PropdataPdfService {
   }
 
   private addWrappedText(text: string, x: number, maxWidth: number): void {
-    const lines = this.doc.splitTextToSize(text, maxWidth);
+    // Ensure text doesn't exceed page margins
+    const safeMaxWidth = Math.min(maxWidth, this.pageWidth - this.margin - x);
+    const lines = this.doc.splitTextToSize(text, safeMaxWidth);
     lines.forEach((line: string) => {
       this.checkPageBreak();
       this.doc.text(line, x, this.currentY);
-      this.currentY += 6;
+      this.currentY += 8; // Increased line spacing
     });
+    this.currentY += 5; // Extra space after text blocks
   }
 
   private checkPageBreak(requiredSpace: number = 30): void {
