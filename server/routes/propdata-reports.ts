@@ -131,8 +131,9 @@ router.post('/send/:propertyId', async (req, res) => {
     // Save PDF to temporary storage
     await fs.writeFile(filePath, pdfBuffer);
     
-    // Create download URL
-    const downloadUrl = `${req.protocol}://${req.get('host')}/api/propdata-reports/download/${reportId}`;
+    // Create download URL - use app.proply.co.za to avoid SendGrid tracking issues
+    const baseUrl = process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : `${req.protocol}://${req.get('host')}`;
+    const downloadUrl = `${baseUrl}/api/propdata-reports/download/${reportId}`;
     
     // Send email using the new email service
     const emailHtml = generatePropertyReportEmailTemplate(
