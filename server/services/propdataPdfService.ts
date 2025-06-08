@@ -1323,7 +1323,9 @@ export class PropdataPdfService {
   }
 
   private checkPageBreak(requiredSpace: number = 20): void {
-    if (this.currentY + requiredSpace > this.pageHeight - this.margin) {
+    // Reserve extra space at bottom for footer (40pt total)
+    const footerSpace = 40;
+    if (this.currentY + requiredSpace > this.pageHeight - this.margin - footerSpace) {
       this.doc.addPage();
       this.currentY = this.margin; // Start from top margin on new pages
     }
@@ -1469,7 +1471,7 @@ export class PropdataPdfService {
   }
 
   private addDisclaimersSection(): void {
-    this.checkPageBreak(100); // Ensure enough space for disclaimers
+    this.checkPageBreak(150); // Ensure enough space for disclaimers
     this.addSectionHeader("Important Disclaimers & Legal Notices");
 
     this.doc.setFontSize(9);
@@ -1486,11 +1488,22 @@ Proply Tech (Pty) Ltd and its affiliates expressly disclaim any and all liabilit
 
 By using this report, you acknowledge that the calculations and projections are indicative only and based on the information available at the time of generation. Factors beyond our control, including but not limited to market fluctuations, regulatory changes, and economic conditions, may impact actual outcomes.`;
 
-    this.addWrappedText(
-      disclaimerText,
-      this.margin,
-      this.pageWidth - 2 * this.margin,
-    );
+    // Split disclaimer into paragraphs and handle each one properly
+    const paragraphs = disclaimerText.split('\n\n');
+    
+    paragraphs.forEach((paragraph, index) => {
+      this.checkPageBreak(30); // Check before each paragraph
+      this.addWrappedText(
+        paragraph.trim(),
+        this.margin,
+        this.pageWidth - 2 * this.margin,
+      );
+      
+      // Add spacing between paragraphs (except last one)
+      if (index < paragraphs.length - 1) {
+        this.currentY += 8;
+      }
+    });
 
     this.currentY += 20;
   }
