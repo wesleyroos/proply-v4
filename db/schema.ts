@@ -420,6 +420,12 @@ export const valuationReports = pgTable("valuation_reports", {
   currentLoanAmount: decimal("current_loan_amount", { precision: 12, scale: 2 }),
   currentMonthlyRepayment: decimal("current_monthly_repayment", { precision: 10, scale: 2 }),
   
+  // COMPREHENSIVE FINANCIAL ANALYSIS DATA - Saved when generating reports
+  // These JSONB fields store complete calculated financial data for PDF generation
+  annualPropertyAppreciationData: jsonb("annual_property_appreciation_data"), // Property appreciation projections
+  cashflowAnalysisData: jsonb("cashflow_analysis_data"), // Revenue growth and cashflow analysis
+  financingAnalysisData: jsonb("financing_analysis_data"), // Detailed financing calculations and metrics
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
