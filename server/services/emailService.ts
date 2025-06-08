@@ -85,7 +85,7 @@ export function generatePropertyReportEmailTemplate(
         }
         
         .header {
-          background: linear-gradient(135deg, #1ba2ff 0%, #0d8bff 100%);
+          background: linear-gradient(135deg, #1ba2ff 0%, #0080ff 100%);
           color: white;
           padding: 40px 30px;
           text-align: center;
@@ -205,7 +205,7 @@ export function generatePropertyReportEmailTemplate(
         
         .download-button {
           display: inline-block;
-          background: linear-gradient(135deg, #1ba2ff 0%, #0d8bff 100%);
+          background: linear-gradient(135deg, #1ba2ff 0%, #0080ff 100%);
           color: white;
           padding: 16px 32px;
           text-decoration: none;
