@@ -236,8 +236,10 @@ export class PropdataPdfService {
     const rightColumn = this.margin + 90;
 
     // Left column
+    const formattedPrice = data.property.price ? 
+      Number(data.property.price).toLocaleString('en-ZA') : "N/A";
     this.doc.text(
-      `Price: R${data.property.price?.toLocaleString() || "N/A"}`,
+      `Price: R${formattedPrice}`,
       leftColumn,
       this.currentY,
     );
