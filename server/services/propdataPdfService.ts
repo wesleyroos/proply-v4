@@ -258,21 +258,61 @@ export class PropdataPdfService {
 
       // Add logo to PDF if loaded successfully
       if (logoBase64) {
-        // Logo dimensions - maintaining same proportions as before
-        const logoHeight = 12;
-        const logoAspectRatio = 868 / 229; // Standard aspect ratio
-        const logoWidth = logoHeight * logoAspectRatio;
-        const logoX = this.pageWidth - this.margin - logoWidth;
+        try {
+          // Get actual image dimensions using sharp
+          const sharp = await import("sharp");
+          const logoBuffer = Buffer.from(logoBase64, 'base64');
+          const metadata = await sharp.default(logoBuffer).metadata();
+          
+          if (metadata.width && metadata.height) {
+            // Fixed maximum dimensions to prevent distortion
+            const maxLogoHeight = 12;
+            const maxLogoWidth = 45.4;
+            
+            // Calculate actual aspect ratio from the image metadata
+            const actualAspectRatio = metadata.width / metadata.height;
+            
+            // Scale to fit within max dimensions while preserving aspect ratio
+            let logoWidth = maxLogoWidth;
+            let logoHeight = logoWidth / actualAspectRatio;
+            
+            // If height exceeds max, scale by height instead
+            if (logoHeight > maxLogoHeight) {
+              logoHeight = maxLogoHeight;
+              logoWidth = logoHeight * actualAspectRatio;
+            }
+            
+            const logoX = this.pageWidth - this.margin - logoWidth;
 
-        this.doc.addImage(
-          logoBase64,
-          logoFormat,
-          logoX,
-          this.margin,
-          logoWidth,
-          logoHeight,
-        );
-        console.log("Successfully added logo to PDF");
+            this.doc.addImage(
+              logoBase64,
+              logoFormat,
+              logoX,
+              this.margin,
+              logoWidth,
+              logoHeight,
+            );
+            console.log(`Successfully added logo to PDF: ${logoWidth.toFixed(1)}x${logoHeight.toFixed(1)} (aspect ratio: ${actualAspectRatio.toFixed(2)})`);
+          } else {
+            throw new Error("Could not determine image dimensions");
+          }
+        } catch (error) {
+          console.error("Error getting image dimensions:", error);
+          // Fallback to locked dimensions that work well for most logos
+          const logoHeight = 12;
+          const logoWidth = 36; // Conservative width to prevent overflow
+          const logoX = this.pageWidth - this.margin - logoWidth;
+
+          this.doc.addImage(
+            logoBase64,
+            logoFormat,
+            logoX,
+            this.margin,
+            logoWidth,
+            logoHeight,
+          );
+          console.log("Used fallback logo dimensions to prevent distortion");
+        }
       } else {
         // Text fallback if no logo could be loaded
         console.log("Using text fallback logo");
