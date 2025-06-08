@@ -92,6 +92,7 @@ export const agencyBranches = pgTable("agency_branches", {
   status: text("status").default("active").notNull(), // active, inactive
   autoSyncEnabled: boolean("auto_sync_enabled").default(true).notNull(),
   syncFrequency: text("sync_frequency").default("5 minutes").notNull(),
+  logoUrl: text("logo_url"), // Path to uploaded agency logo
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

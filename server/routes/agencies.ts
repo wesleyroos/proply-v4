@@ -2,8 +2,42 @@ import { Router } from "express";
 import { db } from "@db";
 import { propdataListings, syncTracking, agencyBranches } from "@db/schema";
 import { desc, count, eq, inArray, sql } from "drizzle-orm";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 const router = Router();
+
+// Configure multer for logo uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(process.cwd(), 'public', 'agency-logos');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const agencyId = req.params.agencyId;
+    cb(null, `agency-${agencyId}-${Date.now()}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'));
+    }
+  }
+});
 
 // GET /api/agencies - Get all connected agencies with their status
 router.get("/agencies", async (req, res) => {
@@ -407,6 +441,128 @@ router.post("/agencies/add-integration", async (req, res) => {
     console.error("Error adding agency integration:", error);
     return res.status(500).json({ 
       error: "Failed to add agency integration", 
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// POST /api/agencies/:agencyId/upload-logo - Upload agency logo
+router.post("/agencies/:agencyId/upload-logo", upload.single('logo'), async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const agencyId = parseInt(req.params.agencyId);
+    if (isNaN(agencyId)) {
+      return res.status(400).json({ error: "Invalid agency ID" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    // Check if agency exists
+    const existingAgency = await db
+      .select()
+      .from(agencyBranches)
+      .where(eq(agencyBranches.id, agencyId))
+      .limit(1);
+
+    if (existingAgency.length === 0) {
+      // Delete uploaded file if agency doesn't exist
+      fs.unlinkSync(req.file.path);
+      return res.status(404).json({ error: "Agency not found" });
+    }
+
+    // Remove old logo if it exists
+    if (existingAgency[0].logoUrl) {
+      const oldLogoPath = path.join(process.cwd(), 'public', existingAgency[0].logoUrl);
+      if (fs.existsSync(oldLogoPath)) {
+        fs.unlinkSync(oldLogoPath);
+      }
+    }
+
+    // Update agency with new logo URL
+    const logoUrl = `/agency-logos/${req.file.filename}`;
+    await db
+      .update(agencyBranches)
+      .set({ 
+        logoUrl,
+        updatedAt: new Date()
+      })
+      .where(eq(agencyBranches.id, agencyId));
+
+    return res.json({
+      success: true,
+      logoUrl,
+      message: "Logo uploaded successfully"
+    });
+  } catch (error) {
+    console.error("Error uploading agency logo:", error);
+    
+    // Clean up uploaded file on error
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    return res.status(500).json({ 
+      error: "Failed to upload logo", 
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// DELETE /api/agencies/:agencyId/logo - Remove agency logo
+router.delete("/agencies/:agencyId/logo", async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const agencyId = parseInt(req.params.agencyId);
+    if (isNaN(agencyId)) {
+      return res.status(400).json({ error: "Invalid agency ID" });
+    }
+
+    // Get current agency
+    const agency = await db
+      .select()
+      .from(agencyBranches)
+      .where(eq(agencyBranches.id, agencyId))
+      .limit(1);
+
+    if (agency.length === 0) {
+      return res.status(404).json({ error: "Agency not found" });
+    }
+
+    if (!agency[0].logoUrl) {
+      return res.status(400).json({ error: "No logo to remove" });
+    }
+
+    // Delete logo file
+    const logoPath = path.join(process.cwd(), 'public', agency[0].logoUrl);
+    if (fs.existsSync(logoPath)) {
+      fs.unlinkSync(logoPath);
+    }
+
+    // Update database
+    await db
+      .update(agencyBranches)
+      .set({ 
+        logoUrl: null,
+        updatedAt: new Date()
+      })
+      .where(eq(agencyBranches.id, agencyId));
+
+    return res.json({
+      success: true,
+      message: "Logo removed successfully"
+    });
+  } catch (error) {
+    console.error("Error removing agency logo:", error);
+    return res.status(500).json({ 
+      error: "Failed to remove logo", 
       details: error instanceof Error ? error.message : "Unknown error"
     });
   }

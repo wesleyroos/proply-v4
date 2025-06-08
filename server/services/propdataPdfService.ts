@@ -323,7 +323,7 @@ export class PropdataPdfService {
     // Add static map and property image side by side
     await this.addMapAndImage(data);
 
-    this.currentY += 10;
+    this.currentY += 5;
   }
 
   private async addMapAndImage(data: PropertyPdfData): Promise<void> {
@@ -719,7 +719,7 @@ export class PropdataPdfService {
         this.margin,
         this.pageWidth - 2 * this.margin,
       );
-      this.currentY += 15;
+      this.currentY += 5;
     }
   }
 
