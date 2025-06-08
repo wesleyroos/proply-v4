@@ -484,14 +484,18 @@ router.post("/agencies/:agencyId/upload-logo", upload.single('logo'), async (req
 
     // Remove old logo if it exists
     if (existingAgency[0].logoUrl) {
-      const oldLogoPath = path.join(process.cwd(), 'public', existingAgency[0].logoUrl);
+      // Handle both old and new URL formats
+      const logoPath = existingAgency[0].logoUrl.startsWith('/static-assets/') 
+        ? existingAgency[0].logoUrl.replace('/static-assets/', '')
+        : existingAgency[0].logoUrl.replace('/', '');
+      const oldLogoPath = path.join(process.cwd(), 'public', logoPath);
       if (fs.existsSync(oldLogoPath)) {
         fs.unlinkSync(oldLogoPath);
       }
     }
 
     // Update agency with new logo URL
-    const logoUrl = `/agency-logos/${req.file.filename}`;
+    const logoUrl = `/static-assets/agency-logos/${req.file.filename}`;
     await db
       .update(agencyBranches)
       .set({ 
