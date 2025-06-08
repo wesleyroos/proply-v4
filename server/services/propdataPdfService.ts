@@ -210,6 +210,15 @@ export class PropdataPdfService {
       this.doc.text("PROPLY", logoX, this.margin + 15);
     }
 
+    // Add thin blue divider line below the heading
+    this.doc.setDrawColor(27, 162, 255);
+    this.doc.line(
+      this.margin,
+      this.margin + 25,
+      this.pageWidth - this.margin,
+      this.margin + 25,
+    );
+
     // Reset text color
     this.doc.setTextColor(0, 0, 0);
 
