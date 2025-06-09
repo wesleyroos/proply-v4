@@ -1798,9 +1798,20 @@ export default function PropertyDetailModal({
                 ))}
               </div>
               {propertyImages.length > imagesPerView && (
-                <p className="text-sm text-muted-foreground mt-2 text-center">
-                  Showing {imagesPerView} of {propertyImages.length} images
-                </p>
+                <div className="flex items-center justify-center mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAllImages(!showAllImages)}
+                    className="text-sm"
+                  >
+                    {showAllImages ? (
+                      <>Show Less Images</>
+                    ) : (
+                      <>Show All {propertyImages.length} Images</>
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
           ) : (
