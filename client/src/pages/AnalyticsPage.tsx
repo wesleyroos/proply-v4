@@ -22,9 +22,12 @@ const fetchAgencyInteractions = async () => {
 const fetchPriceLabsUsage = async () => {
   const response = await fetch('/api/analytics/pricelabs-usage');
   if (!response.ok) {
-    throw new Error('Failed to fetch PriceLabs usage data');
+    console.error('PriceLabs usage fetch error:', response.status, response.statusText);
+    throw new Error(`Failed to fetch PriceLabs usage data: ${response.status}`);
   }
-  return response.json();
+  const data = await response.json();
+  console.log('PriceLabs usage data received:', data);
+  return data;
 };
 
 const AnalyticsDashboard = () => {
