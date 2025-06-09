@@ -60,38 +60,7 @@ const AnalyticsDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="w-full max-w-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">PriceLabs API Usage</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {priceLabsLoading ? (
-              <div className="flex items-center">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">Loading...</span>
-              </div>
-            ) : priceLabsError ? (
-              <div className="text-sm text-red-500">Failed to load</div>
-            ) : (
-              <div className="space-y-2">
-                {priceLabsData?.monthlyUsage?.length > 0 ? (
-                  priceLabsData.monthlyUsage.slice(0, 6).map((month: any, index: number) => (
-                    <div key={index} className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">{month.month.trim()}:</span>
-                      <span className="font-semibold">{month.totalCalls} calls</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-sm text-muted-foreground">No API calls recorded yet</div>
-                )}
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground mt-2">
-              Monthly API call breakdown
-            </p>
-          </CardContent>
-        </Card>
+
       </div>
     </div>
   );
