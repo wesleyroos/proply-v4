@@ -1,0 +1,50 @@
+Property details for rental analysis: {
+  address: '107 The Signature, 4 Prestwich Street, De Waterkant, Cape Town',
+  bedrooms: 2,
+  bathrooms: 2,
+  propertyType: 'Apartment',
+  price: '4800000.00',
+  floorSize: 83,
+  parkingSpaces: 0,
+  imagesProvided: 10
+}
+Expected rental range for 2 bedrooms: R25,000-R40,000
+Fetching PriceLabs data...
+PriceLabs data received: {
+  percentile25: { nightly: 1592, monthly: 28650, annual: 343800 },
+  percentile50: { nightly: 2137, monthly: 42939, annual: 515200 },
+  percentile75: { nightly: 2892, monthly: 63150, annual: 757800 },
+  percentile90: { nightly: 4255, monthly: 90917, annual: 1091000 },
+  occupancy: 72,
+  yield: 0
+}
+Sending images to OpenAI for visual analysis: 10 images
+8:54:28 AM [express] GET /api/propdata/listings/sync-status 304 in 135ms :: {"id":1318,"syncType":"q…
+8:54:59 AM [express] GET /api/propdata/listings/sync-status 304 in 256ms :: {"id":1318,"syncType":"q…
+Valuation report generated successfully
+OpenAI rental estimates received: {
+  longTerm: {
+    minMonthlyRental: 35000,
+    maxMonthlyRental: 45000,
+    reasoning: "The property's condition, modern finishes, and prime location make it highly attractive to renters. The lack of specified parking spaces slightly moderates the upper rental potential."
+  }
+}
+Final rental performance data: {
+  shortTerm: {
+    percentile25: { nightly: 1592, monthly: 28650, annual: 343800 },
+    percentile50: { nightly: 2137, monthly: 42939, annual: 515200 },
+    percentile75: { nightly: 2892, monthly: 63150, annual: 757800 },
+    percentile90: { nightly: 4255, monthly: 90917, annual: 1091000 },
+    occupancy: 72,
+    yield: 0
+  },
+  longTerm: {
+    minRental: 35000,
+    maxRental: 45000,
+    minYield: 8.8,
+    maxYield: 11.3,
+    managementFee: '8-10%',
+    reasoning: "The property's condition, modern finishes, and prime location make it highly attractive to renters. The lack of specified parking spaces slightly moderates the upper rental potential."
+  }
+}
+Updated existing rental performance data in database

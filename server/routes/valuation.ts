@@ -281,9 +281,11 @@ CRITICAL: Rental estimates MUST vary based on:
 4. VISUAL CONDITION: Use image analysis to adjust rental estimates up/down by 10-30%
 5. PARKING AVAILABILITY: ${parkingSpaces || 0} parking spaces add premium
 
-Provide realistic South African Rand valuations and rental estimates based on current Cape Town property market rates. For rental estimates, consider standard 12-month lease terms and factor in visual property condition, finishes, and overall tenant appeal.
+IMPORTANT RENTAL BASELINE: Many property agents use a rule of thumb where monthly rental = 0.6% of purchase price (R${Math.round(price * 0.006).toLocaleString()} for this property). Use this as a baseline reference point and adjust based on the specific property characteristics and market conditions. If the property warrants it, this 0.6% figure can serve as a midpoint for your rental range.
 
-ENSURE rental estimates are property-specific and NOT generic ranges.`;
+Provide realistic South African Rand valuations and rental estimates based on current South African property market rates. For rental estimates, consider standard 12-month lease terms and factor in visual property condition, finishes, and overall tenant appeal.
+
+ENSURE rental estimates are property-specific and NOT generic ranges, and include the 0.6% rule consideration in your reasoning.`;
 
     console.log('Generating valuation report for property:', address);
     console.log('Property details for rental analysis:', {
