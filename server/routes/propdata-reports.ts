@@ -9,6 +9,7 @@ import { db } from '../../db';
 import { propdataListings, valuationReports, rentalPerformanceData } from '../../db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { logReportActivity } from './report-activity';
+import { ReportMappingService } from '../services/reportMappingService';
 
 const router = Router();
 
@@ -132,6 +133,9 @@ router.post('/send/:propertyId', async (req, res) => {
     const reportId = createId();
     await ensureTempDirectory();
     
+    // Store mapping between report ID and property ID for activity tracking
+    ReportMappingService.storeReportMapping(reportId, propertyId);
+    
     const filename = `Proply_Report_${propertyId}_${new Date().toISOString().split('T')[0]}.pdf`;
     const filePath = path.join(PDF_STORAGE_PATH, `${reportId}.pdf`);
     
@@ -224,10 +228,13 @@ router.get('/download/:reportId', async (req, res) => {
       // Check if file exists
       await fs.access(filePath);
       
-      // Log download activity
+      // Log download activity - need to extract propertyId from filename or store it
       try {
+        // Extract property ID from filename if stored in format Proply_Report_PropertyId_Date.pdf
+        // For now, we'll need to modify how we store the mapping
         await logReportActivity({
-          propertyId: reportId, // Using reportId as propertyId for now
+          propertyId: reportId, // This needs to be the actual PropData property ID
+          reportId: reportId,
           activityType: 'downloaded',
           recipientEmail: 'agent@download.com', // Placeholder for agent downloads
           ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
