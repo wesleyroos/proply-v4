@@ -2072,8 +2072,8 @@ export function registerRoutes(app: Express): Server {
 
   // PriceLabs API usage by month
   app.get("/api/analytics/pricelabs-usage", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
     }
 
     try {
