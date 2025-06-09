@@ -3416,6 +3416,9 @@ export default function PropertyDetailModal({
                                 {activity.recipientName && (
                                   <div className="text-xs text-muted-foreground">{activity.recipientName}</div>
                                 )}
+                                {activity.ipAddress && (
+                                  <div className="text-xs text-muted-foreground">IP: {activity.ipAddress}</div>
+                                )}
                               </div>
                             ) : (
                               <div>
