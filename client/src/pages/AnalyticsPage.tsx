@@ -92,7 +92,7 @@ const AnalyticsDashboard = () => {
                 <p className="text-xs text-muted-foreground">Total API calls</p>
                 {priceLabsData?.monthlyUsage?.slice(0, 3).map((month: any) => (
                   <div key={month.month} className="text-xs text-muted-foreground mt-1">
-                    {new Date(month.month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}: {month.apiCalls} calls
+                    {new Date(month.month + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}: {month.apiCalls} calls
                   </div>
                 ))}
               </div>
