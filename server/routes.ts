@@ -2070,6 +2070,35 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // PriceLabs API usage by month
+  app.get("/api/analytics/pricelabs-usage", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Not authorized");
+    }
+
+    try {
+      // Get PriceLabs API calls grouped by month from apiUsage table
+      const monthlyUsage = await db
+        .select({
+          month: sql`to_char(date_trunc('month', ${apiUsage.timestamp}), 'Month YYYY')`.as('month'),
+          monthYear: sql`date_trunc('month', ${apiUsage.timestamp})`.as('monthYear'),
+          totalCalls: sql`count(*)::integer`.as('totalCalls'),
+        })
+        .from(apiUsage)
+        .where(sql`${apiUsage.endpoint} = '/api/revenue-data'`)
+        .groupBy(sql`date_trunc('month', ${apiUsage.timestamp})`)
+        .orderBy(sql`date_trunc('month', ${apiUsage.timestamp}) DESC`);
+
+      res.json({ monthlyUsage });
+    } catch (error) {
+      console.error("Error fetching PriceLabs usage:", error);
+      res.status(500).json({
+        error: "Failed to fetch PriceLabs usage",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
   // Get rental performance data for a specific property
   app.get("/api/rental-performance/:propertyId", async (req, res) => {
     if (!req.isAuthenticated()) {
