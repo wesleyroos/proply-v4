@@ -25,12 +25,14 @@ import {
   Activity,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  BarChart3
 } from 'lucide-react';
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { AddAgencyModal } from "@/components/AddAgencyModal";
 import { AgencyLogoUpload } from "@/components/AgencyLogoUpload";
+import { AgencyStatsModal } from "@/components/AgencyStatsModal";
 
 interface Agency {
   id: string;

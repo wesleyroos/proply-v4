@@ -2514,6 +2514,70 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Individual agency report statistics endpoint
+  app.get("/api/agency-report-stats/:agencyName", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).send("Admin access required");
+    }
+
+    const { agencyName } = req.params;
+
+    try {
+      // Get all reports for this agency
+      const reports = await db
+        .select({
+          id: reportGenerations.id,
+          propertyId: reportGenerations.propertyId,
+          reportType: reportGenerations.reportType,
+          timestamp: reportGenerations.timestamp,
+          userId: reportGenerations.userId,
+        })
+        .from(reportGenerations)
+        .where(eq(reportGenerations.agencyName, agencyName))
+        .orderBy(sql`${reportGenerations.timestamp} DESC`);
+
+      // Get monthly breakdown
+      const monthlyStats = await db
+        .select({
+          month: sql`TO_CHAR(DATE_TRUNC('month', ${reportGenerations.timestamp}), 'YYYY-MM')`.as('month'),
+          reports: sql`COUNT(*)::int`.as('reports')
+        })
+        .from(reportGenerations)
+        .where(eq(reportGenerations.agencyName, agencyName))
+        .groupBy(sql`DATE_TRUNC('month', ${reportGenerations.timestamp})`)
+        .orderBy(sql`DATE_TRUNC('month', ${reportGenerations.timestamp}) DESC`)
+        .limit(12);
+
+      // Get report type breakdown
+      const reportTypeStats = await db
+        .select({
+          reportType: reportGenerations.reportType,
+          count: sql`COUNT(*)::int`.as('count')
+        })
+        .from(reportGenerations)
+        .where(eq(reportGenerations.agencyName, agencyName))
+        .groupBy(reportGenerations.reportType)
+        .orderBy(sql`COUNT(*) DESC`);
+
+      // Get total stats
+      const totalReports = reports.length;
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+      const currentMonthReports = monthlyStats.find(stat => stat.month === currentMonth)?.reports || 0;
+
+      res.json({
+        agencyName,
+        totalReports,
+        currentMonthReports,
+        reports,
+        monthlyStats,
+        reportTypeStats
+      });
+    } catch (error) {
+      console.error("Error fetching agency report stats:", error);
+      res.status(500).json({ error: "Failed to fetch agency report stats" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
