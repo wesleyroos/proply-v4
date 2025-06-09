@@ -2435,11 +2435,11 @@ export function registerRoutes(app: Express): Server {
     try {
       const usage = await db
         .select({
-          month: sql`DATE_TRUNC('month', ${priceLabsUsage.timestamp})`.as('month'),
-          apiCalls: sql`COUNT(*)`.as('api_calls'),
-          successfulCalls: sql`SUM(CASE WHEN ${priceLabsUsage.success} THEN 1 ELSE 0 END)`.as('successful_calls'),
-          failedCalls: sql`SUM(CASE WHEN NOT ${priceLabsUsage.success} THEN 1 ELSE 0 END)`.as('failed_calls'),
-          avgResponseTime: sql`AVG(${priceLabsUsage.responseTime})`.as('avg_response_time')
+          month: sql`TO_CHAR(DATE_TRUNC('month', ${priceLabsUsage.timestamp}), 'YYYY-MM-DD')`.as('month'),
+          apiCalls: sql`COUNT(*)::int`.as('api_calls'),
+          successfulCalls: sql`SUM(CASE WHEN ${priceLabsUsage.success} THEN 1 ELSE 0 END)::int`.as('successful_calls'),
+          failedCalls: sql`SUM(CASE WHEN NOT ${priceLabsUsage.success} THEN 1 ELSE 0 END)::int`.as('failed_calls'),
+          avgResponseTime: sql`ROUND(AVG(${priceLabsUsage.responseTime}))::int`.as('avg_response_time')
         })
         .from(priceLabsUsage)
         .groupBy(sql`DATE_TRUNC('month', ${priceLabsUsage.timestamp})`)
