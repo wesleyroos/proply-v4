@@ -161,6 +161,8 @@ export default function PropertyDetailModal({
   const [showSendReportDialog, setShowSendReportDialog] = useState(false);
   const [sendToAgent, setSendToAgent] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [imagesPerView, setImagesPerView] = useState(12);
+  const [showAllImages, setShowAllImages] = useState(false);
 
   // Fetch report activity data
   const { data: reportActivity, refetch: refetchActivity } = useQuery({
@@ -1191,9 +1193,7 @@ export default function PropertyDetailModal({
     });
   };
 
-  // Display exactly 8 images
-  const [imagesPerView, setImagesPerView] = useState(12);
-  const [showAllImages, setShowAllImages] = useState(false);
+  // Display exactly 12 images initially
 
   // Render Financing Analysis content
   const renderFinancingAnalysis = () => {
