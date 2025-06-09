@@ -80,12 +80,16 @@ const createOptimizedImageUrl = (
 ) => {
   if (!originalUrl) return originalUrl;
 
+  // For original size, use direct URL to avoid processing delay
+  if (size === "original") {
+    return originalUrl;
+  }
+
   // Use server-side image optimization endpoint for better performance
   const sizeParams = {
     thumbnail: { width: 300, height: 200, quality: 75 },
     medium: { width: 800, height: 600, quality: 85 },
     large: { width: 1200, height: 900, quality: 90 },
-    original: { width: 1920, height: 1080, quality: 95 },
   };
 
   const params = sizeParams[size];
@@ -3258,7 +3262,7 @@ export default function PropertyDetailModal({
               <img
                 src={createOptimizedImageUrl(
                   propertyImages[fullScreenImageIndex],
-                  "large",
+                  "original",
                 )}
                 alt={`Property ${property?.address} - Full screen ${fullScreenImageIndex + 1}`}
                 className="max-w-full max-h-full object-contain"
@@ -3277,7 +3281,7 @@ export default function PropertyDetailModal({
                     <img
                       src={createOptimizedImageUrl(
                         propertyImages[fullScreenImageIndex - 1],
-                        "large",
+                        "original",
                       )}
                       alt=""
                       className="hidden"
@@ -3289,7 +3293,7 @@ export default function PropertyDetailModal({
                     <img
                       src={createOptimizedImageUrl(
                         propertyImages[fullScreenImageIndex + 1],
-                        "large",
+                        "original",
                       )}
                       alt=""
                       className="hidden"
