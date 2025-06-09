@@ -162,10 +162,11 @@ export default function PropertyDetailModal({
     queryKey: ['/api/report-activity', property?.propdataId],
     queryFn: async () => {
       if (!property?.propdataId) return [];
-      const response = await fetch(`/api/report-activity/${property.propdataId}`);
+      const response = await fetch(`/api/report-activity/${property.propdataId}?t=${Date.now()}`);
       if (!response.ok) return [];
       const data = await response.json();
       console.log(`Activity data for property ${property.propdataId}:`, data);
+      console.table(data.map(item => ({ id: item.id, type: item.activityType, email: item.recipientEmail, ip: item.ipAddress, timestamp: item.timestamp })));
       return data;
     },
     enabled: !!property?.propdataId,
