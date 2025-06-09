@@ -4,6 +4,7 @@ import { fetchPriceLabsData } from "./rental-performance";
 import { db } from "../../db";
 import { rentalPerformanceData } from "../../db/schema";
 import { eq, and, sql } from "drizzle-orm";
+import { trackReportGeneration } from "../utils/report-tracker";
 
 const router = Router();
 

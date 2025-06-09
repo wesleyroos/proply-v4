@@ -24,6 +24,7 @@ import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { trackPriceLabsApiCall } from "./utils/pricelabs-tracker";
+import { trackReportGeneration } from "./utils/report-tracker";
 import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
 import { suburbs, priceLabsUsage, reportGenerations } from "@db/schema";
