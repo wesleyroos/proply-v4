@@ -59,6 +59,7 @@ import {
   Calculator,
   Download,
   ChevronDown,
+  BarChart3,
 } from "lucide-react";
 import {
   LineChart,
@@ -154,6 +155,7 @@ export default function PropertyDetailModal({
   const [isSendingReport, setIsSendingReport] = useState(false);
   const [showSendReportDialog, setShowSendReportDialog] = useState(false);
   const [sendToAgent, setSendToAgent] = useState(false);
+  const [showActivityModal, setShowActivityModal] = useState(false);
   // Replace local state with React Query for database consistency
   const { data: valuationReport, refetch: refetchValuation } = useQuery({
     queryKey: ['/api/valuation-reports', property?.propdataId],
@@ -1574,6 +1576,13 @@ export default function PropertyDetailModal({
                     >
                       <Send className="h-4 w-4 mr-2" />
                       Send Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setShowActivityModal(true)}
+                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress}
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Activity
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

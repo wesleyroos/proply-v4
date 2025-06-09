@@ -599,6 +599,25 @@ export const propertyListings = pgTable("property_listings", {
 export type InsertPropertyListing = typeof propertyListings.$inferInsert;
 export type SelectPropertyListing = typeof propertyListings.$inferSelect;
 
+// Report activity tracking table
+export const reportActivity = pgTable("report_activity", {
+  id: serial("id").primaryKey(),
+  propertyId: text("property_id").notNull(), // PropData property ID
+  reportId: text("report_id"), // For downloads, references the temp file
+  activityType: text("activity_type").notNull(), // 'sent' or 'downloaded'
+  recipientEmail: text("recipient_email"), // For sends, the email address
+  recipientName: text("recipient_name"), // For sends, the recipient name
+  ipAddress: text("ip_address"), // For downloads, partial IP for privacy
+  userAgent: text("user_agent"), // Browser info for downloads
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  userId: integer("user_id"), // User who initiated the send (for sent activities)
+});
+
+export const insertReportActivitySchema = createInsertSchema(reportActivity);
+export const selectReportActivitySchema = createSelectSchema(reportActivity);
+export type InsertReportActivity = typeof reportActivity.$inferInsert;
+export type SelectReportActivity = typeof reportActivity.$inferSelect;
+
 export const insertSyncTrackingSchema = createInsertSchema(syncTracking);
 export const selectSyncTrackingSchema = createSelectSchema(syncTracking);
 export type InsertSyncTracking = typeof syncTracking.$inferInsert;
