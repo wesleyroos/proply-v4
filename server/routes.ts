@@ -11,7 +11,7 @@ import {
   agencySettings,
   type SelectUser,
   type InsertUser,
-  apiUsage,
+
   subscriptionHistory,
   invoices,
   passwordResetTokens,

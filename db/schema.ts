@@ -190,15 +190,7 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Add this new table after the existing tables but before the relations
-export const apiUsage = pgTable("api_usage", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  endpoint: text("endpoint").notNull(),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-  responseTime: integer("response_time"), // in milliseconds
-  success: boolean("success").default(true).notNull(),
-});
+
 
 // Table for collecting emails from Deal Score report downloads
 export const dealScoreLeads = pgTable("deal_score_leads", {
@@ -482,12 +474,7 @@ export const rentalPerformanceDataRelations = relations(rentalPerformanceData, (
 
 
 // Add this to the relations section
-export const apiUsageRelations = relations(apiUsage, ({ one }) => ({
-  user: one(users, {
-    fields: [apiUsage.userId],
-    references: [users.id],
-  }),
-}));
+
 
 export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
   user: one(users, {
@@ -522,8 +509,7 @@ export const selectAgencySettingsSchema = createSelectSchema(agencySettings);
 export const insertReportTrackingSchema = createInsertSchema(reportTracking);
 export const selectReportTrackingSchema = createSelectSchema(reportTracking);
 
-export const insertApiUsageSchema = createInsertSchema(apiUsage);
-export const selectApiUsageSchema = createSelectSchema(apiUsage);
+
 export const insertSubscriptionHistorySchema = createInsertSchema(subscriptionHistory);
 export const selectSubscriptionHistorySchema = createSelectSchema(subscriptionHistory);
 export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens);
@@ -554,8 +540,7 @@ export type SelectReportTracking = typeof reportTracking.$inferSelect;
 
 export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
 export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
-export type InsertApiUsage = typeof apiUsage.$inferInsert;
-export type SelectApiUsage = typeof apiUsage.$inferSelect;
+
 export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;
 export type InsertInvoice = typeof invoices.$inferInsert;
