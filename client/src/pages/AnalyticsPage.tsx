@@ -18,17 +18,7 @@ const fetchAgencyInteractions = async () => {
   return data.agencies?.length || 0;
 };
 
-// API fetch function for PriceLabs usage
-const fetchPriceLabsUsage = async () => {
-  const response = await fetch('/api/analytics/pricelabs-usage');
-  if (!response.ok) {
-    console.error('PriceLabs usage fetch error:', response.status, response.statusText);
-    throw new Error(`Failed to fetch PriceLabs usage data: ${response.status}`);
-  }
-  const data = await response.json();
-  console.log('PriceLabs usage data received:', data);
-  return data;
-};
+
 
 const AnalyticsDashboard = () => {
   const { data: agencyCount, isLoading, error } = useQuery({
@@ -37,11 +27,7 @@ const AnalyticsDashboard = () => {
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 
-  const { data: priceLabsData, isLoading: priceLabsLoading, error: priceLabsError } = useQuery({
-    queryKey: ['pricelabs-usage'],
-    queryFn: fetchPriceLabsUsage,
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
-  });
+
 
   return (
     <div className="p-6">

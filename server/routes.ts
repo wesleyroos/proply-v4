@@ -900,15 +900,7 @@ export function registerRoutes(app: Express): Server {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const apiStats = await db
-        .select({
-          monthlyApiCalls: sql`count(*)`,
-        })
-        .from(apiUsage)
-        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
-        .then((rows) => rows[0]);
-
-      // Separate query for reports
+      // Get reports
       const reportStats = await db
         .select({
           monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
@@ -919,7 +911,7 @@ export function registerRoutes(app: Express): Server {
 
       res.json({
         ...userStats,
-        monthlyApiCalls: apiStats.monthlyApiCalls,
+        monthlyApiCalls: 0,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
         totalProperties: propertyStats.totalProperties || 0,
@@ -1725,20 +1717,10 @@ export function registerRoutes(app: Express): Server {
         .from(users)
         .then((rows) => rows[0]);
 
-      // Get API usage for current month
+      // Get reports generated
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
-
-      const apiStats = await db
-        .select({
-          monthlyApiCalls: sql`count(*)`,
-        })
-        .from(apiUsage)
-        .where(sql`${apiUsage.timestamp} >= ${startOfMonth}`)
-        .then((rows) => rows[0]);
-
-      // Get reports generated
       const reportStats = await db
         .select({
           monthlyReportsGenerated: sql`count(*) filter (where ${propertyAnalyzerResults.createdAt} >= ${startOfMonth})`,
@@ -1764,7 +1746,7 @@ export function registerRoutes(app: Express): Server {
 
       res.json({
         ...userStats,
-        monthlyApiCalls: apiStats.monthlyApiCalls,
+        monthlyApiCalls: 0,
         monthlyReportsGenerated: reportStats.monthlyReportsGenerated || 0,
         totalReportsGenerated: reportStats.totalReportsGenerated || 0,
         dailyAnalytics,
