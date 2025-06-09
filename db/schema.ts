@@ -192,6 +192,17 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
 
 
 
+// PriceLabs API usage tracking
+export const priceLabsUsage = pgTable("pricelabs_usage", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  endpoint: varchar("endpoint", { length: 255 }).notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  responseTime: integer("response_time"), // in milliseconds
+  success: boolean("success").default(true).notNull(),
+  errorMessage: text("error_message"),
+});
+
 // Table for collecting emails from Deal Score report downloads
 export const dealScoreLeads = pgTable("deal_score_leads", {
   id: serial("id").primaryKey(),
@@ -473,8 +484,12 @@ export const rentalPerformanceDataRelations = relations(rentalPerformanceData, (
 }));
 
 
-// Add this to the relations section
-
+export const priceLabsUsageRelations = relations(priceLabsUsage, ({ one }) => ({
+  user: one(users, {
+    fields: [priceLabsUsage.userId],
+    references: [users.id],
+  }),
+}));
 
 export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
   user: one(users, {
@@ -540,6 +555,9 @@ export type SelectReportTracking = typeof reportTracking.$inferSelect;
 
 export type InsertPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferInsert;
 export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$inferSelect;
+
+export type InsertPriceLabsUsage = typeof priceLabsUsage.$inferInsert;
+export type SelectPriceLabsUsage = typeof priceLabsUsage.$inferSelect;
 
 export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;
