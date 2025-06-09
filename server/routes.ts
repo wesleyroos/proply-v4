@@ -2145,6 +2145,22 @@ export function registerRoutes(app: Express): Server {
       const { PropdataPdfService } = await import('./services/propdataPdfService.js');
       const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
       
+      // Log download activity
+      try {
+        const { logReportActivity } = await import('./routes/report-activity.js');
+        await logReportActivity({
+          propertyId: propertyId,
+          activityType: 'downloaded',
+          recipientEmail: req.user?.email || 'user@download.com',
+          ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+          userAgent: req.get('User-Agent') || 'unknown',
+          userId: req.user?.id
+        });
+      } catch (logError) {
+        console.error('Failed to log download activity:', logError);
+        // Continue with download even if logging fails
+      }
+      
       const filename = `Proply_Report_${propertyId}_${new Date().toISOString().split('T')[0]}.pdf`;
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
