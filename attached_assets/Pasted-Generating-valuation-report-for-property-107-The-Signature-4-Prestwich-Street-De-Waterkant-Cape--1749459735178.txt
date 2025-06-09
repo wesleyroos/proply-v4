@@ -1,0 +1,50 @@
+Generating valuation report for property: 107 The Signature, 4 Prestwich Street, De Waterkant, Cape Town
+Property details for rental analysis: {
+  address: '107 The Signature, 4 Prestwich Street, De Waterkant, Cape Town',
+  bedrooms: 2,
+  bathrooms: 2,
+  propertyType: 'Apartment',
+  price: '4800000.00',
+  floorSize: 83,
+  parkingSpaces: 0,
+  imagesProvided: 10
+}
+Expected rental range for 2 bedrooms: R25,000-R40,000
+Fetching PriceLabs data...
+PriceLabs data received: {
+  percentile25: { nightly: 1592, monthly: 28650, annual: 343800 },
+  percentile50: { nightly: 2137, monthly: 42939, annual: 515200 },
+  percentile75: { nightly: 2892, monthly: 63150, annual: 757800 },
+  percentile90: { nightly: 4255, monthly: 90917, annual: 1091000 },
+  occupancy: 72,
+  yield: 0
+}
+Sending images to OpenAI for visual analysis: 10 images
+9:00:54 AM [express] GET /api/propdata/listings/sync-status 200 in 135ms :: {"id":1321,"syncType":"q…
+9:01:24 AM [express] GET /api/propdata/listings/sync-status 200 in 252ms :: {"id":1321,"syncType":"q…
+Valuation report generated successfully
+OpenAI rental estimates received: {
+  longTerm: {
+    minMonthlyRental: 30000,
+    maxMonthlyRental: 46000,
+    reasoning: 'Given the condition and finishes, the apartment commands a premium within the typical rental range for 2-bedroom units in desirable locations, adjusted for the lack of specified parking.'
+  }
+}
+Final rental performance data: {
+  shortTerm: {
+    percentile25: { nightly: 1592, monthly: 28650, annual: 343800 },
+    percentile50: { nightly: 2137, monthly: 42939, annual: 515200 },
+    percentile75: { nightly: 2892, monthly: 63150, annual: 757800 },
+    percentile90: { nightly: 4255, monthly: 90917, annual: 1091000 },
+    occupancy: 72,
+    yield: 0
+  },
+  longTerm: {
+    minRental: 30000,
+    maxRental: 46000,
+    minYield: 7.5,
+    maxYield: 11.5,
+    managementFee: '8-10%',
+    reasoning: 'Given the condition and finishes, the apartment commands a premium within the typical rental range for 2-bedroom units in desirable locations, adjusted for the lack of specified parking.'
+  }
+}

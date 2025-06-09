@@ -159,14 +159,24 @@ export default function PropertyDetailModal({
 
   // Fetch report activity data
   const { data: reportActivity, refetch: refetchActivity } = useQuery({
-    queryKey: ['/api/report-activity', property?.propdataId],
+    queryKey: ["/api/report-activity", property?.propdataId],
     queryFn: async () => {
       if (!property?.propdataId) return [];
-      const response = await fetch(`/api/report-activity/${property.propdataId}?t=${Date.now()}`);
+      const response = await fetch(
+        `/api/report-activity/${property.propdataId}?t=${Date.now()}`,
+      );
       if (!response.ok) return [];
       const data = await response.json();
       console.log(`Activity data for property ${property.propdataId}:`, data);
-      console.table(data.map(item => ({ id: item.id, type: item.activityType, email: item.recipientEmail, ip: item.ipAddress, timestamp: item.timestamp })));
+      console.table(
+        data.map((item) => ({
+          id: item.id,
+          type: item.activityType,
+          email: item.recipientEmail,
+          ip: item.ipAddress,
+          timestamp: item.timestamp,
+        })),
+      );
       return data;
     },
     enabled: !!property?.propdataId,
@@ -182,10 +192,12 @@ export default function PropertyDetailModal({
 
   // Replace local state with React Query for database consistency
   const { data: valuationReport, refetch: refetchValuation } = useQuery({
-    queryKey: ['/api/valuation-reports', property?.propdataId],
+    queryKey: ["/api/valuation-reports", property?.propdataId],
     queryFn: async () => {
       if (!property?.propdataId) return null;
-      const response = await fetch(`/api/valuation-reports/${property.propdataId}`);
+      const response = await fetch(
+        `/api/valuation-reports/${property.propdataId}`,
+      );
       if (!response.ok) return null;
       const data = await response.json();
       return data.valuationData;
@@ -194,35 +206,49 @@ export default function PropertyDetailModal({
   });
 
   const { data: savedValuationData } = useQuery({
-    queryKey: ['/api/valuation-reports-raw', property?.propdataId],
+    queryKey: ["/api/valuation-reports-raw", property?.propdataId],
     queryFn: async () => {
       if (!property?.propdataId) return null;
-      const response = await fetch(`/api/valuation-reports/${property.propdataId}`);
+      const response = await fetch(
+        `/api/valuation-reports/${property.propdataId}`,
+      );
       if (!response.ok) return null;
       return await response.json();
     },
     enabled: !!property?.propdataId && isOpen,
   });
 
-  const { data: rentalData, refetch: refetchRental, isLoading: isLoadingRental } = useQuery({
-    queryKey: ['/api/rental-performance', property?.propdataId],
+  const {
+    data: rentalData,
+    refetch: refetchRental,
+    isLoading: isLoadingRental,
+  } = useQuery({
+    queryKey: ["/api/rental-performance", property?.propdataId],
     queryFn: async () => {
       if (!property?.propdataId) return null;
-      const response = await fetch(`/api/rental-performance/${property.propdataId}`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `/api/rental-performance/${property.propdataId}`,
+        {
+          credentials: "include",
+        },
+      );
       if (!response.ok) return null;
-      
+
       const rawRentalData = await response.json();
-      
+
       // Transform database format to frontend format
       let shortTermData = null;
       if (rawRentalData.short_term_data) {
-        const parsedData = typeof rawRentalData.short_term_data === "string"
-          ? JSON.parse(rawRentalData.short_term_data)
-          : rawRentalData.short_term_data;
+        const parsedData =
+          typeof rawRentalData.short_term_data === "string"
+            ? JSON.parse(rawRentalData.short_term_data)
+            : rawRentalData.short_term_data;
 
-        if (parsedData && typeof parsedData.yield === "number" && !isFinite(parsedData.yield)) {
+        if (
+          parsedData &&
+          typeof parsedData.yield === "number" &&
+          !isFinite(parsedData.yield)
+        ) {
           parsedData.yield = null;
         }
         shortTermData = parsedData;
@@ -230,16 +256,24 @@ export default function PropertyDetailModal({
 
       return {
         shortTerm: shortTermData,
-        longTerm: rawRentalData.long_term_min_rental ? {
-          minRental: parseFloat(rawRentalData.long_term_min_rental),
-          maxRental: parseFloat(rawRentalData.long_term_max_rental),
-          minYield: rawRentalData.long_term_min_yield && rawRentalData.long_term_min_yield !== "Infinity"
-            ? parseFloat(rawRentalData.long_term_min_yield) : null,
-          maxYield: rawRentalData.long_term_max_yield && rawRentalData.long_term_max_yield !== "Infinity"
-            ? parseFloat(rawRentalData.long_term_max_yield) : null,
-          managementFee: "8-10%",
-          reasoning: rawRentalData.long_term_reasoning,
-        } : null,
+        longTerm: rawRentalData.long_term_min_rental
+          ? {
+              minRental: parseFloat(rawRentalData.long_term_min_rental),
+              maxRental: parseFloat(rawRentalData.long_term_max_rental),
+              minYield:
+                rawRentalData.long_term_min_yield &&
+                rawRentalData.long_term_min_yield !== "Infinity"
+                  ? parseFloat(rawRentalData.long_term_min_yield)
+                  : null,
+              maxYield:
+                rawRentalData.long_term_max_yield &&
+                rawRentalData.long_term_max_yield !== "Infinity"
+                  ? parseFloat(rawRentalData.long_term_max_yield)
+                  : null,
+              managementFee: "8-10%",
+              reasoning: rawRentalData.long_term_reasoning,
+            }
+          : null,
       };
     },
     enabled: !!property?.propdataId && isOpen,
@@ -262,7 +296,9 @@ export default function PropertyDetailModal({
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [editedAddress, setEditedAddress] = useState("");
   const [isSavingAddress, setIsSavingAddress] = useState(false);
-  const [lastAddressSaveTime, setLastAddressSaveTime] = useState<number | null>(null);
+  const [lastAddressSaveTime, setLastAddressSaveTime] = useState<number | null>(
+    null,
+  );
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
@@ -281,7 +317,9 @@ export default function PropertyDetailModal({
     if (valuationReport?.currentDepositPercentage) {
       return {
         depositPercentage: parseFloat(valuationReport.currentDepositPercentage),
-        interestRate: parseFloat(valuationReport.currentInterestRate || "11.75"),
+        interestRate: parseFloat(
+          valuationReport.currentInterestRate || "11.75",
+        ),
         loanTermYears: parseInt(valuationReport.currentLoanTerm || "20"),
       };
     }
@@ -298,7 +336,9 @@ export default function PropertyDetailModal({
     if (valuationReport?.currentDepositPercentage) {
       setTempFinancingParams({
         depositPercentage: parseFloat(valuationReport.currentDepositPercentage),
-        interestRate: parseFloat(valuationReport.currentInterestRate || "11.75"),
+        interestRate: parseFloat(
+          valuationReport.currentInterestRate || "11.75",
+        ),
         loanTermYears: parseInt(valuationReport.currentLoanTerm || "20"),
       });
     }
@@ -386,8 +426,6 @@ export default function PropertyDetailModal({
       setMapLoaded(false);
     };
   }, [isOpen, property?.address, activeTab]);
-
-
 
   // Save valuation to database
   const saveValuationToDatabase = async (valuationData: any) => {
@@ -648,7 +686,9 @@ export default function PropertyDetailModal({
   // CALCULATE AND SAVE ALL FINANCIAL ANALYSIS DATA
   // This function generates all financial data shown in the Financials tab and saves it to database
   // Ensures single source of truth for PDF generation
-  const calculateAndSaveFinancialData = async (updatedFinancingParams?: any) => {
+  const calculateAndSaveFinancialData = async (
+    updatedFinancingParams?: any,
+  ) => {
     if (!property || !rentalData || !valuationReport) return;
 
     const financingToUse = updatedFinancingParams || financingParams;
@@ -656,50 +696,80 @@ export default function PropertyDetailModal({
 
     // 1. ANNUAL PROPERTY APPRECIATION DATA
     const annualAppreciationData = {
-      baseSuburbRate: valuationReport.propertyAppreciation?.suburbAppreciationRate || 8.0,
-      propertyAdjustments: valuationReport.propertyAppreciation?.adjustments || {},
-      finalAppreciationRate: valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0,
+      baseSuburbRate:
+        valuationReport.propertyAppreciation?.suburbAppreciationRate || 8.0,
+      propertyAdjustments:
+        valuationReport.propertyAppreciation?.adjustments || {},
+      finalAppreciationRate:
+        valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0,
       yearlyValues: (() => {
-        const rate = (valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0) / 100;
-        return [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
-          acc[`year${year}`] = propertyPrice * Math.pow(1 + rate, year);
-          return acc;
-        }, {} as Record<string, number>);
+        const rate =
+          (valuationReport.propertyAppreciation?.annualAppreciationRate ||
+            8.0) / 100;
+        return [1, 2, 3, 4, 5, 10, 20].reduce(
+          (acc, year) => {
+            acc[`year${year}`] = propertyPrice * Math.pow(1 + rate, year);
+            return acc;
+          },
+          {} as Record<string, number>,
+        );
       })(),
-      reasoning: valuationReport.propertyAppreciation?.reasoning || "Standard market appreciation"
+      reasoning:
+        valuationReport.propertyAppreciation?.reasoning ||
+        "Standard market appreciation",
     };
 
     // 2. CASHFLOW ANALYSIS DATA
     const cashflowAnalysisData = {
       revenueGrowthTrajectory: {
-        shortTerm: rentalData.shortTerm ? (() => {
-          const selectedData = rentalData.shortTerm[selectedPercentile];
-          const baseAnnual = selectedData.annual;
-          return [1, 2, 3, 4, 5].reduce((acc, year) => {
-            const revenue = baseAnnual * Math.pow(1.08, year - 1);
-            const grossYield = (revenue / propertyPrice) * 100;
-            acc[`year${year}`] = { revenue, grossYield };
-            return acc;
-          }, {} as Record<string, { revenue: number; grossYield: number }>);
-        })() : null,
-        longTerm: rentalData.longTerm ? (() => {
-          const monthlyAvg = (rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2;
-          const baseAnnual = monthlyAvg * 12;
-          return [1, 2, 3, 4, 5].reduce((acc, year) => {
-            const revenue = baseAnnual * Math.pow(1.08, year - 1);
-            const grossYield = (revenue / propertyPrice) * 100;
-            acc[`year${year}`] = { revenue, grossYield };
-            return acc;
-          }, {} as Record<string, { revenue: number; grossYield: number }>);
-        })() : null
+        shortTerm: rentalData.shortTerm
+          ? (() => {
+              const selectedData = rentalData.shortTerm[selectedPercentile];
+              const baseAnnual = selectedData.annual;
+              return [1, 2, 3, 4, 5].reduce(
+                (acc, year) => {
+                  const revenue = baseAnnual * Math.pow(1.08, year - 1);
+                  const grossYield = (revenue / propertyPrice) * 100;
+                  acc[`year${year}`] = { revenue, grossYield };
+                  return acc;
+                },
+                {} as Record<string, { revenue: number; grossYield: number }>,
+              );
+            })()
+          : null,
+        longTerm: rentalData.longTerm
+          ? (() => {
+              const monthlyAvg =
+                (rentalData.longTerm.minRental +
+                  rentalData.longTerm.maxRental) /
+                2;
+              const baseAnnual = monthlyAvg * 12;
+              return [1, 2, 3, 4, 5].reduce(
+                (acc, year) => {
+                  const revenue = baseAnnual * Math.pow(1.08, year - 1);
+                  const grossYield = (revenue / propertyPrice) * 100;
+                  acc[`year${year}`] = { revenue, grossYield };
+                  return acc;
+                },
+                {} as Record<string, { revenue: number; grossYield: number }>,
+              );
+            })()
+          : null,
       },
       recommendedStrategy: (() => {
         if (!rentalData.shortTerm || !rentalData.longTerm) return null;
-        const shortTermYield = (rentalData.shortTerm[selectedPercentile].annual / propertyPrice) * 100;
-        const longTermYield = ((rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2 * 12 / propertyPrice) * 100;
+        const shortTermYield =
+          (rentalData.shortTerm[selectedPercentile].annual / propertyPrice) *
+          100;
+        const longTermYield =
+          ((((rentalData.longTerm.minRental + rentalData.longTerm.maxRental) /
+            2) *
+            12) /
+            propertyPrice) *
+          100;
         return shortTermYield > longTermYield ? "shortTerm" : "longTerm";
       })(),
-      strategyReasoning: "Based on gross rental yields comparison"
+      strategyReasoning: "Based on gross rental yields comparison",
     };
 
     // 3. FINANCING ANALYSIS DATA
@@ -708,12 +778,16 @@ export default function PropertyDetailModal({
     const interestRate = financingToUse.interestRate / 100;
     const loanTermYears = financingToUse.loanTermYears;
     const loanTermMonths = loanTermYears * 12;
-    
+
     const depositAmount = propertyPrice * depositPercentage;
     const loanAmount = propertyPrice * loanToValue;
     const monthlyInterestRate = interestRate / 12;
-    
-    const monthlyPayment = (loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTermMonths))) / (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
+
+    const monthlyPayment =
+      (loanAmount *
+        (monthlyInterestRate *
+          Math.pow(1 + monthlyInterestRate, loanTermMonths))) /
+      (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
 
     const financingAnalysisData = {
       financingParameters: {
@@ -722,55 +796,74 @@ export default function PropertyDetailModal({
         loanAmount,
         interestRate: financingToUse.interestRate,
         loanTerm: loanTermYears,
-        monthlyPayment
+        monthlyPayment,
       },
-      yearlyMetrics: [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
-        const monthsElapsed = year * 12;
-        let remainingBalance = loanAmount;
-        let totalPrincipalPaid = 0;
+      yearlyMetrics: [1, 2, 3, 4, 5, 10, 20].reduce(
+        (acc, year) => {
+          const monthsElapsed = year * 12;
+          let remainingBalance = loanAmount;
+          let totalPrincipalPaid = 0;
 
-        for (let month = 1; month <= monthsElapsed && month <= loanTermMonths; month++) {
-          const interestPayment = remainingBalance * monthlyInterestRate;
-          const principalPayment = monthlyPayment - interestPayment;
-          totalPrincipalPaid += principalPayment;
-          remainingBalance -= principalPayment;
-        }
+          for (
+            let month = 1;
+            month <= monthsElapsed && month <= loanTermMonths;
+            month++
+          ) {
+            const interestPayment = remainingBalance * monthlyInterestRate;
+            const principalPayment = monthlyPayment - interestPayment;
+            totalPrincipalPaid += principalPayment;
+            remainingBalance -= principalPayment;
+          }
 
-        acc[`year${year}`] = {
-          monthlyPayment,
-          equityBuildup: totalPrincipalPaid,
-          remainingBalance: Math.max(0, remainingBalance)
-        };
-        return acc;
-      }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
+          acc[`year${year}`] = {
+            monthlyPayment,
+            equityBuildup: totalPrincipalPaid,
+            remainingBalance: Math.max(0, remainingBalance),
+          };
+          return acc;
+        },
+        {} as Record<
+          string,
+          {
+            monthlyPayment: number;
+            equityBuildup: number;
+            remainingBalance: number;
+          }
+        >,
+      ),
     };
 
     // SAVE ALL FINANCIAL DATA TO DATABASE
     try {
-      const response = await fetch(`/api/valuation-reports/${property.propdataId}/financial-data`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          annualPropertyAppreciationData: annualAppreciationData,
-          cashflowAnalysisData,
-          financingAnalysisData,
-          // Also update financing parameters if provided
-          ...(updatedFinancingParams && {
-            depositPercentage: updatedFinancingParams.depositPercentage,
-            interestRate: updatedFinancingParams.interestRate,
-            loanTerm: updatedFinancingParams.loanTermYears,
-            purchasePrice: propertyPrice
-          })
-        }),
-      });
+      const response = await fetch(
+        `/api/valuation-reports/${property.propdataId}/financial-data`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            annualPropertyAppreciationData: annualAppreciationData,
+            cashflowAnalysisData,
+            financingAnalysisData,
+            // Also update financing parameters if provided
+            ...(updatedFinancingParams && {
+              depositPercentage: updatedFinancingParams.depositPercentage,
+              interestRate: updatedFinancingParams.interestRate,
+              loanTerm: updatedFinancingParams.loanTermYears,
+              purchasePrice: propertyPrice,
+            }),
+          }),
+        },
+      );
 
       if (response.ok) {
-        console.log('Successfully saved all financial analysis data to database');
+        console.log(
+          "Successfully saved all financial analysis data to database",
+        );
         await refetchValuation();
         return true;
       } else {
-        console.error('Failed to save financial analysis data');
+        console.error("Failed to save financial analysis data");
         return false;
       }
     } catch (error) {
@@ -840,7 +933,9 @@ export default function PropertyDetailModal({
 
         // Invalidate the property listings query in background (no UI blocking)
         setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ["/api/propdata/listings"] });
+          queryClient.invalidateQueries({
+            queryKey: ["/api/propdata/listings"],
+          });
         }, 100);
       }
     } catch (error) {
@@ -905,7 +1000,9 @@ export default function PropertyDetailModal({
 
     // Check for data freshness - prevent race conditions with recent address updates
     if (lastAddressSaveTime && Date.now() - lastAddressSaveTime < 5000) {
-      alert("Address was recently updated. Please wait 5 seconds before generating report to ensure data consistency.");
+      alert(
+        "Address was recently updated. Please wait 5 seconds before generating report to ensure data consistency.",
+      );
       return;
     }
 
@@ -943,28 +1040,34 @@ export default function PropertyDetailModal({
       }
 
       const report = await response.json();
-      
+
       // Save the valuation report to database first
       await saveValuationToDatabase(report);
-      
+
       // Reload data from database to ensure consistency
       await refetchValuation();
-      
+
       // Force refresh rental data with cache invalidation
-      console.log('Invalidating and refetching rental data after valuation generation...');
-      queryClient.invalidateQueries({ queryKey: ['/api/rental-performance', property.propdataId] });
+      console.log(
+        "Invalidating and refetching rental data after valuation generation...",
+      );
+      queryClient.invalidateQueries({
+        queryKey: ["/api/rental-performance", property.propdataId],
+      });
       await refetchRental();
-      
+
       // AUTOMATICALLY SAVE ALL FINANCIAL ANALYSIS DATA
       // This ensures complete single source of truth for PDF generation
       // Financial data is calculated and saved immediately after valuation generation
       setTimeout(async () => {
         try {
-          console.log('Auto-generating and saving financial analysis data...');
+          console.log("Auto-generating and saving financial analysis data...");
           await calculateAndSaveFinancialData();
-          console.log('Financial analysis data automatically saved to database');
+          console.log(
+            "Financial analysis data automatically saved to database",
+          );
         } catch (error) {
-          console.error('Error auto-saving financial data:', error);
+          console.error("Error auto-saving financial data:", error);
         }
       }, 1000); // Small delay to ensure valuation and rental data are loaded
     } catch (error) {
@@ -978,35 +1081,35 @@ export default function PropertyDetailModal({
   // PDF Report Generation Handlers
   const handleDownloadReport = async () => {
     if (!property) return;
-    
+
     setIsGeneratingPdf(true);
     try {
       // Use the new working PDF endpoint with PropData property ID
       const response = await fetch(`/api/pdf-generate/${property.propdataId}`, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to generate PDF report');
+        throw new Error("Failed to generate PDF report");
       }
-      
+
       // Download the PDF directly
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `Proply_Report_${property.address.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `Proply_Report_${property.address.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       // Refresh activity data after downloading report
       setTimeout(() => refetchActivity(), 1000); // Small delay to ensure server processes the download
     } catch (error) {
-      console.error('Error downloading PDF report:', error);
-      alert('Failed to download PDF report. Please try again.');
+      console.error("Error downloading PDF report:", error);
+      alert("Failed to download PDF report. Please try again.");
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -1019,42 +1122,48 @@ export default function PropertyDetailModal({
 
   const handleConfirmSendReport = async () => {
     if (!property) return;
-    
+
     setIsSendingReport(true);
     setShowSendReportDialog(false);
-    
+
     try {
-      const recipients = ['wesley@proply.co.za'];
+      const recipients = ["wesley@proply.co.za"];
       if (sendToAgent && property.agentEmail) {
         recipients.push(property.agentEmail);
       }
-      
-      const response = await fetch(`/api/propdata-reports/send/${property.propdataId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+
+      const response = await fetch(
+        `/api/propdata-reports/send/${property.propdataId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            recipients: recipients,
+          }),
         },
-        credentials: 'include',
-        body: JSON.stringify({
-          recipients: recipients
-        }),
-      });
-      
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to send PDF report');
+        throw new Error("Failed to send PDF report");
       }
-      
+
       const result = await response.json();
-      const recipientText = recipients.length > 1 
-        ? `wesley@proply.co.za and ${property.agentEmail}` 
-        : 'wesley@proply.co.za';
-      alert(`Report has been generated and sent to ${recipientText}. The download link will be available for 30 days.`);
-      
+      const recipientText =
+        recipients.length > 1
+          ? `wesley@proply.co.za and ${property.agentEmail}`
+          : "wesley@proply.co.za";
+      alert(
+        `Report has been generated and sent to ${recipientText}. The download link will be available for 30 days.`,
+      );
+
       // Refresh activity data after sending report
       refetchActivity();
     } catch (error) {
-      console.error('Error sending PDF report:', error);
-      alert('Failed to send PDF report. Please try again.');
+      console.error("Error sending PDF report:", error);
+      alert("Failed to send PDF report. Please try again.");
     } finally {
       setIsSendingReport(false);
       setSendToAgent(false);
@@ -1565,7 +1674,12 @@ export default function PropertyDetailModal({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress}
+                      disabled={
+                        isGeneratingReport ||
+                        isGeneratingPdf ||
+                        isSendingReport ||
+                        isSavingAddress
+                      }
                       variant="default"
                       size="sm"
                       className="gap-2"
@@ -1580,51 +1694,75 @@ export default function PropertyDetailModal({
                       {isSavingAddress
                         ? "Saving address..."
                         : isGeneratingReport
-                        ? `Generating... ${generationTimer}s`
-                        : isGeneratingPdf
-                        ? "Generating PDF..."
-                        : isSendingReport
-                        ? "Sending Report..."
-                        : "Generate Report"}
+                          ? `Generating... ${generationTimer}s`
+                          : isGeneratingPdf
+                            ? "Generating PDF..."
+                            : isSendingReport
+                              ? "Sending Report..."
+                              : "Actions"}
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem
                       onClick={generateValuationReport}
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress}
+                      disabled={
+                        isGeneratingReport ||
+                        isGeneratingPdf ||
+                        isSendingReport ||
+                        isSavingAddress
+                      }
                     >
                       <FileBarChart className="h-4 w-4 mr-2" />
                       Generate Report
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleDownloadReport}
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress || !valuationReport}
+                      disabled={
+                        isGeneratingReport ||
+                        isGeneratingPdf ||
+                        isSendingReport ||
+                        isSavingAddress ||
+                        !valuationReport
+                      }
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Download Report
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleSendReport}
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress || !valuationReport}
+                      disabled={
+                        isGeneratingReport ||
+                        isGeneratingPdf ||
+                        isSendingReport ||
+                        isSavingAddress ||
+                        !valuationReport
+                      }
                     >
                       <Send className="h-4 w-4 mr-2" />
                       Send Report
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setShowActivityModal(true)}
-                      disabled={isGeneratingReport || isGeneratingPdf || isSendingReport || isSavingAddress}
+                      disabled={
+                        isGeneratingReport ||
+                        isGeneratingPdf ||
+                        isSendingReport ||
+                        isSavingAddress
+                      }
                     >
                       <BarChart3 className="h-4 w-4 mr-2" />
                       Activity
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {!isGeneratingReport && !isGeneratingPdf && !isSendingReport && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Generate valuation first, then download or send PDF
-                  </p>
-                )}
+                {!isGeneratingReport &&
+                  !isGeneratingPdf &&
+                  !isSendingReport && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Generate valuation first, then download or send PDF
+                    </p>
+                  )}
               </div>
             </DialogTitle>
             <DialogDescription>
@@ -2745,24 +2883,41 @@ export default function PropertyDetailModal({
                                             key={projection.year}
                                             className="py-2 px-3 text-center font-medium text-blue-800"
                                           >
-                                            R{projection.estimatedValue.toLocaleString()}
+                                            R
+                                            {projection.estimatedValue.toLocaleString()}
                                           </td>
                                         ),
                                       )}
                                       <td className="py-2 px-3 text-center font-medium text-blue-800">
-                                        R{(() => {
-                                          const baseValue = property?.price || 0;
-                                          const appreciationRate = valuationReport.propertyAppreciation.annualAppreciationRate / 100;
-                                          const year10Value = baseValue * Math.pow(1 + appreciationRate, 10);
-                                          return Math.round(year10Value).toLocaleString();
+                                        R
+                                        {(() => {
+                                          const baseValue =
+                                            property?.price || 0;
+                                          const appreciationRate =
+                                            valuationReport.propertyAppreciation
+                                              .annualAppreciationRate / 100;
+                                          const year10Value =
+                                            baseValue *
+                                            Math.pow(1 + appreciationRate, 10);
+                                          return Math.round(
+                                            year10Value,
+                                          ).toLocaleString();
                                         })()}
                                       </td>
                                       <td className="py-2 px-3 text-center font-medium text-blue-800">
-                                        R{(() => {
-                                          const baseValue = property?.price || 0;
-                                          const appreciationRate = valuationReport.propertyAppreciation.annualAppreciationRate / 100;
-                                          const year20Value = baseValue * Math.pow(1 + appreciationRate, 20);
-                                          return Math.round(year20Value).toLocaleString();
+                                        R
+                                        {(() => {
+                                          const baseValue =
+                                            property?.price || 0;
+                                          const appreciationRate =
+                                            valuationReport.propertyAppreciation
+                                              .annualAppreciationRate / 100;
+                                          const year20Value =
+                                            baseValue *
+                                            Math.pow(1 + appreciationRate, 20);
+                                          return Math.round(
+                                            year20Value,
+                                          ).toLocaleString();
                                         })()}
                                       </td>
                                     </tr>
@@ -2803,8 +2958,8 @@ export default function PropertyDetailModal({
                         {isSavingAddress
                           ? "Saving address..."
                           : isGeneratingReport
-                          ? `Generating... ${generationTimer}s`
-                          : "Generate Report"}
+                            ? `Generating... ${generationTimer}s`
+                            : "Generate Report"}
                       </Button>
                       {!isGeneratingReport && !isSavingAddress && (
                         <p className="text-xs text-muted-foreground">
@@ -2923,9 +3078,15 @@ export default function PropertyDetailModal({
                           <table className="w-full text-xs border rounded-lg">
                             <thead>
                               <tr className="bg-gray-50 border-b">
-                                <th className="py-2 px-3 text-left font-medium">Estimate Type</th>
-                                <th className="py-2 px-3 text-left font-medium">Formula Used</th>
-                                <th className="py-2 px-3 text-right font-medium">Outcome</th>
+                                <th className="py-2 px-3 text-left font-medium">
+                                  Estimate Type
+                                </th>
+                                <th className="py-2 px-3 text-left font-medium">
+                                  Formula Used
+                                </th>
+                                <th className="py-2 px-3 text-right font-medium">
+                                  Outcome
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
@@ -2947,7 +3108,8 @@ export default function PropertyDetailModal({
                                 return reorderedValuations.map(
                                   (valuation: any, index: number) => {
                                     const isMidline =
-                                      valuation.type === "Midline (Proply est.)";
+                                      valuation.type ===
+                                      "Midline (Proply est.)";
                                     return (
                                       <tr
                                         key={index}
@@ -2983,14 +3145,20 @@ export default function PropertyDetailModal({
                       )}
 
                       {/* Compact Additional Information Table */}
-                      {(valuationReport.summary || valuationReport.features || valuationReport.marketContext) && (
+                      {(valuationReport.summary ||
+                        valuationReport.features ||
+                        valuationReport.marketContext) && (
                         <div className="space-y-2">
-                          <h4 className="font-medium text-xs text-gray-700">Additional Analysis</h4>
+                          <h4 className="font-medium text-xs text-gray-700">
+                            Additional Analysis
+                          </h4>
                           <table className="w-full text-xs border rounded-lg">
                             <tbody>
                               {valuationReport.summary && (
                                 <tr className="border-b hover:bg-gray-50">
-                                  <td className="py-2 px-3 font-medium text-xs w-32">Analysis Summary</td>
+                                  <td className="py-2 px-3 font-medium text-xs w-32">
+                                    Analysis Summary
+                                  </td>
                                   <td className="py-2 px-3 text-xs text-muted-foreground">
                                     {valuationReport.summary}
                                   </td>
@@ -2998,7 +3166,9 @@ export default function PropertyDetailModal({
                               )}
                               {valuationReport.features && (
                                 <tr className="border-b hover:bg-gray-50">
-                                  <td className="py-2 px-3 font-medium text-xs w-32">Property Features</td>
+                                  <td className="py-2 px-3 font-medium text-xs w-32">
+                                    Property Features
+                                  </td>
                                   <td className="py-2 px-3 text-xs text-muted-foreground">
                                     {valuationReport.features}
                                   </td>
@@ -3006,7 +3176,9 @@ export default function PropertyDetailModal({
                               )}
                               {valuationReport.marketContext && (
                                 <tr className="hover:bg-gray-50">
-                                  <td className="py-2 px-3 font-medium text-xs w-32">Market Context</td>
+                                  <td className="py-2 px-3 font-medium text-xs w-32">
+                                    Market Context
+                                  </td>
                                   <td className="py-2 px-3 text-xs text-muted-foreground">
                                     {valuationReport.marketContext}
                                   </td>
@@ -3240,25 +3412,25 @@ export default function PropertyDetailModal({
             >
               Cancel
             </Button>
-            <Button
-              onClick={saveFinancingParameters}
-            >
-              Update
-            </Button>
+            <Button onClick={saveFinancingParameters}>Update</Button>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Send Report Dialog */}
-      <Dialog open={showSendReportDialog} onOpenChange={setShowSendReportDialog}>
+      <Dialog
+        open={showSendReportDialog}
+        onOpenChange={setShowSendReportDialog}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Send Property Report</DialogTitle>
             <DialogDescription>
-              Choose who should receive the property investment report for {property?.address}.
+              Choose who should receive the property investment report for{" "}
+              {property?.address}.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
@@ -3266,28 +3438,32 @@ export default function PropertyDetailModal({
                   <div className="w-2 h-2 bg-white rounded-full"></div>
                 </div>
                 <span className="text-sm font-medium">wesley@proply.co.za</span>
-                <span className="text-xs text-muted-foreground">(Always included)</span>
+                <span className="text-xs text-muted-foreground">
+                  (Always included)
+                </span>
               </div>
-              
+
               {property?.agentEmail && (
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="send-to-agent" 
+                  <Checkbox
+                    id="send-to-agent"
                     checked={sendToAgent}
-                    onCheckedChange={(checked) => setSendToAgent(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setSendToAgent(checked as boolean)
+                    }
                   />
-                  <Label 
-                    htmlFor="send-to-agent" 
+                  <Label
+                    htmlFor="send-to-agent"
                     className="text-sm font-medium cursor-pointer"
                   >
                     {property.agentEmail}
                   </Label>
                   <span className="text-xs text-muted-foreground">
-                    ({property.agentName || 'Property Agent'})
+                    ({property.agentName || "Property Agent"})
                   </span>
                 </div>
               )}
-              
+
               {!property?.agentEmail && (
                 <div className="text-sm text-muted-foreground">
                   No agent email available for this property.
@@ -3340,8 +3516,18 @@ export default function PropertyDetailModal({
                 onClick={() => refetchActivity()}
                 className="flex items-center gap-1"
               >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
                 </svg>
                 Refresh
               </Button>
@@ -3350,7 +3536,7 @@ export default function PropertyDetailModal({
               Track all report sends and downloads for this property.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {reportActivity && reportActivity.length > 0 ? (
               <>
@@ -3358,21 +3544,40 @@ export default function PropertyDetailModal({
                 <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">
-                      {reportActivity.filter((activity: any) => activity.activityType === 'sent').length}
+                      {
+                        reportActivity.filter(
+                          (activity: any) => activity.activityType === "sent",
+                        ).length
+                      }
                     </div>
-                    <div className="text-sm text-muted-foreground">Reports Sent</div>
+                    <div className="text-sm text-muted-foreground">
+                      Reports Sent
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-green-600">
-                      {reportActivity.filter((activity: any) => activity.activityType === 'downloaded').length}
+                      {
+                        reportActivity.filter(
+                          (activity: any) =>
+                            activity.activityType === "downloaded",
+                        ).length
+                      }
                     </div>
-                    <div className="text-sm text-muted-foreground">Downloads</div>
+                    <div className="text-sm text-muted-foreground">
+                      Downloads
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-purple-600">
-                      {reportActivity.length > 0 ? new Date(reportActivity[reportActivity.length - 1].timestamp).toLocaleDateString() : 'Never'}
+                      {reportActivity.length > 0
+                        ? new Date(
+                            reportActivity[reportActivity.length - 1].timestamp,
+                          ).toLocaleDateString()
+                        : "Never"}
                     </div>
-                    <div className="text-sm text-muted-foreground">Last Activity</div>
+                    <div className="text-sm text-muted-foreground">
+                      Last Activity
+                    </div>
                   </div>
                 </div>
 
@@ -3381,10 +3586,18 @@ export default function PropertyDetailModal({
                   <table className="w-full text-xs">
                     <thead className="bg-muted/50">
                       <tr>
-                        <th className="text-left p-2 font-medium text-xs">Action</th>
-                        <th className="text-left p-2 font-medium text-xs">Date & Time</th>
-                        <th className="text-left p-2 font-medium text-xs">Recipient/Details</th>
-                        <th className="text-left p-2 font-medium text-xs">Status</th>
+                        <th className="text-left p-2 font-medium text-xs">
+                          Action
+                        </th>
+                        <th className="text-left p-2 font-medium text-xs">
+                          Date & Time
+                        </th>
+                        <th className="text-left p-2 font-medium text-xs">
+                          Recipient/Details
+                        </th>
+                        <th className="text-left p-2 font-medium text-xs">
+                          Status
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -3392,49 +3605,71 @@ export default function PropertyDetailModal({
                         <tr key={index} className="border-t hover:bg-muted/30">
                           <td className="p-2">
                             <div className="flex items-center gap-1">
-                              {activity.activityType === 'sent' ? (
+                              {activity.activityType === "sent" ? (
                                 <Send className="h-3 w-3 text-blue-500" />
                               ) : (
                                 <Download className="h-3 w-3 text-green-500" />
                               )}
                               <span className="text-xs font-medium">
-                                {activity.activityType === 'sent' ? 'Report Sent' : 'Downloaded'}
+                                {activity.activityType === "sent"
+                                  ? "Report Sent"
+                                  : "Downloaded"}
                               </span>
                             </div>
                           </td>
                           <td className="p-2 text-xs text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleDateString('en-GB', { 
-                              day: '2-digit', 
-                              month: '2-digit', 
-                              year: 'numeric' 
-                            })}<br />
-                            {new Date(activity.timestamp).toLocaleTimeString('en-GB', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
+                            {new Date(activity.timestamp).toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              },
+                            )}
+                            <br />
+                            {new Date(activity.timestamp).toLocaleTimeString(
+                              "en-GB",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
                           </td>
                           <td className="p-2">
-                            {activity.activityType === 'sent' ? (
+                            {activity.activityType === "sent" ? (
                               <div>
-                                <div className="text-xs font-medium truncate">{activity.recipientEmail}</div>
+                                <div className="text-xs font-medium truncate">
+                                  {activity.recipientEmail}
+                                </div>
                                 {activity.recipientName && (
-                                  <div className="text-xs text-muted-foreground">{activity.recipientName}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {activity.recipientName}
+                                  </div>
                                 )}
                                 {activity.ipAddress && (
-                                  <div className="text-xs text-muted-foreground">IP: {activity.ipAddress}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    IP: {activity.ipAddress}
+                                  </div>
                                 )}
                               </div>
                             ) : (
                               <div>
-                                <div className="text-xs font-medium">Agent Download</div>
+                                <div className="text-xs font-medium">
+                                  Agent Download
+                                </div>
                                 {activity.ipAddress && (
-                                  <div className="text-xs text-muted-foreground">IP: {activity.ipAddress}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    IP: {activity.ipAddress}
+                                  </div>
                                 )}
                               </div>
                             )}
                           </td>
                           <td className="p-2">
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-1 py-0">
+                            <Badge
+                              variant="outline"
+                              className="bg-green-50 text-green-700 border-green-200 text-xs px-1 py-0"
+                            >
                               ✓ Done
                             </Badge>
                           </td>
