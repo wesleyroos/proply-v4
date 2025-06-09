@@ -2226,20 +2226,25 @@ export function registerRoutes(app: Express): Server {
 
       const imageBuffer = await response.arrayBuffer();
       
-      // Optimize the image with Sharp
+      // Optimize the image with Sharp while preserving aspect ratio
       const optimizedImage = await sharp(Buffer.from(imageBuffer))
         .resize(targetWidth, targetHeight, {
-          fit: 'cover',
-          position: 'center'
+          fit: 'inside',
+          withoutEnlargement: true
         })
-        .jpeg({ quality: targetQuality })
+        .jpeg({ 
+          quality: targetQuality,
+          progressive: true
+        })
         .toBuffer();
 
-      // Set appropriate headers
+      // Set appropriate headers for better caching and performance
       res.set({
         'Content-Type': 'image/jpeg',
-        'Cache-Control': 'public, max-age=86400', // 24 hours cache
-        'Content-Length': optimizedImage.length.toString()
+        'Cache-Control': 'public, max-age=604800, immutable', // 7 days cache with immutable flag
+        'Content-Length': optimizedImage.length.toString(),
+        'ETag': `"${Buffer.from(url).toString('base64')}-${targetWidth}x${targetHeight}-q${targetQuality}"`,
+        'Vary': 'Accept-Encoding'
       });
 
       res.send(optimizedImage);

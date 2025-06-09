@@ -76,15 +76,16 @@ import { initGoogleMaps } from "@/lib/maps";
 // Utility function to create optimized image URLs for faster loading
 const createOptimizedImageUrl = (
   originalUrl: string,
-  size: "thumbnail" | "medium" | "large" = "thumbnail",
+  size: "thumbnail" | "medium" | "large" | "original" = "thumbnail",
 ) => {
   if (!originalUrl) return originalUrl;
 
   // Use server-side image optimization endpoint for better performance
   const sizeParams = {
-    thumbnail: { width: 200, height: 200, quality: 60 },
-    medium: { width: 500, height: 500, quality: 75 },
-    large: { width: 800, height: 800, quality: 85 },
+    thumbnail: { width: 300, height: 200, quality: 75 },
+    medium: { width: 800, height: 600, quality: 85 },
+    large: { width: 1200, height: 900, quality: 90 },
+    original: { width: 1920, height: 1080, quality: 95 },
   };
 
   const params = sizeParams[size];
@@ -1187,7 +1188,8 @@ export default function PropertyDetailModal({
   };
 
   // Display exactly 8 images
-  const imagesPerView = 8;
+  const [imagesPerView, setImagesPerView] = useState(12);
+  const [showAllImages, setShowAllImages] = useState(false);
 
   // Render Financing Analysis content
   const renderFinancingAnalysis = () => {
@@ -1774,26 +1776,32 @@ export default function PropertyDetailModal({
           {/* Property Image Gallery */}
           {propertyImages.length > 0 ? (
             <div className="mb-4">
-              <div className="flex gap-2 overflow-hidden">
-                {propertyImages.slice(0, imagesPerView).map((image, index) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 overflow-hidden">
+                {propertyImages.slice(0, showAllImages ? propertyImages.length : imagesPerView).map((image, index) => (
                   <div
                     key={index}
-                    className="w-24 h-24 rounded-md overflow-hidden bg-muted cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+                    className="aspect-[4/3] rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-80 transition-opacity group relative"
                     onClick={() => openFullScreen(index)}
                   >
                     <img
                       src={createOptimizedImageUrl(image, "thumbnail")}
                       alt={`Property ${property?.address} - Image ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                       loading="lazy"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = "none";
                       }}
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
                   </div>
                 ))}
               </div>
+              {propertyImages.length > imagesPerView && (
+                <p className="text-sm text-muted-foreground mt-2 text-center">
+                  Showing {imagesPerView} of {propertyImages.length} images
+                </p>
+              )}
             </div>
           ) : (
             <div className="rounded-md overflow-hidden h-[100px] bg-muted mb-4 flex items-center justify-center">
@@ -3234,21 +3242,51 @@ export default function PropertyDetailModal({
       {/* Full Screen Image Viewer */}
       {isFullScreenOpen && propertyImages.length > 0 && (
         <Dialog open={isFullScreenOpen} onOpenChange={closeFullScreen}>
-          <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
-            <div className="relative w-full h-[80vh] bg-black flex items-center justify-center">
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black">
+            <div className="relative w-full h-[90vh] bg-black flex items-center justify-center">
               <img
                 src={createOptimizedImageUrl(
                   propertyImages[fullScreenImageIndex],
-                  "medium",
+                  "large",
                 )}
                 alt={`Property ${property?.address} - Full screen ${fullScreenImageIndex + 1}`}
                 className="max-w-full max-h-full object-contain"
-                loading="lazy"
+                loading="eager"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = "none";
                 }}
               />
+              
+              {/* Preload adjacent images for faster navigation */}
+              {propertyImages.length > 1 && (
+                <>
+                  {/* Preload previous image */}
+                  {fullScreenImageIndex > 0 && (
+                    <img
+                      src={createOptimizedImageUrl(
+                        propertyImages[fullScreenImageIndex - 1],
+                        "large",
+                      )}
+                      alt=""
+                      className="hidden"
+                      loading="eager"
+                    />
+                  )}
+                  {/* Preload next image */}
+                  {fullScreenImageIndex < propertyImages.length - 1 && (
+                    <img
+                      src={createOptimizedImageUrl(
+                        propertyImages[fullScreenImageIndex + 1],
+                        "large",
+                      )}
+                      alt=""
+                      className="hidden"
+                      loading="eager"
+                    />
+                  )}
+                </>
+              )}
 
               {/* Navigation buttons */}
               {propertyImages.length > 1 && (
