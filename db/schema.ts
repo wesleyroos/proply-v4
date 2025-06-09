@@ -203,6 +203,17 @@ export const priceLabsUsage = pgTable("pricelabs_usage", {
   errorMessage: text("error_message"),
 });
 
+// Report generation tracking by agency
+export const reportGenerations = pgTable("report_generations", {
+  id: serial("id").primaryKey(),
+  agencyId: varchar("agency_id", { length: 255 }).notNull(),
+  agencyName: varchar("agency_name", { length: 255 }).notNull(),
+  propertyId: varchar("property_id", { length: 255 }).notNull(),
+  reportType: varchar("report_type", { length: 100 }).notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  userId: integer("user_id").references(() => users.id),
+});
+
 // Table for collecting emails from Deal Score report downloads
 export const dealScoreLeads = pgTable("deal_score_leads", {
   id: serial("id").primaryKey(),
@@ -558,6 +569,9 @@ export type SelectPropertyAnalyzerResult = typeof propertyAnalyzerResults.$infer
 
 export type InsertPriceLabsUsage = typeof priceLabsUsage.$inferInsert;
 export type SelectPriceLabsUsage = typeof priceLabsUsage.$inferSelect;
+
+export type InsertReportGeneration = typeof reportGenerations.$inferInsert;
+export type SelectReportGeneration = typeof reportGenerations.$inferSelect;
 
 export type InsertSubscriptionHistory = typeof subscriptionHistory.$inferInsert;
 export type SelectSubscriptionHistory = typeof subscriptionHistory.$inferSelect;

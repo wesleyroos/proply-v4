@@ -27,6 +27,15 @@ const fetchPriceLabsUsage = async () => {
   return response.json();
 };
 
+// API fetch function for report generation stats
+const fetchReportStats = async () => {
+  const response = await fetch('/api/report-generation-stats');
+  if (!response.ok) {
+    throw new Error('Failed to fetch report generation stats');
+  }
+  return response.json();
+};
+
 
 
 const AnalyticsDashboard = () => {

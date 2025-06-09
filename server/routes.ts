@@ -26,7 +26,7 @@ import { calculateYields } from "../analysis-engine/calculations";
 import { trackPriceLabsApiCall } from "./utils/pricelabs-tracker";
 import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
-import { suburbs, priceLabsUsage } from "@db/schema";
+import { suburbs, priceLabsUsage, reportGenerations } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
@@ -2452,6 +2452,64 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error fetching PriceLabs usage:", error);
       res.status(500).json({ error: "Failed to fetch usage data" });
+    }
+  });
+
+  // Report generation analytics endpoint
+  app.get("/api/report-generation-stats", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const stats = await db
+        .select({
+          month: sql`TO_CHAR(DATE_TRUNC('month', ${reportGenerations.timestamp}), 'YYYY-MM-DD')`.as('month'),
+          totalReports: sql`COUNT(*)::int`.as('total_reports'),
+          agencyId: reportGenerations.agencyId,
+          agencyName: reportGenerations.agencyName,
+          reports: sql`COUNT(*)::int`.as('reports')
+        })
+        .from(reportGenerations)
+        .groupBy(sql`DATE_TRUNC('month', ${reportGenerations.timestamp})`, reportGenerations.agencyId, reportGenerations.agencyName)
+        .orderBy(sql`DATE_TRUNC('month', ${reportGenerations.timestamp}) DESC`);
+
+      // Get total reports across all time
+      const totalStats = await db
+        .select({
+          totalReports: sql`COUNT(*)::int`.as('total_reports')
+        })
+        .from(reportGenerations);
+
+      // Get current month stats
+      const currentMonth = await db
+        .select({
+          totalReports: sql`COUNT(*)::int`.as('total_reports')
+        })
+        .from(reportGenerations)
+        .where(sql`DATE_TRUNC('month', ${reportGenerations.timestamp}) = DATE_TRUNC('month', CURRENT_DATE)`);
+
+      // Get top agencies for current month
+      const topAgencies = await db
+        .select({
+          agencyName: reportGenerations.agencyName,
+          reports: sql`COUNT(*)::int`.as('reports')
+        })
+        .from(reportGenerations)
+        .where(sql`DATE_TRUNC('month', ${reportGenerations.timestamp}) = DATE_TRUNC('month', CURRENT_DATE)`)
+        .groupBy(reportGenerations.agencyName)
+        .orderBy(sql`COUNT(*) DESC`)
+        .limit(3);
+
+      res.json({
+        totalReports: totalStats[0]?.totalReports || 0,
+        currentMonthReports: currentMonth[0]?.totalReports || 0,
+        topAgencies,
+        monthlyStats: stats
+      });
+    } catch (error) {
+      console.error("Error fetching report generation stats:", error);
+      res.status(500).json({ error: "Failed to fetch report stats" });
     }
   });
 
