@@ -457,6 +457,17 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
       console.error('Error saving financial data:', error);
     }
 
+    // Track report generation for analytics
+    try {
+      await trackReportGeneration({
+        propertyId: propertyIdToUse,
+        reportType: 'valuation',
+        userId: req.user.id
+      });
+    } catch (error) {
+      console.error('Error tracking report generation:', error);
+    }
+
     // Include rental performance data in the response
     return res.json({
       ...valuationReport,
