@@ -166,8 +166,16 @@ export default function PropertyDetailModal({
       if (!response.ok) return [];
       return await response.json();
     },
-    enabled: !!property?.propdataId && showActivityModal,
+    enabled: !!property?.propdataId,
+    refetchOnWindowFocus: false,
   });
+
+  // Refetch activity data when modal opens
+  useEffect(() => {
+    if (showActivityModal && property?.propdataId) {
+      refetchActivity();
+    }
+  }, [showActivityModal, property?.propdataId, refetchActivity]);
 
   // Replace local state with React Query for database consistency
   const { data: valuationReport, refetch: refetchValuation } = useQuery({
@@ -986,6 +994,9 @@ export default function PropertyDetailModal({
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      
+      // Refresh activity data after downloading report
+      setTimeout(() => refetchActivity(), 1000); // Small delay to ensure server processes the download
     } catch (error) {
       console.error('Error downloading PDF report:', error);
       alert('Failed to download PDF report. Please try again.');
@@ -1031,6 +1042,9 @@ export default function PropertyDetailModal({
         ? `wesley@proply.co.za and ${property.agentEmail}` 
         : 'wesley@proply.co.za';
       alert(`Report has been generated and sent to ${recipientText}. The download link will be available for 30 days.`);
+      
+      // Refresh activity data after sending report
+      refetchActivity();
     } catch (error) {
       console.error('Error sending PDF report:', error);
       alert('Failed to send PDF report. Please try again.');
@@ -3308,9 +3322,22 @@ export default function PropertyDetailModal({
       <Dialog open={showActivityModal} onOpenChange={setShowActivityModal}>
         <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Report Activity - {property?.address}
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Report Activity - {property?.address}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchActivity()}
+                className="flex items-center gap-1"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </Button>
             </DialogTitle>
             <DialogDescription>
               Track all report sends and downloads for this property.
