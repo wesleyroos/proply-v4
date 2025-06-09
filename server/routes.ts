@@ -23,6 +23,7 @@ import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
+import { trackPriceLabsApiCall } from "./utils/pricelabs-tracker";
 import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
 import { suburbs } from "@db/schema";
@@ -941,25 +942,12 @@ export function registerRoutes(app: Express): Server {
         .json({ error: "Address and bedrooms are required" });
     }
 
-    const startTime = Date.now();
-    let success = false;
-
     try {
-      const response = await fetch(
-        `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
-        {
-          headers: {
-            "X-API-Key": "sNYmBNptl4gcLSlDl5GXuUtkGVVGIxiMcUjQI1MV",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`PriceLabs API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      success = true;
+      const data = await trackPriceLabsApiCall({
+        userId: req.user!.id,
+        endpoint: "/api/revenue-data",
+        url: `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`
+      });
 
       res.json(data);
     } catch (error) {

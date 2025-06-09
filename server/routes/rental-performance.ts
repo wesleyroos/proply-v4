@@ -85,6 +85,7 @@ export async function getRentalPerformance(req: Request, res: Response) {
       bedrooms,
       bathrooms,
       propertyType,
+      req.user?.id,
     );
 
     // Generate long-term rental estimates using OpenAI with optional image analysis
@@ -114,6 +115,7 @@ export async function fetchPriceLabsData(
   bedrooms: number,
   bathrooms: number,
   propertyType: string,
+  userId?: number,
 ): Promise<ShortTermRentalData> {
   try {
     const apiKey = process.env.PRICELABS_API_KEY;
@@ -136,20 +138,14 @@ export async function fetchPriceLabsData(
       apiUrl.searchParams.set("filters", filters);
     }
 
-    const response = await fetch(apiUrl.toString(), {
-      method: "GET",
-      headers: {
-        "X-API-Key": apiKey,
-      },
+    // Import the tracking function
+    const { trackPriceLabsApiCall } = await import("../utils/pricelabs-tracker");
+
+    const data = await trackPriceLabsApiCall({
+      userId,
+      endpoint: "/api/rental-performance",
+      url: apiUrl.toString()
     });
-
-    if (!response.ok) {
-      throw new Error(
-        `PriceLabs API error: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
 
     // Extract data from PriceLabs response format
     const bedroomData = data.KPIsByBedroomCategory?.[bedrooms.toString()];
