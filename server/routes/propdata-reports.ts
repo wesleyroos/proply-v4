@@ -149,15 +149,33 @@ router.post('/send/:propertyId', async (req, res) => {
       filename
     );
     
-    // Send emails to all recipients
-    const emailPromises = emailRecipients.map(recipient => 
-      sendEmail({
+    // Send emails to all recipients and log activity
+    const emailPromises = emailRecipients.map(async recipient => {
+      const emailResult = await sendEmail({
         to: recipient,
         from: 'reports@proply.co.za',
         subject: `Proply Property Investment Report - ${property.address}`,
         html: emailHtml
-      })
-    );
+      });
+      
+      // Log email send activity
+      if (emailResult) {
+        try {
+          await logReportActivity({
+            propertyId: propertyId,
+            activityType: 'sent',
+            recipientEmail: recipient,
+            ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+            userAgent: req.get('User-Agent') || 'unknown'
+          });
+        } catch (logError) {
+          console.error('Failed to log email send activity:', logError);
+          // Continue even if logging fails
+        }
+      }
+      
+      return emailResult;
+    });
     
     const emailResults = await Promise.all(emailPromises);
     const failedEmails = emailResults.filter(result => !result);
@@ -205,6 +223,20 @@ router.get('/download/:reportId', async (req, res) => {
     try {
       // Check if file exists
       await fs.access(filePath);
+      
+      // Log download activity
+      try {
+        await logReportActivity({
+          propertyId: reportId, // Using reportId as propertyId for now
+          activityType: 'downloaded',
+          recipientEmail: 'agent@download.com', // Placeholder for agent downloads
+          ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+          userAgent: req.get('User-Agent') || 'unknown'
+        });
+      } catch (logError) {
+        console.error('Failed to log download activity:', logError);
+        // Continue with download even if logging fails
+      }
       
       // Direct download for all requests
       const pdfBuffer = await fs.readFile(filePath);
