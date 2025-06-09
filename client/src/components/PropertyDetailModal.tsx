@@ -949,6 +949,10 @@ export default function PropertyDetailModal({
       
       // Reload data from database to ensure consistency
       await refetchValuation();
+      
+      // Force refresh rental data with cache invalidation
+      console.log('Invalidating and refetching rental data after valuation generation...');
+      queryClient.invalidateQueries({ queryKey: ['/api/rental-performance', property.propdataId] });
       await refetchRental();
       
       // AUTOMATICALLY SAVE ALL FINANCIAL ANALYSIS DATA
