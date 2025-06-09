@@ -205,18 +205,7 @@ router.get('/download/:reportId', async (req, res) => {
       // Check if file exists
       await fs.access(filePath);
       
-      // If request comes from email (has referer from SendGrid/tracking domain), redirect to success page
-      const referer = req.get('Referer') || '';
-      const userAgent = req.get('User-Agent') || '';
-      const isFromEmail = referer.includes('url') || referer.includes('sendgrid') || userAgent.includes('Mail');
-      
-      if (isFromEmail && !req.query.direct) {
-        // Redirect to download success page which will handle the actual download
-        const baseUrl = process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : 'https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev';
-        return res.redirect(`${baseUrl}/download/${reportId}`);
-      }
-      
-      // Direct download (from success page or direct link)
+      // Direct download for all requests
       const pdfBuffer = await fs.readFile(filePath);
       
       res.setHeader('Content-Type', 'application/pdf');
