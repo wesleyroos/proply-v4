@@ -21,6 +21,9 @@ router.get('/:propertyId', async (req, res) => {
       .where(eq(reportActivity.propertyId, propertyId))
       .orderBy(desc(reportActivity.timestamp));
 
+    console.log(`Found ${activities.length} activities for property ${propertyId}:`, 
+                activities.map(a => ({ id: a.id, type: a.activityType, ip: a.ipAddress, timestamp: a.timestamp })));
+
     res.json(activities);
     
   } catch (error) {

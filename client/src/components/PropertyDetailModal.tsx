@@ -164,7 +164,9 @@ export default function PropertyDetailModal({
       if (!property?.propdataId) return [];
       const response = await fetch(`/api/report-activity/${property.propdataId}`);
       if (!response.ok) return [];
-      return await response.json();
+      const data = await response.json();
+      console.log(`Activity data for property ${property.propdataId}:`, data);
+      return data;
     },
     enabled: !!property?.propdataId,
     refetchOnWindowFocus: false,
