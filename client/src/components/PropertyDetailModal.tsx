@@ -3371,53 +3371,61 @@ export default function PropertyDetailModal({
 
                 {/* Activity Table */}
                 <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full">
+                  <table className="w-full text-xs">
                     <thead className="bg-muted/50">
                       <tr>
-                        <th className="text-left p-3 font-medium">Action</th>
-                        <th className="text-left p-3 font-medium">Date & Time</th>
-                        <th className="text-left p-3 font-medium">Recipient/Details</th>
-                        <th className="text-left p-3 font-medium">Status</th>
+                        <th className="text-left p-2 font-medium text-xs">Action</th>
+                        <th className="text-left p-2 font-medium text-xs">Date & Time</th>
+                        <th className="text-left p-2 font-medium text-xs">Recipient/Details</th>
+                        <th className="text-left p-2 font-medium text-xs">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {reportActivity.map((activity: any, index: number) => (
                         <tr key={index} className="border-t hover:bg-muted/30">
-                          <td className="p-3">
-                            <div className="flex items-center gap-2">
+                          <td className="p-2">
+                            <div className="flex items-center gap-1">
                               {activity.activityType === 'sent' ? (
-                                <Send className="h-4 w-4 text-blue-500" />
+                                <Send className="h-3 w-3 text-blue-500" />
                               ) : (
-                                <Download className="h-4 w-4 text-green-500" />
+                                <Download className="h-3 w-3 text-green-500" />
                               )}
-                              <span className="font-medium">
-                                {activity.activityType === 'sent' ? 'Report Sent' : 'Report Downloaded'}
+                              <span className="text-xs font-medium">
+                                {activity.activityType === 'sent' ? 'Report Sent' : 'Downloaded'}
                               </span>
                             </div>
                           </td>
-                          <td className="p-3 text-sm text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleString()}
+                          <td className="p-2 text-xs text-muted-foreground">
+                            {new Date(activity.timestamp).toLocaleDateString('en-GB', { 
+                              day: '2-digit', 
+                              month: '2-digit', 
+                              year: 'numeric' 
+                            })}<br />
+                            {new Date(activity.timestamp).toLocaleTimeString('en-GB', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
                           </td>
-                          <td className="p-3">
+                          <td className="p-2">
                             {activity.activityType === 'sent' ? (
                               <div>
-                                <div className="font-medium">{activity.recipientEmail}</div>
+                                <div className="text-xs font-medium truncate">{activity.recipientEmail}</div>
                                 {activity.recipientName && (
-                                  <div className="text-sm text-muted-foreground">{activity.recipientName}</div>
+                                  <div className="text-xs text-muted-foreground">{activity.recipientName}</div>
                                 )}
                               </div>
                             ) : (
                               <div>
-                                <div className="font-medium">Agent Download</div>
+                                <div className="text-xs font-medium">Agent Download</div>
                                 {activity.ipAddress && (
-                                  <div className="text-sm text-muted-foreground">IP: {activity.ipAddress}</div>
+                                  <div className="text-xs text-muted-foreground">IP: {activity.ipAddress}</div>
                                 )}
                               </div>
                             )}
                           </td>
-                          <td className="p-3">
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                              ✓ Completed
+                          <td className="p-2">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-1 py-0">
+                              ✓ Done
                             </Badge>
                           </td>
                         </tr>

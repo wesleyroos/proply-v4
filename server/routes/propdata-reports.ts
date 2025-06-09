@@ -230,8 +230,15 @@ router.get('/download/:reportId', async (req, res) => {
       
       // Log download activity using proper property ID mapping
       try {
-        const propertyId = ReportMappingService.getPropertyIdFromReportId(reportId);
-        if (propertyId) {
+        let propertyId = ReportMappingService.getPropertyIdFromReportId(reportId);
+        
+        // If no mapping found, try to extract from filename pattern
+        if (!propertyId) {
+          const filename = `Proply_Report_${reportId}`;
+          // Try to find the property ID from the stored report if available
+          // For now, we'll skip logging if no mapping is found
+          console.warn(`No property ID mapping found for report ID: ${reportId}. Download will proceed but not be logged.`);
+        } else {
           await logReportActivity({
             propertyId: propertyId,
             reportId: reportId,
@@ -240,8 +247,7 @@ router.get('/download/:reportId', async (req, res) => {
             ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
             userAgent: req.get('User-Agent') || 'unknown'
           });
-        } else {
-          console.warn(`No property ID mapping found for report ID: ${reportId}`);
+          console.log(`Logged download activity for property ${propertyId}`);
         }
       } catch (logError) {
         console.error('Failed to log download activity:', logError);
