@@ -163,6 +163,39 @@ export default function PropertyDetailModal({
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [imagesPerView, setImagesPerView] = useState(4);
   const [showAllImages, setShowAllImages] = useState(false);
+  
+  // Progress modal state
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [progressSteps, setProgressSteps] = useState([
+    { id: 'analyze', label: 'Analyzing property details', status: 'pending' },
+    { id: 'images', label: 'Processing property images', status: 'pending' },
+    { id: 'valuation', label: 'Generating valuation estimates', status: 'pending' },
+    { id: 'rental', label: 'Fetching rental performance data', status: 'pending' },
+    { id: 'financial', label: 'Calculating financial analysis', status: 'pending' },
+    { id: 'complete', label: 'Finalizing report', status: 'pending' }
+  ]);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+
+  // Progress modal helper functions
+  const updateProgressStep = (stepId: string, status: 'pending' | 'processing' | 'completed' | 'error') => {
+    setProgressSteps(prev => 
+      prev.map(step => 
+        step.id === stepId ? { ...step, status } : step
+      )
+    );
+  };
+
+  const resetProgress = () => {
+    setCurrentStepIndex(0);
+    setProgressSteps([
+      { id: 'analyze', label: 'Analyzing property details', status: 'pending' },
+      { id: 'images', label: 'Processing property images', status: 'pending' },
+      { id: 'valuation', label: 'Generating valuation estimates', status: 'pending' },
+      { id: 'rental', label: 'Fetching rental performance data', status: 'pending' },
+      { id: 'financial', label: 'Calculating financial analysis', status: 'pending' },
+      { id: 'complete', label: 'Finalizing report', status: 'pending' }
+    ]);
+  };
 
   // Fetch report activity data
   const { data: reportActivity, refetch: refetchActivity } = useQuery({
@@ -1013,8 +1046,16 @@ export default function PropertyDetailModal({
       return;
     }
 
+    // Reset and show progress modal
+    resetProgress();
+    setShowProgressModal(true);
     setIsGeneratingReport(true);
+    
     try {
+      // Step 1: Analyzing property details
+      updateProgressStep('analyze', 'processing');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       const requestData = {
         address: property.address,
         propertyType: property.propertyType,
@@ -1032,6 +1073,16 @@ export default function PropertyDetailModal({
         location: property.location,
         propertyId: property.propdataId, // Use PropData property ID for rental data persistence
       };
+      
+      updateProgressStep('analyze', 'completed');
+      
+      // Step 2: Processing images
+      updateProgressStep('images', 'processing');
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      updateProgressStep('images', 'completed');
+      
+      // Step 3: Generating valuation estimates
+      updateProgressStep('valuation', 'processing');
 
       const response = await fetch("/api/generate-valuation-report", {
         method: "POST",
@@ -1047,6 +1098,7 @@ export default function PropertyDetailModal({
       }
 
       const report = await response.json();
+      updateProgressStep('valuation', 'completed');
 
       // Save the valuation report to database first
       await saveValuationToDatabase(report);
@@ -1054,6 +1106,9 @@ export default function PropertyDetailModal({
       // Reload data from database to ensure consistency
       await refetchValuation();
 
+      // Step 4: Fetching rental performance data
+      updateProgressStep('rental', 'processing');
+      
       // Force refresh rental data with cache invalidation
       console.log(
         "Invalidating and refetching rental data after valuation generation...",
@@ -1062,26 +1117,45 @@ export default function PropertyDetailModal({
         queryKey: ["/api/rental-performance", property.propdataId],
       });
       await refetchRental();
+      
+      updateProgressStep('rental', 'completed');
 
+      // Step 5: Calculating financial analysis
+      updateProgressStep('financial', 'processing');
+      
       // AUTOMATICALLY SAVE ALL FINANCIAL ANALYSIS DATA
       // This ensures complete single source of truth for PDF generation
       // Financial data is calculated and saved immediately after valuation generation
-      setTimeout(async () => {
-        try {
-          console.log("Auto-generating and saving financial analysis data...");
-          await calculateAndSaveFinancialData();
-          console.log(
-            "Financial analysis data automatically saved to database",
-          );
-        } catch (error) {
-          console.error("Error auto-saving financial data:", error);
-        }
-      }, 1000); // Small delay to ensure valuation and rental data are loaded
+      try {
+        console.log("Auto-generating and saving financial analysis data...");
+        await calculateAndSaveFinancialData();
+        console.log(
+          "Financial analysis data automatically saved to database",
+        );
+        updateProgressStep('financial', 'completed');
+      } catch (error) {
+        console.error("Error auto-saving financial data:", error);
+        updateProgressStep('financial', 'error');
+      }
+      
+      // Step 6: Finalizing report
+      updateProgressStep('complete', 'processing');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      updateProgressStep('complete', 'completed');
     } catch (error) {
       console.error("Error generating valuation report:", error);
+      // Mark current step as error
+      const currentStep = progressSteps.find(step => step.status === 'processing');
+      if (currentStep) {
+        updateProgressStep(currentStep.id, 'error');
+      }
       alert("Failed to generate valuation report. Please try again.");
     } finally {
       setIsGeneratingReport(false);
+      // Close progress modal after a delay
+      setTimeout(() => {
+        setShowProgressModal(false);
+      }, 2000);
     }
   };
 
