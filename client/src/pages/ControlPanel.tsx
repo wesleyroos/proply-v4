@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -74,6 +75,8 @@ interface AgenciesData {
 export function ControlPanel() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [selectedAgencyName, setSelectedAgencyName] = useState<string>("");
 
   // Fetch agencies data
   const { data: agenciesData, isLoading, error } = useQuery<AgenciesData>({
@@ -280,6 +283,16 @@ export function ControlPanel() {
                         >
                           <Database className="w-3 h-3" />
                         </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedAgencyName(agency.franchiseName || agency.name);
+                            setStatsModalOpen(true);
+                          }}
+                        >
+                          <BarChart3 className="w-3 h-3" />
+                        </Button>
                         {agency.mainBranchId && (
                           <AgencyLogoUpload
                             agencyId={parseInt(agency.mainBranchId)}
@@ -388,6 +401,13 @@ export function ControlPanel() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Agency Stats Modal */}
+      <AgencyStatsModal
+        isOpen={statsModalOpen}
+        onClose={() => setStatsModalOpen(false)}
+        agencyName={selectedAgencyName}
+      />
     </div>
   );
 }
