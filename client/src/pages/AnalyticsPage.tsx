@@ -18,12 +18,27 @@ const fetchAgencyInteractions = async () => {
   return data.agencies?.length || 0;
 };
 
+// API fetch function for PriceLabs usage
+const fetchPriceLabsUsage = async () => {
+  const response = await fetch('/api/pricelabs-usage');
+  if (!response.ok) {
+    throw new Error('Failed to fetch PriceLabs usage data');
+  }
+  return response.json();
+};
+
 
 
 const AnalyticsDashboard = () => {
   const { data: agencyCount, isLoading, error } = useQuery({
     queryKey: ['agency-interactions'],
     queryFn: fetchAgencyInteractions,
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+  });
+
+  const { data: priceLabsData, isLoading: priceLabsLoading } = useQuery({
+    queryKey: ['pricelabs-usage'],
+    queryFn: fetchPriceLabsUsage,
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 
@@ -60,6 +75,30 @@ const AnalyticsDashboard = () => {
           </CardContent>
         </Card>
 
+        <Card className="w-full max-w-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">PriceLabs API Usage</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {priceLabsLoading ? (
+              <div className="flex items-center">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span className="text-sm text-muted-foreground">Loading...</span>
+              </div>
+            ) : (
+              <div>
+                <div className="text-2xl font-bold">{priceLabsData?.totalCalls || 0}</div>
+                <p className="text-xs text-muted-foreground">Total API calls</p>
+                {priceLabsData?.monthlyUsage?.slice(0, 3).map((month: any) => (
+                  <div key={month.month} className="text-xs text-muted-foreground mt-1">
+                    {new Date(month.month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}: {month.apiCalls} calls
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
       </div>
     </div>

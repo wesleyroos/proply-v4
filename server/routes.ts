@@ -26,7 +26,7 @@ import { calculateYields } from "../analysis-engine/calculations";
 import { trackPriceLabsApiCall } from "./utils/pricelabs-tracker";
 import { analyzeSuburb } from "./services/openai";
 import { sql } from "drizzle-orm";
-import { suburbs } from "@db/schema";
+import { suburbs, priceLabsUsage } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
@@ -2423,6 +2423,35 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error updating property address:', error);
       res.status(500).json({ error: 'Failed to update address' });
+    }
+  });
+
+  // PriceLabs usage analytics endpoint
+  app.get("/api/pricelabs-usage", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const usage = await db
+        .select({
+          month: sql`DATE_TRUNC('month', ${priceLabsUsage.timestamp})`.as('month'),
+          apiCalls: sql`COUNT(*)`.as('api_calls'),
+          successfulCalls: sql`SUM(CASE WHEN ${priceLabsUsage.success} THEN 1 ELSE 0 END)`.as('successful_calls'),
+          failedCalls: sql`SUM(CASE WHEN NOT ${priceLabsUsage.success} THEN 1 ELSE 0 END)`.as('failed_calls'),
+          avgResponseTime: sql`AVG(${priceLabsUsage.responseTime})`.as('avg_response_time')
+        })
+        .from(priceLabsUsage)
+        .groupBy(sql`DATE_TRUNC('month', ${priceLabsUsage.timestamp})`)
+        .orderBy(sql`DATE_TRUNC('month', ${priceLabsUsage.timestamp}) DESC`);
+
+      res.json({
+        monthlyUsage: usage,
+        totalCalls: usage.reduce((sum, month) => sum + Number(month.apiCalls), 0)
+      });
+    } catch (error) {
+      console.error("Error fetching PriceLabs usage:", error);
+      res.status(500).json({ error: "Failed to fetch usage data" });
     }
   });
 
