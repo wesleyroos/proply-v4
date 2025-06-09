@@ -3827,6 +3827,71 @@ export default function PropertyDetailModal({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Progress Modal */}
+      <Dialog open={showProgressModal} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Generating Report
+            </DialogTitle>
+            <DialogDescription>
+              Please wait while we analyze your property and generate a comprehensive report.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {progressSteps.map((step, index) => (
+              <div key={step.id} className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  {step.status === 'completed' ? (
+                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <Check className="h-4 w-4 text-white" />
+                    </div>
+                  ) : step.status === 'processing' ? (
+                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Loader2 className="h-4 w-4 text-white animate-spin" />
+                    </div>
+                  ) : step.status === 'error' ? (
+                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                      <X className="h-4 w-4 text-white" />
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-medium ${
+                    step.status === 'completed' ? 'text-green-700' :
+                    step.status === 'processing' ? 'text-blue-700' :
+                    step.status === 'error' ? 'text-red-700' :
+                    'text-gray-500'
+                  }`}>
+                    {step.label}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-6">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300 ease-in-out"
+                style={{ 
+                  width: `${(progressSteps.filter(s => s.status === 'completed').length / progressSteps.length) * 100}%` 
+                }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              {progressSteps.filter(s => s.status === 'completed').length} of {progressSteps.length} tasks completed
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
