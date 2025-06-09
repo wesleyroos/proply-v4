@@ -15,8 +15,8 @@ export async function trackReportGeneration(options: ReportGenerationOptions): P
     // Look up the property to get agency information
     const property = await db
       .select({
-        agencyId: propdataListings.agencyId,
-        agencyName: propdataListings.agencyName,
+        agentId: propdataListings.agentId,
+        agentName: propdataListings.agentName,
       })
       .from(propdataListings)
       .where(eq(propdataListings.propdataId, options.propertyId))
@@ -36,19 +36,19 @@ export async function trackReportGeneration(options: ReportGenerationOptions): P
       return;
     }
 
-    const { agencyId, agencyName } = property[0];
+    const { agentId, agentName } = property[0];
     
-    // Log the report generation
+    // Log the report generation using agent data as agency proxy
     await db.insert(reportGenerations).values({
-      agencyId: agencyId || "unknown",
-      agencyName: agencyName || "Unknown Agency",
+      agencyId: agentId?.toString() || "unknown",
+      agencyName: agentName || "Unknown Agency",
       propertyId: options.propertyId,
       reportType: options.reportType,
       timestamp: new Date(),
       userId: options.userId || null,
     });
     
-    console.log(`Tracked report generation: ${options.reportType} for ${agencyName} (Property: ${options.propertyId})`);
+    console.log(`Tracked report generation: ${options.reportType} for ${agentName} (Property: ${options.propertyId})`);
   } catch (error) {
     console.error('Failed to track report generation:', error);
     // Don't throw error to avoid breaking report generation

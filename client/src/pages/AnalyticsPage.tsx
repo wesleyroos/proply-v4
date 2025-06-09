@@ -51,6 +51,12 @@ const AnalyticsDashboard = () => {
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 
+  const { data: reportStats, isLoading: reportStatsLoading } = useQuery({
+    queryKey: ['report-generation-stats'],
+    queryFn: fetchReportStats,
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+  });
+
 
 
   return (
