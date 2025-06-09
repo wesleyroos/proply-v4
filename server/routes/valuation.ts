@@ -5,8 +5,46 @@ import { db } from "../../db";
 import { rentalPerformanceData } from "../../db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { trackReportGeneration } from "../utils/report-tracker";
+import fetch from "node-fetch";
 
 const router = Router();
+
+// Function to validate image size before sending to OpenAI
+async function validateImageSize(imageUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    const contentLength = response.headers.get('content-length');
+    
+    if (contentLength) {
+      const sizeInMB = parseInt(contentLength) / (1024 * 1024);
+      // OpenAI has a 20MB limit per image, we'll use 15MB as safe threshold
+      return sizeInMB <= 15;
+    }
+    
+    // If we can't determine size, allow it and let OpenAI handle it
+    return true;
+  } catch (error) {
+    console.warn('Failed to validate image size for:', imageUrl, error);
+    // If validation fails, allow the image and let OpenAI handle it
+    return true;
+  }
+}
+
+// Function to filter valid images for OpenAI
+async function filterValidImages(images: string[]): Promise<string[]> {
+  const validImages: string[] = [];
+  
+  for (const imageUrl of images.slice(0, 10)) {
+    const isValid = await validateImageSize(imageUrl);
+    if (isValid) {
+      validImages.push(imageUrl);
+    } else {
+      console.log('Skipping oversized image:', imageUrl);
+    }
+  }
+  
+  return validImages;
+}
 
 // Function to calculate and save all financial data after valuation generation
 async function calculateAndSaveFinancialDataAfterValuation(
@@ -340,18 +378,27 @@ For rental estimates, carefully assess:
 
 This is a ${bedrooms}-bedroom property in Cape Town. For context, similar properties in desirable Cape Town areas typically rent for R35,000-R55,000+ per month depending on location, condition, and finishes.`;
       
-      console.log('Sending images to OpenAI for visual analysis:', images.length, 'images');
+      console.log('Validating images for OpenAI analysis:', images.length, 'images');
       
-      messages.push({
-        role: "user",
-        content: [
-          { type: "text", text: imageAnalysisPrompt },
-          ...images.slice(0, 10).map((imageUrl: string) => ({
-            type: "image_url",
-            image_url: { url: imageUrl }
-          }))
-        ]
-      });
+      // Filter out oversized images to prevent OpenAI API failures
+      const validImages = await filterValidImages(images);
+      
+      if (validImages.length > 0) {
+        console.log('Sending images to OpenAI for visual analysis:', validImages.length, 'valid images');
+        
+        messages.push({
+          role: "user",
+          content: [
+            { type: "text", text: imageAnalysisPrompt },
+            ...validImages.map((imageUrl: string) => ({
+              type: "image_url",
+              image_url: { url: imageUrl }
+            }))
+          ]
+        });
+      } else {
+        console.log('No valid images found for OpenAI analysis - all images too large or inaccessible');
+      }
     }
 
     // Call OpenAI API
