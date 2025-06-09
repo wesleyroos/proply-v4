@@ -1,5 +1,5 @@
-import { db } from "db";
-import { reportGenerations, propdataListings } from "@db/schema";
+import { db } from "../../db";
+import { reportGenerations, propdataListings, agencyBranches } from "../../db/schema";
 import { eq } from "drizzle-orm";
 
 interface ReportGenerationOptions {
@@ -12,13 +12,16 @@ export async function trackReportGeneration(options: ReportGenerationOptions): P
   try {
     console.log(`Tracking report generation for property: ${options.propertyId}`);
     
-    // Look up the property to get agency information
+    // Look up the property and join with agency branch to get franchise information
     const property = await db
       .select({
         agentId: propdataListings.agentId,
         agentName: propdataListings.agentName,
+        franchiseName: agencyBranches.franchiseName,
+        branchName: agencyBranches.branchName,
       })
       .from(propdataListings)
+      .leftJoin(agencyBranches, eq(propdataListings.branchId, agencyBranches.id))
       .where(eq(propdataListings.propdataId, options.propertyId))
       .limit(1);
 
@@ -36,19 +39,23 @@ export async function trackReportGeneration(options: ReportGenerationOptions): P
       return;
     }
 
-    const { agentId, agentName } = property[0];
+    const { agentId, agentName, franchiseName, branchName } = property[0];
     
-    // Log the report generation using agent data as agency proxy
+    // Use franchise name if available, fallback to agent name
+    const displayName = franchiseName || agentName || "Unknown Agency";
+    const agencyIdentifier = franchiseName ? `${franchiseName}-${branchName}` : (agentId?.toString() || "unknown");
+    
+    // Log the report generation using franchise name
     await db.insert(reportGenerations).values({
-      agencyId: agentId?.toString() || "unknown",
-      agencyName: agentName || "Unknown Agency",
+      agencyId: agencyIdentifier,
+      agencyName: displayName,
       propertyId: options.propertyId,
       reportType: options.reportType,
       timestamp: new Date(),
       userId: options.userId || null,
     });
     
-    console.log(`Tracked report generation: ${options.reportType} for ${agentName} (Property: ${options.propertyId})`);
+    console.log(`Tracked report generation: ${options.reportType} for ${displayName} (Property: ${options.propertyId})`);
   } catch (error) {
     console.error('Failed to track report generation:', error);
     // Don't throw error to avoid breaking report generation
