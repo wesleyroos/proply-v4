@@ -230,24 +230,28 @@ router.get('/download/:reportId', async (req, res) => {
       
       // Log download activity using proper property ID mapping
       try {
-        let propertyId = ReportMappingService.getPropertyIdFromReportId(reportId);
+        const propertyId = await ReportMappingService.getPropertyIdFromReportId(reportId);
         
-        // If no mapping found, try to extract from filename pattern
         if (!propertyId) {
-          const filename = `Proply_Report_${reportId}`;
-          // Try to find the property ID from the stored report if available
-          // For now, we'll skip logging if no mapping is found
           console.warn(`No property ID mapping found for report ID: ${reportId}. Download will proceed but not be logged.`);
         } else {
+          // Get real IP address - handle proxies and load balancers
+          const realIP = req.get('X-Forwarded-For') || 
+                        req.get('X-Real-IP') || 
+                        req.connection.remoteAddress || 
+                        req.ip || 
+                        'unknown';
+          
+          // Always log each download as a separate activity
           await logReportActivity({
             propertyId: propertyId,
             reportId: reportId,
             activityType: 'downloaded',
-            recipientEmail: 'agent@download.com', // Placeholder for agent downloads
-            ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+            recipientEmail: 'wesley@proply.co.za',
+            ipAddress: realIP,
             userAgent: req.get('User-Agent') || 'unknown'
           });
-          console.log(`Logged download activity for property ${propertyId}`);
+          console.log(`Logged download activity for property ${propertyId} from IP: ${realIP}`);
         }
       } catch (logError) {
         console.error('Failed to log download activity:', logError);
