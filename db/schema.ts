@@ -45,9 +45,7 @@ export const users = pgTable("users", {
   reportsGenerated: integer("reports_generated").default(0).notNull(),
   analysisCount: integer("analysis_count").default(0).notNull(),
   lastLoginAt: timestamp("last_login_at"),
-  pricelabsApiCallsTotal: integer("pricelabs_api_calls_total").default(0),
-  pricelabsApiCallsMonth: integer("pricelabs_api_calls_month").default(0),
-  pricelabsApiLastReset: timestamp("pricelabs_api_last_reset")
+
 });
 
 export const properties = pgTable("properties", {

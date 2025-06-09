@@ -679,8 +679,7 @@ export function registerRoutes(app: Express): Server {
           isAdmin: users.isAdmin,
           accessCode: accessCodes.code,
           accessCodeUsedAt: accessCodes.usedAt,
-          pricelabsApiCallsTotal: users.pricelabsApiCallsTotal,
-          pricelabsApiCallsMonth: users.pricelabsApiCallsMonth,
+
           lastLoginAt: users.lastLoginAt,
           reportsGenerated: sql`(
             SELECT COUNT(*)::integer 
@@ -954,32 +953,6 @@ export function registerRoutes(app: Express): Server {
     let success = false;
 
     try {
-      // Check if we need to reset monthly counter
-      const [currentUser] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, req.user!.id))
-        .limit(1);
-
-      const now = new Date();
-      const lastReset = currentUser.pricelabsApiLastReset;
-      const shouldResetMonthly =
-        !lastReset ||
-        lastReset.getMonth() !== now.getMonth() ||
-        lastReset.getFullYear() !== now.getFullYear();
-
-      // Reset monthly counter if needed
-      if (shouldResetMonthly) {
-        console.log("Resetting monthly API counter for user:", req.user!.id);
-        await db
-          .update(users)
-          .set({
-            pricelabsApiCallsMonth: 0,
-            pricelabsApiLastReset: now,
-          })
-          .where(eq(users.id, req.user!.id));
-      }
-
       const response = await fetch(
         `https://api.pricelabs.co/v1/revenue/estimator?version=2&address=${encodeURIComponent(String(address))}&currency=ZAR&bedroom_category=${bedrooms}`,
         {
@@ -996,40 +969,10 @@ export function registerRoutes(app: Express): Server {
       const data = await response.json();
       success = true;
 
-      // Increment API usage counters
-      console.log("Incrementing API counters for user:", req.user!.id);
-      await db
-        .update(users)
-        .set({
-          pricelabsApiCallsTotal: sql`COALESCE(${users.pricelabsApiCallsTotal}, 0) + 1`,
-          pricelabsApiCallsMonth: sql`COALESCE(${users.pricelabsApiCallsMonth}, 0) + 1`,
-        })
-        .where(eq(users.id, req.user!.id))
-        .returning()
-        .then(([updated]) => {
-          console.log("Updated counters:", {
-            total: updated.pricelabsApiCallsTotal,
-            monthly: updated.pricelabsApiCallsMonth,
-          });
-        });
-
       res.json(data);
     } catch (error) {
       console.error("Error fetching from PriceLabs:", error);
       res.status(500).json({ error: "Failed to fetch revenue data" });
-    } finally {
-      // Track API usage in the general tracking table
-      try {
-        await db.insert(apiUsage).values({
-          userId: req.user!.id,
-          endpoint: "/api/revenue-data",
-          responseTime: Date.now() - startTime,
-          success,
-          timestamp: new Date(),
-        });
-      } catch (error) {
-        console.error("Error logging API usage:", error);
-      }
     }
   });
 
@@ -2070,34 +2013,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // PriceLabs API usage by month
-  app.get("/api/analytics/pricelabs-usage", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
-    }
 
-    try {
-      // Get PriceLabs API calls grouped by month from apiUsage table
-      const monthlyUsage = await db
-        .select({
-          month: sql`to_char(date_trunc('month', ${apiUsage.timestamp}), 'Month YYYY')`.as('month'),
-          monthYear: sql`date_trunc('month', ${apiUsage.timestamp})`.as('monthYear'),
-          totalCalls: sql`count(*)::integer`.as('totalCalls'),
-        })
-        .from(apiUsage)
-        .where(sql`${apiUsage.endpoint} = '/api/revenue-data'`)
-        .groupBy(sql`date_trunc('month', ${apiUsage.timestamp})`)
-        .orderBy(sql`date_trunc('month', ${apiUsage.timestamp}) DESC`);
-
-      res.json({ monthlyUsage });
-    } catch (error) {
-      console.error("Error fetching PriceLabs usage:", error);
-      res.status(500).json({
-        error: "Failed to fetch PriceLabs usage",
-        details: error instanceof Error ? error.message : undefined,
-      });
-    }
-  });
 
   // Get rental performance data for a specific property
   app.get("/api/rental-performance/:propertyId", async (req, res) => {
