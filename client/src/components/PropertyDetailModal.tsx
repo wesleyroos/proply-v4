@@ -161,7 +161,7 @@ export default function PropertyDetailModal({
   const [showSendReportDialog, setShowSendReportDialog] = useState(false);
   const [sendToAgent, setSendToAgent] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
-  const [imagesPerView, setImagesPerView] = useState(12);
+  const [imagesPerView, setImagesPerView] = useState(4);
   const [showAllImages, setShowAllImages] = useState(false);
 
   // Fetch report activity data
