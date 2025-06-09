@@ -156,6 +156,19 @@ export default function PropertyDetailModal({
   const [showSendReportDialog, setShowSendReportDialog] = useState(false);
   const [sendToAgent, setSendToAgent] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
+
+  // Fetch report activity data
+  const { data: reportActivity, refetch: refetchActivity } = useQuery({
+    queryKey: ['/api/report-activity', property?.propdataId],
+    queryFn: async () => {
+      if (!property?.propdataId) return [];
+      const response = await fetch(`/api/report-activity/${property.propdataId}`);
+      if (!response.ok) return [];
+      return await response.json();
+    },
+    enabled: !!property?.propdataId && showActivityModal,
+  });
+
   // Replace local state with React Query for database consistency
   const { data: valuationReport, refetch: refetchValuation } = useQuery({
     queryKey: ['/api/valuation-reports', property?.propdataId],
@@ -3286,6 +3299,123 @@ export default function PropertyDetailModal({
                   Send Report
                 </>
               )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report Activity Modal */}
+      <Dialog open={showActivityModal} onOpenChange={setShowActivityModal}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Report Activity - {property?.address}
+            </DialogTitle>
+            <DialogDescription>
+              Track all report sends and downloads for this property.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {reportActivity && reportActivity.length > 0 ? (
+              <>
+                {/* Activity Summary */}
+                <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {reportActivity.filter((activity: any) => activity.activityType === 'sent').length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Reports Sent</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {reportActivity.filter((activity: any) => activity.activityType === 'downloaded').length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Downloads</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {reportActivity.length > 0 ? new Date(reportActivity[reportActivity.length - 1].timestamp).toLocaleDateString() : 'Never'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Last Activity</div>
+                  </div>
+                </div>
+
+                {/* Activity Table */}
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-3 font-medium">Action</th>
+                        <th className="text-left p-3 font-medium">Date & Time</th>
+                        <th className="text-left p-3 font-medium">Recipient/Details</th>
+                        <th className="text-left p-3 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reportActivity.map((activity: any, index: number) => (
+                        <tr key={index} className="border-t hover:bg-muted/30">
+                          <td className="p-3">
+                            <div className="flex items-center gap-2">
+                              {activity.activityType === 'sent' ? (
+                                <Send className="h-4 w-4 text-blue-500" />
+                              ) : (
+                                <Download className="h-4 w-4 text-green-500" />
+                              )}
+                              <span className="font-medium">
+                                {activity.activityType === 'sent' ? 'Report Sent' : 'Report Downloaded'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-3 text-sm text-muted-foreground">
+                            {new Date(activity.timestamp).toLocaleString()}
+                          </td>
+                          <td className="p-3">
+                            {activity.activityType === 'sent' ? (
+                              <div>
+                                <div className="font-medium">{activity.recipientEmail}</div>
+                                {activity.recipientName && (
+                                  <div className="text-sm text-muted-foreground">{activity.recipientName}</div>
+                                )}
+                              </div>
+                            ) : (
+                              <div>
+                                <div className="font-medium">Agent Download</div>
+                                {activity.ipAddress && (
+                                  <div className="text-sm text-muted-foreground">IP: {activity.ipAddress}</div>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              ✓ Completed
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">No Activity Yet</h3>
+                <p className="text-muted-foreground">
+                  Generate and send reports to see activity tracking here.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowActivityModal(false)}
+            >
+              Close
             </Button>
           </div>
         </DialogContent>

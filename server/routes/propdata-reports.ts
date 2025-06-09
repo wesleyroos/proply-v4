@@ -8,6 +8,7 @@ import path from 'path';
 import { db } from '../../db';
 import { propdataListings, valuationReports, rentalPerformanceData } from '../../db/schema';
 import { eq, sql } from 'drizzle-orm';
+import { logReportActivity } from './report-activity';
 
 const router = Router();
 
@@ -45,7 +46,7 @@ router.get('/test', async (req, res) => {
     res.send(pdfBuffer);
   } catch (error) {
     console.error('Test PDF generation failed:', error);
-    res.status(500).json({ error: 'Test PDF generation failed', details: error.message });
+    res.status(500).json({ error: 'Test PDF generation failed', details: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 
