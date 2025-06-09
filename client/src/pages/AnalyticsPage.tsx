@@ -8,8 +8,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LineChart,
-  Line,
 } from "recharts";
 import {
   Card,
@@ -25,24 +23,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, TrendingUp, Users, FileText, Activity } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
-// API fetch function
-const fetchAnalyticsData = async () => {
-  const response = await fetch('/api/analytics');
-  if (!response.ok) {
-    throw new Error('Failed to fetch analytics data');
-  }
-  return response.json();
+const timePeriods = [
+  { value: "all", label: "All Time" },
+  { value: "1year", label: "1 Year" },
+  { value: "90days", label: "90 Days" },
+  { value: "30days", label: "30 Days" },
+  { value: "7days", label: "7 Days" },
+];
+
+const generateMockData = (days = 30) => {
+  const monthlySubscriptions = 5; // 5 subscriptions at R2000 each = R10,000/month
+  const targetMonthlyApiReports = 150; // 150 reports at R200 each = R30,000/month
+  const dailyApiReports = Math.ceil(targetMonthlyApiReports / 30); // ~5 per day
+
+  return Array.from({ length: days }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    // Add some daily variation to API reports (±2)
+    const apiReports = dailyApiReports + Math.floor(Math.random() * 4) - 2;
+
+    return {
+      date: date.toISOString(),
+      signups: Math.floor(Math.random() * 3), // Much lower daily signups
+      reports: Math.floor(Math.random() * 10) + 5, // Reduced report generation
+      priceLabsApi: Math.floor(Math.random() * 20) + 10,
+      tpnApi: Math.floor(Math.random() * 5),
+      fhiApi: Math.floor(Math.random() * 5),
+      apiReports,
+      activeSubscribers: monthlySubscriptions,
+      apiRevenue: apiReports * 200,
+      subscriptionRevenue: (monthlySubscriptions * 2000) / 30, // Daily portion of monthly revenue
+      totalRevenue: apiReports * 200 + (monthlySubscriptions * 2000) / 30,
+    };
+  }).reverse();
 };
 
 const AnalyticsDashboard = () => {
-  const { data: analyticsData, isLoading, error } = useQuery({
-    queryKey: ['analytics'],
-    queryFn: fetchAnalyticsData,
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
-  });
+  const [selectedPeriod, setSelectedPeriod] = useState("30days");
+  const [loading, setLoading] = useState(false);
+  const data = generateMockData();
 
   const chartConfig = {
     width: "100%",
@@ -50,34 +71,21 @@ const AnalyticsDashboard = () => {
     margin: { top: 20, right: 30, left: 20, bottom: 20 },
   };
 
-  if (isLoading) {
+  const monthlyTotals = {
+    apiRevenue: data.reduce((sum, day) => sum + day.apiRevenue, 0),
+    subscriptionRevenue: data.reduce(
+      (sum, day) => sum + day.subscriptionRevenue,
+      0,
+    ),
+    totalRevenue: data.reduce((sum, day) => sum + day.totalRevenue, 0),
+  };
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-border" />
       </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md mx-4">
-          <CardContent className="pt-6">
-            <div className="flex mb-4 gap-2">
-              <Activity className="h-8 w-8 text-red-500" />
-              <h1 className="text-2xl font-bold text-gray-900">Analytics Unavailable</h1>
-            </div>
-            <p className="mt-4 text-sm text-gray-600">
-              Unable to load analytics data. Please try again later.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!analyticsData) {
-    return null;
   }
 
   return (
@@ -86,49 +94,64 @@ const AnalyticsDashboard = () => {
         <h1 className="text-2xl font-bold text-[#262626]">
           Analytics Dashboard
         </h1>
+        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            {timePeriods.map((period) => (
+              <SelectItem key={period.value} value={period.value}>
+                {period.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Key Metrics Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Revenue Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-600">API Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analyticsData.totalUsers || 0}</div>
+            <p className="text-3xl font-bold text-[#8B5CF6]">
+              R{monthlyTotals.apiRevenue.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600 mt-1">
+              From API-as-a-Service Reports
+            </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-600">
+              Subscription Revenue
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analyticsData.activeUsers || 0}</div>
+            <p className="text-3xl font-bold text-[#1BA3FF]">
+              R{monthlyTotals.subscriptionRevenue.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600 mt-1">
+              From Monthly Subscriptions
+            </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly API Calls</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-600">
+              Total Revenue
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analyticsData.monthlyApiCalls || 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reports Generated</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analyticsData.totalReportsGenerated || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              {analyticsData.monthlyReportsGenerated || 0} this month
+            <p className="text-3xl font-bold text-[#262626]">
+              R{monthlyTotals.totalRevenue.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600 mt-1">
+              Combined Monthly Revenue
             </p>
           </CardContent>
         </Card>
