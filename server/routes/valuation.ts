@@ -2,8 +2,8 @@ import { Router } from "express";
 import OpenAI from "openai";
 import { fetchPriceLabsData } from "./rental-performance";
 import { db } from "../../db";
-import { rentalPerformanceData } from "../../db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { rentalPerformanceData, valuationReports } from "../../db/schema";
+import { eq, and, sql, desc } from "drizzle-orm";
 import { trackReportGeneration } from "../utils/report-tracker";
 import fetch from "node-fetch";
 
@@ -677,29 +677,14 @@ ${premiumImageContext}
       console.error('Error tracking report generation:', error);
     }
 
-    // Save financial analysis data immediately after valuation generation
+    // Calculate financial analysis data to include in response
+    // This will be saved by the frontend when it calls /api/valuation-reports
+    let calculatedFinancialData = null;
+    
     try {
-      console.log('=== STARTING FINANCIAL DATA SAVE PROCESS ===');
+      console.log('=== CALCULATING FINANCIAL DATA FOR RESPONSE ===');
       console.log('Property ID:', propertyIdToUse);
-      console.log('User ID:', req.user.id);
-
-      // Find the existing valuation report (created by frontend) and update it with financial data
-      const existingReports = await db.query.valuationReports.findMany({
-        where: and(
-          eq(valuationReports.propertyId, propertyIdToUse),
-          eq(valuationReports.userId, req.user.id)
-        ),
-        orderBy: desc(valuationReports.createdAt),
-        limit: 1
-      });
-
-      if (!existingReports || existingReports.length === 0) {
-        console.error('No existing valuation report found to update with financial data');
-        throw new Error('No existing valuation report found');
-      }
-
-      const reportId = existingReports[0].id;
-      console.log('Found existing valuation report with ID:', reportId);
+      console.log('Property price:', price);
 
       // Now calculate and save financial analysis data with the new percentile structure
       const propertyPrice = price || 0;
@@ -833,39 +818,30 @@ ${premiumImageContext}
         }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
       };
 
-      // Update the valuation report with all financial analysis data
-      if (reportId) {
-        await db.execute(sql`
-          UPDATE valuation_reports 
-          SET 
-            annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
-            cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
-            financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
-            current_deposit_percentage = ${depositPercentage.toString()},
-            current_interest_rate = ${interestRate.toString()},
-            current_loan_term = ${loanTermYears},
-            current_deposit_amount = ${depositAmount.toString()},
-            current_loan_amount = ${loanAmount.toString()},
-            current_monthly_repayment = ${monthlyPayment.toString()},
-            updated_at = NOW()
-          WHERE id = ${reportId}
-        `);
-        
-        console.log('Updated valuation report', reportId, 'with financial analysis data');
-      } else {
-        console.error('No report ID available for financial data update');
-      }
+      // Store calculated financial data to include in response
+      calculatedFinancialData = {
+        annualPropertyAppreciationData,
+        cashflowAnalysisData,
+        financingAnalysisData,
+        currentDepositPercentage: depositPercentage.toString(),
+        currentInterestRate: interestRate.toString(),
+        currentLoanTerm: loanTermYears,
+        currentDepositAmount: depositAmount.toString(),
+        currentLoanAmount: loanAmount.toString(),
+        currentMonthlyRepayment: monthlyPayment.toString()
+      };
 
-      console.log('Successfully saved financial analysis data with all percentiles for property', propertyIdToUse);
+      console.log('Successfully calculated financial analysis data with all percentiles for property', propertyIdToUse);
 
     } catch (error) {
       console.error('Error saving financial analysis data:', error);
     }
 
-    // Include rental performance data in the response
+    // Include rental performance data and calculated financial data in the response
     const responseData = {
       ...valuationReport,
-      rentalPerformance
+      rentalPerformance,
+      calculatedFinancialData
     };
 
     return res.json(responseData);
