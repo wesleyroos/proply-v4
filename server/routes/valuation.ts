@@ -748,9 +748,16 @@ ${premiumImageContext}
 
       console.log('=== FINANCIAL DATA CALCULATION DEBUG ===');
       console.log('Property price:', propertyPrice);
+      console.log('Rental performance data:', JSON.stringify(rentalPerformance, null, 2));
+      console.log('Short term trajectories calculated:', shortTermTrajectories ? 'YES' : 'NO');
       console.log('Short-term rental data for financial calculation:', rentalPerformance.shortTerm);
       console.log('Calculated short-term trajectories:', shortTermTrajectories);
       console.log('Long-term revenue:', longTermRevenue);
+      
+      if (!shortTermTrajectories) {
+        console.error('CRITICAL: Short-term trajectories calculation failed!');
+        console.error('Rental performance short term data:', rentalPerformance.shortTerm);
+      }
 
       // Determine best strategy based on highest median revenue potential
       const shortTermMedianRevenue = rentalPerformance.shortTerm?.percentile50?.annual || 0;
@@ -849,6 +856,8 @@ ${premiumImageContext}
 
     } catch (error) {
       console.error('Error saving financial analysis data:', error);
+      console.error('Error details:', error instanceof Error ? error.message : error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     }
 
     // Include rental performance data in the response
