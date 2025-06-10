@@ -1050,50 +1050,65 @@ export class PropdataPdfService {
 
       const trajectory = data.valuationReport.cashflowAnalysisData.revenueGrowthTrajectory;
 
-      // Create combined table with both short-term and long-term data (match UI format)
+      // Create combined table with all percentiles and long-term data (match UI format)
       if (trajectory.shortTerm || trajectory.longTerm) {
-        // Get year headers from either short-term or long-term data
-        const yearData = trajectory.shortTerm || trajectory.longTerm;
-        const yearEntries = Object.entries(yearData);
-        const yearHeaders = yearEntries.map(([year]) => `Year ${year.replace("year", "")}`);
-        
+        const yearHeaders = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"];
         const tableRows = [];
         
-        // Short-term revenue row
+        // Short-term revenue rows for all percentiles
         if (trajectory.shortTerm) {
-          const shortTermEntries = Object.entries(trajectory.shortTerm);
-          tableRows.push([
-            "Short-term Revenue",
-            ...shortTermEntries.map(([, data]: [string, any]) => 
-              `R${data.revenue?.toLocaleString() || 0}`
-            ),
-          ]);
-          
-          // Short-term yield row
-          tableRows.push([
-            "Short-term Gross Yield",
-            ...shortTermEntries.map(([, data]: [string, any]) => 
-              `${data.grossYield?.toFixed(1) || 0}%`
-            ),
-          ]);
+          const percentileLabels = {
+            percentile25: "25th Percentile (Conservative)",
+            percentile50: "50th Percentile (Median)", 
+            percentile75: "75th Percentile (Optimistic)",
+            percentile90: "90th Percentile (Premium)"
+          };
+
+          Object.entries(percentileLabels).forEach(([percentileKey, label]) => {
+            const percentileData = trajectory.shortTerm[percentileKey];
+            if (percentileData) {
+              // Revenue row for this percentile
+              tableRows.push([
+                `Short-term Revenue (${label})`,
+                `R${Math.round(percentileData.year1?.revenue || 0).toLocaleString()}`,
+                `R${Math.round(percentileData.year2?.revenue || 0).toLocaleString()}`,
+                `R${Math.round(percentileData.year3?.revenue || 0).toLocaleString()}`,
+                `R${Math.round(percentileData.year4?.revenue || 0).toLocaleString()}`,
+                `R${Math.round(percentileData.year5?.revenue || 0).toLocaleString()}`,
+              ]);
+              
+              // Yield row for this percentile
+              tableRows.push([
+                `Short-term Gross Yield (${label})`,
+                `${(percentileData.year1?.grossYield || 0).toFixed(1)}%`,
+                `${(percentileData.year2?.grossYield || 0).toFixed(1)}%`,
+                `${(percentileData.year3?.grossYield || 0).toFixed(1)}%`,
+                `${(percentileData.year4?.grossYield || 0).toFixed(1)}%`,
+                `${(percentileData.year5?.grossYield || 0).toFixed(1)}%`,
+              ]);
+            }
+          });
         }
         
         // Long-term revenue row
         if (trajectory.longTerm) {
-          const longTermEntries = Object.entries(trajectory.longTerm);
           tableRows.push([
             "Long-term Revenue",
-            ...longTermEntries.map(([, data]: [string, any]) => 
-              `R${data.revenue?.toLocaleString() || 0}`
-            ),
+            `R${Math.round(trajectory.longTerm.year1?.revenue || 0).toLocaleString()}`,
+            `R${Math.round(trajectory.longTerm.year2?.revenue || 0).toLocaleString()}`,
+            `R${Math.round(trajectory.longTerm.year3?.revenue || 0).toLocaleString()}`,
+            `R${Math.round(trajectory.longTerm.year4?.revenue || 0).toLocaleString()}`,
+            `R${Math.round(trajectory.longTerm.year5?.revenue || 0).toLocaleString()}`,
           ]);
           
           // Long-term yield row
           tableRows.push([
             "Long-term Gross Yield",
-            ...longTermEntries.map(([, data]: [string, any]) => 
-              `${data.grossYield?.toFixed(1) || 0}%`
-            ),
+            `${(trajectory.longTerm.year1?.grossYield || 0).toFixed(1)}%`,
+            `${(trajectory.longTerm.year2?.grossYield || 0).toFixed(1)}%`,
+            `${(trajectory.longTerm.year3?.grossYield || 0).toFixed(1)}%`,
+            `${(trajectory.longTerm.year4?.grossYield || 0).toFixed(1)}%`,
+            `${(trajectory.longTerm.year5?.grossYield || 0).toFixed(1)}%`,
           ]);
         }
 

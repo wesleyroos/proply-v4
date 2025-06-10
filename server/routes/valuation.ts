@@ -91,17 +91,51 @@ export async function calculateAndSaveFinancialDataAfterValuation(
     (valuationReport.rentalEstimates.longTerm.minMonthlyRental + valuationReport.rentalEstimates.longTerm.maxMonthlyRental) / 2 * 12 
     : null;
 
+  // Calculate revenue trajectories for all short-term percentiles
+  const shortTermTrajectories = valuationReport.rentalPerformance?.shortTerm ? {
+    percentile25: (() => {
+      const baseRevenue = valuationReport.rentalPerformance.shortTerm.percentile25?.annual;
+      if (!baseRevenue) return null;
+      return [1, 2, 3, 4, 5].reduce((acc, year) => {
+        const revenue = baseRevenue * Math.pow(1.08, year - 1);
+        acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        return acc;
+      }, {} as Record<string, { revenue: number; grossYield: number }>);
+    })(),
+    percentile50: (() => {
+      const baseRevenue = valuationReport.rentalPerformance.shortTerm.percentile50?.annual;
+      if (!baseRevenue) return null;
+      return [1, 2, 3, 4, 5].reduce((acc, year) => {
+        const revenue = baseRevenue * Math.pow(1.08, year - 1);
+        acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        return acc;
+      }, {} as Record<string, { revenue: number; grossYield: number }>);
+    })(),
+    percentile75: (() => {
+      const baseRevenue = valuationReport.rentalPerformance.shortTerm.percentile75?.annual;
+      if (!baseRevenue) return null;
+      return [1, 2, 3, 4, 5].reduce((acc, year) => {
+        const revenue = baseRevenue * Math.pow(1.08, year - 1);
+        acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        return acc;
+      }, {} as Record<string, { revenue: number; grossYield: number }>);
+    })(),
+    percentile90: (() => {
+      const baseRevenue = valuationReport.rentalPerformance.shortTerm.percentile90?.annual;
+      if (!baseRevenue) return null;
+      return [1, 2, 3, 4, 5].reduce((acc, year) => {
+        const revenue = baseRevenue * Math.pow(1.08, year - 1);
+        acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        return acc;
+      }, {} as Record<string, { revenue: number; grossYield: number }>);
+    })()
+  } : null;
+
   const cashflowAnalysisData = {
     recommendedStrategy: shortTermRevenue > (longTermRevenue || 0) ? "shortTerm" : "longTerm",
     strategyReasoning: "Automatically calculated based on available rental data",
     revenueGrowthTrajectory: {
-      shortTerm: shortTermRevenue ? {
-        year1: { revenue: shortTermRevenue, grossYield: (shortTermRevenue / propertyPrice) * 100 },
-        year2: { revenue: shortTermRevenue * 1.08, grossYield: (shortTermRevenue * 1.08 / propertyPrice) * 100 },
-        year3: { revenue: shortTermRevenue * Math.pow(1.08, 2), grossYield: (shortTermRevenue * Math.pow(1.08, 2) / propertyPrice) * 100 },
-        year4: { revenue: shortTermRevenue * Math.pow(1.08, 3), grossYield: (shortTermRevenue * Math.pow(1.08, 3) / propertyPrice) * 100 },
-        year5: { revenue: shortTermRevenue * Math.pow(1.08, 4), grossYield: (shortTermRevenue * Math.pow(1.08, 4) / propertyPrice) * 100 }
-      } : null,
+      shortTerm: shortTermTrajectories,
       longTerm: longTermRevenue ? {
         year1: { revenue: longTermRevenue, grossYield: (longTermRevenue / propertyPrice) * 100 },
         year2: { revenue: longTermRevenue * 1.08, grossYield: (longTermRevenue * 1.08 / propertyPrice) * 100 },
