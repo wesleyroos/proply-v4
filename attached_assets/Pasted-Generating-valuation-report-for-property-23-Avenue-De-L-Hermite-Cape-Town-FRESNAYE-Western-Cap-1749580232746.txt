@@ -1,0 +1,304 @@
+Generating valuation report for property: 23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape
+Property details for rental analysis: {
+  address: "23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape",
+  bedrooms: 6,
+  bathrooms: 5,
+  propertyType: 'Freestanding',
+  price: '34950000.00',
+  floorSize: 488,
+  parkingSpaces: 2,
+  imagesProvided: 10
+}
+Requesting AI rental estimates for 6 bedroom house in 23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape
+Fetching PriceLabs data...
+Making PriceLabs API call to: /api/rental-performance
+PriceLabs API call successful: /api/rental-performance
+Logged PriceLabs usage: /api/rental-performance (3685ms, success: true)
+PriceLabs data received: {
+  percentile25: { nightly: 8643, monthly: 142592, annual: 1711100 },
+  percentile50: { nightly: 13057, monthly: 242551, annual: 2910600 },
+  percentile75: { nightly: 20912, monthly: 405900, annual: 4870800 },
+  percentile90: { nightly: 30777, monthly: 639592, annual: 7675100 },
+  occupancy: 68,
+  yield: 0
+}
+Validating images for OpenAI analysis: 10 images
+Sending images to OpenAI for visual analysis: 10 valid images
+Sending user data with analyzer usage: { email: 'wesley@proply.co.za' }
+6:29:29 PM [express] GET /api/user 304 in 80ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+Sending user data with analyzer usage: { email: 'wesley@proply.co.za' }
+6:29:41 PM [express] GET /api/user 304 in 215ms :: {"id":2,"email":"wesley@proply.co.za","firstName"…
+Valuation report generated successfully
+OpenAI rental estimates received: {
+  longTerm: {
+    minMonthlyRental: 180000,
+    maxMonthlyRental: 220000,
+    reasoning: 'Modern finishes, ocean views, and spacious design with amenities such as a pool enhance tenant appeal, aligning with the 0.6% rental rule of thumb for high-end properties.'
+  }
+}
+Final rental performance data: {
+  shortTerm: {
+    percentile25: { nightly: 8643, monthly: 142592, annual: 1711100 },
+    percentile50: { nightly: 13057, monthly: 242551, annual: 2910600 },
+    percentile75: { nightly: 20912, monthly: 405900, annual: 4870800 },
+    percentile90: { nightly: 30777, monthly: 639592, annual: 7675100 },
+    occupancy: 68,
+    yield: 0
+  },
+  longTerm: {
+    minRental: 180000,
+    maxRental: 220000,
+    minYield: 6.2,
+    maxYield: 7.6,
+    managementFee: '8-10%',
+    reasoning: 'Modern finishes, ocean views, and spacious design with amenities such as a pool enhance tenant appeal, aligning with the 0.6% rental rule of thumb for high-end properties.'
+  }
+}
+Saved new rental performance data to database
+Tracking report generation for property: 2532007
+Tracked report generation: valuation for Sotheby's International Realty (Property: 2532007)
+=== CALCULATING AND SAVING FINANCIAL DATA ===
+Property ID: 2532007
+Property price: 34950000.00
+=== FINANCIAL DATA CALCULATION DEBUG ===
+Property price: 34950000.00
+Rental performance data: {
+  "shortTerm": {
+    "percentile25": {
+      "nightly": 8643,
+      "monthly": 142592,
+      "annual": 1711100
+    },
+    "percentile50": {
+      "nightly": 13057,
+      "monthly": 242551,
+      "annual": 2910600
+    },
+    "percentile75": {
+      "nightly": 20912,
+      "monthly": 405900,
+      "annual": 4870800
+    },
+    "percentile90": {
+      "nightly": 30777,
+      "monthly": 639592,
+      "annual": 7675100
+    },
+    "occupancy": 68,
+    "yield": 0
+  },
+  "longTerm": {
+    "minRental": 180000,
+    "maxRental": 220000,
+    "minYield": 6.2,
+    "maxYield": 7.6,
+    "managementFee": "8-10%",
+    "reasoning": "Modern finishes, ocean views, and spacious design with amenities such as a pool enhance tenant appeal, aligning with the 0.6% rental rule of thumb for high-end properties."
+  }
+}
+Short term trajectories calculated: YES
+Short-term rental data for financial calculation: {
+  percentile25: { nightly: 8643, monthly: 142592, annual: 1711100 },
+  percentile50: { nightly: 13057, monthly: 242551, annual: 2910600 },
+  percentile75: { nightly: 20912, monthly: 405900, annual: 4870800 },
+  percentile90: { nightly: 30777, monthly: 639592, annual: 7675100 },
+  occupancy: 68,
+  yield: 0
+}
+Calculated short-term trajectories: {
+  percentile25: {
+    year1: { revenue: 1711100, grossYield: 4.89585121602289 },
+    year2: { revenue: 1847988.0000000002, grossYield: 5.287519313304722 },
+    year3: { revenue: 1995827.0400000003, grossYield: 5.710520858369099 },
+    year4: { revenue: 2155493.203200001, grossYield: 6.167362527038629 },
+    year5: { revenue: 2327932.6594560007, grossYield: 6.660751529201718 }
+  },
+  percentile50: {
+    year1: { revenue: 2910600, grossYield: 8.327896995708155 },
+    year2: { revenue: 3143448, grossYield: 8.994128755364807 },
+    year3: { revenue: 3394923.8400000003, grossYield: 9.713659055793993 },
+    year4: { revenue: 3666517.747200001, grossYield: 10.490751780257513 },
+    year5: { revenue: 3959839.1669760006, grossYield: 11.330011922678114 }
+  },
+  percentile75: {
+    year1: { revenue: 4870800, grossYield: 13.93648068669528 },
+    year2: { revenue: 5260464, grossYield: 15.0513991416309 },
+    year3: { revenue: 5681301.12, grossYield: 16.255511072961372 },
+    year4: { revenue: 6135805.209600002, grossYield: 17.55595195879829 },
+    year5: { revenue: 6626669.626368001, grossYield: 18.960428115502147 }
+  },
+  percentile90: {
+    year1: { revenue: 7675100, grossYield: 21.960228898426323 },
+    year2: { revenue: 8289108.000000001, grossYield: 23.717047210300432 },
+    year3: { revenue: 8952236.64, grossYield: 25.614410987124465 },
+    year4: { revenue: 9668415.571200004, grossYield: 27.66356386609443 },
+    year5: { revenue: 10441888.816896003, grossYield: 29.876648975381983 }
+  }
+}
+Long-term revenue: 2400000
+Error saving financial analysis data: error: there is no unique or exclusion constraint matching the ON CONFLICT specification
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes/valuation.ts:826:7) {
+  length: 148,
+  severity: 'ERROR',
+  code: '42P10',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'plancat.c',
+  line: '915',
+  routine: 'infer_arbiter_indexes'
+}
+Error details: there is no unique or exclusion constraint matching the ON CONFLICT specification
+Stack trace: error: there is no unique or exclusion constraint matching the ON CONFLICT specification
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes/valuation.ts:826:7)
+6:29:58 PM [express] POST /api/generate-valuation-report 200 in 43600ms :: {"summary":"This luxuriou…
+6:29:58 PM [express] POST /api/valuation-reports 200 in 322ms :: {"id":47,"userId":2,"propertyId":"2…
+6:29:59 PM [express] GET /api/valuation-reports/2532007 200 in 133ms :: {"id":47,"userId":2,"propert…
+Found rental data for property ID: 2532007
+6:29:59 PM [express] GET /api/rental-performance/2532007 200 in 133ms :: {"id":38,"user_id":2,"prope…
+Found rental data for property ID: 2532007
+6:29:59 PM [express] GET /api/rental-performance/2532007 304 in 134ms :: {"id":38,"user_id":2,"prope…
+Generating PDF report for property 2532007
+=== PDF SERVICE: Fetching data for property ID: 2532007 ===
+Looking for property with PropData ID: "2532007"
+Property found: true
+Loading agency logo from: /static-assets/agency-logos/agency-1-1749396326211.jpeg
+Successfully loaded agency logo
+Successfully added logo to PDF: 34.7x12.0 (aspect ratio: 2.89)
+=== Starting addMapAndImage method ===
+Property location data: {
+  city: 'FRESNAYE',
+  suburb: 'Cape Town',
+  latitude: null,
+  province: 'Western Cape',
+  longitude: null
+}
+Property location type: object
+Property address for geocoding: 23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape
+Forcing geocoding for accurate property location
+No property location coordinates found, trying to geocode address...
+Available property data: [
+  'id',                    'propdataId',
+  'branchId',              'status',
+  'listingData',           'address',
+  'addressManuallyEdited', 'price',
+  'propertyType',          'bedrooms',
+  'bathrooms',             'parkingSpaces',
+  'floorSize',             'landSize',
+  'location',              'features',
+  'images',                'agentId',
+  'agentName',             'agentEmail',
+  'agentPhone',            'monthlyLevy',
+  'sectionalTitleLevy',    'specialLevy',
+  'homeOwnerLevy',         'listingDate',
+  'lastModified',          'createdAt',
+  'updatedAt'
+]
+Property address value: 23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape
+Geocoding address: 23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape
+Geocoding API response status: OK
+Geocoding API results count: 1
+Geocoded location: { lat: -33.9229306, lng: 18.3912621 }
+Generated map URL from geocoding: https://maps.googleapis.com/maps/api/staticmap?center=-33.9229306,18.3912621&zoom=16&size=400x300&maptype=satellite&markers=color:red%7Clabel:P%7C-33.9229306,18.3912621&key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M
+Successfully added geocoded map to PDF
+Property images data: [
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_33a0835748114c8fa6c06318805da057.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_f590f934d71e449cb2e5047bed68e3bc.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_b5f6d6f366f94bcdb90319f70b46a1e1.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_45c312c221b1400a879d079c2ddaea9c.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_272fa323619547099a4c4a77ee15426e.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_9990d0384eda43cb8c5b6ef684f6b27f.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_7fc39e1f45d845e59bdcd097aae165e7.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_5a2d7d9a6b274bd9980e622c2253462c.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_f4b535dd8e814e1288d8acb776214a4e.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_febed813f1c14c16a3b0f23e510c6a65.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_f14f7978c1f748a68a300d59b11b0407.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_3627d26f1b2a45518bcc8dbec3430084.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_7f0e7e1c1d7b4440b3c0bb54998656b3.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_653d2fd4daf340e9ada23e0492ad937d.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_095812617c744f2cb0e4b598ed9312a3.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_c783b0e534a546e995fc45653953a946.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_2b48401ed38541e2bf343c34e870f924.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_4e2372b6b74847a89d53267a66518a3b.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_827794aff84a462f9772e5425c7a6cfa.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_c76b97e9924a4305a5ab4facecae6846.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_0acf1a29171a4ffebf5c0692993e16be.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_fec794ed75744f4baf609aaa119efd89.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_b8f11886e2a944bb8e57da07d9bd014c.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_9cc729aaff5d461396d61ea65f4cf043.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_aa666654a94646968d3ba1683acbaf3a.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_6c7c62f160dd4a06bb22b8f44d7e0e18.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_497a2c8a523240209b11a0ab03a8e198.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_9a51751e7a004b43ae73eb0926bc2261.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_e417209b2f5241a1af3013013621e0a5.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_ae477430b16249699cfaa5bb5b46a45d.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_b32ea430c81b4bc99b2d201f060bebb4.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_144fd60ce25642bb899265a7a7c23024.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_f187767f8f7846d08ab2b2855c9fb30a.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_669e719ec82048918a6b5f226cbfe053.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_44496d1166334d8bbeb44150c092d478.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_b820ace826b74c73b94267816cc78bf5.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_b1f343f5500442c6b33167275979f393.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_4addd92736fe4093ab5f01dd8da8e38a.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_2364d710303f4580ad7fccbc43aed1ec.jpg'
+]
+Property data structure: [
+  'id',                    'propdataId',
+  'branchId',              'status',
+  'listingData',           'address',
+  'addressManuallyEdited', 'price',
+  'propertyType',          'bedrooms',
+  'bathrooms',             'parkingSpaces',
+  'floorSize',             'landSize',
+  'location',              'features',
+  'images',                'agentId',
+  'agentName',             'agentEmail',
+  'agentPhone',            'monthlyLevy',
+  'sectionalTitleLevy',    'specialLevy',
+  'homeOwnerLevy',         'listingDate',
+  'lastModified',          'createdAt',
+  'updatedAt'
+]
+Attempting to load image from URL: https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_33a0835748114c8fa6c06318805da057.jpg
+Successfully added property image to PDF
+Logged downloaded activity for property 2532007
+6:30:07 PM [express] GET /api/pdf-generate/2532007 200 in 815ms
+Found 4 activities for property 2532007: [
+  {
+    id: 79,
+    type: 'downloaded',
+    ip: '172.31.128.60',
+    timestamp: 2025-06-10T18:30:07.879Z
+  },
+  {
+    id: 78,
+    type: 'downloaded',
+    ip: '172.31.128.60',
+    timestamp: 2025-06-10T18:26:09.040Z
+  },
+  {
+    id: 17,
+    type: 'sent',
+    ip: '172.31.128.42',
+    timestamp: 2025-06-09T09:22:37.046Z
+  },
+  {
+    id: 16,
+    type: 'sent',
+    ip: '172.31.128.42',
+    timestamp: 2025-06-09T09:22:36.986Z
+  }
+]
+6:30:11 PM [express] GET /api/report-activity/2532007 200 in 132ms :: [{"id":79,"propertyId":"253200…
