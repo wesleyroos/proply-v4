@@ -679,39 +679,23 @@ ${premiumImageContext}
 
     // Save financial analysis data immediately after valuation generation
     try {
-      // Check if valuation report already exists
-      const existingReport = await db.execute(sql`
-        SELECT id FROM valuation_reports 
-        WHERE user_id = ${req.user.id} AND property_id = ${propertyIdToUse}
+      // Always insert a new valuation report (each generation creates a new record)
+      const saveResult = await db.execute(sql`
+        INSERT INTO valuation_reports (
+          user_id, property_id, address, property_type, bedrooms, bathrooms, 
+          parking_spaces, floor_size, price, valuation_data, 
+          current_deposit_percentage, current_interest_rate, current_loan_term
+        ) VALUES (
+          ${req.user.id}, ${propertyIdToUse}, ${address}, ${propertyType}, 
+          ${bedrooms}, ${bathrooms}, ${parkingSpaces}, ${floorSize}, ${price?.toString()}, 
+          ${JSON.stringify({ ...valuationReport, rentalPerformance })},
+          '20', '11.75', 20
+        )
+        RETURNING id
       `);
 
-      let reportId;
-      if (existingReport.length > 0) {
-        // Update existing record
-        await db.execute(sql`
-          UPDATE valuation_reports 
-          SET valuation_data = ${JSON.stringify({ ...valuationReport, rentalPerformance })},
-              updated_at = NOW()
-          WHERE user_id = ${req.user.id} AND property_id = ${propertyIdToUse}
-        `);
-        reportId = existingReport[0].id;
-      } else {
-        // Insert new record
-        const saveResult = await db.execute(sql`
-          INSERT INTO valuation_reports (
-            user_id, property_id, address, property_type, bedrooms, bathrooms, 
-            parking_spaces, floor_size, price, valuation_data, 
-            current_deposit_percentage, current_interest_rate, current_loan_term
-          ) VALUES (
-            ${req.user.id}, ${propertyIdToUse}, ${address}, ${propertyType}, 
-            ${bedrooms}, ${bathrooms}, ${parkingSpaces}, ${floorSize}, ${price?.toString()}, 
-            ${JSON.stringify({ ...valuationReport, rentalPerformance })},
-            '20', '11.75', 20
-          )
-          RETURNING id
-        `);
-        reportId = saveResult[0]?.id;
-      }
+      const reportId = (saveResult as any)[0]?.id;
+      console.log('Saved new valuation report with ID:', reportId);
 
       // Now calculate and save financial analysis data with the new percentile structure
       const propertyPrice = price || 0;
@@ -776,8 +760,11 @@ ${premiumImageContext}
         })()
       } : null;
 
+      console.log('=== FINANCIAL DATA CALCULATION DEBUG ===');
+      console.log('Property price:', propertyPrice);
       console.log('Short-term rental data for financial calculation:', rentalPerformance.shortTerm);
       console.log('Calculated short-term trajectories:', shortTermTrajectories);
+      console.log('Long-term revenue:', longTermRevenue);
 
       // Determine best strategy based on highest median revenue potential
       const shortTermMedianRevenue = rentalPerformance.shortTerm?.percentile50?.annual || 0;
@@ -843,22 +830,27 @@ ${premiumImageContext}
       };
 
       // Update the valuation report with all financial analysis data
-      await db.execute(sql`
-        UPDATE valuation_reports 
-        SET 
-          annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
-          cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
-          financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
-          current_deposit_percentage = ${depositPercentage.toString()},
-          current_interest_rate = ${interestRate.toString()},
-          current_loan_term = ${loanTermYears},
-          current_deposit_amount = ${depositAmount.toString()},
-          current_loan_amount = ${loanAmount.toString()},
-          current_monthly_repayment = ${monthlyPayment.toString()},
-          updated_at = NOW()
-        WHERE property_id = ${propertyIdToUse} 
-          AND user_id = ${req.user.id}
-      `);
+      if (reportId) {
+        await db.execute(sql`
+          UPDATE valuation_reports 
+          SET 
+            annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
+            cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
+            financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
+            current_deposit_percentage = ${depositPercentage.toString()},
+            current_interest_rate = ${interestRate.toString()},
+            current_loan_term = ${loanTermYears},
+            current_deposit_amount = ${depositAmount.toString()},
+            current_loan_amount = ${loanAmount.toString()},
+            current_monthly_repayment = ${monthlyPayment.toString()},
+            updated_at = NOW()
+          WHERE id = ${reportId}
+        `);
+        
+        console.log('Updated valuation report', reportId, 'with financial analysis data');
+      } else {
+        console.error('No report ID available for financial data update');
+      }
 
       console.log('Successfully saved financial analysis data with all percentiles for property', propertyIdToUse);
 
