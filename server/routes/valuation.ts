@@ -198,10 +198,17 @@ router.post("/generate-valuation-report", async (req, res) => {
       monthlyLevy
     } = req.body;
 
+    // Normalize property type for OpenAI to avoid confusion
+    const normalizedPropertyType = propertyType === 'Apartment Block' ? 'Apartment' : 
+                                  propertyType === 'Sectional Title' ? 'Apartment' :
+                                  propertyType === 'Flat' ? 'Apartment' :
+                                  propertyType === 'Freestanding' ? 'House' :
+                                  propertyType;
+
     // Prepare property data for OpenAI analysis
     const propertyData = {
       address,
-      propertyType,
+      propertyType: normalizedPropertyType,
       bedrooms,
       bathrooms,
       parkingSpaces,
@@ -228,7 +235,7 @@ router.post("/generate-valuation-report", async (req, res) => {
 
 Property Details:
 - Address: ${address}
-- Type: ${propertyType}
+- Type: ${normalizedPropertyType} (single unit)
 - Bedrooms: ${bedrooms}
 - Bathrooms: ${bathrooms}
 - Parking Spaces: ${parkingSpaces || 'Not specified'}
