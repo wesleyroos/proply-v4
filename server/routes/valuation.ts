@@ -517,20 +517,8 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
       rentalPerformance
     };
 
-    // Return response immediately, calculate financial data after response is sent
-    res.json(responseData);
-
-    // CALCULATE AND SAVE ALL FINANCIAL DATA AFTER VALUATION IS SAVED TO DATABASE
-    // This happens asynchronously after the response to avoid race conditions
-    setTimeout(async () => {
-      try {
-        await calculateAndSaveFinancialDataAfterValuation(propertyIdToUse, price || 0, valuationReport, req.user.id);
-      } catch (error) {
-        console.error('Error saving financial data (async):', error);
-      }
-    }, 100); // Small delay to ensure valuation is saved first
-
-    return;
+    // Include rental performance data in the response
+    return res.json(responseData);
 
   } catch (error) {
     console.error("Error generating valuation report:", error);
