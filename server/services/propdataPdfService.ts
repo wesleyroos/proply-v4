@@ -896,14 +896,14 @@ export class PropdataPdfService {
 
 
 
-    // Financing parameters from saved valuation data
-    if (data.valuationReport?.financingAnalysisData) {
+    // Financing parameters from saved rental data
+    if (data.rentalData?.financingAnalysisData) {
       this.addSubsectionHeader("Financing Details");
 
       const financing =
-        data.valuationReport.financingAnalysisData.financingParameters;
+        data.rentalData.financingAnalysisData.financingParameters;
       const yearlyMetrics =
-        data.valuationReport.financingAnalysisData.yearlyMetrics;
+        data.rentalData.financingAnalysisData.yearlyMetrics;
 
       if (financing) {
         // Financing overview in left-aligned single column format
@@ -1029,8 +1029,8 @@ export class PropdataPdfService {
       }
     }
 
-    // Revenue projections from saved valuation data - match UI format exactly
-    if (data.valuationReport?.cashflowAnalysisData?.revenueGrowthTrajectory) {
+    // Revenue projections from saved rental data - match UI format exactly
+    if (data.rentalData?.cashflowAnalysisData?.revenueGrowthTrajectory) {
       this.addSubsectionHeader("Revenue Projections (8% Annual Growth)");
       
       this.doc.setFontSize(10);
@@ -1048,7 +1048,7 @@ export class PropdataPdfService {
       );
       this.currentY += 12;
 
-      const trajectory = data.valuationReport.cashflowAnalysisData.revenueGrowthTrajectory;
+      const trajectory = data.rentalData.cashflowAnalysisData.revenueGrowthTrajectory;
 
       // Create combined table with all percentiles and long-term data (match UI format)
       if (trajectory.shortTerm || trajectory.longTerm) {
@@ -1146,10 +1146,10 @@ export class PropdataPdfService {
     }
 
     // Property Appreciation Projections
-    if (data.valuationReport?.annualPropertyAppreciationData) {
+    if (data.rentalData?.annualPropertyAppreciationData) {
       this.addSubsectionHeader("Property Value Appreciation");
 
-      const appreciation = data.valuationReport.annualPropertyAppreciationData;
+      const appreciation = data.rentalData.annualPropertyAppreciationData;
 
       this.doc.setFontSize(10);
       this.doc.text(
@@ -1229,11 +1229,11 @@ export class PropdataPdfService {
       }
     }
 
-    // Equity buildup from saved valuation data
-    if (data.valuationReport?.financingAnalysisData?.yearlyMetrics) {
+    // Equity buildup from saved rental data
+    if (data.rentalData?.financingAnalysisData?.yearlyMetrics) {
       this.addSubsectionHeader("Equity Buildup Schedule");
 
-      const metrics = data.valuationReport.financingAnalysisData.yearlyMetrics;
+      const metrics = data.rentalData.financingAnalysisData.yearlyMetrics;
       const metricEntries = Object.entries(metrics);
       const yearHeaders = metricEntries.map(
         ([year]) => `Year ${year.replace("year", "")}`,

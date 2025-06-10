@@ -1,0 +1,155 @@
+Generating valuation report for property: 23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape
+Property details for rental analysis: {
+  address: "23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape",
+  bedrooms: 6,
+  bathrooms: 5,
+  propertyType: 'Freestanding',
+  price: '34950000.00',
+  floorSize: 488,
+  parkingSpaces: 2,
+  imagesProvided: 10
+}
+Requesting AI rental estimates for 6 bedroom house in 23, Avenue De L' Hermite, Cape Town, FRESNAYE, Western Cape
+Fetching PriceLabs data...
+Making PriceLabs API call to: /api/rental-performance
+PriceLabs API call successful: /api/rental-performance
+Logged PriceLabs usage: /api/rental-performance (3468ms, success: true)
+PriceLabs data received: {
+  percentile25: { nightly: 8643, monthly: 142592, annual: 1711100 },
+  percentile50: { nightly: 13057, monthly: 242551, annual: 2910600 },
+  percentile75: { nightly: 20912, monthly: 405900, annual: 4870800 },
+  percentile90: { nightly: 30777, monthly: 639592, annual: 7675100 },
+  occupancy: 68,
+  yield: 0
+}
+Validating images for OpenAI analysis: 10 images
+Sending images to OpenAI for visual analysis: 10 valid images
+6:32:49 PM [express] GET /api/propdata/listings/sync-status 304 in 141ms :: {"id":1889,"syncType":"q…
+Valuation report generated successfully
+OpenAI rental estimates received: {
+  longTerm: {
+    minMonthlyRental: 209700,
+    maxMonthlyRental: 262125,
+    reasoning: "The property's luxury finishes and location support a rental range above the standard 0.6% rule, with potential upward adjustments due to views and amenities."
+  }
+}
+Final rental performance data: {
+  shortTerm: {
+    percentile25: { nightly: 8643, monthly: 142592, annual: 1711100 },
+    percentile50: { nightly: 13057, monthly: 242551, annual: 2910600 },
+    percentile75: { nightly: 20912, monthly: 405900, annual: 4870800 },
+    percentile90: { nightly: 30777, monthly: 639592, annual: 7675100 },
+    occupancy: 68,
+    yield: 0
+  },
+  longTerm: {
+    minRental: 209700,
+    maxRental: 262125,
+    minYield: 7.2,
+    maxYield: 9,
+    managementFee: '8-10%',
+    reasoning: "The property's luxury finishes and location support a rental range above the standard 0.6% rule, with potential upward adjustments due to views and amenities."
+  }
+}
+Saved new rental performance data to database
+Tracking report generation for property: 2532007
+Tracked report generation: valuation for Sotheby's International Realty (Property: 2532007)
+=== CALCULATING AND SAVING FINANCIAL DATA ===
+Property ID: 2532007
+Property price: 34950000.00
+=== FINANCIAL DATA CALCULATION DEBUG ===
+Property price: 34950000.00
+Rental performance data: {
+  "shortTerm": {
+    "percentile25": {
+      "nightly": 8643,
+      "monthly": 142592,
+      "annual": 1711100
+    },
+    "percentile50": {
+      "nightly": 13057,
+      "monthly": 242551,
+      "annual": 2910600
+    },
+    "percentile75": {
+      "nightly": 20912,
+      "monthly": 405900,
+      "annual": 4870800
+    },
+    "percentile90": {
+      "nightly": 30777,
+      "monthly": 639592,
+      "annual": 7675100
+    },
+    "occupancy": 68,
+    "yield": 0
+  },
+  "longTerm": {
+    "minRental": 209700,
+    "maxRental": 262125,
+    "minYield": 7.2,
+    "maxYield": 9,
+    "managementFee": "8-10%",
+    "reasoning": "The property's luxury finishes and location support a rental range above the standard 0.6% rule, with potential upward adjustments due to views and amenities."
+  }
+}
+Short term trajectories calculated: YES
+Short-term rental data for financial calculation: {
+  percentile25: { nightly: 8643, monthly: 142592, annual: 1711100 },
+  percentile50: { nightly: 13057, monthly: 242551, annual: 2910600 },
+  percentile75: { nightly: 20912, monthly: 405900, annual: 4870800 },
+  percentile90: { nightly: 30777, monthly: 639592, annual: 7675100 },
+  occupancy: 68,
+  yield: 0
+}
+Calculated short-term trajectories: {
+  percentile25: {
+    year1: { revenue: 1711100, grossYield: 4.89585121602289 },
+    year2: { revenue: 1847988.0000000002, grossYield: 5.287519313304722 },
+    year3: { revenue: 1995827.0400000003, grossYield: 5.710520858369099 },
+    year4: { revenue: 2155493.203200001, grossYield: 6.167362527038629 },
+    year5: { revenue: 2327932.6594560007, grossYield: 6.660751529201718 }
+  },
+  percentile50: {
+    year1: { revenue: 2910600, grossYield: 8.327896995708155 },
+    year2: { revenue: 3143448, grossYield: 8.994128755364807 },
+    year3: { revenue: 3394923.8400000003, grossYield: 9.713659055793993 },
+    year4: { revenue: 3666517.747200001, grossYield: 10.490751780257513 },
+    year5: { revenue: 3959839.1669760006, grossYield: 11.330011922678114 }
+  },
+  percentile75: {
+    year1: { revenue: 4870800, grossYield: 13.93648068669528 },
+    year2: { revenue: 5260464, grossYield: 15.0513991416309 },
+    year3: { revenue: 5681301.12, grossYield: 16.255511072961372 },
+    year4: { revenue: 6135805.209600002, grossYield: 17.55595195879829 },
+    year5: { revenue: 6626669.626368001, grossYield: 18.960428115502147 }
+  },
+  percentile90: {
+    year1: { revenue: 7675100, grossYield: 21.960228898426323 },
+    year2: { revenue: 8289108.000000001, grossYield: 23.717047210300432 },
+    year3: { revenue: 8952236.64, grossYield: 25.614410987124465 },
+    year4: { revenue: 9668415.571200004, grossYield: 27.66356386609443 },
+    year5: { revenue: 10441888.816896003, grossYield: 29.876648975381983 }
+  }
+}
+Long-term revenue: 2830950
+Successfully saved financial analysis data with all percentiles for property 2532007
+6:33:17 PM [express] POST /api/generate-valuation-report 200 in 41191ms :: {"summary":"This luxuriou…
+6:33:17 PM [express] POST /api/valuation-reports 200 in 179ms :: {"id":48,"userId":2,"propertyId":"2…
+6:33:18 PM [express] GET /api/valuation-reports/2532007 200 in 133ms :: {"id":48,"userId":2,"propert…
+Found rental data for property ID: 2532007
+6:33:18 PM [express] GET /api/rental-performance/2532007 200 in 133ms :: {"id":39,"user_id":2,"prope…
+Found rental data for property ID: 2532007
+6:33:19 PM [express] GET /api/rental-performance/2532007 304 in 133ms :: {"id":39,"user_id":2,"prope…
+6:33:19 PM [express] GET /api/propdata/listings/sync-status 304 in 133ms :: {"id":1889,"syncType":"q…
+6:33:50 PM [express] GET /api/propdata/listings/sync-status 304 in 299ms :: {"id":1889,"syncType":"q…
+6:34:20 PM [express] GET /api/propdata/listings/sync-status 304 in 294ms :: {"id":1889,"syncType":"q…
+6:34:51 PM [express] GET /api/propdata/listings/sync-status 304 in 269ms :: {"id":1889,"syncType":"q…
+6:35:22 PM [express] GET /api/propdata/listings/sync-status 200 in 280ms :: {"id":1890,"syncType":"q…
+Sending user data with analyzer usage: { email: 'wesley@proply.co.za' }
+6:35:51 PM [express] GET /api/user 304 in 45ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+Sending user data with analyzer usage: { email: 'wesley@proply.co.za' }
+6:35:52 PM [express] GET /api/user 304 in 45ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+6:35:52 PM [express] GET /api/propdata/listings/sync-status 200 in 135ms :: {"id":1890,"syncType":"q…
+6:35:56 PM [express] GET /api/propdata/listings 200 in 4447ms :: [{"id":633,"propdataId":"2348496","…
+Starting automated quick sync...
