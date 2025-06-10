@@ -1212,7 +1212,18 @@ export class PropdataPdfService {
           },
         });
 
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+        this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        
+        // Add appreciation reasoning/summary text
+        if (appreciation.reasoning) {
+          this.doc.setFontSize(10);
+          this.addWrappedText(
+            appreciation.reasoning,
+            this.margin,
+            this.pageWidth - 2 * this.margin,
+          );
+          this.currentY += 10;
+        }
       }
     }
 
@@ -1263,18 +1274,7 @@ export class PropdataPdfService {
         },
       });
 
-      this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
-      
-      // Add appreciation reasoning/summary text
-      if (appreciation.reasoning) {
-        this.doc.setFontSize(10);
-        this.addWrappedText(
-          appreciation.reasoning,
-          this.margin,
-          this.pageWidth - 2 * this.margin,
-        );
-        this.currentY += 10;
-      }
+      this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
     }
   }
 

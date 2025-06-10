@@ -1,0 +1,95 @@
+Generating PDF report for property 2540592
+=== PDF SERVICE: Fetching data for property ID: 2540592 ===
+Looking for property with PropData ID: "2540592"
+Property found: true
+Loading agency logo from: /static-assets/agency-logos/agency-1-1749396326211.jpeg
+Successfully loaded agency logo
+Successfully added logo to PDF: 34.7x12.0 (aspect ratio: 2.89)
+=== Starting addMapAndImage method ===
+Property location data: {
+  city: null,
+  suburb: null,
+  latitude: null,
+  province: null,
+  longitude: null
+}
+Property location type: object
+Property address for geocoding: 39 Beach Rd, Mouille Point, Cape Town, 8005
+Forcing geocoding for accurate property location
+No property location coordinates found, trying to geocode address...
+Available property data: [
+  'id',                    'propdataId',
+  'branchId',              'status',
+  'listingData',           'address',
+  'addressManuallyEdited', 'price',
+  'propertyType',          'bedrooms',
+  'bathrooms',             'parkingSpaces',
+  'floorSize',             'landSize',
+  'location',              'features',
+  'images',                'agentId',
+  'agentName',             'agentEmail',
+  'agentPhone',            'monthlyLevy',
+  'sectionalTitleLevy',    'specialLevy',
+  'homeOwnerLevy',         'listingDate',
+  'lastModified',          'createdAt',
+  'updatedAt'
+]
+Property address value: 39 Beach Rd, Mouille Point, Cape Town, 8005
+Geocoding address: 39 Beach Rd, Mouille Point, Cape Town, 8005
+Geocoding API response status: OK
+Geocoding API results count: 1
+Geocoded location: { lat: -33.9001223, lng: 18.4072309 }
+Generated map URL from geocoding: https://maps.googleapis.com/maps/api/staticmap?center=-33.9001223,18.4072309&zoom=16&size=400x300&maptype=satellite&markers=color:red%7Clabel:P%7C-33.9001223,18.4072309&key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M
+Successfully added geocoded map to PDF
+Property images data: [
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_07277f13c3684157bba8dd4bdac70a94.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_5b05ac45e119401081df88a5fbcb7ffb.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_c9deeae998fe4cb2977d094f433c3834.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_4fa972d8b06a4e9381edfda10edfc7ad.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_5fc9df66f91f479fa9663e56f6fe9dc9.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_28b0379aa0174de8af3c65a2fa6db746.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_d6b80f412d64410b8ffeae4989f7047f.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_e2f4fae2d7314ce5bb1e22ce064fe188.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_57b7c31b1a7945559a59bb2fc94fd7ef.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_35e99522e62740f2945a484a7814c6fa.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_dd8cb432a2264bb19598721f3c5de131.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_9f930e7050674656b314d01c843949e4.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_33e5c9edd1da48ce923f7c0412af5944.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_e2c18b3f50d04d219b1c4174108fefc7.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_e01a8ab671124ef2ac86265f5fba6fdb.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_b89db3657c30413a80d7e8bb305ff502.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_f656dc1fa2d848fb8fc3af7b897010ae.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_39b10e587604457bbbf3abab1f129b94.jpg'
+]
+Property data structure: [
+  'id',                    'propdataId',
+  'branchId',              'status',
+  'listingData',           'address',
+  'addressManuallyEdited', 'price',
+  'propertyType',          'bedrooms',
+  'bathrooms',             'parkingSpaces',
+  'floorSize',             'landSize',
+  'location',              'features',
+  'images',                'agentId',
+  'agentName',             'agentEmail',
+  'agentPhone',            'monthlyLevy',
+  'sectionalTitleLevy',    'specialLevy',
+  'homeOwnerLevy',         'listingDate',
+  'lastModified',          'createdAt',
+  'updatedAt'
+]
+Attempting to load image from URL: https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/6/50_07277f13c3684157bba8dd4bdac70a94.jpg
+Successfully added property image to PDF
+Error generating PDF report: ReferenceError: appreciation is not defined
+    at PropdataPdfService.addFinancialsSection (/home/runner/workspace/server/services/propdataPdfService.ts:1269:7)
+    at PropdataPdfService.generatePropertyReport (/home/runner/workspace/server/services/propdataPdfService.ts:65:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Function.generateReport (/home/runner/workspace/server/services/propdataPdfService.ts:1662:12)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:2009:25)
+Error generating PDF report: ReferenceError: appreciation is not defined
+    at PropdataPdfService.addFinancialsSection (/home/runner/workspace/server/services/propdataPdfService.ts:1269:7)
+    at PropdataPdfService.generatePropertyReport (/home/runner/workspace/server/services/propdataPdfService.ts:65:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Function.generateReport (/home/runner/workspace/server/services/propdataPdfService.ts:1662:12)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:2009:25)
+10:36:15 AM [express] GET /api/pdf-generate/2540592 500 in 730ms :: {"error":"Failed to generate PDF …
