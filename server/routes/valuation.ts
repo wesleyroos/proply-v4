@@ -266,62 +266,54 @@ router.post("/generate-valuation-report", async (req, res) => {
     
     if (isCapeTown) {
       locationContext = isPremiumLocation ? 
-        `PREMIUM CAPE TOWN LOCATION: This property is in one of Cape Town's most exclusive areas.` :
+        `PREMIUM CAPE TOWN LOCATION: This property is in one of Cape Town's most exclusive areas with premium market positioning.` :
         `CAPE TOWN PROPERTY: Standard Cape Town market conditions apply.`;
-      marketRates = isPremiumLocation ? 
-        `Premium Cape Town locations typically trade at R60,000-R80,000+/m² for quality apartments.` :
-        `Cape Town apartments typically range R40,000-R60,000/m² depending on condition and location.`;
+      marketRates = `Use your knowledge of current Cape Town property market rates for similar properties in this location.`;
     } else if (isJohannesburg) {
       locationContext = isPremiumLocation ? 
-        `PREMIUM JOHANNESBURG LOCATION: This property is in one of Johannesburg's most desirable areas.` :
+        `PREMIUM JOHANNESBURG LOCATION: This property is in one of Johannesburg's most desirable areas with premium market positioning.` :
         `JOHANNESBURG PROPERTY: Standard Johannesburg market conditions apply.`;
-      marketRates = isPremiumLocation ? 
-        `Premium Johannesburg locations (Sandton, Rosebank) typically trade at R40,000-R60,000+/m² for quality apartments.` :
-        `Johannesburg apartments typically range R25,000-R45,000/m² depending on condition and location.`;
+      marketRates = `Use your knowledge of current Johannesburg property market rates for similar properties in this location.`;
     } else if (isDurban) {
       locationContext = isPremiumLocation ? 
-        `PREMIUM DURBAN LOCATION: This property is in one of Durban's most sought-after areas.` :
+        `PREMIUM DURBAN LOCATION: This property is in one of Durban's most sought-after areas with premium market positioning.` :
         `DURBAN PROPERTY: Standard Durban market conditions apply.`;
-      marketRates = isPremiumLocation ? 
-        `Premium Durban locations (Umhlanga, Ballito) typically trade at R35,000-R55,000+/m² for quality apartments.` :
-        `Durban apartments typically range R20,000-R40,000/m² depending on condition and location.`;
+      marketRates = `Use your knowledge of current Durban property market rates for similar properties in this location.`;
     } else if (isPretoria) {
       locationContext = `PRETORIA PROPERTY: Pretoria market conditions apply.`;
-      marketRates = `Pretoria apartments typically range R20,000-R35,000/m² depending on condition and location.`;
+      marketRates = `Use your knowledge of current Pretoria property market rates for similar properties in this location.`;
     } else {
       locationContext = `SOUTH AFRICAN PROPERTY: General South African market conditions apply.`;
-      marketRates = `Property values vary significantly by location. Consider local market conditions and comparable sales.`;
+      marketRates = `Use your knowledge of local market conditions and consider the specific location when determining property values.`;
     }
 
     // Generate city-specific rental guidance
     let rentalGuidance = '';
     if (isCapeTown) {
       rentalGuidance = `
-- 1-bedroom apartments typically rent for R15,000-R25,000/month
-- 2-bedroom apartments typically rent for R25,000-R40,000/month  
-- 3-bedroom apartments typically rent for R40,000-R65,000/month
-- Premium locations command 40-60% premiums`;
+- Use your knowledge of current Cape Town rental market rates for ${bedrooms}-bedroom ${normalizedPropertyType.toLowerCase()}s
+- ${isPremiumLocation ? 'Premium Atlantic Seaboard locations command significant rental premiums' : 'Consider location within Cape Town for rental adjustments'}
+- Factor in property condition, finishes, and amenities visible in images`;
     } else if (isJohannesburg) {
       rentalGuidance = `
-- 1-bedroom apartments typically rent for R12,000-R20,000/month
-- 2-bedroom apartments typically rent for R18,000-R30,000/month  
-- 3-bedroom apartments typically rent for R25,000-R45,000/month
-- Premium locations (Sandton, Rosebank) command 30-50% premiums`;
+- Use your knowledge of current Johannesburg rental market rates for ${bedrooms}-bedroom ${normalizedPropertyType.toLowerCase()}s
+- ${isPremiumLocation ? 'Premium areas like Sandton and Rosebank command rental premiums' : 'Consider location within Johannesburg for rental adjustments'}
+- Factor in property condition, finishes, and amenities visible in images`;
     } else if (isDurban) {
       rentalGuidance = `
-- 1-bedroom apartments typically rent for R8,000-R15,000/month
-- 2-bedroom apartments typically rent for R12,000-R22,000/month  
-- 3-bedroom apartments typically rent for R18,000-R35,000/month
-- Premium locations (Umhlanga, Ballito) command 25-40% premiums`;
+- Use your knowledge of current Durban rental market rates for ${bedrooms}-bedroom ${normalizedPropertyType.toLowerCase()}s
+- ${isPremiumLocation ? 'Premium coastal areas command rental premiums' : 'Consider location within Durban for rental adjustments'}
+- Factor in property condition, finishes, and amenities visible in images`;
     } else if (isPretoria) {
       rentalGuidance = `
-- 1-bedroom apartments typically rent for R8,000-R14,000/month
-- 2-bedroom apartments typically rent for R12,000-R20,000/month  
-- 3-bedroom apartments typically rent for R16,000-R30,000/month`;
+- Use your knowledge of current Pretoria rental market rates for ${bedrooms}-bedroom ${normalizedPropertyType.toLowerCase()}s
+- Consider location within Pretoria for rental adjustments
+- Factor in property condition, finishes, and amenities visible in images`;
     } else {
       rentalGuidance = `
-- Rental rates vary significantly by location
-- Research local comparable properties for accurate estimates`;
+- Use your knowledge of local rental market rates for ${bedrooms}-bedroom ${normalizedPropertyType.toLowerCase()}s
+- Research comparable properties in the specific area
+- Factor in property condition, finishes, and local market dynamics`;
     }
 
     // Create the prompt for OpenAI
