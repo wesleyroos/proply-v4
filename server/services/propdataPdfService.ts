@@ -7,7 +7,7 @@ import {
   rentalPerformanceData,
   agencyBranches,
 } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 interface PropertyPdfData {
   property: any;
@@ -82,7 +82,7 @@ export class PropdataPdfService {
     propertyId: string,
   ): Promise<PropertyPdfData> {
     try {
-      console.log(`Fetching data for property ID: ${propertyId}`);
+      console.log(`=== PDF SERVICE: Fetching data for property ID: ${propertyId} ===`);
 
       // Fetch property data using PropData property ID with debugging
       console.log(`Looking for property with PropData ID: "${propertyId}"`);
@@ -106,8 +106,11 @@ export class PropdataPdfService {
       console.log("Property found:", !!property);
 
       // Fetch valuation report with all financial data
+      // Note: Since PDF generation can be accessed without authentication,
+      // we fetch the most recent valuation report for this property regardless of user
       const valuationReport = await db.query.valuationReports.findFirst({
         where: eq(valuationReports.propertyId, propertyId),
+        orderBy: [desc(valuationReports.updatedAt)],
       });
 
       console.log("Valuation report found:", !!valuationReport);

@@ -1165,17 +1165,6 @@ export default function PropertyDetailModal({
 
     setIsGeneratingPdf(true);
     try {
-      // Ensure financing analysis data is saved before generating PDF
-      console.log("Ensuring financial data is saved before PDF generation...");
-      const dataSaved = await calculateAndSaveFinancialData();
-      
-      if (!dataSaved) {
-        throw new Error("Failed to save financial analysis data before PDF generation");
-      }
-
-      // Add a small delay to ensure database transaction is committed
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       // Use the new working PDF endpoint with PropData property ID
       const response = await fetch(`/api/pdf-generate/${property.propdataId}`, {
         method: "GET",
@@ -1219,17 +1208,6 @@ export default function PropertyDetailModal({
     setShowSendReportDialog(false);
 
     try {
-      // Ensure financing analysis data is saved before generating PDF
-      console.log("Ensuring financial data is saved before PDF generation...");
-      const dataSaved = await calculateAndSaveFinancialData();
-      
-      if (!dataSaved) {
-        throw new Error("Failed to save financial analysis data before PDF generation");
-      }
-
-      // Add a small delay to ensure database transaction is committed
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       const recipients = ["wesley@proply.co.za"];
       if (sendToAgent && property.agentEmail) {
         recipients.push(property.agentEmail);
