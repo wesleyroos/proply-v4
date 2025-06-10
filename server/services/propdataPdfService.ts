@@ -111,6 +111,8 @@ export class PropdataPdfService {
       });
 
       console.log("Valuation report found:", !!valuationReport);
+      console.log("Valuation report ID:", valuationReport?.id);
+      console.log("Valuation report user ID:", valuationReport?.userId);
 
       // Fetch rental performance data
       const rentalData = await db.query.rentalPerformanceData.findFirst({
@@ -123,6 +125,17 @@ export class PropdataPdfService {
           !!valuationReport?.annualPropertyAppreciationData,
         hasCashflowAnalysisData: !!valuationReport?.cashflowAnalysisData,
         hasFinancingAnalysisData: !!valuationReport?.financingAnalysisData,
+      });
+      
+      // Debug: Log the actual data structure to identify the issue
+      console.log("Valuation report structure:", {
+        id: valuationReport?.id,
+        propertyId: valuationReport?.propertyId,
+        keys: valuationReport ? Object.keys(valuationReport) : [],
+        financingAnalysisDataType: typeof valuationReport?.financingAnalysisData,
+        financingAnalysisDataContent: valuationReport?.financingAnalysisData,
+        cashflowAnalysisDataType: typeof valuationReport?.cashflowAnalysisData,
+        annualPropertyAppreciationDataType: typeof valuationReport?.annualPropertyAppreciationData,
       });
 
       if (!property) {
