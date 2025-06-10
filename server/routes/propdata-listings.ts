@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@db";
-import { propdataListings, syncTracking, agencyBranches } from "@db/schema";
-import { desc, eq } from "drizzle-orm";
+import { propdataListings, syncTracking, agencyBranches, valuationReports } from "@db/schema";
+import { desc, eq, sql } from "drizzle-orm";
 import { ListingsClient } from "../services/propdata/listingsClient";
 import { AgentsClient } from "../services/propdata/agentsClient";
 import { FilesClient } from "../services/propdata/filesClient";
@@ -16,7 +16,7 @@ router.get("/propdata/listings", async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    // Query database for PropData listings with agency branch information
+    // Query database for PropData listings with agency branch information and valuation report status
     const listings = await db
       .select({
         id: propdataListings.id,
@@ -48,11 +48,15 @@ router.get("/propdata/listings", async (req, res) => {
         specialLevy: propdataListings.specialLevy,
         homeOwnerLevy: propdataListings.homeOwnerLevy,
         branchId: propdataListings.branchId,
+        // Add valuation report information
+        reportGenerated: valuationReports.createdAt,
+        reportId: valuationReports.id,
         franchiseName: agencyBranches.franchiseName,
         branchName: agencyBranches.branchName,
       })
       .from(propdataListings)
       .leftJoin(agencyBranches, eq(propdataListings.branchId, agencyBranches.id))
+      .leftJoin(valuationReports, eq(propdataListings.propdataId, valuationReports.propertyId))
       .orderBy(desc(propdataListings.listingDate));
     
     // Parse JSON fields in the response

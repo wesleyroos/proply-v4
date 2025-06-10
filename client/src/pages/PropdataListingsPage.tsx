@@ -78,6 +78,9 @@ interface PropdataListing {
   franchiseName?: string;
   branchName?: string;
   agencyId?: number; // For compatibility with PropertyDetailModal
+  // Valuation report information
+  reportGenerated?: string;
+  reportId?: number;
 }
 
 interface ApiResponse {
@@ -87,7 +90,7 @@ interface ApiResponse {
   previous?: string;
 }
 
-type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate' | 'agentName';
+type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate' | 'agentName' | 'reportGenerated';
 type SortDirection = 'asc' | 'desc';
 
 export default function PropdataListingsPage() {
@@ -696,6 +699,12 @@ export default function PropdataListingsPage() {
                           <ArrowUpDown className="h-4 w-4" />
                         </div>
                       </TableHead>
+                      <TableHead onClick={() => handleSort('reportGenerated')} className="cursor-pointer">
+                        <div className="flex items-center gap-1">
+                          Report Generated
+                          <ArrowUpDown className="h-4 w-4" />
+                        </div>
+                      </TableHead>
                       <TableHead onClick={() => handleSort('agentName')} className="cursor-pointer">
                         <div className="flex items-center gap-1">
                           Agent
@@ -808,6 +817,23 @@ export default function PropdataListingsPage() {
                             {listing.listingDate 
                               ? format(new Date(listing.listingDate), 'MMM d, yyyy')
                               : format(new Date(listing.createdAt), 'MMM d, yyyy')}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {listing.reportGenerated ? (
+                              <div className="flex items-center gap-1 text-green-600">
+                                <Eye className="h-4 w-4" />
+                                <div>
+                                  <div className="font-medium text-xs">Report Generated</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {format(new Date(listing.reportGenerated), 'MMM d, yyyy')}
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">No Report</span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
