@@ -211,8 +211,20 @@ router.post("/generate-valuation-report", async (req, res) => {
       location: location || {}
     };
 
+    // Determine location premium based on address
+    const isPremiumLocation = address.toLowerCase().includes('mouille point') || 
+                             address.toLowerCase().includes('sea point') || 
+                             address.toLowerCase().includes('camps bay') || 
+                             address.toLowerCase().includes('waterfront') ||
+                             address.toLowerCase().includes('bantry bay') ||
+                             address.toLowerCase().includes('clifton');
+    
+    const locationContext = isPremiumLocation ? 
+      `PREMIUM ATLANTIC SEABOARD LOCATION: This property is in one of Cape Town's most exclusive areas. Properties in Mouille Point, Sea Point, Camps Bay typically trade at R60,000-R80,000+/m² for quality apartments.` :
+      `Standard Cape Town location context applies.`;
+
     // Create the prompt for OpenAI
-    const prompt = `You are a professional property valuer in South Africa with expertise in Cape Town real estate market. Analyze this property and provide a comprehensive valuation report.
+    const prompt = `You are a professional property valuer in South Africa with expertise in Cape Town real estate market, particularly premium Atlantic Seaboard properties. Analyze this property and provide a comprehensive valuation report.
 
 Property Details:
 - Address: ${address}
@@ -226,12 +238,20 @@ Property Details:
 - Monthly Levy: R${monthlyLevy?.toLocaleString('en-ZA') || 'Not specified'}
 - Location: ${location?.suburb || ''} ${location?.city || ''} ${location?.province || ''}
 
+${locationContext}
+
+CRITICAL VALUATION GUIDANCE:
+- Premium Cape Town locations (Mouille Point, Sea Point, Camps Bay, Waterfront) typically command R60,000-R80,000+/m² for quality apartments
+- Standard Cape Town apartment rates: R40,000-R60,000/m² depending on condition and location
+- Always consider the asking price as a market indicator - if significantly above your calculation, reassess for premium factors
+- Modern finishes, secure parking, and ocean proximity add substantial value in Cape Town market
+
 IMPORTANT: For rental estimates, consider the specific property characteristics:
 - 1-bedroom apartments in Cape Town typically rent for R15,000-R25,000/month
 - 2-bedroom apartments typically rent for R25,000-R40,000/month  
 - 3-bedroom apartments typically rent for R40,000-R65,000/month
-- Premium locations (Waterfront, Sea Point, Camps Bay) command 30-50% premiums
-- Modern finishes and parking add 10-20% to rental values
+- Premium locations (Waterfront, Sea Point, Camps Bay, Mouille Point) command 40-60% premiums
+- Modern finishes and secure parking add 15-25% to rental values
 - Property condition from images significantly impacts rental potential
 
 Based on current Cape Town property market conditions and the specifications provided, provide a comprehensive valuation and rental analysis in the following JSON format:
@@ -371,16 +391,24 @@ ENSURE rental estimates are property-specific and NOT generic ranges, and includ
 
     // Add image analysis if images are provided
     if (images && images.length > 0) {
-      const imageAnalysisPrompt = `Additionally, I'm providing property images for visual analysis. Consider the property's condition, finishes, views, and overall presentation in both your valuation AND rental estimates. 
+      const premiumImageContext = isPremiumLocation ? 
+        `This is a premium Atlantic Seaboard property. Quality apartments in this area with modern finishes and good condition typically rent for R40,000-R65,000+ per month for ${bedrooms} bedrooms.` :
+        `This is a ${bedrooms}-bedroom property in Cape Town. Similar properties typically rent for R25,000-R45,000+ per month depending on location, condition, and finishes.`;
 
-For rental estimates, carefully assess:
-- Property finishes and quality level (affects premium pricing)
-- Layout and space efficiency 
-- Natural light and views
-- Overall condition and maintenance
-- Tenant appeal and marketability
+      const imageAnalysisPrompt = `VISUAL PROPERTY ANALYSIS: I'm providing property images for comprehensive visual assessment. Use these images to adjust both VALUATION and RENTAL estimates based on actual property condition.
 
-This is a ${bedrooms}-bedroom property in Cape Town. For context, similar properties in desirable Cape Town areas typically rent for R35,000-R55,000+ per month depending on location, condition, and finishes.`;
+CRITICAL: For ${isPremiumLocation ? 'PREMIUM LOCATION' : 'standard location'} properties, assess:
+- **Finishes Quality**: Modern/luxury finishes justify premium rates (up to 30% above base rates)
+- **Condition & Maintenance**: Well-maintained properties command higher values
+- **Views & Natural Light**: Ocean/mountain views add significant rental and sale premiums
+- **Layout Efficiency**: Open-plan, well-designed spaces increase appeal
+- **Amenities Visible**: Pool, balcony, secure parking areas impact value significantly
+
+${premiumImageContext}
+
+**VALUATION IMPACT**: Use images to determine if property justifies asking price or if significant adjustments needed. Premium finishes and condition can support higher per-square-meter rates.
+
+**RENTAL IMPACT**: Quality finishes and condition directly affect rental pricing - adjust estimates based on visual assessment of tenant appeal and market positioning.`;
       
       console.log('Validating images for OpenAI analysis:', images.length, 'images');
       
