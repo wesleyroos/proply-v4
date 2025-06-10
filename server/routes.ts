@@ -40,7 +40,7 @@ import propdataListingsRouter from './routes/propdata-listings';
 import fetchPropdataRouter from './routes/fetch-propdata';
 import valuationRouter from './routes/valuation';
 import { getRentalPerformance } from './routes/rental-performance';
-import { sendPasswordResetEmail } from './services/email';
+import { sendPasswordResetEmail, sendDemoRequestEmail } from './services/email';
 import propdataDebugRouter from './routes/propdata-debug';
 import agenciesRouter from './routes/agencies';
 import { imageSyncService } from './services/imageSyncService';

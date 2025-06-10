@@ -332,6 +332,94 @@ export async function sendWelcomeEmail(userData: {
   }
 }
 
+export async function sendDemoRequestEmail(params: {
+  fullName: string;
+  email: string;
+  company: string;
+  phoneNumber: string;
+  product: string;
+  message: string;
+}): Promise<boolean> {
+  try {
+    const verifiedSender = "hello@proply.co.za";
+    const adminEmail = "wesley@proply.co.za";
+
+    const subject = `New Demo Request - ${params.product}`;
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #1E293B;">New Demo Request Received</h2>
+        
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #374151;">Contact Information</h3>
+          <p><strong>Name:</strong> ${params.fullName}</p>
+          <p><strong>Email:</strong> ${params.email}</p>
+          <p><strong>Company:</strong> ${params.company}</p>
+          <p><strong>Phone:</strong> ${params.phoneNumber}</p>
+          <p><strong>Product Interest:</strong> ${params.product}</p>
+        </div>
+        
+        <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #374151;">Message</h3>
+          <p style="white-space: pre-wrap;">${params.message}</p>
+        </div>
+        
+        <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+          This demo request was submitted through the Proply website.
+        </p>
+      </div>
+    `;
+
+    const text = `
+New Demo Request Received
+
+Contact Information:
+Name: ${params.fullName}
+Email: ${params.email}
+Company: ${params.company}
+Phone: ${params.phoneNumber}
+Product Interest: ${params.product}
+
+Message:
+${params.message}
+
+This demo request was submitted through the Proply website.
+    `;
+
+    const msg = {
+      to: adminEmail,
+      from: {
+        email: verifiedSender,
+        name: "Proply Demo Requests",
+      },
+      subject,
+      text,
+      html,
+      mailSettings: {
+        sandboxMode: {
+          enable: false,
+        },
+      },
+      trackingSettings: {
+        clickTracking: {
+          enable: false,
+        },
+        openTracking: {
+          enable: true,
+        },
+      },
+    };
+
+    console.log("Sending demo request notification email...");
+    await mailService.send(msg);
+    console.log("Demo request email sent successfully");
+    return true;
+  } catch (error) {
+    console.error("Failed to send demo request email:", error);
+    return false;
+  }
+}
+
 export async function sendPasswordResetEmail(
   email: string,
   resetToken: string,
