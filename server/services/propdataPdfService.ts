@@ -1298,11 +1298,13 @@ export class PropdataPdfService {
       this.margin,
       this.currentY,
     );
+    this.currentY += 6;
     this.doc.text(
       "This report is valid for 30 days from generation date.",
       this.margin,
-      this.currentY + 6,
+      this.currentY,
     );
+    this.currentY += 20; // Add proper spacing after the validity text
   }
 
   private addSectionHeader(title: string): void {
