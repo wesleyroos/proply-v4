@@ -714,7 +714,9 @@ router.patch("/:propertyId/financial-data", async (req, res) => {
       });
     }
 
+    console.log(`=== FINANCIAL DATA SAVED for property ${propertyId} ===`);
     console.log('Successfully saved complete financial analysis data to database');
+    console.log('Financial update timestamp:', new Date().toISOString());
 
     // Return confirmation with data summary
     res.json({

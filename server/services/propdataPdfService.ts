@@ -105,22 +105,32 @@ export class PropdataPdfService {
 
       console.log("Property found:", !!property);
 
-      // Fetch valuation report with retry mechanism to handle race conditions
+      // Fetch valuation report with enhanced retry mechanism for financial data
       let valuationReport = null;
       let retryCount = 0;
-      const maxRetries = 3;
+      const maxRetries = 6; // Increased retries for financial data timing
       
-      while (!valuationReport && retryCount < maxRetries) {
+      while (retryCount < maxRetries) {
         valuationReport = await db.query.valuationReports.findFirst({
           where: eq(valuationReports.propertyId, propertyId),
           orderBy: [desc(valuationReports.updatedAt)],
         });
         
-        if (!valuationReport && retryCount < maxRetries - 1) {
-          // Wait 500ms before retrying to allow database commit to complete
-          await new Promise(resolve => setTimeout(resolve, 500));
+        // Check if we have the complete financial data, not just the valuation report
+        console.log(`Attempt ${retryCount + 1}: Found valuation report: ${!!valuationReport}, Has financial data: ${!!valuationReport?.financingAnalysisData}`);
+        
+        if (valuationReport && valuationReport.financingAnalysisData) {
+          console.log(`Financial data found on attempt ${retryCount + 1} for property ${propertyId}`);
+          break;
+        }
+        
+        if (retryCount < maxRetries - 1) {
+          console.log(`Waiting for financial data to be saved... attempt ${retryCount + 1}/${maxRetries}`);
+          // Wait longer for financial data updates (1 second)
+          await new Promise(resolve => setTimeout(resolve, 1000));
           retryCount++;
         } else {
+          console.log(`Financial data not found after ${maxRetries} attempts for property ${propertyId}`);
           break;
         }
       }

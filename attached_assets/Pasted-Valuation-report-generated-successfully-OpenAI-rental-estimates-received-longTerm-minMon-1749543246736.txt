@@ -1,0 +1,134 @@
+Valuation report generated successfully
+OpenAI rental estimates received: {
+  longTerm: {
+    minMonthlyRental: 42000,
+    maxMonthlyRental: 55000,
+    reasoning: "The apartment's modern finishes, central location, and spacious layout support a rental range competitive with similar properties in the area. The 0.6% rule suggests R28,800, but given the premium features, a higher range is justified."
+  }
+}
+Final rental performance data: {
+  shortTerm: {
+    percentile25: { nightly: 2002, monthly: 33017, annual: 396200 },
+    percentile50: { nightly: 2898, monthly: 56401, annual: 676800 },
+    percentile75: { nightly: 4297, monthly: 88417, annual: 1061000 },
+    percentile90: { nightly: 6612, monthly: 134367, annual: 1612400 },
+    occupancy: 68,
+    yield: 0
+  },
+  longTerm: {
+    minRental: 42000,
+    maxRental: 55000,
+    minYield: 10.5,
+    maxYield: 13.8,
+    managementFee: '8-10%',
+    reasoning: "The apartment's modern finishes, central location, and spacious layout support a rental range competitive with similar properties in the area. The 0.6% rule suggests R28,800, but given the premium features, a higher range is justified."
+  }
+}
+Saved new rental performance data to database
+Calculating and saving financial data for property 2181436
+Successfully saved comprehensive financial data for property 2181436
+Tracking report generation for property: 2181436
+Tracked report generation: valuation for Sotheby's International Realty (Property: 2181436)
+8:13:21 AM [express] POST /api/generate-valuation-report 200 in 37333ms :: {"summary":"This spacious…
+8:13:22 AM [express] POST /api/valuation-reports 200 in 187ms :: {"id":39,"userId":2,"propertyId":"2…
+8:13:22 AM [express] GET /api/valuation-reports/2181436 200 in 138ms :: {"id":39,"userId":2,"propert…
+Found rental data for property ID: 2181436
+8:13:23 AM [express] GET /api/rental-performance/2181436 200 in 138ms :: {"id":32,"user_id":2,"prope…
+Found rental data for property ID: 2181436
+8:13:23 AM [express] GET /api/rental-performance/2181436 304 in 138ms :: {"id":32,"user_id":2,"prope…
+Generating PDF report for property 2181436
+=== PDF SERVICE: Fetching data for property ID: 2181436 ===
+Looking for property with PropData ID: "2181436"
+Property found: true
+Loading agency logo from: /static-assets/agency-logos/agency-1-1749396326211.jpeg
+Successfully loaded agency logo
+Successfully added logo to PDF: 34.7x12.0 (aspect ratio: 2.89)
+=== Starting addMapAndImage method ===
+Property location data: {
+  city: 'CAPE TOWN',
+  suburb: 'Cape Town',
+  latitude: null,
+  province: 'Western Cape',
+  longitude: null
+}
+Property location type: object
+Property address for geocoding: 1, Shortmarket Street, Cape Town, CAPE TOWN, Western Cape
+Forcing geocoding for accurate property location
+No property location coordinates found, trying to geocode address...
+Available property data: [
+  'id',                    'propdataId',
+  'branchId',              'status',
+  'listingData',           'address',
+  'addressManuallyEdited', 'price',
+  'propertyType',          'bedrooms',
+  'bathrooms',             'parkingSpaces',
+  'floorSize',             'landSize',
+  'location',              'features',
+  'images',                'agentId',
+  'agentName',             'agentEmail',
+  'agentPhone',            'monthlyLevy',
+  'sectionalTitleLevy',    'specialLevy',
+  'homeOwnerLevy',         'listingDate',
+  'lastModified',          'createdAt',
+  'updatedAt'
+]
+Property address value: 1, Shortmarket Street, Cape Town, CAPE TOWN, Western Cape
+Geocoding address: 1, Shortmarket Street, Cape Town, CAPE TOWN, Western Cape
+Geocoding API response status: OK
+Geocoding API results count: 1
+Geocoded location: { lat: -33.9233706, lng: 18.4215011 }
+Generated map URL from geocoding: https://maps.googleapis.com/maps/api/staticmap?center=-33.9233706,18.4215011&zoom=16&size=400x300&maptype=satellite&markers=color:red%7Clabel:P%7C-33.9233706,18.4215011&key=AIzaSyDFkk-vjiF_BNaCAYyyv698y7gC3jqJc3M
+Successfully added geocoded map to PDF
+Property images data: [
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_e6326c3eb73f46b2b5523d205578992f.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_695e4ef3fbda43ce948c872137068fb8.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_23d1a60f5f6d497799d04ed09b432931.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_1a4c74fd46bb4bed8caa3446a57f7081.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_552793a42008442bb3aa4f0eec5b1699.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_cadfac0caa21442c8d01516f0a9a7be6.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_82e99497fa1245cc8492432f72f50b42.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_f84ccfcbf2784cd0b669c866f972e3e6.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_1deaca3f11564a4e8c934ea662efdabf.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_b5aea05dbfd04febb950873919eda4d2.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_5d3965630efb4841a3c8105173e9da7c.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_e12bf42089514d928a492ac3fc050f89.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_b41be7423c274b77b1edcd305a37333d.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_4d9d9874e18c447f833497f4d3bbf45a.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_0b09d1d9c00f4eaa9a24f65e66de8000.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_07284439785f4c2fa1b880da39b77ef3.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_6419ae21ec634b93a8181c0291b34d42.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_b7d8ecbf10d94ac598bb46813ae0a231.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_140e11b11a404c1bad5e57d2f673d8bd.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_211eb1d873954b0fb4e05570fd2d56be.jpg',
+  'https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_3841f2bf18e744b895c7bf90de355e26.jpg'
+]
+Property data structure: [
+  'id',                    'propdataId',
+  'branchId',              'status',
+  'listingData',           'address',
+  'addressManuallyEdited', 'price',
+  'propertyType',          'bedrooms',
+  'bathrooms',             'parkingSpaces',
+  'floorSize',             'landSize',
+  'location',              'features',
+  'images',                'agentId',
+  'agentName',             'agentEmail',
+  'agentPhone',            'monthlyLevy',
+  'sectionalTitleLevy',    'specialLevy',
+  'homeOwnerLevy',         'listingDate',
+  'lastModified',          'createdAt',
+  'updatedAt'
+]
+Attempting to load image from URL: https://d21tw07c6rnmp0.cloudfront.net/media/uploads/50/residential/2025/5/50_e6326c3eb73f46b2b5523d205578992f.jpg
+Successfully added property image to PDF
+Logged downloaded activity for property 2181436
+8:13:33 AM [express] GET /api/pdf-generate/2181436 200 in 922ms
+Found 1 activities for property 2181436: [
+  {
+    id: 39,
+    type: 'downloaded',
+    ip: '172.31.128.86',
+    timestamp: 2025-06-10T08:13:33.070Z
+  }
+]
+8:13:36 AM [express] GET /api/report-activity/2181436 200 in 139ms :: [{"id":39,"propertyId":"218143…
