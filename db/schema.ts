@@ -155,17 +155,7 @@ export const agencySettings = pgTable("agency_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Update suburbs table with more precise schema
-export const suburbs = pgTable("suburbs", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  city: text("city").notNull(),
-  province: text("province").notNull(),
-  latitude: decimal("latitude", { precision: 10, scale: 6 }).notNull(),
-  longitude: decimal("longitude", { precision: 10, scale: 6 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+
 
 export const reportTracking = pgTable("report_tracking", {
   id: serial("id").primaryKey(),
