@@ -2218,45 +2218,6 @@ export function registerRoutes(app: Express): Server {
   // Rental Performance API endpoint
   app.post("/api/rental-performance", getRentalPerformance);
 
-  // Add the calculate-deal-score endpoint
-  app.post("/api/calculate-deal-score", async (req, res) => {
-    try {
-      const { address, price, propertyType, bedrooms } = req.body;
-
-      // Mock calculation for demonstration
-      const marketPrice = price * 0.95; // Example: market price is 95% of asking price
-      const score = Math.min(100, Math.max(0, 100 - Math.abs((price - marketPrice) / marketPrice * 100)));
-
-      let rating;
-      let color;
-      if (score >= 90) {
-        rating = "Excellent Deal";
-        color = "bg-green-500";
-      } else if (score >= 70) {
-        rating = "Good Deal";
-        color = "bg-blue-500";
-      } else if (score >= 50) {
-        rating = "Fair Deal";
-        color = "bg-yellow-500";
-      } else {
-        rating = "Poor Deal";
-        color = "bg-red-500";
-      }
-
-      res.json({
-        score: Math.round(score),
-        rating,
-        color,
-        percentageDifference: ((marketPrice - price) / price) * 100,
-        askingPrice: price,
-        estimatedValue: marketPrice
-      });
-    } catch (error) {
-      console.error("Error calculating deal score:", error);
-      res.status(500).json({ error: "Failed to calculate deal score" });
-    }
-  });
-
   // Demo request endpoint
   app.post("/api/demo-request", async (req, res) => {
     try {
