@@ -105,40 +105,28 @@ export class PropdataPdfService {
 
       console.log("Property found:", !!property);
 
-      // Fetch valuation report with all financial data using raw SQL for debugging
-      console.log("Executing valuation report query for property:", propertyId);
-      const rawValuationResult = await db.execute(`
-        SELECT id, user_id, property_id, financing_analysis_data, cashflow_analysis_data, annual_property_appreciation_data 
-        FROM valuation_reports 
-        WHERE property_id = '${propertyId}' 
-        ORDER BY updated_at DESC 
-        LIMIT 1
-      `);
+      // Fetch valuation report with retry mechanism to handle race conditions
+      let valuationReport = null;
+      let retryCount = 0;
+      const maxRetries = 3;
       
-      console.log("Raw valuation query result:", rawValuationResult.rows.length > 0 ? "Found" : "Not found");
-      
-      // Use Drizzle query as backup
-      const valuationReport = await db.query.valuationReports.findFirst({
-        where: eq(valuationReports.propertyId, propertyId),
-        orderBy: [desc(valuationReports.updatedAt)],
-      });
-
-      console.log("=== VALUATION REPORT DEBUG ===");
-      console.log("Valuation report found:", !!valuationReport);
-      console.log("Valuation report ID:", valuationReport?.id);
-      console.log("Valuation report user ID:", valuationReport?.userId);
-      
-      if (valuationReport) {
-        console.log("Financing data type:", typeof valuationReport.financingAnalysisData);
-        console.log("Financing data exists:", !!valuationReport.financingAnalysisData);
-        console.log("Cashflow data exists:", !!valuationReport.cashflowAnalysisData);
-        console.log("Appreciation data exists:", !!valuationReport.annualPropertyAppreciationData);
-      } else {
-        console.log("No valuation report found - checking database directly...");
+      while (!valuationReport && retryCount < maxRetries) {
+        valuationReport = await db.query.valuationReports.findFirst({
+          where: eq(valuationReports.propertyId, propertyId),
+          orderBy: [desc(valuationReports.updatedAt)],
+        });
         
-        // Direct database check
-        const directCheck = await db.execute(`SELECT id, financing_analysis_data IS NOT NULL as has_financing FROM valuation_reports WHERE property_id = '${propertyId}' LIMIT 1`);
-        console.log("Direct DB check result:", directCheck.rows);
+        if (!valuationReport && retryCount < maxRetries - 1) {
+          // Wait 500ms before retrying to allow database commit to complete
+          await new Promise(resolve => setTimeout(resolve, 500));
+          retryCount++;
+        } else {
+          break;
+        }
+      }
+
+      if (retryCount > 0) {
+        console.log(`Valuation report found after ${retryCount} retries for property ${propertyId}`);
       }
 
       // Fetch rental performance data
@@ -146,24 +134,7 @@ export class PropdataPdfService {
         where: eq(rentalPerformanceData.propertyId, propertyId),
       });
 
-      console.log("Rental data found:", !!rentalData);
-      console.log("Financial analysis data available:", {
-        hasAnnualAppreciationData:
-          !!valuationReport?.annualPropertyAppreciationData,
-        hasCashflowAnalysisData: !!valuationReport?.cashflowAnalysisData,
-        hasFinancingAnalysisData: !!valuationReport?.financingAnalysisData,
-      });
-      
-      // Debug: Log the actual data structure to identify the issue
-      console.log("Valuation report structure:", {
-        id: valuationReport?.id,
-        propertyId: valuationReport?.propertyId,
-        keys: valuationReport ? Object.keys(valuationReport) : [],
-        financingAnalysisDataType: typeof valuationReport?.financingAnalysisData,
-        financingAnalysisDataContent: valuationReport?.financingAnalysisData,
-        cashflowAnalysisDataType: typeof valuationReport?.cashflowAnalysisData,
-        annualPropertyAppreciationDataType: typeof valuationReport?.annualPropertyAppreciationData,
-      });
+
 
       if (!property) {
         throw new Error(`Property with ID ${propertyId} not found in database`);
@@ -172,16 +143,12 @@ export class PropdataPdfService {
       // Fetch agency logo based on property's branch ID
       let agencyLogo: string | null = null;
       if (property.branchId) {
-        console.log(`Fetching agency logo for branch ID: ${property.branchId}`);
         const agencyBranch = await db.query.agencyBranches.findFirst({
           where: eq(agencyBranches.id, property.branchId),
         });
         
         if (agencyBranch?.logoUrl) {
           agencyLogo = agencyBranch.logoUrl;
-          console.log(`Agency logo found: ${agencyLogo}`);
-        } else {
-          console.log("No agency logo found for this property");
         }
       }
 
@@ -1013,10 +980,7 @@ export class PropdataPdfService {
     this.checkPageBreak();
     this.addSectionHeader("Financial Analysis");
 
-    console.log("=== FINANCIALS SECTION DEBUG ===");
-    console.log("Valuation report exists:", !!data.valuationReport);
-    console.log("Financing analysis data exists:", !!data.valuationReport?.financingAnalysisData);
-    console.log("Valuation report keys:", data.valuationReport ? Object.keys(data.valuationReport) : "No valuation report");
+
 
     // Financing parameters from saved valuation data
     if (data.valuationReport?.financingAnalysisData) {
