@@ -85,7 +85,8 @@ export async function calculateAndSaveFinancialDataAfterValuation(
   };
 
   // 2. CASHFLOW ANALYSIS DATA
-  const shortTermRevenue = valuationReport.rentalEstimates?.shortTerm?.estimatedAnnualRevenue;
+  // Short-term revenue from PriceLabs percentile50 (median) data
+  const shortTermRevenue = valuationReport.rentalPerformance?.shortTerm?.percentile50?.annual || null;
   const longTermRevenue = valuationReport.rentalEstimates?.longTerm ? 
     (valuationReport.rentalEstimates.longTerm.minMonthlyRental + valuationReport.rentalEstimates.longTerm.maxMonthlyRental) / 2 * 12 
     : null;

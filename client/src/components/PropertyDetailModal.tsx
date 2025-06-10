@@ -1533,41 +1533,26 @@ export default function PropertyDetailModal({
       );
     }
 
-    // Calculate metrics for both strategies
-    const calculateMetrics = (isShortTerm: boolean) => {
-      const propertyPrice = parseFloat(property.price.toString());
+    const propertyPrice = parseFloat(property.price.toString());
 
-      if (isShortTerm && rentalData.shortTerm) {
-        const selectedData = rentalData.shortTerm[selectedPercentile];
-        const monthlyGrossIncome = selectedData.monthly;
-        const annualGrossIncome = selectedData.annual;
-        const grossRentalYield = (annualGrossIncome / propertyPrice) * 100;
+    // Calculate metrics for long-term strategy
+    const calculateLongTermMetrics = () => {
+      if (!rentalData.longTerm) return null;
+      
+      const monthlyGrossIncome =
+        (rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2;
+      const annualGrossIncome = monthlyGrossIncome * 12;
+      const grossRentalYield = (annualGrossIncome / propertyPrice) * 100;
 
-        return {
-          monthlyGrossIncome,
-          annualGrossIncome,
-          grossRentalYield,
-          strategy: "Short-term Rental",
-        };
-      } else if (!isShortTerm && rentalData.longTerm) {
-        const monthlyGrossIncome =
-          (rentalData.longTerm.minRental + rentalData.longTerm.maxRental) / 2;
-        const annualGrossIncome = monthlyGrossIncome * 12;
-        const grossRentalYield = (annualGrossIncome / propertyPrice) * 100;
-
-        return {
-          monthlyGrossIncome,
-          annualGrossIncome,
-          grossRentalYield,
-          strategy: "Long-term Rental",
-        };
-      }
-
-      return null;
+      return {
+        monthlyGrossIncome,
+        annualGrossIncome,
+        grossRentalYield,
+        strategy: "Long-term Rental",
+      };
     };
 
-    const shortTermMetrics = calculateMetrics(true);
-    const longTermMetrics = calculateMetrics(false);
+    const longTermMetrics = calculateLongTermMetrics();
 
     // Calculate 5-year revenue growth (8% annual growth)
     const calculateRevenueGrowth = (baseAnnual: number) => {
@@ -1577,111 +1562,108 @@ export default function PropertyDetailModal({
       }));
     };
 
+    // Define percentile labels for display
+    const percentileLabels = {
+      percentile25: "25th Percentile (Conservative)",
+      percentile50: "50th Percentile (Median)",
+      percentile75: "75th Percentile (Optimistic)",
+      percentile90: "90th Percentile (Premium)"
+    };
+
     return (
       <div className="space-y-6">
         {/* Revenue Growth Projections Table */}
-        {(shortTermMetrics || longTermMetrics) && (
-          <div>
-            <div className="mb-3">
-              <h3 className="text-base font-semibold">
-                5-Year Revenue Growth Trajectory
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Projected annual revenue and yields with 8% market growth
-              </p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-xs border rounded-lg">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left py-2 px-3 font-medium">
-                      Strategy
-                    </th>
-                    {[1, 2, 3, 4, 5].map((year) => (
-                      <th
-                        key={year}
-                        className="text-center py-2 px-3 font-medium"
-                      >
-                        Year {year}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Short-term Revenue Row */}
-                  {shortTermMetrics && (
-                    <>
-                      <tr className="border-b hover:bg-blue-50/50">
-                        <td className="py-2 px-3 font-medium text-blue-600">
-                          Short-term Revenue
-                        </td>
-                        {calculateRevenueGrowth(
-                          shortTermMetrics.annualGrossIncome,
-                        ).map(({ year, revenue }) => (
-                          <td key={year} className="text-center py-2 px-3">
-                            {formatCurrency(revenue)}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className="border-b hover:bg-blue-50/50">
-                        <td className="py-2 px-3 font-medium text-blue-600">
-                          Short-term Gross Yield
-                        </td>
-                        {calculateRevenueGrowth(
-                          shortTermMetrics.annualGrossIncome,
-                        ).map(({ year, revenue }) => (
-                          <td key={year} className="text-center py-2 px-3">
-                            {(
-                              (revenue /
-                                parseFloat(property.price.toString())) *
-                              100
-                            ).toFixed(1)}
-                            %
-                          </td>
-                        ))}
-                      </tr>
-                    </>
-                  )}
-
-                  {/* Long-term Revenue Row */}
-                  {longTermMetrics && (
-                    <>
-                      <tr className="border-b hover:bg-green-50/50">
-                        <td className="py-2 px-3 font-medium text-green-600">
-                          Long-term Revenue
-                        </td>
-                        {calculateRevenueGrowth(
-                          longTermMetrics.annualGrossIncome,
-                        ).map(({ year, revenue }) => (
-                          <td key={year} className="text-center py-2 px-3">
-                            {formatCurrency(revenue)}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr className="border-b hover:bg-green-50/50">
-                        <td className="py-2 px-3 font-medium text-green-600">
-                          Long-term Gross Yield
-                        </td>
-                        {calculateRevenueGrowth(
-                          longTermMetrics.annualGrossIncome,
-                        ).map(({ year, revenue }) => (
-                          <td key={year} className="text-center py-2 px-3">
-                            {(
-                              (revenue /
-                                parseFloat(property.price.toString())) *
-                              100
-                            ).toFixed(1)}
-                            %
-                          </td>
-                        ))}
-                      </tr>
-                    </>
-                  )}
-                </tbody>
-              </table>
-            </div>
+        <div>
+          <div className="mb-3">
+            <h3 className="text-base font-semibold">
+              5-Year Revenue Growth Trajectory
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Projected annual revenue and yields with 8% market growth
+            </p>
           </div>
-        )}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-xs border rounded-lg">
+              <thead>
+                <tr className="border-b bg-gray-50">
+                  <th className="text-left py-2 px-3 font-medium">
+                    Strategy
+                  </th>
+                  {[1, 2, 3, 4, 5].map((year) => (
+                    <th
+                      key={year}
+                      className="text-center py-2 px-3 font-medium"
+                    >
+                      Year {year}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {/* Short-term Revenue Rows - All Percentiles */}
+                {rentalData.shortTerm && Object.entries(percentileLabels).map(([percentileKey, label]) => {
+                  const percentileData = rentalData.shortTerm[percentileKey as keyof typeof rentalData.shortTerm];
+                  if (!percentileData) return null;
+                  
+                  return (
+                    <React.Fragment key={percentileKey}>
+                      <tr className="border-b hover:bg-blue-50/50">
+                        <td className="py-2 px-3 font-medium text-blue-600">
+                          Short-term Revenue ({label})
+                        </td>
+                        {calculateRevenueGrowth(percentileData.annual).map(({ year, revenue }) => (
+                          <td key={year} className="text-center py-2 px-3">
+                            {formatCurrency(revenue)}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-b hover:bg-blue-50/50">
+                        <td className="py-2 px-3 font-medium text-blue-600">
+                          Short-term Gross Yield ({label})
+                        </td>
+                        {calculateRevenueGrowth(percentileData.annual).map(({ year, revenue }) => (
+                          <td key={year} className="text-center py-2 px-3">
+                            {((revenue / propertyPrice) * 100).toFixed(1)}%
+                          </td>
+                        ))}
+                      </tr>
+                    </React.Fragment>
+                  );
+                })}
+
+                {/* Long-term Revenue Row */}
+                {longTermMetrics && (
+                  <>
+                    <tr className="border-b hover:bg-green-50/50">
+                      <td className="py-2 px-3 font-medium text-green-600">
+                        Long-term Revenue
+                      </td>
+                      {calculateRevenueGrowth(
+                        longTermMetrics.annualGrossIncome,
+                      ).map(({ year, revenue }) => (
+                        <td key={year} className="text-center py-2 px-3">
+                          {formatCurrency(revenue)}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-b hover:bg-green-50/50">
+                      <td className="py-2 px-3 font-medium text-green-600">
+                        Long-term Gross Yield
+                      </td>
+                      {calculateRevenueGrowth(
+                        longTermMetrics.annualGrossIncome,
+                      ).map(({ year, revenue }) => (
+                        <td key={year} className="text-center py-2 px-3">
+                          {((revenue / propertyPrice) * 100).toFixed(1)}%
+                        </td>
+                      ))}
+                    </tr>
+                  </>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         {/* Recommended Strategy */}
         {recommendedStrategy && (
