@@ -1029,44 +1029,78 @@ export class PropdataPdfService {
       }
     }
 
-    // Revenue projections from saved valuation data
+    // Revenue projections from saved valuation data - match UI format exactly
     if (data.valuationReport?.cashflowAnalysisData?.revenueGrowthTrajectory) {
       this.addSubsectionHeader("Revenue Projections (8% Annual Growth)");
+      
+      this.doc.setFontSize(10);
+      this.doc.text(
+        "5-Year Revenue Growth Trajectory",
+        this.margin,
+        this.currentY,
+      );
+      this.currentY += 6;
+      this.doc.setFontSize(9);
+      this.doc.text(
+        "Projected annual revenue and yields with 8% market growth",
+        this.margin,
+        this.currentY,
+      );
+      this.currentY += 12;
 
-      const trajectory =
-        data.valuationReport.cashflowAnalysisData.revenueGrowthTrajectory;
+      const trajectory = data.valuationReport.cashflowAnalysisData.revenueGrowthTrajectory;
 
-      if (trajectory.shortTerm) {
-        this.doc.text(
-          "Short-Term Rental Projections:",
-          this.margin,
-          this.currentY,
-        );
-        this.currentY += 8;
-
-        // Convert to transposed table format (years as columns)
-        const shortTermEntries = Object.entries(trajectory.shortTerm);
-        const yearHeaders = shortTermEntries.map(
-          ([year]) => `Year ${year.replace("year", "")}`,
-        );
-        const revenueRow = [
-          "Revenue",
-          ...shortTermEntries.map(
-            ([, data]: [string, any]) =>
-              `R${data.revenue?.toLocaleString() || 0}`,
-          ),
-        ];
-        const yieldRow = [
-          "Yield",
-          ...shortTermEntries.map(
-            ([, data]: [string, any]) => `${data.grossYield?.toFixed(1) || 0}%`,
-          ),
-        ];
+      // Create combined table with both short-term and long-term data (match UI format)
+      if (trajectory.shortTerm || trajectory.longTerm) {
+        // Get year headers from either short-term or long-term data
+        const yearData = trajectory.shortTerm || trajectory.longTerm;
+        const yearEntries = Object.entries(yearData);
+        const yearHeaders = yearEntries.map(([year]) => `Year ${year.replace("year", "")}`);
+        
+        const tableRows = [];
+        
+        // Short-term revenue row
+        if (trajectory.shortTerm) {
+          const shortTermEntries = Object.entries(trajectory.shortTerm);
+          tableRows.push([
+            "Short-term Revenue",
+            ...shortTermEntries.map(([, data]: [string, any]) => 
+              `R${data.revenue?.toLocaleString() || 0}`
+            ),
+          ]);
+          
+          // Short-term yield row
+          tableRows.push([
+            "Short-term Gross Yield",
+            ...shortTermEntries.map(([, data]: [string, any]) => 
+              `${data.grossYield?.toFixed(1) || 0}%`
+            ),
+          ]);
+        }
+        
+        // Long-term revenue row
+        if (trajectory.longTerm) {
+          const longTermEntries = Object.entries(trajectory.longTerm);
+          tableRows.push([
+            "Long-term Revenue",
+            ...longTermEntries.map(([, data]: [string, any]) => 
+              `R${data.revenue?.toLocaleString() || 0}`
+            ),
+          ]);
+          
+          // Long-term yield row
+          tableRows.push([
+            "Long-term Gross Yield",
+            ...longTermEntries.map(([, data]: [string, any]) => 
+              `${data.grossYield?.toFixed(1) || 0}%`
+            ),
+          ]);
+        }
 
         (this.doc as any).autoTable({
           startY: this.currentY,
-          head: [["Metric", ...yearHeaders]],
-          body: [revenueRow, yieldRow],
+          head: [["Strategy", ...yearHeaders]],
+          body: tableRows,
           theme: "grid",
           headStyles: {
             fillColor: [27, 162, 255],
@@ -1076,7 +1110,7 @@ export class PropdataPdfService {
           styles: { fontSize: 8 },
           margin: { left: this.margin, right: this.margin },
           columnStyles: {
-            0: { halign: "left" },
+            0: { halign: "left", cellWidth: 40 },
             ...Object.fromEntries(
               Array.from({ length: yearHeaders.length }, (_, i) => [
                 i + 1,
@@ -1084,58 +1118,11 @@ export class PropdataPdfService {
               ]),
             ),
           },
-        });
-
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
-      }
-
-      if (trajectory.longTerm) {
-        this.doc.text(
-          "Long-Term Rental Projections:",
-          this.margin,
-          this.currentY,
-        );
-        this.currentY += 8;
-
-        // Convert to transposed table format (years as columns)
-        const longTermEntries = Object.entries(trajectory.longTerm);
-        const yearHeaders = longTermEntries.map(
-          ([year]) => `Year ${year.replace("year", "")}`,
-        );
-        const revenueRow = [
-          "Revenue",
-          ...longTermEntries.map(
-            ([, data]: [string, any]) =>
-              `R${data.revenue?.toLocaleString() || 0}`,
-          ),
-        ];
-        const yieldRow = [
-          "Yield",
-          ...longTermEntries.map(
-            ([, data]: [string, any]) => `${data.grossYield?.toFixed(1) || 0}%`,
-          ),
-        ];
-
-        (this.doc as any).autoTable({
-          startY: this.currentY,
-          head: [["Metric", ...yearHeaders]],
-          body: [revenueRow, yieldRow],
-          theme: "grid",
-          headStyles: {
-            fillColor: [27, 162, 255],
-            textColor: 255,
-            fontStyle: "bold",
-          },
-          styles: { fontSize: 8 },
-          margin: { left: this.margin, right: this.margin },
-          columnStyles: {
-            0: { halign: "left" },
-            ...Object.fromEntries(
-              Array.from({ length: yearHeaders.length }, (_, i) => [
-                i + 1,
-                { halign: "right" },
-              ]),
-            ),
+          bodyStyles: {
+            0: { textColor: [0, 123, 255] }, // Blue text for short-term revenue
+            1: { textColor: [0, 123, 255] }, // Blue text for short-term yield
+            2: { textColor: [40, 167, 69] }, // Green text for long-term revenue  
+            3: { textColor: [40, 167, 69] }, // Green text for long-term yield
           },
         });
 
