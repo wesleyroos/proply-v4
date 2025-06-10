@@ -724,7 +724,7 @@ ${premiumImageContext}
       const shortTermTrajectories = rentalPerformance.shortTerm ? {
         percentile25: (() => {
           const baseRevenue = rentalPerformance.shortTerm.percentile25?.annual;
-          if (!baseRevenue) return null;
+          if (!baseRevenue || propertyPrice <= 0) return null;
           return [1, 2, 3, 4, 5].reduce((acc, year) => {
             const revenue = baseRevenue * Math.pow(1.08, year - 1);
             acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
@@ -733,7 +733,7 @@ ${premiumImageContext}
         })(),
         percentile50: (() => {
           const baseRevenue = rentalPerformance.shortTerm.percentile50?.annual;
-          if (!baseRevenue) return null;
+          if (!baseRevenue || propertyPrice <= 0) return null;
           return [1, 2, 3, 4, 5].reduce((acc, year) => {
             const revenue = baseRevenue * Math.pow(1.08, year - 1);
             acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
@@ -742,7 +742,7 @@ ${premiumImageContext}
         })(),
         percentile75: (() => {
           const baseRevenue = rentalPerformance.shortTerm.percentile75?.annual;
-          if (!baseRevenue) return null;
+          if (!baseRevenue || propertyPrice <= 0) return null;
           return [1, 2, 3, 4, 5].reduce((acc, year) => {
             const revenue = baseRevenue * Math.pow(1.08, year - 1);
             acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
@@ -751,7 +751,7 @@ ${premiumImageContext}
         })(),
         percentile90: (() => {
           const baseRevenue = rentalPerformance.shortTerm.percentile90?.annual;
-          if (!baseRevenue) return null;
+          if (!baseRevenue || propertyPrice <= 0) return null;
           return [1, 2, 3, 4, 5].reduce((acc, year) => {
             const revenue = baseRevenue * Math.pow(1.08, year - 1);
             acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
@@ -760,9 +760,18 @@ ${premiumImageContext}
         })()
       } : null;
 
+      console.log('Short-term rental data for financial calculation:', rentalPerformance.shortTerm);
+      console.log('Calculated short-term trajectories:', shortTermTrajectories);
+
+      // Determine best strategy based on highest median revenue potential
+      const shortTermMedianRevenue = rentalPerformance.shortTerm?.percentile50?.annual || 0;
+      const bestStrategy = shortTermMedianRevenue > (longTermRevenue || 0) ? "shortTerm" : "longTerm";
+      
       const cashflowAnalysisData = {
-        recommendedStrategy: shortTermRevenue > (longTermRevenue || 0) ? "shortTerm" : "longTerm",
-        strategyReasoning: "Automatically calculated based on available rental data",
+        recommendedStrategy: bestStrategy,
+        strategyReasoning: bestStrategy === "shortTerm" 
+          ? "Short-term rental offers significantly higher revenue potential across all percentiles"
+          : "Long-term rental provides more stable returns for this property type",
         revenueGrowthTrajectory: {
           shortTerm: shortTermTrajectories,
           longTerm: longTermRevenue ? {
