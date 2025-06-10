@@ -2322,12 +2322,22 @@ export function registerRoutes(app: Express): Server {
       };
 
       // 1. ANNUAL PROPERTY APPRECIATION DATA
+      // Calculate correct appreciation rate from components instead of using OpenAI's potentially wrong calculation
+      const components = valuationReport.propertyAppreciation?.components;
+      const calculatedAppreciationRate = components ? 
+        components.baseSuburbRate.rate + 
+        components.locationPremium.adjustment + 
+        components.propertyTypeModifier.adjustment + 
+        components.visualConditionAdjustment.adjustment + 
+        components.levyImpact.adjustment : 
+        (valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0);
+
       const annualPropertyAppreciationData = {
         baseSuburbRate: valuationReport.propertyAppreciation?.suburbAppreciationRate || 8.0,
         propertyAdjustments: valuationReport.propertyAppreciation?.adjustments || {},
-        finalAppreciationRate: valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0,
+        finalAppreciationRate: calculatedAppreciationRate,
         yearlyValues: (() => {
-          const rate = (valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0) / 100;
+          const rate = calculatedAppreciationRate / 100;
           return [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
             acc[`year${year}`] = price * Math.pow(1 + rate, year);
             return acc;
