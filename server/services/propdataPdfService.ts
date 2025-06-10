@@ -1233,11 +1233,12 @@ export class PropdataPdfService {
         );
         this.currentY += 8;
 
-        // Convert to transposed table format (years as columns)
+        // Convert to transposed table format (years as columns) - match UI exactly
         const keyYears = [
           "year1",
-          "year2",
+          "year2", 
           "year3",
+          "year4",
           "year5",
           "year10",
           "year20",
@@ -1249,7 +1250,7 @@ export class PropdataPdfService {
           (yearKey) => `Year ${yearKey.replace("year", "")}`,
         );
         const valueRow = [
-          "Property Value",
+          "Estimated Value",
           ...validYears.map(
             (yearKey) =>
               `R${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString()}`,
