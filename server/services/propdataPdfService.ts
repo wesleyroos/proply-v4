@@ -105,17 +105,41 @@ export class PropdataPdfService {
 
       console.log("Property found:", !!property);
 
-      // Fetch valuation report with all financial data
-      // Note: Since PDF generation can be accessed without authentication,
-      // we fetch the most recent valuation report for this property regardless of user
+      // Fetch valuation report with all financial data using raw SQL for debugging
+      console.log("Executing valuation report query for property:", propertyId);
+      const rawValuationResult = await db.execute(`
+        SELECT id, user_id, property_id, financing_analysis_data, cashflow_analysis_data, annual_property_appreciation_data 
+        FROM valuation_reports 
+        WHERE property_id = '${propertyId}' 
+        ORDER BY updated_at DESC 
+        LIMIT 1
+      `);
+      
+      console.log("Raw valuation query result:", rawValuationResult.rows.length > 0 ? "Found" : "Not found");
+      
+      // Use Drizzle query as backup
       const valuationReport = await db.query.valuationReports.findFirst({
         where: eq(valuationReports.propertyId, propertyId),
         orderBy: [desc(valuationReports.updatedAt)],
       });
 
+      console.log("=== VALUATION REPORT DEBUG ===");
       console.log("Valuation report found:", !!valuationReport);
       console.log("Valuation report ID:", valuationReport?.id);
       console.log("Valuation report user ID:", valuationReport?.userId);
+      
+      if (valuationReport) {
+        console.log("Financing data type:", typeof valuationReport.financingAnalysisData);
+        console.log("Financing data exists:", !!valuationReport.financingAnalysisData);
+        console.log("Cashflow data exists:", !!valuationReport.cashflowAnalysisData);
+        console.log("Appreciation data exists:", !!valuationReport.annualPropertyAppreciationData);
+      } else {
+        console.log("No valuation report found - checking database directly...");
+        
+        // Direct database check
+        const directCheck = await db.execute(`SELECT id, financing_analysis_data IS NOT NULL as has_financing FROM valuation_reports WHERE property_id = '${propertyId}' LIMIT 1`);
+        console.log("Direct DB check result:", directCheck.rows);
+      }
 
       // Fetch rental performance data
       const rentalData = await db.query.rentalPerformanceData.findFirst({
@@ -988,6 +1012,11 @@ export class PropdataPdfService {
   private addFinancialsSection(data: PropertyPdfData): void {
     this.checkPageBreak();
     this.addSectionHeader("Financial Analysis");
+
+    console.log("=== FINANCIALS SECTION DEBUG ===");
+    console.log("Valuation report exists:", !!data.valuationReport);
+    console.log("Financing analysis data exists:", !!data.valuationReport?.financingAnalysisData);
+    console.log("Valuation report keys:", data.valuationReport ? Object.keys(data.valuationReport) : "No valuation report");
 
     // Financing parameters from saved valuation data
     if (data.valuationReport?.financingAnalysisData) {
