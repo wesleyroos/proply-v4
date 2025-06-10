@@ -737,75 +737,7 @@ export class PropdataPdfService {
       this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
     }
 
-    // Property Appreciation Analysis
-    if (valuation.propertyAppreciation) {
-      this.addSubsectionHeader("Property Appreciation Forecast");
-      this.doc.setFontSize(10);
 
-      const appreciation = valuation.propertyAppreciation;
-      if (appreciation.annualAppreciationRate) {
-        this.doc.text(
-          `Annual Appreciation Rate: ${appreciation.annualAppreciationRate}%`,
-          this.margin,
-          this.currentY,
-        );
-        this.currentY += 12;
-      }
-
-      // 5-year projection table - transposed with years as columns
-      if (
-        appreciation.fiveYearProjection &&
-        Array.isArray(appreciation.fiveYearProjection)
-      ) {
-        const yearHeaders = appreciation.fiveYearProjection.map(
-          (proj: any) => proj.year?.toString() || "",
-        );
-        const valueRow = [
-          "Estimated Value",
-          ...appreciation.fiveYearProjection.map(
-            (proj: any) =>
-              `R${(proj.estimatedValue || 0).toLocaleString("en-ZA")}`,
-          ),
-        ];
-
-        (this.doc as any).autoTable({
-          startY: this.currentY,
-          head: [["Metric", ...yearHeaders]],
-          body: [valueRow],
-          theme: "grid",
-          headStyles: {
-            fillColor: [27, 162, 255],
-            textColor: 255,
-            fontStyle: "bold",
-          },
-          styles: {
-            fontSize: 8,
-            cellPadding: 1,
-          },
-          margin: { left: this.margin, right: this.margin },
-          columnStyles: {
-            0: { halign: "left" },
-            ...Object.fromEntries(
-              Array.from({ length: yearHeaders.length }, (_, i) => [
-                i + 1,
-                { halign: "right" },
-              ]),
-            ),
-          },
-        });
-
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
-      }
-
-      if (appreciation.summary) {
-        this.addWrappedText(
-          appreciation.summary,
-          this.margin,
-          this.pageWidth - 2 * this.margin,
-        );
-        this.currentY += 10;
-      }
-    }
 
     // Market Context
     if (valuation.marketContext) {
@@ -1331,7 +1263,18 @@ export class PropdataPdfService {
         },
       });
 
-      this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+      this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+      
+      // Add appreciation reasoning/summary text
+      if (appreciation.reasoning) {
+        this.doc.setFontSize(10);
+        this.addWrappedText(
+          appreciation.reasoning,
+          this.margin,
+          this.pageWidth - 2 * this.margin,
+        );
+        this.currentY += 10;
+      }
     }
   }
 
