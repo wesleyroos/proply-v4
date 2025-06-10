@@ -105,45 +105,11 @@ export class PropdataPdfService {
 
       console.log("Property found:", !!property);
 
-      // Fetch valuation report with enhanced retry mechanism for complete financial data
-      let valuationReport = null;
-      let retryCount = 0;
-      const maxRetries = 8; // Extended wait time for financial data completion
-      
-      while (retryCount < maxRetries) {
-        valuationReport = await db.query.valuationReports.findFirst({
-          where: eq(valuationReports.propertyId, propertyId),
-          orderBy: [desc(valuationReports.updatedAt)],
-        });
-        
-        // Check for complete financial analysis data (all three components)
-        const hasFinancingData = !!valuationReport?.financingAnalysisData;
-        const hasCashflowData = !!valuationReport?.cashflowAnalysisData;
-        const hasAppreciationData = !!valuationReport?.annualPropertyAppreciationData;
-        const hasCompleteFinancialData = hasFinancingData && hasCashflowData && hasAppreciationData;
-        
-        if (valuationReport && hasCompleteFinancialData) {
-          if (retryCount > 0) {
-            console.log(`Complete financial data found after ${retryCount + 1} attempts for property ${propertyId}`);
-          }
-          break;
-        }
-        
-        if (retryCount < maxRetries - 1) {
-          // Progressive retry delays: start fast, then increase
-          const delay = retryCount < 3 ? 500 : 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
-          retryCount++;
-        } else {
-          console.log(`Complete financial data not available after ${maxRetries} attempts for property ${propertyId}`);
-          console.log(`Available data: financing=${hasFinancingData}, cashflow=${hasCashflowData}, appreciation=${hasAppreciationData}`);
-          break;
-        }
-      }
-
-      if (retryCount > 0) {
-        console.log(`Valuation report found after ${retryCount} retries for property ${propertyId}`);
-      }
+      // Fetch valuation report - financial data should be saved synchronously now
+      const valuationReport = await db.query.valuationReports.findFirst({
+        where: eq(valuationReports.propertyId, propertyId),
+        orderBy: [desc(valuationReports.updatedAt)],
+      });
 
       // Fetch rental performance data
       const rentalData = await db.query.rentalPerformanceData.findFirst({

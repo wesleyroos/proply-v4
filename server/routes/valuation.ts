@@ -154,7 +154,7 @@ async function calculateAndSaveFinancialDataAfterValuation(
   };
 
   // Save all financial data to database
-  await db.execute(sql`
+  const updateResult = await db.execute(sql`
     UPDATE valuation_reports 
     SET 
       annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
@@ -163,6 +163,10 @@ async function calculateAndSaveFinancialDataAfterValuation(
       updated_at = NOW()
     WHERE property_id = ${propertyId} AND user_id = ${userId}
   `);
+
+  if (updateResult.rowCount === 0) {
+    throw new Error(`No valuation report found to update for property ${propertyId} and user ${userId}`);
+  }
 
   console.log(`Successfully saved comprehensive financial data for property ${propertyId}`);
 }
@@ -496,14 +500,6 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
       }
     }
 
-    // CALCULATE AND SAVE ALL FINANCIAL DATA IMMEDIATELY AFTER AI VALUATION
-    // This ensures single source of truth - all financial data is calculated once during valuation generation
-    try {
-      await calculateAndSaveFinancialDataAfterValuation(propertyIdToUse, price || 0, valuationReport, req.user.id);
-    } catch (error) {
-      console.error('Error saving financial data:', error);
-    }
-
     // Track report generation for analytics
     try {
       await trackReportGeneration({
@@ -516,10 +512,25 @@ This is a ${bedrooms}-bedroom property in Cape Town. For context, similar proper
     }
 
     // Include rental performance data in the response
-    return res.json({
+    const responseData = {
       ...valuationReport,
       rentalPerformance
-    });
+    };
+
+    // Return response immediately, calculate financial data after response is sent
+    res.json(responseData);
+
+    // CALCULATE AND SAVE ALL FINANCIAL DATA AFTER VALUATION IS SAVED TO DATABASE
+    // This happens asynchronously after the response to avoid race conditions
+    setTimeout(async () => {
+      try {
+        await calculateAndSaveFinancialDataAfterValuation(propertyIdToUse, price || 0, valuationReport, req.user.id);
+      } catch (error) {
+        console.error('Error saving financial data (async):', error);
+      }
+    }, 100); // Small delay to ensure valuation is saved first
+
+    return;
 
   } catch (error) {
     console.error("Error generating valuation report:", error);
