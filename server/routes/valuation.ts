@@ -679,23 +679,39 @@ ${premiumImageContext}
 
     // Save financial analysis data immediately after valuation generation
     try {
-      // First save the valuation report to database
-      const saveResult = await db.execute(sql`
-        INSERT INTO valuation_reports (
-          user_id, property_id, address, property_type, bedrooms, bathrooms, 
-          parking_spaces, floor_size, price, valuation_data, 
-          current_deposit_percentage, current_interest_rate, current_loan_term
-        ) VALUES (
-          ${req.user.id}, ${propertyIdToUse}, ${address}, ${propertyType}, 
-          ${bedrooms}, ${bathrooms}, ${parkingSpaces}, ${floorSize}, ${price?.toString()}, 
-          ${JSON.stringify({ ...valuationReport, rentalPerformance })},
-          '20', '11.75', 20
-        )
-        ON CONFLICT (user_id, property_id) DO UPDATE SET
-          valuation_data = EXCLUDED.valuation_data,
-          updated_at = NOW()
-        RETURNING id
+      // Check if valuation report already exists
+      const existingReport = await db.execute(sql`
+        SELECT id FROM valuation_reports 
+        WHERE user_id = ${req.user.id} AND property_id = ${propertyIdToUse}
       `);
+
+      let reportId;
+      if (existingReport.length > 0) {
+        // Update existing record
+        await db.execute(sql`
+          UPDATE valuation_reports 
+          SET valuation_data = ${JSON.stringify({ ...valuationReport, rentalPerformance })},
+              updated_at = NOW()
+          WHERE user_id = ${req.user.id} AND property_id = ${propertyIdToUse}
+        `);
+        reportId = existingReport[0].id;
+      } else {
+        // Insert new record
+        const saveResult = await db.execute(sql`
+          INSERT INTO valuation_reports (
+            user_id, property_id, address, property_type, bedrooms, bathrooms, 
+            parking_spaces, floor_size, price, valuation_data, 
+            current_deposit_percentage, current_interest_rate, current_loan_term
+          ) VALUES (
+            ${req.user.id}, ${propertyIdToUse}, ${address}, ${propertyType}, 
+            ${bedrooms}, ${bathrooms}, ${parkingSpaces}, ${floorSize}, ${price?.toString()}, 
+            ${JSON.stringify({ ...valuationReport, rentalPerformance })},
+            '20', '11.75', 20
+          )
+          RETURNING id
+        `);
+        reportId = saveResult[0]?.id;
+      }
 
       // Now calculate and save financial analysis data with the new percentile structure
       const propertyPrice = price || 0;
