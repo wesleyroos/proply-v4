@@ -679,23 +679,25 @@ ${premiumImageContext}
 
     // Save financial analysis data immediately after valuation generation
     try {
-      // Always insert a new valuation report (each generation creates a new record)
-      const saveResult = await db.execute(sql`
-        INSERT INTO valuation_reports (
-          user_id, property_id, address, property_type, bedrooms, bathrooms, 
-          parking_spaces, floor_size, price, valuation_data, 
-          current_deposit_percentage, current_interest_rate, current_loan_term
-        ) VALUES (
-          ${req.user.id}, ${propertyIdToUse}, ${address}, ${propertyType}, 
-          ${bedrooms}, ${bathrooms}, ${parkingSpaces}, ${floorSize}, ${price?.toString()}, 
-          ${JSON.stringify({ ...valuationReport, rentalPerformance })},
-          '20', '11.75', 20
-        )
-        RETURNING id
+      console.log('=== STARTING FINANCIAL DATA SAVE PROCESS ===');
+      console.log('Property ID:', propertyIdToUse);
+      console.log('User ID:', req.user.id);
+
+      // Find the existing valuation report (created by frontend) and update it with financial data
+      const existingReport = await db.execute(sql`
+        SELECT id FROM valuation_reports 
+        WHERE property_id = ${propertyIdToUse} AND user_id = ${req.user.id}
+        ORDER BY created_at DESC
+        LIMIT 1
       `);
 
-      const reportId = (saveResult as any)[0]?.id;
-      console.log('Saved new valuation report with ID:', reportId);
+      if ((existingReport as any).length === 0) {
+        console.error('No existing valuation report found to update with financial data');
+        throw new Error('No existing valuation report found');
+      }
+
+      const reportId = (existingReport as any)[0].id;
+      console.log('Found existing valuation report with ID:', reportId);
 
       // Now calculate and save financial analysis data with the new percentile structure
       const propertyPrice = price || 0;
