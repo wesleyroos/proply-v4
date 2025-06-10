@@ -184,6 +184,9 @@ export default function PropdataListingsPage() {
       } else if (field === 'listingDate') {
         aValue = a.listingDate || a.createdAt;
         bValue = b.listingDate || b.createdAt;
+      } else if (field === 'reportGenerated') {
+        aValue = a.reportGenerated || '';
+        bValue = b.reportGenerated || '';
       } else {
         aValue = a[field];
         bValue = b[field];
@@ -191,7 +194,7 @@ export default function PropdataListingsPage() {
       
       let comparison = 0;
       
-      if (field === 'createdAt' || field === 'listingDate' || field === 'price' || field === 'bedrooms') {
+      if (field === 'createdAt' || field === 'listingDate' || field === 'reportGenerated' || field === 'price' || field === 'bedrooms') {
         // Numeric or date comparison
         comparison = Number(new Date(aValue)) - Number(new Date(bValue));
       } else {
