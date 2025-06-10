@@ -677,13 +677,176 @@ ${premiumImageContext}
       console.error('Error tracking report generation:', error);
     }
 
+    // Save financial analysis data immediately after valuation generation
+    try {
+      // First save the valuation report to database
+      const saveResult = await db.execute(sql`
+        INSERT INTO valuation_reports (
+          user_id, property_id, address, property_type, bedrooms, bathrooms, 
+          parking_spaces, floor_size, price, valuation_data, 
+          current_deposit_percentage, current_interest_rate, current_loan_term
+        ) VALUES (
+          ${req.user.id}, ${propertyIdToUse}, ${address}, ${propertyType}, 
+          ${bedrooms}, ${bathrooms}, ${parkingSpaces}, ${floorSize}, ${price?.toString()}, 
+          ${JSON.stringify({ ...valuationReport, rentalPerformance })},
+          '20', '11.75', 20
+        )
+        ON CONFLICT (user_id, property_id) DO UPDATE SET
+          valuation_data = EXCLUDED.valuation_data,
+          updated_at = NOW()
+        RETURNING id
+      `);
+
+      // Now calculate and save financial analysis data with the new percentile structure
+      const propertyPrice = price || 0;
+      
+      // 1. ANNUAL PROPERTY APPRECIATION DATA
+      const annualPropertyAppreciationData = {
+        baseSuburbRate: valuationReport.propertyAppreciation?.suburbAppreciationRate || 8.0,
+        propertyAdjustments: valuationReport.propertyAppreciation?.adjustments || {},
+        finalAppreciationRate: valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0,
+        yearlyValues: (() => {
+          const rate = (valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0) / 100;
+          return [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+            acc[`year${year}`] = propertyPrice * Math.pow(1 + rate, year);
+            return acc;
+          }, {} as Record<string, number>);
+        })(),
+        reasoning: valuationReport.propertyAppreciation?.reasoning || "Standard market appreciation rate applied automatically"
+      };
+
+      // 2. CASHFLOW ANALYSIS DATA with all percentiles
+      const shortTermRevenue = rentalPerformance.shortTerm?.percentile50?.annual || null;
+      const longTermRevenue = rentalPerformance.longTerm ? 
+        (rentalPerformance.longTerm.minRental + rentalPerformance.longTerm.maxRental) / 2 * 12 
+        : null;
+
+      const shortTermTrajectories = rentalPerformance.shortTerm ? {
+        percentile25: (() => {
+          const baseRevenue = rentalPerformance.shortTerm.percentile25?.annual;
+          if (!baseRevenue) return null;
+          return [1, 2, 3, 4, 5].reduce((acc, year) => {
+            const revenue = baseRevenue * Math.pow(1.08, year - 1);
+            acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+            return acc;
+          }, {} as Record<string, { revenue: number; grossYield: number }>);
+        })(),
+        percentile50: (() => {
+          const baseRevenue = rentalPerformance.shortTerm.percentile50?.annual;
+          if (!baseRevenue) return null;
+          return [1, 2, 3, 4, 5].reduce((acc, year) => {
+            const revenue = baseRevenue * Math.pow(1.08, year - 1);
+            acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+            return acc;
+          }, {} as Record<string, { revenue: number; grossYield: number }>);
+        })(),
+        percentile75: (() => {
+          const baseRevenue = rentalPerformance.shortTerm.percentile75?.annual;
+          if (!baseRevenue) return null;
+          return [1, 2, 3, 4, 5].reduce((acc, year) => {
+            const revenue = baseRevenue * Math.pow(1.08, year - 1);
+            acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+            return acc;
+          }, {} as Record<string, { revenue: number; grossYield: number }>);
+        })(),
+        percentile90: (() => {
+          const baseRevenue = rentalPerformance.shortTerm.percentile90?.annual;
+          if (!baseRevenue) return null;
+          return [1, 2, 3, 4, 5].reduce((acc, year) => {
+            const revenue = baseRevenue * Math.pow(1.08, year - 1);
+            acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+            return acc;
+          }, {} as Record<string, { revenue: number; grossYield: number }>);
+        })()
+      } : null;
+
+      const cashflowAnalysisData = {
+        recommendedStrategy: shortTermRevenue > (longTermRevenue || 0) ? "shortTerm" : "longTerm",
+        strategyReasoning: "Automatically calculated based on available rental data",
+        revenueGrowthTrajectory: {
+          shortTerm: shortTermTrajectories,
+          longTerm: longTermRevenue ? {
+            year1: { revenue: longTermRevenue, grossYield: (longTermRevenue / propertyPrice) * 100 },
+            year2: { revenue: longTermRevenue * 1.08, grossYield: (longTermRevenue * 1.08 / propertyPrice) * 100 },
+            year3: { revenue: longTermRevenue * Math.pow(1.08, 2), grossYield: (longTermRevenue * Math.pow(1.08, 2) / propertyPrice) * 100 },
+            year4: { revenue: longTermRevenue * Math.pow(1.08, 3), grossYield: (longTermRevenue * Math.pow(1.08, 3) / propertyPrice) * 100 },
+            year5: { revenue: longTermRevenue * Math.pow(1.08, 4), grossYield: (longTermRevenue * Math.pow(1.08, 4) / propertyPrice) * 100 }
+          } : null
+        }
+      };
+
+      // 3. FINANCING ANALYSIS DATA (using default values)
+      const depositPercentage = 20;
+      const interestRate = 11.75;
+      const loanTermYears = 20;
+      const loanTermMonths = loanTermYears * 12;
+      
+      const depositAmount = propertyPrice * (depositPercentage / 100);
+      const loanAmount = propertyPrice - depositAmount;
+      const monthlyInterestRate = (interestRate / 100) / 12;
+      
+      const monthlyPayment = (loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTermMonths))) / (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
+
+      const financingAnalysisData = {
+        financingParameters: {
+          depositAmount,
+          depositPercentage,
+          loanAmount,
+          interestRate,
+          loanTerm: loanTermYears,
+          monthlyPayment
+        },
+        yearlyMetrics: [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+          const monthsElapsed = year * 12;
+          let remainingBalance = loanAmount;
+          let totalPrincipalPaid = 0;
+
+          for (let month = 1; month <= monthsElapsed && month <= loanTermMonths; month++) {
+            const interestPayment = remainingBalance * monthlyInterestRate;
+            const principalPayment = monthlyPayment - interestPayment;
+            totalPrincipalPaid += principalPayment;
+            remainingBalance -= principalPayment;
+          }
+
+          acc[`year${year}`] = {
+            monthlyPayment,
+            equityBuildup: totalPrincipalPaid,
+            remainingBalance: Math.max(0, remainingBalance)
+          };
+          return acc;
+        }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
+      };
+
+      // Update the valuation report with all financial analysis data
+      await db.execute(sql`
+        UPDATE valuation_reports 
+        SET 
+          annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
+          cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
+          financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
+          current_deposit_percentage = ${depositPercentage.toString()},
+          current_interest_rate = ${interestRate.toString()},
+          current_loan_term = ${loanTermYears},
+          current_deposit_amount = ${depositAmount.toString()},
+          current_loan_amount = ${loanAmount.toString()},
+          current_monthly_repayment = ${monthlyPayment.toString()},
+          updated_at = NOW()
+        WHERE property_id = ${propertyIdToUse} 
+          AND user_id = ${req.user.id}
+      `);
+
+      console.log('Successfully saved financial analysis data with all percentiles for property', propertyIdToUse);
+
+    } catch (error) {
+      console.error('Error saving financial analysis data:', error);
+    }
+
     // Include rental performance data in the response
     const responseData = {
       ...valuationReport,
       rentalPerformance
     };
 
-    // Include rental performance data in the response
     return res.json(responseData);
 
   } catch (error) {
