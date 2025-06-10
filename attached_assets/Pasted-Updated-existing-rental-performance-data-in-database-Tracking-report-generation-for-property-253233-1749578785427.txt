@@ -1,0 +1,57 @@
+Updated existing rental performance data in database
+Tracking report generation for property: 2532339
+Tracked report generation: valuation for Sotheby's International Realty (Property: 2532339)
+Saved new valuation report with ID: undefined
+=== FINANCIAL DATA CALCULATION DEBUG ===
+Property price: 10750000.00
+Short-term rental data for financial calculation: {
+  percentile25: { nightly: 1367, monthly: 24258, annual: 291100 },
+  percentile50: { nightly: 1823, monthly: 37410, annual: 448900 },
+  percentile75: { nightly: 2377, monthly: 53042, annual: 636500 },
+  percentile90: { nightly: 3035, monthly: 69658, annual: 835900 },
+  occupancy: 71,
+  yield: 0
+}
+Calculated short-term trajectories: {
+  percentile25: {
+    year1: { revenue: 291100, grossYield: 2.707906976744186 },
+    year2: { revenue: 314388, grossYield: 2.924539534883721 },
+    year3: { revenue: 339539.04000000004, grossYield: 3.1585026976744186 },
+    year4: { revenue: 366702.1632000001, grossYield: 3.411182913488373 },
+    year5: { revenue: 396038.3362560001, grossYield: 3.6840775465674427 }
+  },
+  percentile50: {
+    year1: { revenue: 448900, grossYield: 4.1758139534883725 },
+    year2: { revenue: 484812.00000000006, grossYield: 4.509879069767442 },
+    year3: { revenue: 523596.96, grossYield: 4.870669395348838 },
+    year4: { revenue: 565484.7168000002, grossYield: 5.260322946976745 },
+    year5: { revenue: 610723.4941440001, grossYield: 5.681148782734885 }
+  },
+  percentile75: {
+    year1: { revenue: 636500, grossYield: 5.920930232558139 },
+    year2: { revenue: 687420, grossYield: 6.394604651162791 },
+    year3: { revenue: 742413.6000000001, grossYield: 6.906173023255816 },
+    year4: { revenue: 801806.6880000002, grossYield: 7.458666865116282 },
+    year5: { revenue: 865951.2230400002, grossYield: 8.055360214325583 }
+  },
+  percentile90: {
+    year1: { revenue: 835900, grossYield: 7.775813953488372 },
+    year2: { revenue: 902772.0000000001, grossYield: 8.397879069767443 },
+    year3: { revenue: 974993.7600000001, grossYield: 9.069709395348838 },
+    year4: { revenue: 1052993.2608000003, grossYield: 9.795286146976746 },
+    year5: { revenue: 1137232.7216640003, grossYield: 10.578909038734887 }
+  }
+}
+Long-term revenue: 420000
+No report ID available for financial data update
+Successfully saved financial analysis data with all percentiles for property 2532339
+6:03:14 PM [express] POST /api/generate-valuation-report 200 in 58783ms :: {"summary":"This 2-bedroo…
+Preserving existing financial data for property 2532339
+6:03:15 PM [express] POST /api/valuation-reports 200 in 179ms :: {"id":35,"userId":2,"propertyId":"2…
+Calculating financial data for property 2532339
+Successfully saved financial data for property 2532339
+6:03:15 PM [express] POST /api/calculate-financial-data 200 in 177ms :: {"success":true,"message":"F…
+6:03:15 PM [express] GET /api/valuation-reports/2532339 200 in 131ms :: {"id":35,"userId":2,"propert…
+Found rental data for property ID: 2532339
+6:03:16 PM [express] GET /api/rental-performance/2532339 200 in 131ms :: {"id":28,"user_id":2,"prope…
+Found rental data for property ID: 2532339

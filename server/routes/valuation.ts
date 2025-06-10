@@ -684,19 +684,21 @@ ${premiumImageContext}
       console.log('User ID:', req.user.id);
 
       // Find the existing valuation report (created by frontend) and update it with financial data
-      const existingReport = await db.execute(sql`
-        SELECT id FROM valuation_reports 
-        WHERE property_id = ${propertyIdToUse} AND user_id = ${req.user.id}
-        ORDER BY created_at DESC
-        LIMIT 1
-      `);
+      const existingReports = await db.query.valuationReports.findMany({
+        where: and(
+          eq(valuationReports.propertyId, propertyIdToUse),
+          eq(valuationReports.userId, req.user.id)
+        ),
+        orderBy: desc(valuationReports.createdAt),
+        limit: 1
+      });
 
-      if ((existingReport as any).length === 0) {
+      if (!existingReports || existingReports.length === 0) {
         console.error('No existing valuation report found to update with financial data');
         throw new Error('No existing valuation report found');
       }
 
-      const reportId = (existingReport as any)[0].id;
+      const reportId = existingReports[0].id;
       console.log('Found existing valuation report with ID:', reportId);
 
       // Now calculate and save financial analysis data with the new percentile structure
