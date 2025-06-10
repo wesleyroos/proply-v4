@@ -2224,22 +2224,37 @@ export function registerRoutes(app: Express): Server {
       });
 
       if (existingValuation) {
-        // Update existing valuation
+        // Update existing valuation - preserve financial analysis data if it exists
+        const updateData: any = {
+          address,
+          price: price?.toString(),
+          bedrooms,
+          bathrooms,
+          floorSize: floorSize?.toString(),
+          landSize: landSize?.toString(),
+          propertyType,
+          parkingSpaces,
+          pricePerSquareMeter: pricePerSquareMeter?.toString(),
+          valuationData,
+          imagesAnalyzed,
+          updatedAt: new Date()
+        };
+
+        // Only update financial data fields if they don't exist (preserve existing calculations)
+        if (!existingValuation.cashflowAnalysisData) {
+          updateData.cashflowAnalysisData = null;
+        }
+        if (!existingValuation.financingAnalysisData) {
+          updateData.financingAnalysisData = null;
+        }
+        if (!existingValuation.annualPropertyAppreciationData) {
+          updateData.annualPropertyAppreciationData = null;
+        }
+
+        console.log('Preserving existing financial data for property', propertyId);
+
         const [updatedValuation] = await db.update(valuationReports)
-          .set({
-            address,
-            price: price?.toString(),
-            bedrooms,
-            bathrooms,
-            floorSize: floorSize?.toString(),
-            landSize: landSize?.toString(),
-            propertyType,
-            parkingSpaces,
-            pricePerSquareMeter: pricePerSquareMeter?.toString(),
-            valuationData,
-            imagesAnalyzed,
-            updatedAt: new Date()
-          })
+          .set(updateData)
           .where(eq(valuationReports.id, existingValuation.id))
           .returning();
 
