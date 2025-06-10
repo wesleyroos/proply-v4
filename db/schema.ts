@@ -469,6 +469,17 @@ export const rentalPerformanceData = pgTable("rental_performance_data", {
   imagesAnalyzed: integer("images_analyzed").default(0),
   analysisModel: text("analysis_model").default("gpt-4o"),
   
+  // Financial analysis data
+  annualPropertyAppreciationData: jsonb("annual_property_appreciation_data"),
+  cashflowAnalysisData: jsonb("cashflow_analysis_data"),
+  financingAnalysisData: jsonb("financing_analysis_data"),
+  currentDepositPercentage: text("current_deposit_percentage"),
+  currentInterestRate: text("current_interest_rate"),
+  currentLoanTerm: integer("current_loan_term"),
+  currentDepositAmount: text("current_deposit_amount"),
+  currentLoanAmount: text("current_loan_amount"),
+  currentMonthlyRepayment: text("current_monthly_repayment"),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });

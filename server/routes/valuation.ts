@@ -677,12 +677,9 @@ ${premiumImageContext}
       console.error('Error tracking report generation:', error);
     }
 
-    // Calculate financial analysis data to include in response
-    // This will be saved by the frontend when it calls /api/valuation-reports
-    let calculatedFinancialData = null;
-    
+    // Calculate and save financial analysis data directly
     try {
-      console.log('=== CALCULATING FINANCIAL DATA FOR RESPONSE ===');
+      console.log('=== CALCULATING AND SAVING FINANCIAL DATA ===');
       console.log('Property ID:', propertyIdToUse);
       console.log('Property price:', price);
 
@@ -818,30 +815,46 @@ ${premiumImageContext}
         }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
       };
 
-      // Store calculated financial data to include in response
-      calculatedFinancialData = {
-        annualPropertyAppreciationData,
-        cashflowAnalysisData,
-        financingAnalysisData,
-        currentDepositPercentage: depositPercentage.toString(),
-        currentInterestRate: interestRate.toString(),
-        currentLoanTerm: loanTermYears,
-        currentDepositAmount: depositAmount.toString(),
-        currentLoanAmount: loanAmount.toString(),
-        currentMonthlyRepayment: monthlyPayment.toString()
-      };
+      // Save to database directly using SQL to avoid schema conflicts
+      await db.execute(sql`
+        INSERT INTO rental_performance_data (
+          property_id, user_id, address, 
+          annual_property_appreciation_data, cashflow_analysis_data, financing_analysis_data,
+          current_deposit_percentage, current_interest_rate, current_loan_term,
+          current_deposit_amount, current_loan_amount, current_monthly_repayment,
+          created_at, updated_at
+        ) VALUES (
+          ${propertyIdToUse}, ${req.user.id}, ${property.address || ''},
+          ${JSON.stringify(annualPropertyAppreciationData)}, 
+          ${JSON.stringify(cashflowAnalysisData)}, 
+          ${JSON.stringify(financingAnalysisData)},
+          ${depositPercentage.toString()}, ${interestRate.toString()}, ${loanTermYears},
+          ${depositAmount.toString()}, ${loanAmount.toString()}, ${monthlyPayment.toString()},
+          NOW(), NOW()
+        )
+        ON CONFLICT (property_id, user_id) DO UPDATE SET
+          annual_property_appreciation_data = excluded.annual_property_appreciation_data,
+          cashflow_analysis_data = excluded.cashflow_analysis_data,
+          financing_analysis_data = excluded.financing_analysis_data,
+          current_deposit_percentage = excluded.current_deposit_percentage,
+          current_interest_rate = excluded.current_interest_rate,
+          current_loan_term = excluded.current_loan_term,
+          current_deposit_amount = excluded.current_deposit_amount,
+          current_loan_amount = excluded.current_loan_amount,
+          current_monthly_repayment = excluded.current_monthly_repayment,
+          updated_at = NOW()
+      `);
 
-      console.log('Successfully calculated financial analysis data with all percentiles for property', propertyIdToUse);
+      console.log('Successfully saved financial analysis data with all percentiles for property', propertyIdToUse);
 
     } catch (error) {
       console.error('Error saving financial analysis data:', error);
     }
 
-    // Include rental performance data and calculated financial data in the response
+    // Include rental performance data in the response
     const responseData = {
       ...valuationReport,
-      rentalPerformance,
-      calculatedFinancialData
+      rentalPerformance
     };
 
     return res.json(responseData);
