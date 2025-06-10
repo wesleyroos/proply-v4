@@ -1229,55 +1229,7 @@ export class PropdataPdfService {
       }
     }
 
-    // Equity buildup from saved rental data
-    if (data.rentalData?.financingAnalysisData?.yearlyMetrics) {
-      this.addSubsectionHeader("Equity Buildup Schedule");
 
-      const metrics = data.rentalData.financingAnalysisData.yearlyMetrics;
-      const metricEntries = Object.entries(metrics);
-      const yearHeaders = metricEntries.map(
-        ([year]) => `Year ${year.replace("year", "")}`,
-      );
-      const equityRow = [
-        "Equity Built",
-        ...metricEntries.map(
-          ([, data]: [string, any]) =>
-            `R${Math.round(data.equityBuildup)?.toLocaleString()}`,
-        ),
-      ];
-      const balanceRow = [
-        "Remaining Balance",
-        ...metricEntries.map(
-          ([, data]: [string, any]) =>
-            `R${Math.round(data.remainingBalance)?.toLocaleString()}`,
-        ),
-      ];
-
-      (this.doc as any).autoTable({
-        startY: this.currentY,
-        head: [["Metric", ...yearHeaders]],
-        body: [equityRow, balanceRow],
-        theme: "grid",
-        headStyles: {
-          fillColor: [27, 162, 255],
-          textColor: 255,
-          fontStyle: "bold",
-        },
-        styles: { fontSize: 8 },
-        margin: { left: this.margin, right: this.margin },
-        columnStyles: {
-          0: { halign: "left" },
-          ...Object.fromEntries(
-            Array.from({ length: yearHeaders.length }, (_, i) => [
-              i + 1,
-              { halign: "right" },
-            ]),
-          ),
-        },
-      });
-
-      this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
-    }
   }
 
   private addDetailsSection(data: PropertyPdfData): void {
