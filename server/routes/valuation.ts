@@ -449,11 +449,7 @@ ENSURE rental estimates are property-specific and NOT generic ranges, and includ
       parkingSpaces,
       imagesProvided: images ? images.length : 0
     });
-    console.log('Expected rental range for', bedrooms, 'bedrooms:', 
-      bedrooms === 1 ? 'R15,000-R25,000' : 
-      bedrooms === 2 ? 'R25,000-R40,000' : 
-      bedrooms === 3 ? 'R40,000-R65,000' : 'R50,000+'
-    );
+
 
     // Fetch PriceLabs short-term rental data
     let shortTermData = null;
