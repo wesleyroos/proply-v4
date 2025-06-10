@@ -47,7 +47,7 @@ async function filterValidImages(images: string[]): Promise<string[]> {
 }
 
 // Function to calculate and save all financial data after valuation generation
-async function calculateAndSaveFinancialDataAfterValuation(
+export async function calculateAndSaveFinancialDataAfterValuation(
   propertyId: string, 
   propertyPrice: number, 
   valuationReport: any, 

@@ -2296,6 +2296,138 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Calculate and save financial data for a property
+  app.post("/api/calculate-financial-data", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { propertyId, price, valuationReport } = req.body;
+
+      console.log(`Calculating financial data for property ${propertyId}`);
+      
+      // Get current financing parameters from database or use defaults
+      const existingReport = await db.execute(sql`
+        SELECT current_deposit_percentage, current_interest_rate, current_loan_term
+        FROM valuation_reports 
+        WHERE property_id = ${propertyId} AND user_id = ${req.user.id}
+        LIMIT 1
+      `);
+      
+      const financingParams = existingReport.rows[0] || {
+        current_deposit_percentage: 10,
+        current_interest_rate: 11.5,
+        current_loan_term: 20
+      };
+
+      // 1. ANNUAL PROPERTY APPRECIATION DATA
+      const annualPropertyAppreciationData = {
+        baseSuburbRate: valuationReport.propertyAppreciation?.suburbAppreciationRate || 8.0,
+        propertyAdjustments: valuationReport.propertyAppreciation?.adjustments || {},
+        finalAppreciationRate: valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0,
+        yearlyValues: (() => {
+          const rate = (valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0) / 100;
+          return [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+            acc[`year${year}`] = price * Math.pow(1 + rate, year);
+            return acc;
+          }, {} as Record<string, number>);
+        })(),
+        reasoning: valuationReport.propertyAppreciation?.reasoning || "Standard market appreciation rate applied automatically"
+      };
+
+      // 2. CASHFLOW ANALYSIS DATA
+      const shortTermRevenue = valuationReport.rentalEstimates?.shortTerm?.estimatedAnnualRevenue;
+      const longTermRevenue = valuationReport.rentalEstimates?.longTerm ? 
+        (valuationReport.rentalEstimates.longTerm.minMonthlyRental + valuationReport.rentalEstimates.longTerm.maxMonthlyRental) / 2 * 12 
+        : null;
+
+      const cashflowAnalysisData = {
+        recommendedStrategy: shortTermRevenue > (longTermRevenue || 0) ? "shortTerm" : "longTerm",
+        strategyReasoning: "Automatically calculated based on available rental data",
+        revenueGrowthTrajectory: {
+          shortTerm: shortTermRevenue ? {
+            year1: { revenue: shortTermRevenue, grossYield: (shortTermRevenue / price) * 100 },
+            year2: { revenue: shortTermRevenue * 1.08, grossYield: (shortTermRevenue * 1.08 / price) * 100 },
+            year3: { revenue: shortTermRevenue * Math.pow(1.08, 2), grossYield: (shortTermRevenue * Math.pow(1.08, 2) / price) * 100 },
+            year4: { revenue: shortTermRevenue * Math.pow(1.08, 3), grossYield: (shortTermRevenue * Math.pow(1.08, 3) / price) * 100 },
+            year5: { revenue: shortTermRevenue * Math.pow(1.08, 4), grossYield: (shortTermRevenue * Math.pow(1.08, 4) / price) * 100 }
+          } : null,
+          longTerm: longTermRevenue ? {
+            year1: { revenue: longTermRevenue, grossYield: (longTermRevenue / price) * 100 },
+            year2: { revenue: longTermRevenue * 1.08, grossYield: (longTermRevenue * 1.08 / price) * 100 },
+            year3: { revenue: longTermRevenue * Math.pow(1.08, 2), grossYield: (longTermRevenue * Math.pow(1.08, 2) / price) * 100 },
+            year4: { revenue: longTermRevenue * Math.pow(1.08, 3), grossYield: (longTermRevenue * Math.pow(1.08, 3) / price) * 100 },
+            year5: { revenue: longTermRevenue * Math.pow(1.08, 4), grossYield: (longTermRevenue * Math.pow(1.08, 4) / price) * 100 }
+          } : null
+        }
+      };
+
+      // 3. FINANCING ANALYSIS DATA
+      const depositPercentage = Number(financingParams.current_deposit_percentage) / 100;
+      const interestRate = Number(financingParams.current_interest_rate) / 100;
+      const loanTermYears = Number(financingParams.current_loan_term);
+      const loanTermMonths = loanTermYears * 12;
+      
+      const depositAmount = price * depositPercentage;
+      const loanAmount = price - depositAmount;
+      const monthlyInterestRate = interestRate / 12;
+      
+      const monthlyPayment = (loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTermMonths))) / (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
+
+      const financingAnalysisData = {
+        financingParameters: {
+          depositAmount,
+          depositPercentage: Number(financingParams.current_deposit_percentage),
+          loanAmount,
+          interestRate: Number(financingParams.current_interest_rate),
+          loanTerm: loanTermYears,
+          monthlyPayment
+        },
+        yearlyMetrics: [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+          const monthsElapsed = year * 12;
+          let remainingBalance = loanAmount;
+          let totalPrincipalPaid = 0;
+
+          for (let month = 1; month <= monthsElapsed && month <= loanTermMonths; month++) {
+            const interestPayment = remainingBalance * monthlyInterestRate;
+            const principalPayment = monthlyPayment - interestPayment;
+            totalPrincipalPaid += principalPayment;
+            remainingBalance -= principalPayment;
+          }
+
+          acc[`year${year}`] = {
+            monthlyPayment,
+            equityBuildup: totalPrincipalPaid,
+            remainingBalance: Math.max(0, remainingBalance)
+          };
+          return acc;
+        }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
+      };
+
+      // Save all financial data to database
+      const updateResult = await db.execute(sql`
+        UPDATE valuation_reports 
+        SET 
+          annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
+          cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
+          financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
+          updated_at = NOW()
+        WHERE property_id = ${propertyId} AND user_id = ${req.user.id}
+      `);
+
+      if (updateResult.rowCount === 0) {
+        return res.status(404).json({ error: `No valuation report found for property ${propertyId}` });
+      }
+
+      console.log(`Successfully saved financial data for property ${propertyId}`);
+      res.json({ success: true, message: "Financial data calculated and saved successfully" });
+    } catch (error) {
+      console.error("Error calculating financial data:", error);
+      res.status(500).json({ error: "Failed to calculate financial data" });
+    }
+  });
+
   // Property address update endpoint
   app.patch('/api/properties/:propdataId/address', async (req, res) => {
     if (!req.isAuthenticated()) {
