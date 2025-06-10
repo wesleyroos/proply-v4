@@ -1100,32 +1100,9 @@ export default function PropertyDetailModal({
       const report = await response.json();
       updateProgressStep('valuation', 'completed');
 
-      // Save the valuation report to database first
+      // Save the valuation report to database 
+      // (Financial data is automatically saved during valuation generation)
       await saveValuationToDatabase(report);
-
-      // Calculate and save financial data immediately after valuation is saved
-      try {
-        const financialResponse = await fetch("/api/calculate-financial-data", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            propertyId: property.propdataId,
-            price: property.price || 0,
-            valuationReport: report
-          }),
-        });
-
-        if (!financialResponse.ok) {
-          console.error("Failed to calculate financial data:", financialResponse.statusText);
-        } else {
-          console.log("Financial data calculated and saved successfully");
-        }
-      } catch (error) {
-        console.error("Error calculating financial data:", error);
-      }
 
       // Reload data from database to ensure consistency
       await refetchValuation();

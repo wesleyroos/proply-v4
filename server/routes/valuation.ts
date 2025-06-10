@@ -824,7 +824,7 @@ ${premiumImageContext}
           current_deposit_amount, current_loan_amount, current_monthly_repayment,
           created_at, updated_at
         ) VALUES (
-          ${propertyIdToUse}, ${req.user.id}, ${property.address || ''},
+          ${propertyIdToUse}, ${req.user.id}, ${address},
           ${JSON.stringify(annualPropertyAppreciationData)}, 
           ${JSON.stringify(cashflowAnalysisData)}, 
           ${JSON.stringify(financingAnalysisData)},
