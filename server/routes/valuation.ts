@@ -218,20 +218,114 @@ router.post("/generate-valuation-report", async (req, res) => {
       location: location || {}
     };
 
-    // Determine location premium based on address
-    const isPremiumLocation = address.toLowerCase().includes('mouille point') || 
-                             address.toLowerCase().includes('sea point') || 
-                             address.toLowerCase().includes('camps bay') || 
-                             address.toLowerCase().includes('waterfront') ||
-                             address.toLowerCase().includes('bantry bay') ||
-                             address.toLowerCase().includes('clifton');
+    // Detect city and location type from address
+    const addressLower = address.toLowerCase();
+    const isCapeTown = addressLower.includes('cape town') || 
+                      addressLower.includes('mouille point') || 
+                      addressLower.includes('sea point') || 
+                      addressLower.includes('camps bay') || 
+                      addressLower.includes('waterfront') ||
+                      addressLower.includes('bantry bay') ||
+                      addressLower.includes('clifton') ||
+                      addressLower.includes('green point') ||
+                      addressLower.includes('v&a') ||
+                      addressLower.includes('tamboerskloof');
     
-    const locationContext = isPremiumLocation ? 
-      `PREMIUM ATLANTIC SEABOARD LOCATION: This property is in one of Cape Town's most exclusive areas. Properties in Mouille Point, Sea Point, Camps Bay typically trade at R60,000-R80,000+/m² for quality apartments.` :
-      `Standard Cape Town location context applies.`;
+    const isJohannesburg = addressLower.includes('johannesburg') || 
+                          addressLower.includes('sandton') || 
+                          addressLower.includes('rosebank') || 
+                          addressLower.includes('bryanston') ||
+                          addressLower.includes('hyde park') ||
+                          addressLower.includes('melrose');
+    
+    const isDurban = addressLower.includes('durban') || 
+                    addressLower.includes('umhlanga') || 
+                    addressLower.includes('ballito') ||
+                    addressLower.includes('westville');
+    
+    const isPretoria = addressLower.includes('pretoria') || 
+                      addressLower.includes('centurion') || 
+                      addressLower.includes('waterkloof');
+
+    // Determine if this is a premium location within the detected city
+    const isPremiumLocation = (isCapeTown && (addressLower.includes('mouille point') || 
+                                             addressLower.includes('sea point') || 
+                                             addressLower.includes('camps bay') || 
+                                             addressLower.includes('waterfront') ||
+                                             addressLower.includes('bantry bay') ||
+                                             addressLower.includes('clifton'))) ||
+                             (isJohannesburg && (addressLower.includes('sandton') || 
+                                               addressLower.includes('rosebank') || 
+                                               addressLower.includes('hyde park'))) ||
+                             (isDurban && (addressLower.includes('umhlanga') || 
+                                         addressLower.includes('ballito')));
+    
+    // Generate location-specific context
+    let locationContext = '';
+    let marketRates = '';
+    
+    if (isCapeTown) {
+      locationContext = isPremiumLocation ? 
+        `PREMIUM CAPE TOWN LOCATION: This property is in one of Cape Town's most exclusive areas.` :
+        `CAPE TOWN PROPERTY: Standard Cape Town market conditions apply.`;
+      marketRates = isPremiumLocation ? 
+        `Premium Cape Town locations typically trade at R60,000-R80,000+/m² for quality apartments.` :
+        `Cape Town apartments typically range R40,000-R60,000/m² depending on condition and location.`;
+    } else if (isJohannesburg) {
+      locationContext = isPremiumLocation ? 
+        `PREMIUM JOHANNESBURG LOCATION: This property is in one of Johannesburg's most desirable areas.` :
+        `JOHANNESBURG PROPERTY: Standard Johannesburg market conditions apply.`;
+      marketRates = isPremiumLocation ? 
+        `Premium Johannesburg locations (Sandton, Rosebank) typically trade at R40,000-R60,000+/m² for quality apartments.` :
+        `Johannesburg apartments typically range R25,000-R45,000/m² depending on condition and location.`;
+    } else if (isDurban) {
+      locationContext = isPremiumLocation ? 
+        `PREMIUM DURBAN LOCATION: This property is in one of Durban's most sought-after areas.` :
+        `DURBAN PROPERTY: Standard Durban market conditions apply.`;
+      marketRates = isPremiumLocation ? 
+        `Premium Durban locations (Umhlanga, Ballito) typically trade at R35,000-R55,000+/m² for quality apartments.` :
+        `Durban apartments typically range R20,000-R40,000/m² depending on condition and location.`;
+    } else if (isPretoria) {
+      locationContext = `PRETORIA PROPERTY: Pretoria market conditions apply.`;
+      marketRates = `Pretoria apartments typically range R20,000-R35,000/m² depending on condition and location.`;
+    } else {
+      locationContext = `SOUTH AFRICAN PROPERTY: General South African market conditions apply.`;
+      marketRates = `Property values vary significantly by location. Consider local market conditions and comparable sales.`;
+    }
+
+    // Generate city-specific rental guidance
+    let rentalGuidance = '';
+    if (isCapeTown) {
+      rentalGuidance = `
+- 1-bedroom apartments typically rent for R15,000-R25,000/month
+- 2-bedroom apartments typically rent for R25,000-R40,000/month  
+- 3-bedroom apartments typically rent for R40,000-R65,000/month
+- Premium locations command 40-60% premiums`;
+    } else if (isJohannesburg) {
+      rentalGuidance = `
+- 1-bedroom apartments typically rent for R12,000-R20,000/month
+- 2-bedroom apartments typically rent for R18,000-R30,000/month  
+- 3-bedroom apartments typically rent for R25,000-R45,000/month
+- Premium locations (Sandton, Rosebank) command 30-50% premiums`;
+    } else if (isDurban) {
+      rentalGuidance = `
+- 1-bedroom apartments typically rent for R8,000-R15,000/month
+- 2-bedroom apartments typically rent for R12,000-R22,000/month  
+- 3-bedroom apartments typically rent for R18,000-R35,000/month
+- Premium locations (Umhlanga, Ballito) command 25-40% premiums`;
+    } else if (isPretoria) {
+      rentalGuidance = `
+- 1-bedroom apartments typically rent for R8,000-R14,000/month
+- 2-bedroom apartments typically rent for R12,000-R20,000/month  
+- 3-bedroom apartments typically rent for R16,000-R30,000/month`;
+    } else {
+      rentalGuidance = `
+- Rental rates vary significantly by location
+- Research local comparable properties for accurate estimates`;
+    }
 
     // Create the prompt for OpenAI
-    const prompt = `You are a professional property valuer in South Africa with expertise in Cape Town real estate market, particularly premium Atlantic Seaboard properties. Analyze this property and provide a comprehensive valuation report.
+    const prompt = `You are a professional property valuer in South Africa with expertise across all major markets. Analyze this property and provide a comprehensive valuation report.
 
 Property Details:
 - Address: ${address}
@@ -248,20 +342,15 @@ Property Details:
 ${locationContext}
 
 CRITICAL VALUATION GUIDANCE:
-- Premium Cape Town locations (Mouille Point, Sea Point, Camps Bay, Waterfront) typically command R60,000-R80,000+/m² for quality apartments
-- Standard Cape Town apartment rates: R40,000-R60,000/m² depending on condition and location
+${marketRates}
 - Always consider the asking price as a market indicator - if significantly above your calculation, reassess for premium factors
-- Modern finishes, secure parking, and ocean proximity add substantial value in Cape Town market
+- Modern finishes, secure parking, and desirable locations add substantial value
 
-IMPORTANT: For rental estimates, consider the specific property characteristics:
-- 1-bedroom apartments in Cape Town typically rent for R15,000-R25,000/month
-- 2-bedroom apartments typically rent for R25,000-R40,000/month  
-- 3-bedroom apartments typically rent for R40,000-R65,000/month
-- Premium locations (Waterfront, Sea Point, Camps Bay, Mouille Point) command 40-60% premiums
+IMPORTANT: For rental estimates, consider the specific property characteristics:${rentalGuidance}
 - Modern finishes and secure parking add 15-25% to rental values
 - Property condition from images significantly impacts rental potential
 
-Based on current Cape Town property market conditions and the specifications provided, provide a comprehensive valuation and rental analysis in the following JSON format:
+Based on current South African property market conditions and the specifications provided, provide a comprehensive valuation and rental analysis in the following JSON format:
 
 {
   "summary": "Brief 2-3 sentence summary of the property's key characteristics and market position",
@@ -398,9 +487,28 @@ ENSURE rental estimates are property-specific and NOT generic ranges, and includ
 
     // Add image analysis if images are provided
     if (images && images.length > 0) {
-      const premiumImageContext = isPremiumLocation ? 
-        `This is a premium Atlantic Seaboard property. Quality apartments in this area with modern finishes and good condition typically rent for R40,000-R65,000+ per month for ${bedrooms} bedrooms.` :
-        `This is a ${bedrooms}-bedroom property in Cape Town. Similar properties typically rent for R25,000-R45,000+ per month depending on location, condition, and finishes.`;
+      let premiumImageContext = '';
+      if (isPremiumLocation) {
+        if (isCapeTown) {
+          premiumImageContext = `This is a premium Cape Town property. Quality apartments in this area with modern finishes typically rent for R40,000-R65,000+ per month for ${bedrooms} bedrooms.`;
+        } else if (isJohannesburg) {
+          premiumImageContext = `This is a premium Johannesburg property. Quality apartments in this area with modern finishes typically rent for R25,000-R45,000+ per month for ${bedrooms} bedrooms.`;
+        } else if (isDurban) {
+          premiumImageContext = `This is a premium Durban property. Quality apartments in this area with modern finishes typically rent for R18,000-R35,000+ per month for ${bedrooms} bedrooms.`;
+        }
+      } else {
+        if (isCapeTown) {
+          premiumImageContext = `This is a ${bedrooms}-bedroom property in Cape Town. Similar properties typically rent for R25,000-R45,000+ per month depending on condition and finishes.`;
+        } else if (isJohannesburg) {
+          premiumImageContext = `This is a ${bedrooms}-bedroom property in Johannesburg. Similar properties typically rent for R18,000-R35,000+ per month depending on condition and finishes.`;
+        } else if (isDurban) {
+          premiumImageContext = `This is a ${bedrooms}-bedroom property in Durban. Similar properties typically rent for R12,000-R25,000+ per month depending on condition and finishes.`;
+        } else if (isPretoria) {
+          premiumImageContext = `This is a ${bedrooms}-bedroom property in Pretoria. Similar properties typically rent for R12,000-R25,000+ per month depending on condition and finishes.`;
+        } else {
+          premiumImageContext = `This is a ${bedrooms}-bedroom property. Rental rates vary by location and condition.`;
+        }
+      }
 
       const imageAnalysisPrompt = `VISUAL PROPERTY ANALYSIS: I'm providing property images for comprehensive visual assessment. Use these images to adjust both VALUATION and RENTAL estimates based on actual property condition.
 
