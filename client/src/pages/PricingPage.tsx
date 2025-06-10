@@ -163,6 +163,41 @@ export default function PricingPage() {
             </CardContent>
           </Card>
 
+          {/* Deal Score */}
+          <Card className="relative border-gray-200 hover:border-black transition-colors">
+            <CardHeader>
+              <div className="mb-4 p-2 w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+                <BarChart3 className="h-6 w-6 text-green-600" />
+              </div>
+              <CardTitle className="text-2xl font-bold">Deal Score</CardTitle>
+              <CardDescription className="text-gray-600 mt-2">
+                Fast, on-demand deal analysis for buyers & investors
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                  <span>Comprehensive deal opportunity scoring</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                  <span>Market comparison and competitive analysis</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                  <span>Investment potential visualization</span>
+                </li>
+              </ul>
+              <Button className="w-full bg-gray-300 text-gray-700 cursor-not-allowed" disabled>
+                Buy Reports (Coming Soon)
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+              <p className="text-xs text-center mt-2 text-gray-500">
+                Will be available at dealscore.co.za
+              </p>
+            </CardContent>
+          </Card>
 
         </div>
 
