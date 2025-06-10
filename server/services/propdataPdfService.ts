@@ -105,10 +105,10 @@ export class PropdataPdfService {
 
       console.log("Property found:", !!property);
 
-      // Fetch valuation report with enhanced retry mechanism for financial data
+      // Fetch valuation report with enhanced retry mechanism for complete financial data
       let valuationReport = null;
       let retryCount = 0;
-      const maxRetries = 6; // Increased retries for financial data timing
+      const maxRetries = 8; // Extended wait time for financial data completion
       
       while (retryCount < maxRetries) {
         valuationReport = await db.query.valuationReports.findFirst({
@@ -116,21 +116,27 @@ export class PropdataPdfService {
           orderBy: [desc(valuationReports.updatedAt)],
         });
         
-        // Check if we have the complete financial data, not just the valuation report
-        console.log(`Attempt ${retryCount + 1}: Found valuation report: ${!!valuationReport}, Has financial data: ${!!valuationReport?.financingAnalysisData}`);
+        // Check for complete financial analysis data (all three components)
+        const hasFinancingData = !!valuationReport?.financingAnalysisData;
+        const hasCashflowData = !!valuationReport?.cashflowAnalysisData;
+        const hasAppreciationData = !!valuationReport?.annualPropertyAppreciationData;
+        const hasCompleteFinancialData = hasFinancingData && hasCashflowData && hasAppreciationData;
         
-        if (valuationReport && valuationReport.financingAnalysisData) {
-          console.log(`Financial data found on attempt ${retryCount + 1} for property ${propertyId}`);
+        if (valuationReport && hasCompleteFinancialData) {
+          if (retryCount > 0) {
+            console.log(`Complete financial data found after ${retryCount + 1} attempts for property ${propertyId}`);
+          }
           break;
         }
         
         if (retryCount < maxRetries - 1) {
-          console.log(`Waiting for financial data to be saved... attempt ${retryCount + 1}/${maxRetries}`);
-          // Wait longer for financial data updates (1 second)
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Progressive retry delays: start fast, then increase
+          const delay = retryCount < 3 ? 500 : 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
           retryCount++;
         } else {
-          console.log(`Financial data not found after ${maxRetries} attempts for property ${propertyId}`);
+          console.log(`Complete financial data not available after ${maxRetries} attempts for property ${propertyId}`);
+          console.log(`Available data: financing=${hasFinancingData}, cashflow=${hasCashflowData}, appreciation=${hasAppreciationData}`);
           break;
         }
       }
