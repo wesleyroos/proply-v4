@@ -46,12 +46,7 @@ export default function Sidebar() {
       icon: Calculator,
       href: "/dashboard/property-analyzer",
     },
-    {
-      title: "Market Intelligence",
-      icon: Brain,
-      href: "/dashboard/market-intelligence",
-      adminOnly: true,
-    },
+
     {
       title: "Rent Compare",
       icon: Building2,

@@ -25,9 +25,9 @@ import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { trackPriceLabsApiCall } from "./utils/pricelabs-tracker";
 import { trackReportGeneration } from "./utils/report-tracker";
-import { analyzeSuburb } from "./services/openai";
+
 import { sql } from "drizzle-orm";
-import { suburbs, priceLabsUsage, reportGenerations } from "@db/schema";
+import { priceLabsUsage, reportGenerations } from "@db/schema";
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
@@ -1630,60 +1630,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Market Intelligence API endpoint
-  app.post("/api/market-intelligence/analyze", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user?.isAdmin) {
-      return res.status(403).send("Not authorized");
-    }
 
-    const { suburb } = req.body;
-
-    if (!suburb) {
-      return res.status(400).json({ error: "Suburb name is required" });
-    }
-
-    try {
-      const analysis = await analyzeSuburb(suburb);
-      res.json(analysis);
-    } catch (error) {
-      console.error("Error analyzing suburb:", error);
-      res.status(500).json({
-        error: "Failed to analyze suburb",
-        details: error instanceof Error ? error.message : undefined,
-      });
-    }
-  });
-
-  // Add suburb search endpoint
-  app.get("/api/suburbs/search", async (req, res) => {
-    const { query } = req.query;
-
-    if (!query || typeof query !== "string") {
-      return res.status(400).json({ error: "Search query is required" });
-    }
-
-    try {
-      const matchingSuburbs = await db
-        .select({
-          id: suburbs.id,
-          name: suburbs.name,
-          city: suburbs.city,
-          province: suburbs.province,
-        })
-        .from(suburbs)
-        .where(sql`lower(${suburbs.name}) like ${`%${query.toLowerCase()}%`}`)
-        .orderBy(suburbs.name)
-        .limit(10);
-
-      res.json(matchingSuburbs);
-    } catch (error) {
-      console.error("Error searching suburbs:", error);
-      res.status(500).json({
-        error: "Failed to search suburbs",
-        details: error instanceof Error ? error.message : undefined,
-      });
-    }
-  });
 
   // Add this new endpoint after the existing admin endpoints
   app.get("/api/analytics", async (req, res) => {

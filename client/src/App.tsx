@@ -21,7 +21,7 @@ import RentComparePage from "./pages/RentComparePage";
 import InsurersPage from "./pages/InsurersPage";
 import DashboardPage from "./pages/DashboardPage";
 import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
-import MarketIntelligencePage from "./pages/MarketIntelligencePage";
+
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import ContactPage from "./pages/ContactPage";
@@ -246,7 +246,7 @@ function App() {
             {/* Protected routes */}
             <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
             <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
-            <Route path="/dashboard/market-intelligence" component={() => <ProtectedRoute component={MarketIntelligencePage} />} />
+
             <Route path="/dashboard/rent-compare" component={() => <ProtectedRoute component={ComparisonPage} />} />
 
             <Route path="/dashboard/toast-demo" component={() => <ProtectedRoute component={ToastDemo} />} />

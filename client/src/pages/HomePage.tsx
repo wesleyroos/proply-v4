@@ -392,7 +392,7 @@ export default function HomePage() {
                           "Market comparisons",
                           "Investment potential",
                         ],
-                        price: "R49/report, no login required",
+                        price: "R89/report, no login required",
                         cta: "Coming Soon",
                         icon: TrendingUp,
                         audience: "For Buyers",
@@ -574,7 +574,7 @@ export default function HomePage() {
                       <h3 className="text-xl font-bold mb-6 text-gray-900">
                         Ready to explore our property data?
                       </h3>
-                      <Button 
+                      <Button
                         size="lg"
                         className="bg-proply-blue hover:bg-proply-blue/90 text-white px-8"
                         onClick={handleOpenDemoModal}
