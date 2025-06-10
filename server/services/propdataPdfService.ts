@@ -752,29 +752,19 @@ export class PropdataPdfService {
         this.currentY += 12;
       }
 
-      // Property appreciation projections - match UI exactly
-      if (appreciation.yearlyValues) {
-        // Use same year structure as UI: Years 1, 2, 3, 4, 5, 10, 20
-        const keyYears = [
-          "year1",
-          "year2", 
-          "year3",
-          "year4",
-          "year5",
-          "year10",
-          "year20",
-        ];
-        const validYears = keyYears.filter(
-          (yearKey) => appreciation.yearlyValues[yearKey],
-        );
-        const yearHeaders = validYears.map(
-          (yearKey) => `Year ${yearKey.replace("year", "")}`,
+      // 5-year projection table - transposed with years as columns
+      if (
+        appreciation.fiveYearProjection &&
+        Array.isArray(appreciation.fiveYearProjection)
+      ) {
+        const yearHeaders = appreciation.fiveYearProjection.map(
+          (proj: any) => proj.year?.toString() || "",
         );
         const valueRow = [
           "Estimated Value",
-          ...validYears.map(
-            (yearKey) =>
-              `R${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString()}`,
+          ...appreciation.fiveYearProjection.map(
+            (proj: any) =>
+              `R${(proj.estimatedValue || 0).toLocaleString("en-ZA")}`,
           ),
         ];
 
@@ -1221,7 +1211,78 @@ export class PropdataPdfService {
       }
     }
 
+    // Property Appreciation Projections
+    if (data.valuationReport?.annualPropertyAppreciationData) {
+      this.addSubsectionHeader("Property Value Appreciation");
 
+      const appreciation = data.valuationReport.annualPropertyAppreciationData;
+
+      this.doc.setFontSize(10);
+      this.doc.text(
+        `Annual Appreciation Rate: ${appreciation.finalAppreciationRate}%`,
+        this.margin,
+        this.currentY,
+      );
+      this.currentY += 8;
+
+      if (appreciation.yearlyValues) {
+        this.doc.text(
+          "Property Value Projections:",
+          this.margin,
+          this.currentY,
+        );
+        this.currentY += 8;
+
+        // Convert to transposed table format (years as columns) - match UI exactly
+        const keyYears = [
+          "year1",
+          "year2", 
+          "year3",
+          "year4",
+          "year5",
+          "year10",
+          "year20",
+        ];
+        const validYears = keyYears.filter(
+          (yearKey) => appreciation.yearlyValues[yearKey],
+        );
+        const yearHeaders = validYears.map(
+          (yearKey) => `Year ${yearKey.replace("year", "")}`,
+        );
+        const valueRow = [
+          "Estimated Value",
+          ...validYears.map(
+            (yearKey) =>
+              `R${Math.round(appreciation.yearlyValues[yearKey]).toLocaleString()}`,
+          ),
+        ];
+
+        (this.doc as any).autoTable({
+          startY: this.currentY,
+          head: [["Metric", ...yearHeaders]],
+          body: [valueRow],
+          theme: "grid",
+          headStyles: {
+            fillColor: [27, 162, 255],
+            textColor: 255,
+            fontStyle: "bold",
+          },
+          styles: { fontSize: 8 },
+          margin: { left: this.margin, right: this.margin },
+          columnStyles: {
+            0: { halign: "left" },
+            ...Object.fromEntries(
+              Array.from({ length: yearHeaders.length }, (_, i) => [
+                i + 1,
+                { halign: "right" },
+              ]),
+            ),
+          },
+        });
+
+        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+      }
+    }
 
     // Equity buildup from saved valuation data
     if (data.valuationReport?.financingAnalysisData?.yearlyMetrics) {
