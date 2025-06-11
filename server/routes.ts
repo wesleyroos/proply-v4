@@ -47,6 +47,7 @@ import { imageSyncService } from './services/imageSyncService';
 import sharp from 'sharp';
 import propdataReportsRouter from './routes/propdata-reports';
 import reportActivityRouter from './routes/report-activity';
+import adminInvitationsRouter from './routes/admin-invitations';
 
 // Extend Express.User to include our schema
 declare global {
@@ -119,7 +120,8 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/propdata-debug/") || // PropData debug endpoint
       req.path.startsWith("/propdata-reports/") || // PropData PDF reports
       req.path === "/pdf-test" || // PDF test endpoint
-      req.path.startsWith("/pdf-generate/") // PDF generation endpoint
+      req.path.startsWith("/pdf-generate/") || // PDF generation endpoint
+      req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept") // Admin invitation acceptance
     ) {
       return next();
     }
@@ -1978,6 +1980,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', fetchPropdataRouter);
   app.use('/api', valuationRouter);
   app.use('/api', agenciesRouter);
+  app.use('/api/admin/invitations', adminInvitationsRouter);
   app.use('/api/propdata-debug', propdataDebugRouter);
   // PDF reports routes - integrated directly to avoid Vite routing conflicts
   // Test endpoint for basic PDF generation

@@ -211,8 +211,8 @@ This invitation was sent to ${email}. If you didn't expect this invitation, you 
   }
 
   try {
-    const sgMail = await import('@sendgrid/mail');
-    sgMail.default.setApiKey(process.env.SENDGRID_API_KEY);
+    const sgMail = (await import('@sendgrid/mail')).default;
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     
     const msg = {
       to: email,
@@ -222,7 +222,7 @@ This invitation was sent to ${email}. If you didn't expect this invitation, you 
       html: htmlContent,
     };
 
-    await sgMail.default.send(msg);
+    await sgMail.send(msg);
     console.log(`Admin invitation email sent to ${email}`);
   } catch (error) {
     console.error('Failed to send admin invitation email:', error);
@@ -284,14 +284,13 @@ export async function sendWelcomeEmailToAdmin(data: {
   `;
 
   // Similar email sending logic as above
-  const sgMail = await import('@sendgrid/mail').catch(() => null);
-  
-  if (!sgMail || !process.env.SENDGRID_API_KEY) {
+  if (!process.env.SENDGRID_API_KEY) {
     console.log('Welcome email would be sent to:', email);
     return;
   }
 
   try {
+    const sgMail = (await import('@sendgrid/mail')).default;
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     
     await sgMail.send({
