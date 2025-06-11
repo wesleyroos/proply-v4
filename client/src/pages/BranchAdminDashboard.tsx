@@ -24,6 +24,8 @@ import {
   Building2,
   FileText,
   Users,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 
 interface BranchMetrics {
@@ -45,8 +47,13 @@ interface BranchMetrics {
   }[];
 }
 
+type SortField = 'agent_name' | 'listings_count' | 'reports_count' | 'coverage';
+type SortDirection = 'asc' | 'desc';
+
 export default function BranchAdminDashboard() {
   const { user } = useUser();
+  const [sortField, setSortField] = useState<SortField>('coverage');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId],
@@ -58,6 +65,56 @@ export default function BranchAdminDashboard() {
       return response.json();
     },
     enabled: !!user?.branchId && user?.role === 'branch_admin',
+  });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return null;
+    return sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
+  };
+
+  const sortedAgents = metrics?.agentReportCoverage.slice().sort((a, b) => {
+    let aValue: string | number;
+    let bValue: string | number;
+
+    switch (sortField) {
+      case 'agent_name':
+        aValue = a.agent_name;
+        bValue = b.agent_name;
+        break;
+      case 'listings_count':
+        aValue = a.listings_count;
+        bValue = b.listings_count;
+        break;
+      case 'reports_count':
+        aValue = a.reports_count;
+        bValue = b.reports_count;
+        break;
+      case 'coverage':
+        aValue = a.coverage;
+        bValue = b.coverage;
+        break;
+      default:
+        return 0;
+    }
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    } else {
+      return sortDirection === 'asc' 
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    }
   });
 
   // Show access denied if user is loaded but not branch admin
@@ -194,14 +251,46 @@ export default function BranchAdminDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow className="h-8">
-                    <TableHead className="py-2">Agent</TableHead>
-                    <TableHead className="text-center py-2 w-20">Listings</TableHead>
-                    <TableHead className="text-center py-2 w-20">Reports</TableHead>
-                    <TableHead className="text-center py-2 w-24">Coverage</TableHead>
+                    <TableHead 
+                      className="py-2 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('agent_name')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Agent
+                        {getSortIcon('agent_name')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center py-2 w-20 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('listings_count')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Listings
+                        {getSortIcon('listings_count')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center py-2 w-20 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('reports_count')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Reports
+                        {getSortIcon('reports_count')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center py-2 w-24 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('coverage')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Coverage
+                        {getSortIcon('coverage')}
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {metrics.agentReportCoverage.map((agent, index) => (
+                  {sortedAgents?.map((agent, index) => (
                     <TableRow key={agent.agent_name || index} className="h-8">
                       <TableCell className="font-medium py-1">
                         {agent.agent_name}
