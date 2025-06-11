@@ -150,6 +150,9 @@ export function registerRoutes(app: Express): Server {
           subscriptionNextBillingDate: users.subscriptionNextBillingDate,
           subscriptionExpiryDate: users.subscriptionExpiryDate,
           isAdmin: users.isAdmin,
+          role: users.role,
+          franchiseId: users.franchiseId,
+          branchId: users.branchId,
           userType: users.userType,
           companyLogo: users.companyLogo,
           company: users.company,
@@ -165,9 +168,12 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user.id))
         .limit(1);
 
-      // Return raw user data without normalization
+      // Return user data with role-based fields
       const normalizedUser = {
         ...user,
+        role: user.role,
+        franchiseId: user.franchiseId,
+        branchId: user.branchId,
         company: user.company,
         vatNumber: user.vatNumber,
         registrationNumber: user.registrationNumber,
