@@ -52,10 +52,14 @@ interface Agency {
 interface AdminInvitationModalProps {
   trigger?: React.ReactNode;
   onSuccess?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AdminInvitationModal({ trigger, onSuccess }: AdminInvitationModalProps) {
-  const [open, setOpen] = useState(false);
+export function AdminInvitationModal({ trigger, onSuccess, open: controlledOpen, onOpenChange }: AdminInvitationModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

@@ -1,307 +1,165 @@
-interface AdminInvitationEmailData {
+import sgMail from '@sendgrid/mail';
+
+// Initialize SendGrid with API key
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+interface InvitationEmailData {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
-  token: string;
-  agencyName: string;
+  role: 'franchise_admin' | 'branch_admin';
+  franchiseName?: string;
+  branchName?: string;
+  invitationToken: string;
+  expiresAt: Date;
   invitedBy: string;
 }
 
-export async function sendAdminInvitationEmail(data: AdminInvitationEmailData): Promise<void> {
-  const { email, firstName, lastName, role, token, agencyName, invitedBy } = data;
-  
-  // Determine role display name
-  const roleDisplayName = role === 'franchise_admin' ? 'Franchise Administrator' : 'Branch Administrator';
-  
-  // Create invitation URL
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://your-domain.com' // Replace with actual domain
-    : 'http://localhost:5000';
-  
-  const invitationUrl = `${baseUrl}/admin-invitation/${token}`;
-  
-  const subject = `You're invited to join ${agencyName} as ${roleDisplayName}`;
-  
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Admin Invitation - Proply</title>
-      <style>
-        body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-          line-height: 1.6; 
-          color: #333; 
-          margin: 0; 
-          padding: 0; 
-          background-color: #f4f4f4; 
-        }
-        .container { 
-          max-width: 600px; 
-          margin: 0 auto; 
-          background: white; 
-          padding: 0; 
-          border-radius: 8px; 
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-        }
-        .header { 
-          background: linear-gradient(135deg, #1E293B 0%, #334155 100%); 
-          color: white; 
-          padding: 30px; 
-          text-align: center; 
-          border-radius: 8px 8px 0 0; 
-        }
-        .header h1 { 
-          margin: 0; 
-          font-size: 24px; 
-          font-weight: 600; 
-        }
-        .content { 
-          padding: 30px; 
-        }
-        .content h2 { 
-          color: #1E293B; 
-          margin-top: 0; 
-          font-size: 20px; 
-        }
-        .invitation-details { 
-          background: #f8fafc; 
-          border-left: 4px solid #1E293B; 
-          padding: 20px; 
-          margin: 20px 0; 
-          border-radius: 0 4px 4px 0; 
-        }
-        .invitation-details strong { 
-          color: #1E293B; 
-        }
-        .cta-button { 
-          display: inline-block; 
-          background: #1E293B; 
-          color: white; 
-          text-decoration: none; 
-          padding: 12px 24px; 
-          border-radius: 6px; 
-          font-weight: 600; 
-          margin: 20px 0; 
-          text-align: center; 
-        }
-        .cta-button:hover { 
-          background: #334155; 
-        }
-        .footer { 
-          background: #f8fafc; 
-          padding: 20px 30px; 
-          border-radius: 0 0 8px 8px; 
-          border-top: 1px solid #e2e8f0; 
-          font-size: 14px; 
-          color: #64748b; 
-        }
-        .warning { 
-          background: #fef3cd; 
-          border: 1px solid #fbbf24; 
-          border-radius: 4px; 
-          padding: 15px; 
-          margin: 20px 0; 
-          color: #92400e; 
-        }
-        @media (max-width: 600px) {
-          .container { margin: 10px; }
-          .header, .content, .footer { padding: 20px; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>🏢 Admin Invitation</h1>
-          <p>Welcome to Proply's Property Intelligence Platform</p>
-        </div>
-        
-        <div class="content">
-          <h2>Hello ${firstName},</h2>
-          
-          <p>You've been invited by <strong>${invitedBy}</strong> to join <strong>${agencyName}</strong> as a <strong>${roleDisplayName}</strong> on the Proply platform.</p>
-          
-          <div class="invitation-details">
-            <p><strong>Your Role:</strong> ${roleDisplayName}</p>
-            <p><strong>Agency:</strong> ${agencyName}</p>
-            <p><strong>Platform:</strong> Proply Property Intelligence</p>
-            <p><strong>Invited By:</strong> ${invitedBy}</p>
-          </div>
-          
-          <p>As a ${roleDisplayName}, you'll have access to:</p>
-          <ul>
-            <li>📊 <strong>Analytics Dashboard</strong> - Monitor property report generation and agent engagement</li>
-            <li>📋 <strong>Report Management</strong> - Oversee automated property analysis reports sent to agents</li>
-            <li>👥 <strong>User Oversight</strong> - Manage agent access and communication preferences</li>
-            <li>💰 <strong>Billing Insights</strong> - Track usage and costs across your ${role === 'franchise_admin' ? 'franchise' : 'branch'}</li>
-            <li>⚙️ <strong>Settings Control</strong> - Configure report preferences and notification settings</li>
-          </ul>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${invitationUrl}" class="cta-button">Accept Invitation & Create Account</a>
-          </div>
-          
-          <div class="warning">
-            <strong>⚠️ Important:</strong> This invitation expires in 7 days. Please accept it promptly to maintain access to your admin dashboard.
-          </div>
-          
-          <p>If you have any questions about your role or the platform, please don't hesitate to contact our support team.</p>
-          
-          <p>Best regards,<br>
-          The Proply Team</p>
-        </div>
-        
-        <div class="footer">
-          <p><strong>Need Help?</strong> Contact us at support@proply.co.za</p>
-          <p>If you can't click the button above, copy and paste this link into your browser:<br>
-          <code>${invitationUrl}</code></p>
-          <p style="margin-top: 15px; font-size: 12px;">
-            This invitation was sent to ${email}. If you didn't expect this invitation, you can safely ignore this email.
-          </p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
-  const textContent = `
-Hello ${firstName},
-
-You've been invited by ${invitedBy} to join ${agencyName} as a ${roleDisplayName} on the Proply platform.
-
-Your Role: ${roleDisplayName}
-Agency: ${agencyName}
-Platform: Proply Property Intelligence
-Invited By: ${invitedBy}
-
-As a ${roleDisplayName}, you'll have access to:
-- Analytics Dashboard - Monitor property report generation and agent engagement
-- Report Management - Oversee automated property analysis reports sent to agents
-- User Oversight - Manage agent access and communication preferences
-- Billing Insights - Track usage and costs across your ${role === 'franchise_admin' ? 'franchise' : 'branch'}
-- Settings Control - Configure report preferences and notification settings
-
-To accept this invitation and create your account, visit:
-${invitationUrl}
-
-⚠️ Important: This invitation expires in 7 days. Please accept it promptly to maintain access to your admin dashboard.
-
-If you have any questions about your role or the platform, please don't hesitate to contact our support team at support@proply.co.za.
-
-Best regards,
-The Proply Team
-
----
-This invitation was sent to ${email}. If you didn't expect this invitation, you can safely ignore this email.
-  `;
-
-  // Check if email service is configured
+export async function sendAdminInvitationEmail(data: InvitationEmailData): Promise<void> {
   if (!process.env.SENDGRID_API_KEY) {
-    console.log('Email service not configured. Invitation details:');
-    console.log('To:', email);
-    console.log('Subject:', subject);
-    console.log('Invitation URL:', invitationUrl);
-    console.log('Role:', roleDisplayName);
-    console.log('Agency:', agencyName);
+    console.log('SendGrid API key not configured, skipping email send');
     return;
   }
 
-  try {
-    const sgMail = (await import('@sendgrid/mail')).default;
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    
-    const msg = {
-      to: email,
-      from: process.env.FROM_EMAIL || 'noreply@proply.co.za',
-      subject,
-      text: textContent,
-      html: htmlContent,
-    };
+  const invitationUrl = `${process.env.VITE_APP_URL || 'http://localhost:5000'}/accept-invitation?token=${data.invitationToken}`;
+  
+  const roleTitle = data.role === 'franchise_admin' ? 'Franchise Administrator' : 'Branch Administrator';
+  const agencyName = data.franchiseName || data.branchName || 'Unknown Agency';
+  
+  const emailContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #1f2937; margin-bottom: 10px;">Proply Admin Invitation</h1>
+        <p style="color: #6b7280; font-size: 16px;">You've been invited to join as an administrator</p>
+      </div>
+      
+      <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h2 style="color: #1f2937; margin-top: 0;">Hello ${data.firstName},</h2>
+        <p style="color: #374151; line-height: 1.5;">
+          ${data.invitedBy} has invited you to join Proply as a <strong>${roleTitle}</strong> for <strong>${agencyName}</strong>.
+        </p>
+        <p style="color: #374151; line-height: 1.5;">
+          As a ${roleTitle.toLowerCase()}, you will have access to:
+        </p>
+        <ul style="color: #374151; line-height: 1.5;">
+          ${data.role === 'franchise_admin' 
+            ? '<li>All franchise branches and their data</li><li>User management across the franchise</li><li>Comprehensive reporting and analytics</li>'
+            : '<li>Your branch\'s property listings and data</li><li>Agent and user management for your branch</li><li>Branch-specific reporting and analytics</li>'
+          }
+        </ul>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${invitationUrl}" 
+           style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">
+          Accept Invitation
+        </a>
+      </div>
+      
+      <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+        <p style="color: #92400e; margin: 0; font-size: 14px;">
+          <strong>⚠️ Important:</strong> This invitation expires on ${data.expiresAt.toLocaleDateString()} at ${data.expiresAt.toLocaleTimeString()}.
+        </p>
+      </div>
+      
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; color: #6b7280; font-size: 14px;">
+        <p>If you're having trouble with the button above, copy and paste this URL into your browser:</p>
+        <p style="word-break: break-all; background-color: #f3f4f6; padding: 10px; border-radius: 4px; font-family: monospace;">
+          ${invitationUrl}
+        </p>
+        <p style="margin-top: 20px;">
+          If you didn't expect this invitation, you can safely ignore this email.
+        </p>
+      </div>
+    </div>
+  `;
 
+  const msg = {
+    to: data.email,
+    from: {
+      email: import.meta.env.SENDGRID_FROM_EMAIL || 'noreply@proply.co.za',
+      name: 'Proply'
+    },
+    subject: `Invitation to join Proply as ${roleTitle}`,
+    html: emailContent,
+  };
+
+  try {
     await sgMail.send(msg);
-    console.log(`Admin invitation email sent to ${email}`);
+    console.log(`Admin invitation email sent to ${data.email}`);
   } catch (error) {
     console.error('Failed to send admin invitation email:', error);
-    throw error;
+    throw new Error('Failed to send invitation email');
   }
 }
 
-export async function sendWelcomeEmailToAdmin(data: {
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  agencyName: string;
-}): Promise<void> {
-  const { email, firstName, lastName, role, agencyName } = data;
-  
-  const roleDisplayName = role === 'franchise_admin' ? 'Franchise Administrator' : 'Branch Administrator';
-  
-  const subject = `Welcome to Proply, ${firstName}! Your admin account is ready`;
-  
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to Proply</title>
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #1E293B 0%, #334155 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
-        .content { padding: 30px; }
-        .cta-button { display: inline-block; background: #1E293B; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin: 20px 0; }
-        .footer { background: #f8fafc; padding: 20px 30px; border-radius: 0 0 8px 8px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #64748b; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>🎉 Welcome to Proply!</h1>
-          <p>Your admin account is now active</p>
-        </div>
-        <div class="content">
-          <h2>Hello ${firstName},</h2>
-          <p>Congratulations! Your account has been successfully created and you now have <strong>${roleDisplayName}</strong> access for <strong>${agencyName}</strong>.</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://localhost:5000'}/login" class="cta-button">Access Your Dashboard</a>
-          </div>
-          <p>Your admin dashboard is ready and waiting for you. Start exploring your new capabilities today!</p>
-          <p>Best regards,<br>The Proply Team</p>
-        </div>
-        <div class="footer">
-          <p>Need assistance? Contact us at support@proply.co.za</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
-  // Similar email sending logic as above
-  if (!process.env.SENDGRID_API_KEY) {
-    console.log('Welcome email would be sent to:', email);
+export async function sendInvitationReminderEmail(data: InvitationEmailData): Promise<void> {
+  if (!import.meta.env.SENDGRID_API_KEY) {
+    console.log('SendGrid API key not configured, skipping reminder email send');
     return;
   }
 
+  const invitationUrl = `${import.meta.env.VITE_APP_URL || 'http://localhost:5000'}/accept-invitation?token=${data.invitationToken}`;
+  
+  const roleTitle = data.role === 'franchise_admin' ? 'Franchise Administrator' : 'Branch Administrator';
+  const agencyName = data.franchiseName || data.branchName || 'Unknown Agency';
+  
+  const emailContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #1f2937; margin-bottom: 10px;">Reminder: Proply Admin Invitation</h1>
+        <p style="color: #6b7280; font-size: 16px;">Don't forget to accept your administrator invitation</p>
+      </div>
+      
+      <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h2 style="color: #1f2937; margin-top: 0;">Hello ${data.firstName},</h2>
+        <p style="color: #374151; line-height: 1.5;">
+          This is a friendly reminder that you have a pending invitation to join Proply as a <strong>${roleTitle}</strong> for <strong>${agencyName}</strong>.
+        </p>
+        <p style="color: #374151; line-height: 1.5;">
+          Your invitation is still valid and waiting for your acceptance.
+        </p>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${invitationUrl}" 
+           style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">
+          Accept Invitation Now
+        </a>
+      </div>
+      
+      <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+        <p style="color: #92400e; margin: 0; font-size: 14px;">
+          <strong>⚠️ Expires Soon:</strong> This invitation expires on ${data.expiresAt.toLocaleDateString()} at ${data.expiresAt.toLocaleTimeString()}.
+        </p>
+      </div>
+      
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; color: #6b7280; font-size: 14px;">
+        <p>If you're having trouble with the button above, copy and paste this URL into your browser:</p>
+        <p style="word-break: break-all; background-color: #f3f4f6; padding: 10px; border-radius: 4px; font-family: monospace;">
+          ${invitationUrl}
+        </p>
+      </div>
+    </div>
+  `;
+
+  const msg = {
+    to: data.email,
+    from: {
+      email: import.meta.env.SENDGRID_FROM_EMAIL || 'noreply@proply.co.za',
+      name: 'Proply'
+    },
+    subject: `Reminder: Accept your Proply ${roleTitle} invitation`,
+    html: emailContent,
+  };
+
   try {
-    const sgMail = (await import('@sendgrid/mail')).default;
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    
-    await sgMail.send({
-      to: email,
-      from: process.env.FROM_EMAIL || 'noreply@proply.co.za',
-      subject,
-      html: htmlContent,
-    });
-    
-    console.log(`Welcome email sent to ${email}`);
+    await sgMail.send(msg);
+    console.log(`Admin invitation reminder email sent to ${data.email}`);
   } catch (error) {
-    console.error('Failed to send welcome email:', error);
+    console.error('Failed to send admin invitation reminder email:', error);
+    throw new Error('Failed to send reminder email');
   }
 }
