@@ -9,15 +9,16 @@ import { autoSyncService } from "../services/autoSync";
 
 const router = Router();
 
-// GET /api/propdata/listings - Fetch all PropData listings
+// GET /api/propdata/listings - Fetch PropData listings with agency-based filtering
 router.get("/propdata/listings", async (req, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    // Allow system admins, franchise admins, and branch admins
+    if (!req.user?.isAdmin && req.user?.role !== 'franchise_admin' && req.user?.role !== 'branch_admin') {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    // Query database for PropData listings with agency branch information and valuation report status
-    const listings = await db
+    // Build base query
+    let query = db
       .select({
         id: propdataListings.id,
         propdataId: propdataListings.propdataId,
@@ -56,8 +57,19 @@ router.get("/propdata/listings", async (req, res) => {
       })
       .from(propdataListings)
       .leftJoin(agencyBranches, eq(propdataListings.branchId, agencyBranches.id))
-      .leftJoin(valuationReports, eq(propdataListings.propdataId, valuationReports.propertyId))
-      .orderBy(desc(propdataListings.listingDate));
+      .leftJoin(valuationReports, eq(propdataListings.propdataId, valuationReports.propertyId));
+
+    // Apply agency-based filtering based on user role
+    if (req.user?.role === 'branch_admin' && req.user?.branchId) {
+      // Branch admins see only their specific branch properties
+      query = query.where(eq(propdataListings.branchId, req.user.branchId));
+    } else if (req.user?.role === 'franchise_admin' && req.user?.franchiseId) {
+      // Franchise admins see all branches within their franchise
+      query = query.where(eq(agencyBranches.id, req.user.franchiseId));
+    }
+    // System admins see all properties (no additional filtering)
+
+    const listings = await query.orderBy(desc(propdataListings.listingDate));
     
     // Parse JSON fields in the response
     const parsedListings = listings.map(listing => ({
