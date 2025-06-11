@@ -185,19 +185,7 @@ export default function BranchAdminDashboard() {
         {/* Property Reports */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Property Reports</span>
-              <div className="flex items-center space-x-2">
-                <Label htmlFor="coverage-toggle" className="text-sm font-normal">
-                  {showCoverage ? "Coverage %" : "Report Count"}
-                </Label>
-                <Switch
-                  id="coverage-toggle"
-                  checked={showCoverage}
-                  onCheckedChange={setShowCoverage}
-                />
-              </div>
-            </CardTitle>
+            <CardTitle>Property Reports</CardTitle>
             <CardDescription>
               Agent performance with valuation reports (Active, Pending, Sold listings only)
             </CardDescription>
@@ -209,10 +197,8 @@ export default function BranchAdminDashboard() {
                   <TableRow>
                     <TableHead>Agent</TableHead>
                     <TableHead className="text-center">Listings</TableHead>
-                    <TableHead className="text-center">
-                      {showCoverage ? "Coverage" : "Reports"}
-                    </TableHead>
-                    {showCoverage && <TableHead>Progress</TableHead>}
+                    <TableHead className="text-center">Reports</TableHead>
+                    <TableHead className="text-center">Coverage</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -222,22 +208,16 @@ export default function BranchAdminDashboard() {
                         {agent.agent_name}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline">{agent.listings_count}</Badge>
+                        {agent.listings_count}
                       </TableCell>
                       <TableCell className="text-center">
-                        {showCoverage ? (
-                          <Badge variant={agent.coverage > 50 ? "default" : agent.coverage > 20 ? "secondary" : "destructive"}>
-                            {agent.coverage}%
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">{agent.reports_count}</Badge>
-                        )}
+                        {agent.reports_count}
                       </TableCell>
-                      {showCoverage && (
-                        <TableCell>
-                          <Progress value={agent.coverage} className="h-2 w-24" />
-                        </TableCell>
-                      )}
+                      <TableCell className="text-center">
+                        <Badge variant={agent.coverage > 50 ? "default" : agent.coverage > 20 ? "secondary" : "destructive"}>
+                          {agent.coverage}%
+                        </Badge>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
