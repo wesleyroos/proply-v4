@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import {
@@ -9,6 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Building2,
   FileText,
@@ -17,8 +20,14 @@ import {
 
 interface BranchMetrics {
   totalAgents: number;
-  activeListings: number;
-  reportsGenerated: number;
+  listingsByStatus: {
+    active: number;
+    pending: number;
+    sold: number;
+    total: number;
+  };
+  reportsThisMonth: number;
+  reportsLastMonth: number;
   branchName: string;
   agentReportCoverage: {
     agent_name: string;

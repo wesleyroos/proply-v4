@@ -39,30 +39,57 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
     `);
     const totalAgentsResult = totalAgentsQuery.rows[0];
 
-    // Get active listings count for this branch
-    const [activeListingsResult] = await db
-      .select({ count: count() })
-      .from(propdataListings)
-      .where(eq(propdataListings.branchId, branchId));
+    // Get listings count by status for this branch
+    const listingsStatusQuery = await db.execute(sql`
+      SELECT 
+        listing_status,
+        COUNT(*) as count
+      FROM propdata_listings
+      WHERE branch_id = ${branchId}
+        AND listing_status IN ('Active', 'Pending', 'Sold')
+      GROUP BY listing_status
+    `);
+    
+    const listingsByStatus = {
+      active: 0,
+      pending: 0,
+      sold: 0,
+      total: 0
+    };
+    
+    listingsStatusQuery.rows.forEach((row: any) => {
+      const status = row.listing_status?.toLowerCase();
+      const count = parseInt(row.count);
+      if (status === 'active') listingsByStatus.active = count;
+      else if (status === 'pending') listingsByStatus.pending = count;
+      else if (status === 'sold') listingsByStatus.sold = count;
+      listingsByStatus.total += count;
+    });
 
-    // Get reports generated this month for this branch's listings
+    // Get reports generated this month and last month for this branch's listings
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
 
+    const startOfLastMonth = new Date(startOfMonth);
+    startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
+
     const reportsQuery = await db.execute(sql`
-      SELECT COUNT(*) as count
+      SELECT 
+        COUNT(CASE WHEN vr.created_at >= ${startOfMonth} THEN 1 END) as this_month,
+        COUNT(CASE WHEN vr.created_at >= ${startOfLastMonth} AND vr.created_at < ${startOfMonth} THEN 1 END) as last_month
       FROM valuation_reports vr
       WHERE vr.property_id IN (
         SELECT propdata_id 
         FROM propdata_listings 
         WHERE branch_id = ${branchId}
+          AND listing_status IN ('Active', 'Pending', 'Sold')
       )
-      AND vr.created_at >= ${startOfMonth}
+      AND vr.created_at >= ${startOfLastMonth}
     `);
-    const reportsThisMonth = reportsQuery.rows[0];
+    const reportsData = reportsQuery.rows[0];
 
-    // Get agent report coverage data from PropData listings
+    // Get agent report coverage data from PropData listings (Active, Pending, Sold only)
     const agentCoverage = await db.execute(sql`
       WITH agent_listings AS (
         SELECT 
@@ -72,6 +99,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
         WHERE branch_id = ${branchId}
           AND agent_name IS NOT NULL 
           AND agent_name != ''
+          AND listing_status IN ('Active', 'Pending', 'Sold')
         GROUP BY agent_name
       ),
       agent_reports AS (
@@ -81,7 +109,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
         FROM propdata_listings pl
         LEFT JOIN valuation_reports vr ON vr.property_id = pl.propdata_id
         WHERE pl.branch_id = ${branchId}
-          AND vr.created_at >= ${startOfMonth}
+          AND pl.listing_status IN ('Active', 'Pending', 'Sold')
         GROUP BY pl.agent_name
       )
       SELECT 
@@ -100,8 +128,9 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
 
     const metrics = {
       totalAgents: totalAgentsResult.count as number,
-      activeListings: activeListingsResult.count,
-      reportsGenerated: reportsThisMonth.count as number,
+      listingsByStatus: listingsByStatus,
+      reportsThisMonth: reportsData.this_month as number,
+      reportsLastMonth: reportsData.last_month as number,
       branchName: branch.branchName,
       agentReportCoverage: agentCoverage.rows,
     };
