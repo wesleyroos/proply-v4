@@ -39,6 +39,7 @@ interface BranchMetrics {
 
 export default function BranchAdminDashboard() {
   const { user } = useUser();
+  const [showCoverage, setShowCoverage] = useState(false);
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId],
@@ -134,9 +135,14 @@ export default function BranchAdminDashboard() {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{metrics.activeListings.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">
-                Active property listings
+              <div className="text-2xl font-bold">{metrics.listingsByStatus.total.toLocaleString()}</div>
+              <div className="flex gap-2 mt-2">
+                <Badge variant="default">{metrics.listingsByStatus.active} Active</Badge>
+                <Badge variant="secondary">{metrics.listingsByStatus.pending} Pending</Badge>
+                <Badge variant="outline">{metrics.listingsByStatus.sold} Sold</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Property listings for {metrics.branchName}
               </p>
             </CardContent>
           </Card>
@@ -147,9 +153,9 @@ export default function BranchAdminDashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{metrics.reportsGenerated}</div>
+              <div className="text-2xl font-bold">{metrics.reportsThisMonth}</div>
               <p className="text-xs text-muted-foreground">
-                Generated this month
+                Generated this month ({metrics.reportsLastMonth} last month)
               </p>
             </CardContent>
           </Card>
@@ -168,13 +174,23 @@ export default function BranchAdminDashboard() {
           </Card>
         </div>
 
-        {/* Agent Report Coverage */}
+        {/* Property Reports */}
         <Card>
           <CardHeader>
-            <CardTitle>Agent Report Coverage</CardTitle>
+            <CardTitle>Property Reports</CardTitle>
             <CardDescription>
-              How many of each agent's listings have reports generated
+              Agent performance with valuation reports (Active, Pending, Sold listings only)
             </CardDescription>
+            <div className="flex items-center space-x-2 mt-4">
+              <Switch
+                id="coverage-toggle"
+                checked={showCoverage}
+                onCheckedChange={setShowCoverage}
+              />
+              <Label htmlFor="coverage-toggle">
+                {showCoverage ? "Show Coverage %" : "Show Report Count"}
+              </Label>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -184,12 +200,18 @@ export default function BranchAdminDashboard() {
                     <div className="flex items-center space-x-2">
                       <span className="font-medium">{agent.agent_name}</span>
                       <Badge variant="secondary">
-                        {agent.reports_count}/{agent.listings_count} listings
+                        {agent.listings_count} listings
                       </Badge>
                     </div>
-                    <span className="text-sm font-medium">{agent.coverage}%</span>
+                    {showCoverage ? (
+                      <span className="text-sm font-medium">{agent.coverage}%</span>
+                    ) : (
+                      <span className="text-sm font-medium">{agent.reports_count} reports</span>
+                    )}
                   </div>
-                  <Progress value={agent.coverage} className="h-2" />
+                  {showCoverage && (
+                    <Progress value={agent.coverage} className="h-2" />
+                  )}
                 </div>
               ))}
             </div>
