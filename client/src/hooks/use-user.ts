@@ -222,3 +222,97 @@ export function useUser() {
     clearCache: clearCacheMutation.mutateAsync
   };
 }
+
+export function usePermissions() {
+  const { user } = useUser();
+
+  const hasRole = (role: string) => {
+    return user?.role === role;
+  };
+
+  const canView = (resource: string, scope: string = 'own') => {
+    if (!user) return false;
+    
+    // System admin can view everything
+    if (user.role === 'system_admin') return true;
+    
+    // Check role-based permissions
+    switch (user.role) {
+      case 'franchise_admin':
+        return ['franchise', 'branch', 'own'].includes(scope);
+      case 'branch_admin':
+        return ['branch', 'own'].includes(scope);
+      case 'agent':
+        return scope === 'own';
+      case 'user':
+        return scope === 'own';
+      default:
+        return false;
+    }
+  };
+
+  const canEdit = (resource: string, scope: string = 'own') => {
+    if (!user) return false;
+    
+    // System admin can edit everything
+    if (user.role === 'system_admin') return true;
+    
+    // Check role-based permissions
+    switch (user.role) {
+      case 'franchise_admin':
+        return ['franchise', 'branch', 'own'].includes(scope) && 
+               ['settings', 'users', 'reports'].includes(resource);
+      case 'branch_admin':
+        return ['branch', 'own'].includes(scope) && 
+               ['settings', 'users', 'reports'].includes(resource);
+      case 'agent':
+        return scope === 'own' && resource === 'profile';
+      case 'user':
+        return scope === 'own' && ['profile', 'reports'].includes(resource);
+      default:
+        return false;
+    }
+  };
+
+  const getUserScope = () => {
+    if (!user) return { scope: 'none' };
+    
+    switch (user.role) {
+      case 'system_admin':
+        return { scope: 'system' };
+      case 'franchise_admin':
+        return { 
+          scope: 'franchise', 
+          franchiseId: user.franchiseId 
+        };
+      case 'branch_admin':
+        return { 
+          scope: 'branch', 
+          branchId: user.branchId,
+          franchiseId: user.franchiseId 
+        };
+      default:
+        return { scope: 'own' };
+    }
+  };
+
+  const isSystemAdmin = () => user?.role === 'system_admin';
+  const isFranchiseAdmin = () => user?.role === 'franchise_admin';
+  const isBranchAdmin = () => user?.role === 'branch_admin';
+  const isAgent = () => user?.role === 'agent';
+  
+  // Backward compatibility
+  const isAdmin = () => user?.role === 'system_admin' || user?.isAdmin === true;
+
+  return {
+    hasRole,
+    canView,
+    canEdit,
+    getUserScope,
+    isSystemAdmin,
+    isFranchiseAdmin,
+    isBranchAdmin,
+    isAgent,
+    isAdmin // For backward compatibility
+  };
+}
