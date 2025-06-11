@@ -641,3 +641,56 @@ export const insertSyncTrackingSchema = createInsertSchema(syncTracking);
 export const selectSyncTrackingSchema = createSelectSchema(syncTracking);
 export type InsertSyncTracking = typeof syncTracking.$inferInsert;
 export type SelectSyncTracking = typeof syncTracking.$inferSelect;
+
+// Role permissions table
+export const rolePermissions = pgTable("role_permissions", {
+  id: serial("id").primaryKey(),
+  role: text("role").notNull(),
+  resource: text("resource").notNull(),
+  action: text("action").notNull(),
+  scope: text("scope").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Admin invitations table
+export const adminInvitations = pgTable("admin_invitations", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  role: text("role").notNull(),
+  franchiseId: integer("franchise_id").references(() => agencyBranches.id),
+  branchId: integer("branch_id").references(() => agencyBranches.id),
+  token: text("token").unique().notNull().$defaultFn(() => createId()),
+  invitedBy: integer("invited_by").references(() => users.id),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+  // No direct relations needed for this lookup table
+}));
+
+export const adminInvitationsRelations = relations(adminInvitations, ({ one }) => ({
+  invitedBy: one(users, {
+    fields: [adminInvitations.invitedBy],
+    references: [users.id],
+  }),
+  franchise: one(agencyBranches, {
+    fields: [adminInvitations.franchiseId],
+    references: [agencyBranches.id],
+  }),
+  branch: one(agencyBranches, {
+    fields: [adminInvitations.branchId],
+    references: [agencyBranches.id],
+  }),
+}));
+
+export const insertRolePermissionSchema = createInsertSchema(rolePermissions);
+export const selectRolePermissionSchema = createSelectSchema(rolePermissions);
+export type InsertRolePermission = typeof rolePermissions.$inferInsert;
+export type SelectRolePermission = typeof rolePermissions.$inferSelect;
+
+export const insertAdminInvitationSchema = createInsertSchema(adminInvitations);
+export const selectAdminInvitationSchema = createSelectSchema(adminInvitations);
+export type InsertAdminInvitation = typeof adminInvitations.$inferInsert;
+export type SelectAdminInvitation = typeof adminInvitations.$inferSelect;

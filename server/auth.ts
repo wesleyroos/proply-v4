@@ -18,6 +18,37 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   next();
 };
 
+// Role-based authentication middleware
+export const requireRole = (...allowedRoles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    const user = req.user as any;
+    if (!allowedRoles.includes(user.role)) {
+      return res.status(403).json({ error: "Insufficient permissions" });
+    }
+    
+    next();
+  };
+};
+
+// Admin authentication (backward compatibility)
+export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  
+  const user = req.user as any;
+  // Check both new role system and legacy isAdmin for backward compatibility
+  if (user.role !== 'system_admin' && !user.isAdmin) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  
+  next();
+};
+
 const scryptAsync = promisify(scrypt);
 export const crypto = {
   hash: async (password: string) => {
