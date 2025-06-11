@@ -19,7 +19,13 @@ export async function sendAdminInvitationEmail(data: AdminInvitationEmailData): 
     return false;
   }
 
-  const invitationUrl = `${process.env.FRONTEND_URL || 'https://proply.co.za'}/admin/accept-invitation?token=${data.token}`;
+  // Detect environment and set appropriate base URL
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const baseUrl = isDevelopment 
+    ? 'http://localhost:5000' 
+    : (process.env.FRONTEND_URL || 'https://proply.co.za');
+  
+  const invitationUrl = `${baseUrl}/admin/accept-invitation?token=${data.token}`;
   
   const roleDisplay = data.role === 'franchise_admin' ? 'Franchise Administrator' : 
                      data.role === 'branch_admin' ? 'Branch Administrator' : 

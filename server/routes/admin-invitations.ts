@@ -147,6 +147,49 @@ router.get("/", requireAdmin, async (req, res) => {
   }
 });
 
+// Get invitation details (public endpoint)
+router.get("/:token/details", async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Find valid invitation with inviter details
+    const invitation = await db
+      .select({
+        email: adminInvitations.email,
+        role: adminInvitations.role,
+        agencyId: adminInvitations.agencyId,
+        franchiseId: adminInvitations.franchiseId,
+        branchId: adminInvitations.branchId,
+        expiresAt: adminInvitations.expiresAt,
+        invitedBy: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+        }
+      })
+      .from(adminInvitations)
+      .leftJoin(users, eq(adminInvitations.invitedBy, users.id))
+      .where(
+        and(
+          eq(adminInvitations.token, token),
+          isNull(adminInvitations.usedAt),
+          gt(adminInvitations.expiresAt, new Date())
+        )
+      )
+      .limit(1);
+
+    if (invitation.length === 0) {
+      return res.status(400).json({ 
+        error: "Invalid or expired invitation token" 
+      });
+    }
+
+    res.json(invitation[0]);
+  } catch (error) {
+    console.error('Error fetching invitation details:', error);
+    res.status(500).json({ error: "Failed to fetch invitation details" });
+  }
+});
+
 // Accept invitation (public endpoint)
 router.post("/:token/accept", async (req, res) => {
   try {
