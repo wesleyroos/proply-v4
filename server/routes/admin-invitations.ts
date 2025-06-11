@@ -67,34 +67,8 @@ router.post("/", requireAdmin, async (req, res) => {
       });
     }
 
-    // Validate agency/branch associations
-    if (role === 'franchise_admin' && !franchiseId) {
-      return res.status(400).json({ 
-        error: "Franchise ID required for franchise admin role" 
-      });
-    }
-
-    if (role === 'branch_admin' && !branchId) {
-      return res.status(400).json({ 
-        error: "Branch ID required for branch admin role" 
-      });
-    }
-
-    // Verify agency/branch exists
-    if (franchiseId || branchId) {
-      const agencyId = franchiseId || branchId;
-      const agency = await db
-        .select()
-        .from(agencyBranches)
-        .where(eq(agencyBranches.id, agencyId))
-        .limit(1);
-
-      if (agency.length === 0) {
-        return res.status(400).json({ 
-          error: "Invalid agency/branch ID" 
-        });
-      }
-    }
+    // Skip agency validation for now since we're using PropData string IDs
+    // The agencyId field will store the PropData agency identifier
 
     // Create invitation
     const token = createId();
@@ -106,8 +80,7 @@ router.post("/", requireAdmin, async (req, res) => {
       .values({
         email,
         role,
-        franchiseId: franchiseId || null,
-        branchId: branchId || null,
+        agencyId: agencyId || null,
         token,
         invitedBy: (req.user as any).id,
         expiresAt,
@@ -122,7 +95,7 @@ router.post("/", requireAdmin, async (req, res) => {
         lastName,
         role,
         token,
-        agencyName: franchiseId || branchId ? 'Agency' : 'Platform', // TODO: Get actual agency name
+        agencyName: agencyId ? 'Agency' : 'Platform', // TODO: Get actual agency name
         invitedBy: `${(req.user as any).firstName} ${(req.user as any).lastName}`,
       });
     } catch (emailError) {

@@ -98,8 +98,7 @@ export function AdminInvitationModal({ trigger, onSuccess, open: controlledOpen,
         firstName: data.firstName,
         lastName: data.lastName,
         role: data.role,
-        franchiseId: data.role === "franchise_admin" ? selectedAgency.id : undefined,
-        branchId: data.role === "branch_admin" ? selectedAgency.id : undefined,
+        agencyId: data.agencyId,
       };
 
       const response = await fetch("/api/admin/invitations", {
