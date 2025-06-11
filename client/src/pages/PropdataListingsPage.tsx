@@ -294,7 +294,7 @@ export default function PropdataListingsPage() {
     setIsModalOpen(true);
   };
 
-  if (!user?.isAdmin) {
+  if (!user?.isAdmin && user?.role !== 'franchise_admin' && user?.role !== 'branch_admin') {
     return (
       <div className="p-8">
         <Card>
