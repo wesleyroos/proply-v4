@@ -13,6 +13,14 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Building2,
   FileText,
   Users,
@@ -177,43 +185,63 @@ export default function BranchAdminDashboard() {
         {/* Property Reports */}
         <Card>
           <CardHeader>
-            <CardTitle>Property Reports</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              <span>Property Reports</span>
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="coverage-toggle" className="text-sm font-normal">
+                  {showCoverage ? "Coverage %" : "Report Count"}
+                </Label>
+                <Switch
+                  id="coverage-toggle"
+                  checked={showCoverage}
+                  onCheckedChange={setShowCoverage}
+                />
+              </div>
+            </CardTitle>
             <CardDescription>
               Agent performance with valuation reports (Active, Pending, Sold listings only)
             </CardDescription>
-            <div className="flex items-center space-x-2 mt-4">
-              <Switch
-                id="coverage-toggle"
-                checked={showCoverage}
-                onCheckedChange={setShowCoverage}
-              />
-              <Label htmlFor="coverage-toggle">
-                {showCoverage ? "Show Coverage %" : "Show Report Count"}
-              </Label>
-            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {metrics.agentReportCoverage.map((agent, index) => (
-                <div key={agent.agent_name || index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium">{agent.agent_name}</span>
-                      <Badge variant="secondary">
-                        {agent.listings_count} listings
-                      </Badge>
-                    </div>
-                    {showCoverage ? (
-                      <span className="text-sm font-medium">{agent.coverage}%</span>
-                    ) : (
-                      <span className="text-sm font-medium">{agent.reports_count} reports</span>
-                    )}
-                  </div>
-                  {showCoverage && (
-                    <Progress value={agent.coverage} className="h-2" />
-                  )}
-                </div>
-              ))}
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Agent</TableHead>
+                    <TableHead className="text-center">Listings</TableHead>
+                    <TableHead className="text-center">
+                      {showCoverage ? "Coverage" : "Reports"}
+                    </TableHead>
+                    {showCoverage && <TableHead>Progress</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {metrics.agentReportCoverage.map((agent, index) => (
+                    <TableRow key={agent.agent_name || index}>
+                      <TableCell className="font-medium">
+                        {agent.agent_name}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline">{agent.listings_count}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {showCoverage ? (
+                          <Badge variant={agent.coverage > 50 ? "default" : agent.coverage > 20 ? "secondary" : "destructive"}>
+                            {agent.coverage}%
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">{agent.reports_count}</Badge>
+                        )}
+                      </TableCell>
+                      {showCoverage && (
+                        <TableCell>
+                          <Progress value={agent.coverage} className="h-2 w-24" />
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>
