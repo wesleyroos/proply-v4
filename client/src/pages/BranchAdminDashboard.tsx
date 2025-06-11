@@ -26,6 +26,7 @@ import {
   Users,
   ChevronUp,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -64,7 +65,7 @@ export default function BranchAdminDashboard() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery<BranchMetrics>({
+  const { data: metrics, isLoading: metricsLoading, isFetching } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId, timeFilter],
     queryFn: async () => {
       const response = await fetch(`/api/branch/${user?.branchId}/metrics?timeFilter=${timeFilter}`, {
@@ -74,6 +75,8 @@ export default function BranchAdminDashboard() {
       return response.json();
     },
     enabled: !!user?.branchId && user?.role === 'branch_admin',
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 
   const handleSort = (field: SortField) => {
@@ -288,28 +291,36 @@ export default function BranchAdminDashboard() {
                   variant={timeFilter === '30' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setTimeFilter('30')}
+                  disabled={isFetching}
                 >
+                  {isFetching && timeFilter === '30' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                   Last 30 Days
                 </Button>
                 <Button
                   variant={timeFilter === '90' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setTimeFilter('90')}
+                  disabled={isFetching}
                 >
+                  {isFetching && timeFilter === '90' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                   Last 90 Days
                 </Button>
                 <Button
                   variant={timeFilter === '365' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setTimeFilter('365')}
+                  disabled={isFetching}
                 >
+                  {isFetching && timeFilter === '365' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                   Last Year
                 </Button>
                 <Button
                   variant={timeFilter === 'all' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setTimeFilter('all')}
+                  disabled={isFetching}
                 >
+                  {isFetching && timeFilter === 'all' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                   All Time
                 </Button>
               </div>
@@ -317,7 +328,7 @@ export default function BranchAdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <Table>
+              <Table className={isFetching ? "opacity-60 transition-opacity duration-200" : "transition-opacity duration-200"}>
                 <TableHeader>
                   <TableRow className="h-8">
                     <TableHead 
