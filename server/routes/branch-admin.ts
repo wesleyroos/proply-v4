@@ -124,6 +124,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
           AND agent_name IS NOT NULL 
           AND agent_name != ''
           AND status IS NOT NULL
+          ${sql.raw(dateFilterCondition)}
         GROUP BY agent_name
       ),
       agent_reports AS (

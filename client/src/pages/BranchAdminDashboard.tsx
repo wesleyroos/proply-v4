@@ -27,6 +27,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface BranchMetrics {
   totalAgents: number;
@@ -64,9 +65,9 @@ export default function BranchAdminDashboard() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<BranchMetrics>({
-    queryKey: ["/api/branch/metrics", user?.branchId],
+    queryKey: ["/api/branch/metrics", user?.branchId, timeFilter],
     queryFn: async () => {
-      const response = await fetch(`/api/branch/${user?.branchId}/metrics`, {
+      const response = await fetch(`/api/branch/${user?.branchId}/metrics?timeFilter=${timeFilter}`, {
         credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch metrics");
@@ -275,10 +276,44 @@ export default function BranchAdminDashboard() {
         {/* Property Reports */}
         <Card>
           <CardHeader>
-            <CardTitle>Property Reports</CardTitle>
-            <CardDescription>
-              Agent performance with valuation reports across all listing statuses
-            </CardDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>Property Reports</CardTitle>
+                <CardDescription>
+                  Agent performance with valuation reports across all listing statuses
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={timeFilter === '30' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeFilter('30')}
+                >
+                  Last 30 Days
+                </Button>
+                <Button
+                  variant={timeFilter === '90' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeFilter('90')}
+                >
+                  Last 90 Days
+                </Button>
+                <Button
+                  variant={timeFilter === '365' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeFilter('365')}
+                >
+                  Last Year
+                </Button>
+                <Button
+                  variant={timeFilter === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeFilter('all')}
+                >
+                  All Time
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
