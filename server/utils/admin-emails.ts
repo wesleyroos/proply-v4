@@ -79,7 +79,7 @@ export async function sendAdminInvitationEmail(data: InvitationEmailData): Promi
   const msg = {
     to: data.email,
     from: {
-      email: import.meta.env.SENDGRID_FROM_EMAIL || 'noreply@proply.co.za',
+      email: process.env.SENDGRID_FROM_EMAIL || 'noreply@proply.co.za',
       name: 'Proply'
     },
     subject: `Invitation to join Proply as ${roleTitle}`,
@@ -96,12 +96,12 @@ export async function sendAdminInvitationEmail(data: InvitationEmailData): Promi
 }
 
 export async function sendInvitationReminderEmail(data: InvitationEmailData): Promise<void> {
-  if (!import.meta.env.SENDGRID_API_KEY) {
+  if (!process.env.SENDGRID_API_KEY) {
     console.log('SendGrid API key not configured, skipping reminder email send');
     return;
   }
 
-  const invitationUrl = `${import.meta.env.VITE_APP_URL || 'http://localhost:5000'}/accept-invitation?token=${data.invitationToken}`;
+  const invitationUrl = `${process.env.VITE_APP_URL || 'http://localhost:5000'}/accept-invitation?token=${data.invitationToken}`;
   
   const roleTitle = data.role === 'franchise_admin' ? 'Franchise Administrator' : 'Branch Administrator';
   const agencyName = data.franchiseName || data.branchName || 'Unknown Agency';
@@ -148,7 +148,7 @@ export async function sendInvitationReminderEmail(data: InvitationEmailData): Pr
   const msg = {
     to: data.email,
     from: {
-      email: import.meta.env.SENDGRID_FROM_EMAIL || 'noreply@proply.co.za',
+      email: process.env.SENDGRID_FROM_EMAIL || 'noreply@proply.co.za',
       name: 'Proply'
     },
     subject: `Reminder: Accept your Proply ${roleTitle} invitation`,
