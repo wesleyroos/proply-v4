@@ -193,7 +193,7 @@ export default function AdminPage() {
       plan,
     }: {
       userId: number;
-      action: "suspend" | "unsuspend" | "change-plan" | "send-reset-link";
+      action: "suspend" | "unsuspend" | "change-plan" | "send-reset-link" | "delete";
       plan?: "free" | "pro";
     }) => {
       const response = await fetch(`/api/admin/users/${userId}/${action}`, {
@@ -613,6 +613,20 @@ export default function AdminPage() {
                                       >
                                         <Ban className="mr-2 h-4 w-4" />
                                         {user.suspended ? "Unsuspend" : "Suspend"}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          if (window.confirm(`Are you sure you want to permanently delete ${user.email}? This action cannot be undone.`)) {
+                                            userActionMutation.mutate({
+                                              userId: user.id,
+                                              action: "delete",
+                                            });
+                                          }
+                                        }}
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete User
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
