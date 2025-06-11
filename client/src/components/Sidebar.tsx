@@ -40,27 +40,31 @@ export default function Sidebar() {
       title: "Dashboard",
       icon: LayoutDashboard,
       href: "/dashboard",
-    },
-    {
-      title: "Property Analyzer",
-      icon: Calculator,
-      href: "/dashboard/property-analyzer",
-    },
-
-    {
-      title: "Rent Compare",
-      icon: Building2,
-      href: "/dashboard/rent-compare",
-    },
-
-    {
-      title: "Properties",
-      icon: Library,
-      href: "/properties",
-    },
+    }
   ];
 
-  // Add PropData Listings for admins
+  // Add user-specific tools only for regular users and system admins (not agency admins)
+  if ((user?.role === 'user' || user?.isAdmin) && user?.role !== 'franchise_admin' && user?.role !== 'branch_admin') {
+    navItems.push(
+      {
+        title: "Property Analyzer",
+        icon: Calculator,
+        href: "/dashboard/property-analyzer",
+      },
+      {
+        title: "Rent Compare",
+        icon: Building2,
+        href: "/dashboard/rent-compare",
+      },
+      {
+        title: "Properties",
+        icon: Library,
+        href: "/properties",
+      }
+    );
+  }
+
+  // Add PropData Listings for all admin types
   if (user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin') {
     navItems.push({
       title: "PropData Listings",
