@@ -60,6 +60,15 @@ export default function Sidebar() {
     },
   ];
 
+  // Add PropData Listings for admins
+  if (user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin') {
+    navItems.push({
+      title: "PropData Listings",
+      icon: Database,
+      href: "/propdata-listings",
+    });
+  }
+
   return (
     <aside
       className={cn(

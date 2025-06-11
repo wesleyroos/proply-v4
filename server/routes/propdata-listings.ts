@@ -60,19 +60,24 @@ router.get("/propdata/listings", async (req, res) => {
       .leftJoin(valuationReports, eq(propdataListings.propdataId, valuationReports.propertyId));
 
     // Apply agency-based filtering based on user role
+    let listings;
     if (req.user?.role === 'branch_admin' && req.user?.branchId) {
       // Branch admins see only their specific branch properties
-      query = query.where(eq(propdataListings.branchId, req.user.branchId));
+      listings = await query
+        .where(eq(propdataListings.branchId, req.user.branchId))
+        .orderBy(desc(propdataListings.listingDate));
     } else if (req.user?.role === 'franchise_admin' && req.user?.franchiseId) {
       // Franchise admins see all branches within their franchise
-      query = query.where(eq(agencyBranches.id, req.user.franchiseId));
+      listings = await query
+        .where(eq(agencyBranches.id, req.user.franchiseId))
+        .orderBy(desc(propdataListings.listingDate));
+    } else {
+      // System admins see all properties (no additional filtering)
+      listings = await query.orderBy(desc(propdataListings.listingDate));
     }
-    // System admins see all properties (no additional filtering)
-
-    const listings = await query.orderBy(desc(propdataListings.listingDate));
     
     // Parse JSON fields in the response
-    const parsedListings = listings.map(listing => ({
+    const parsedListings = listings.map((listing: any) => ({
       ...listing,
       images: typeof listing.images === 'string' ? 
         (() => {

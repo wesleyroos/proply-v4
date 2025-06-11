@@ -120,7 +120,7 @@ export default function PropdataListingsPage() {
   // Query to fetch PropData listings from database
   const { data, isLoading, error, refetch } = useQuery<PropdataListing[]>({
     queryKey: ['/api/propdata/listings'],
-    enabled: !!user?.isAdmin, // Only fetch if user is admin
+    enabled: !!(user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin'), // Allow all admin types
   });
 
   // Query to fetch sync status and last sync information
