@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
+import { useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -64,6 +65,7 @@ export default function BranchAdminDashboard() {
   const [sortField, setSortField] = useState<SortField>('coverage');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
+  const [persistedData, setPersistedData] = useState<BranchMetrics | null>(null);
 
   const { data: metrics, isLoading: metricsLoading, isFetching } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId, timeFilter],
@@ -79,6 +81,16 @@ export default function BranchAdminDashboard() {
     refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 
+  // Keep previous data visible during transitions
+  useEffect(() => {
+    if (metrics && !isFetching) {
+      setPersistedData(metrics);
+    }
+  }, [metrics, isFetching]);
+
+  // Use persisted data when fetching new data
+  const displayData = isFetching && persistedData ? persistedData : metrics;
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -93,7 +105,7 @@ export default function BranchAdminDashboard() {
     return sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
   };
 
-  const sortedAgents = metrics?.agentReportCoverage.slice().sort((a, b) => {
+  const sortedAgents = displayData?.agentReportCoverage?.slice().sort((a, b) => {
     let aValue: string | number;
     let bValue: string | number;
 
@@ -207,7 +219,7 @@ export default function BranchAdminDashboard() {
     );
   }
 
-  if (!metrics) {
+  if (!displayData) {
     return (
       <div className="p-8">
         <Card>

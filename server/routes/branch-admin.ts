@@ -119,7 +119,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
           COUNT(CASE WHEN status = 'Archived' THEN 1 END) as archived_count,
           COUNT(CASE WHEN status = 'Valuation' THEN 1 END) as valuation_count,
           COALESCE(SUM(CASE 
-            WHEN status IN ('Active', 'Pending') 
+            WHEN status = 'Active' 
             AND price IS NOT NULL 
             AND price::text ~ '^[0-9.]+$'
             THEN price::numeric 
