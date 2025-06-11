@@ -472,10 +472,10 @@ export default function AdminPage() {
                               </TableHead>
                               <TableHead>Name</TableHead>
                               <TableHead
-                                onClick={() => handleSort("userType")}
+                                onClick={() => handleSort("role")}
                                 className="cursor-pointer"
                               >
-                                User Type <SortIndicator column="userType" />
+                                Role <SortIndicator column="role" />
                               </TableHead>
                               <TableHead>Company</TableHead>
                               <TableHead
@@ -512,15 +512,28 @@ export default function AdminPage() {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex items-center gap-2">
-                                    {user.userType === "corporate" ? (
-                                      <Building2 className="h-4 w-4" />
-                                    ) : (
-                                      <Users className="h-4 w-4" />
+                                    {user.role === "system_admin" && (
+                                      <Shield className="h-4 w-4 text-red-600" />
                                     )}
-                                    {user.userType}
-                                    {user.isAdmin && (
-                                      <Shield className="h-4 w-4 text-blue-600" />
+                                    {user.role === "franchise_admin" && (
+                                      <Building2 className="h-4 w-4 text-blue-600" />
                                     )}
+                                    {user.role === "branch_admin" && (
+                                      <Users className="h-4 w-4 text-green-600" />
+                                    )}
+                                    {!user.role && <Users className="h-4 w-4 text-gray-400" />}
+                                    <span className={cn(
+                                      "px-2 py-1 rounded-full text-xs font-medium",
+                                      user.role === "system_admin" && "bg-red-100 text-red-800",
+                                      user.role === "franchise_admin" && "bg-blue-100 text-blue-800",
+                                      user.role === "branch_admin" && "bg-green-100 text-green-800",
+                                      !user.role && "bg-gray-100 text-gray-800"
+                                    )}>
+                                      {user.role === "system_admin" ? "System Admin" :
+                                       user.role === "franchise_admin" ? "Franchise Admin" :
+                                       user.role === "branch_admin" ? "Branch Admin" :
+                                       "User"}
+                                    </span>
                                   </div>
                                 </TableCell>
                                 <TableCell>{user.company || "—"}</TableCell>
