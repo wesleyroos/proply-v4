@@ -182,10 +182,11 @@ export function registerRoutes(app: Express): Server {
 
       console.log("Fetched user data:", {
         id: normalizedUser.id,
-        company: normalizedUser.company,
-        vatNumber: normalizedUser.vatNumber,
-        registrationNumber: normalizedUser.registrationNumber,
-        businessAddress: normalizedUser.businessAddress
+        email: normalizedUser.email,
+        role: normalizedUser.role,
+        franchiseId: normalizedUser.franchiseId,
+        branchId: normalizedUser.branchId,
+        isAdmin: normalizedUser.isAdmin
       });
 
       res.json(normalizedUser);
