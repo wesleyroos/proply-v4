@@ -204,11 +204,14 @@ export default function AcceptInvitationPage() {
               <div className="text-sm space-y-1">
                 <p><strong>Email:</strong> {invitationDetails.email}</p>
                 <p><strong>Role:</strong> {roleDisplay}</p>
-                {invitationDetails.franchiseName && (
-                  <p><strong>Franchise:</strong> {invitationDetails.franchiseName}</p>
+                {invitationDetails.agencyId && (
+                  <p><strong>Agency ID:</strong> {invitationDetails.agencyId}</p>
                 )}
-                {invitationDetails.branchName && (
-                  <p><strong>Branch:</strong> {invitationDetails.branchName}</p>
+                {invitationDetails.franchiseId && (
+                  <p><strong>Franchise ID:</strong> {invitationDetails.franchiseId}</p>
+                )}
+                {invitationDetails.branchId && (
+                  <p><strong>Branch ID:</strong> {invitationDetails.branchId}</p>
                 )}
                 <p><strong>Invited by:</strong> {invitationDetails.invitedBy.firstName} {invitationDetails.invitedBy.lastName}</p>
               </div>
