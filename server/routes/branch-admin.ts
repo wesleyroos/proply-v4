@@ -94,7 +94,10 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
       WITH agent_listings AS (
         SELECT 
           agent_name,
-          COUNT(*) as listings_count
+          COUNT(*) as listings_count,
+          COUNT(CASE WHEN status = 'Active' THEN 1 END) as active_count,
+          COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_count,
+          COUNT(CASE WHEN status = 'Sold' THEN 1 END) as sold_count
         FROM propdata_listings
         WHERE branch_id = ${branchId}
           AND agent_name IS NOT NULL 
@@ -115,6 +118,9 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
       SELECT 
         al.agent_name,
         al.listings_count,
+        al.active_count,
+        al.pending_count,
+        al.sold_count,
         COALESCE(ar.reports_count, 0) as reports_count,
         CASE 
           WHEN al.listings_count > 0 THEN 

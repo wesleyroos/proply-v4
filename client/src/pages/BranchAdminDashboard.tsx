@@ -42,6 +42,9 @@ interface BranchMetrics {
   agentReportCoverage: {
     agent_name: string;
     listings_count: number;
+    active_count: number;
+    pending_count: number;
+    sold_count: number;
     reports_count: number;
     coverage: number; // percentage
   }[];
@@ -298,7 +301,14 @@ export default function BranchAdminDashboard() {
                         {agent.agent_name}
                       </TableCell>
                       <TableCell className="text-center py-1">
-                        {agent.listings_count}
+                        <div className="text-sm">
+                          <div className="font-medium">{agent.listings_count}</div>
+                          <div className="text-xs text-gray-500">
+                            <span className="text-green-600">{agent.active_count}</span>/
+                            <span className="text-yellow-600">{agent.pending_count}</span>/
+                            <span className="text-blue-600">{agent.sold_count}</span>
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell className="text-center py-1">
                         {agent.reports_count}
