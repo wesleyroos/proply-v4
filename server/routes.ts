@@ -48,6 +48,7 @@ import sharp from 'sharp';
 import propdataReportsRouter from './routes/propdata-reports';
 import reportActivityRouter from './routes/report-activity';
 import adminInvitationsRouter from './routes/admin-invitations';
+import branchAdminRouter from './routes/branch-admin';
 
 // Extend Express.User to include our schema
 declare global {

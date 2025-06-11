@@ -9,6 +9,8 @@ import { useProAccess } from "@/hooks/use-pro-access";
 import { formatter } from "../utils/formatting";
 import { Building2, Calculator, Home, ChartBar, ArrowRight, Sparkles, CheckCircle } from "lucide-react";
 import DashboardMap from "@/components/DashboardMap";
+import BranchAdminDashboard from "./BranchAdminDashboard";
+import FranchiseAdminDashboard from "./FranchiseAdminDashboard";
 
 interface CompareProperty {
   id: number;
@@ -48,6 +50,15 @@ export default function DashboardPage() {
   const { user } = useUser();
   const { hasAccess: hasProAccess } = useProAccess();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // Route to specialized dashboards based on user role
+  if (user?.role === 'branch_admin') {
+    return <BranchAdminDashboard />;
+  }
+  
+  if (user?.role === 'franchise_admin') {
+    return <FranchiseAdminDashboard />;
+  }
 
   // Fetch property analyzer properties with user-specific query key
   const { data: analyzerProperties, isLoading: isLoadingAnalyzer } = useQuery<AnalyzerProperty[]>({
