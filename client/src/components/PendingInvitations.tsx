@@ -42,7 +42,12 @@ interface PendingInvitation {
   branchName?: string;
   createdAt: string;
   expiresAt: string;
-  invitedBy: string;
+  invitedBy: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
 
 export function PendingInvitations() {
@@ -200,7 +205,7 @@ export function PendingInvitations() {
                     {formatDistanceToNow(new Date(invitation.createdAt), { addSuffix: true })}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    by {invitation.invitedBy}
+                    by {invitation.invitedBy.firstName} {invitation.invitedBy.lastName}
                   </div>
                 </TableCell>
                 <TableCell>
