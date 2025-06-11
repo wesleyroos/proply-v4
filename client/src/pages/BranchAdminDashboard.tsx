@@ -438,7 +438,12 @@ export default function BranchAdminDashboard() {
                       </TableCell>
                       <TableCell className="text-center py-1">
                         <div className="text-sm font-medium">
-                          R{(agent.total_active_value || 0).toLocaleString()}
+                          {(() => {
+                            const value = Number(agent.total_active_value) || 0;
+                            if (value === 0) return 'R0';
+                            const millions = value / 1000000;
+                            return `R${millions.toFixed(1)}M`;
+                          })()}
                         </div>
                       </TableCell>
                       <TableCell className="text-center py-1">
