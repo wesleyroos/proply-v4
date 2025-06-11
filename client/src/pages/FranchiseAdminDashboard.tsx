@@ -67,7 +67,7 @@ export default function FranchiseAdminDashboard() {
   // Redirect if not franchise admin
   if (!isFranchiseAdmin()) {
     return (
-      <div className="container py-6">
+      <div className="p-8">
         <Card>
           <CardContent className="pt-6">
             <p className="text-destructive">Access denied. Franchise admin privileges required.</p>
@@ -133,7 +133,7 @@ export default function FranchiseAdminDashboard() {
 
   if (metricsLoading) {
     return (
-      <div className="container py-6">
+      <div className="p-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
@@ -142,7 +142,7 @@ export default function FranchiseAdminDashboard() {
   }
 
   return (
-    <div className="container py-6 space-y-6">
+    <div className="p-8 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

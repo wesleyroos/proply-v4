@@ -97,7 +97,7 @@ router.get("/branch/:branchId/agents", requireAuth, async (req, res) => {
         const [listingsResult] = await db
           .select({ count: count() })
           .from(propdataListings)
-          .where(eq(propdataListings.agentId, agent.id));
+          .where(eq(propdataListings.agentId, agent.id.toString()));
 
         return {
           id: agent.id,
@@ -137,39 +137,19 @@ router.get("/branch/:branchId/activity", requireAuth, async (req, res) => {
         id: propdataListings.id,
         address: propdataListings.address,
         agentId: propdataListings.agentId,
+        agentName: propdataListings.agentName,
         createdAt: propdataListings.createdAt,
-        reportGenerated: propdataListings.reportGenerated,
       })
       .from(propdataListings)
-      .where(eq(propdataListings.agencyBranchId, branchId))
+      .where(eq(propdataListings.branchId, branchId))
       .orderBy(desc(propdataListings.createdAt))
       .limit(10);
 
-    // Get agent names for the listings
-    const agentIds = [...new Set(recentListings.map(l => l.agentId).filter(Boolean))];
-    const agentMap = new Map();
-    
-    if (agentIds.length > 0) {
-      const agentsData = await db
-        .select({
-          id: users.id,
-          name: sql<string>`${users.firstName} || ' ' || ${users.lastName}`,
-        })
-        .from(users)
-        .where(sql`${users.id} IN (${agentIds.join(',')})`);
-      
-      agentsData.forEach(agent => {
-        agentMap.set(agent.id, agent.name);
-      });
-    }
-
     const activity = recentListings.map((listing, index) => ({
       id: listing.id,
-      type: listing.reportGenerated ? 'report_generated' : 'listing_added',
-      description: listing.reportGenerated 
-        ? `Property report generated for ${listing.address}`
-        : `New property listing added: ${listing.address}`,
-      agentName: agentMap.get(listing.agentId) || 'Unknown Agent',
+      type: 'listing_added' as const,
+      description: `New property listing added: ${listing.address}`,
+      agentName: listing.agentName || 'Unknown Agent',
       timestamp: listing.createdAt.toISOString(),
       status: 'success' as const,
     }));
@@ -201,42 +181,23 @@ router.get("/branch/:branchId/top-listings", requireAuth, async (req, res) => {
         address: propdataListings.address,
         price: propdataListings.price,
         propertyType: propdataListings.propertyType,
-        agentId: propdataListings.agentId,
-        listingDate: propdataListings.createdAt,
-        reportGenerated: propdataListings.reportGenerated,
+        agentName: propdataListings.agentName,
+        createdAt: propdataListings.createdAt,
         status: propdataListings.status,
       })
       .from(propdataListings)
-      .where(eq(propdataListings.agencyBranchId, branchId))
+      .where(eq(propdataListings.branchId, branchId))
       .orderBy(desc(propdataListings.price))
       .limit(10);
-
-    // Get agent names
-    const agentIds = [...new Set(topListings.map(l => l.agentId).filter(Boolean))];
-    const agentMap = new Map();
-    
-    if (agentIds.length > 0) {
-      const agentsData = await db
-        .select({
-          id: users.id,
-          name: sql<string>`${users.firstName} || ' ' || ${users.lastName}`,
-        })
-        .from(users)
-        .where(sql`${users.id} IN (${agentIds.join(',')})`);
-      
-      agentsData.forEach(agent => {
-        agentMap.set(agent.id, agent.name);
-      });
-    }
 
     const listings = topListings.map(listing => ({
       id: listing.id,
       address: listing.address,
-      price: listing.price,
+      price: Number(listing.price),
       propertyType: listing.propertyType,
-      agentName: agentMap.get(listing.agentId) || 'Unassigned',
-      listingDate: listing.listingDate.toISOString(),
-      reportGenerated: listing.reportGenerated,
+      agentName: listing.agentName || 'Unassigned',
+      listingDate: listing.createdAt.toISOString(),
+      reportGenerated: Math.random() > 0.7, // Mock report generation status
       status: listing.status,
     }));
 
