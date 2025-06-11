@@ -47,7 +47,6 @@ interface BranchMetrics {
 
 export default function BranchAdminDashboard() {
   const { user } = useUser();
-  const [showCoverage, setShowCoverage] = useState(false);
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId],
@@ -191,30 +190,33 @@ export default function BranchAdminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-md border">
+            <div className="max-w-2xl">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Agent</TableHead>
-                    <TableHead className="text-center">Listings</TableHead>
-                    <TableHead className="text-center">Reports</TableHead>
-                    <TableHead className="text-center">Coverage</TableHead>
+                  <TableRow className="h-8">
+                    <TableHead className="py-2">Agent</TableHead>
+                    <TableHead className="text-center py-2 w-20">Listings</TableHead>
+                    <TableHead className="text-center py-2 w-20">Reports</TableHead>
+                    <TableHead className="text-center py-2 w-24">Coverage</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {metrics.agentReportCoverage.map((agent, index) => (
-                    <TableRow key={agent.agent_name || index}>
-                      <TableCell className="font-medium">
+                    <TableRow key={agent.agent_name || index} className="h-8">
+                      <TableCell className="font-medium py-1">
                         {agent.agent_name}
                       </TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className="text-center py-1">
                         {agent.listings_count}
                       </TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className="text-center py-1">
                         {agent.reports_count}
                       </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={agent.coverage > 50 ? "default" : agent.coverage > 20 ? "secondary" : "destructive"}>
+                      <TableCell className="text-center py-1">
+                        <Badge 
+                          variant={agent.coverage > 50 ? "default" : agent.coverage > 20 ? "secondary" : "destructive"}
+                          className="text-xs px-2 py-0"
+                        >
                           {agent.coverage}%
                         </Badge>
                       </TableCell>
