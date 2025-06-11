@@ -55,11 +55,13 @@ interface BranchMetrics {
 
 type SortField = 'agent_name' | 'listings_count' | 'active_count' | 'pending_count' | 'sold_count' | 'archived_count' | 'valuation_count' | 'total_active_value' | 'reports_count' | 'coverage';
 type SortDirection = 'asc' | 'desc';
+type TimeFilter = '30' | '90' | '365' | 'all';
 
 export default function BranchAdminDashboard() {
   const { user } = useUser();
   const [sortField, setSortField] = useState<SortField>('coverage');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId],

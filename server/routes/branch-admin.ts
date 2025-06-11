@@ -100,7 +100,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
           COUNT(CASE WHEN status = 'Sold' THEN 1 END) as sold_count,
           COUNT(CASE WHEN status = 'Archived' THEN 1 END) as archived_count,
           COUNT(CASE WHEN status = 'Valuation' THEN 1 END) as valuation_count,
-          COALESCE(SUM(CASE WHEN status IN ('Active', 'Pending') THEN CAST(REPLACE(price, '.00', '') AS NUMERIC) END), 0) as total_active_value
+          COALESCE(SUM(CASE WHEN status IN ('Active', 'Pending') THEN CAST(price AS NUMERIC) END), 0) as total_active_value
         FROM propdata_listings
         WHERE branch_id = ${branchId}
           AND agent_name IS NOT NULL 
