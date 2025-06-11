@@ -237,7 +237,7 @@ export default function BranchAdminDashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Branch Dashboard</h1>
           <p className="text-muted-foreground">
-            {metrics.branchName} - Key metrics overview
+            {displayData.branchName} - Key metrics overview
           </p>
         </div>
 
@@ -249,14 +249,14 @@ export default function BranchAdminDashboard() {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{metrics.listingsByStatus.total.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{displayData.listingsByStatus.total.toLocaleString()}</div>
               <div className="flex gap-2 mt-2">
-                <Badge variant="default">{metrics.listingsByStatus.active} Active</Badge>
-                <Badge variant="secondary">{metrics.listingsByStatus.pending} Pending</Badge>
-                <Badge variant="outline">{metrics.listingsByStatus.sold} Sold</Badge>
+                <Badge variant="default">{displayData.listingsByStatus.active} Active</Badge>
+                <Badge variant="secondary">{displayData.listingsByStatus.pending} Pending</Badge>
+                <Badge variant="outline">{displayData.listingsByStatus.sold} Sold</Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Property listings for {metrics.branchName}
+                Property listings for {displayData.branchName}
               </p>
             </CardContent>
           </Card>
@@ -267,9 +267,9 @@ export default function BranchAdminDashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{metrics.reportsThisMonth}</div>
+              <div className="text-2xl font-bold">{displayData.reportsThisMonth}</div>
               <p className="text-xs text-muted-foreground">
-                Generated this month ({metrics.reportsLastMonth} last month)
+                Generated this month ({displayData.reportsLastMonth} last month)
               </p>
             </CardContent>
           </Card>
@@ -280,7 +280,7 @@ export default function BranchAdminDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{metrics.totalAgents}</div>
+              <div className="text-2xl font-bold">{displayData.totalAgents}</div>
               <p className="text-xs text-muted-foreground">
                 Active agents
               </p>
