@@ -137,6 +137,9 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
       ORDER BY coverage DESC, al.agent_name
     `);
 
+    // Debug: Log the first agent's data to see what columns are returned
+    console.log("Sample agent data:", agentCoverage.rows[0]);
+
     const metrics = {
       totalAgents: totalAgentsResult.count as number,
       listingsByStatus: listingsByStatus,
