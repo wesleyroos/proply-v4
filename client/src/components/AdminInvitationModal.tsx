@@ -75,7 +75,7 @@ export function AdminInvitationModal({ trigger, onSuccess, open: controlledOpen,
   });
 
   // Fetch available agencies
-  const { data: agencies, isLoading: agenciesLoading } = useQuery<Agency[]>({
+  const { data: agenciesData, isLoading: agenciesLoading } = useQuery<{agencies: Agency[]}>({
     queryKey: ["/api/agencies"],
     queryFn: async () => {
       const response = await fetch("/api/agencies", {
@@ -85,6 +85,8 @@ export function AdminInvitationModal({ trigger, onSuccess, open: controlledOpen,
       return response.json();
     },
   });
+
+  const agencies = agenciesData?.agencies || [];
 
   const invitationMutation = useMutation({
     mutationFn: async (data: InvitationForm) => {
