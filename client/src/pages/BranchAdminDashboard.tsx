@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useUser, usePermissions } from "@/hooks/use-user";
+import { useUser } from "@/hooks/use-user";
 import {
   Card,
   CardContent,
@@ -30,7 +30,6 @@ interface BranchMetrics {
 
 export default function BranchAdminDashboard() {
   const { user } = useUser();
-  const { isBranchAdmin } = usePermissions();
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId],
@@ -41,11 +40,11 @@ export default function BranchAdminDashboard() {
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
-    enabled: !!user?.branchId,
+    enabled: !!user?.branchId && user?.role === 'branch_admin',
   });
 
   // Redirect if not branch admin
-  if (!isBranchAdmin()) {
+  if (user?.role !== 'branch_admin') {
     return (
       <div className="p-8">
         <Card>

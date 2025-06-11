@@ -41,22 +41,65 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
       .from(propdataListings)
       .where(eq(propdataListings.branchId, branchId));
 
-    // Get reports generated this month (mock data for now)
-    const reportsGenerated = Math.floor(Math.random() * 50) + 10;
-    
-    // Calculate mock revenue (this would come from actual billing data)
-    const monthlyRevenue = reportsGenerated * 150; // R150 per report
-    
-    // Mock growth calculation
-    const monthlyGrowth = Math.floor(Math.random() * 20) + 5;
+    // Get reports generated this month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [reportsThisMonth] = await db
+      .select({ count: count() })
+      .from(valuationReports)
+      .innerJoin(users, eq(valuationReports.userId, users.id))
+      .where(
+        and(
+          eq(users.branchId, branchId),
+          sql`${valuationReports.createdAt} >= ${startOfMonth}`
+        )
+      );
+
+    // Get agent report coverage data
+    const agentCoverage = await db.execute(sql`
+      WITH agent_listings AS (
+        SELECT 
+          u.id as agent_id,
+          u.first_name || ' ' || COALESCE(u.last_name, '') as agent_name,
+          COUNT(pl.id) as listings_count
+        FROM users u
+        LEFT JOIN propdata_listings pl ON pl.branch_id = u.branch_id
+        WHERE u.branch_id = ${branchId}
+        GROUP BY u.id, u.first_name, u.last_name
+      ),
+      agent_reports AS (
+        SELECT 
+          u.id as agent_id,
+          COUNT(vr.id) as reports_count
+        FROM users u
+        LEFT JOIN valuation_reports vr ON vr.user_id = u.id
+        WHERE u.branch_id = ${branchId}
+          AND vr.created_at >= ${startOfMonth}
+        GROUP BY u.id
+      )
+      SELECT 
+        al.agent_name,
+        al.listings_count,
+        COALESCE(ar.reports_count, 0) as reports_count,
+        CASE 
+          WHEN al.listings_count > 0 THEN 
+            ROUND((COALESCE(ar.reports_count, 0)::decimal / al.listings_count::decimal) * 100, 1)
+          ELSE 0 
+        END as coverage
+      FROM agent_listings al
+      LEFT JOIN agent_reports ar ON al.agent_id = ar.agent_id
+      WHERE al.listings_count > 0
+      ORDER BY coverage DESC, al.agent_name
+    `);
 
     const metrics = {
       totalAgents: totalAgentsResult.count,
       activeListings: activeListingsResult.count,
-      reportsGenerated,
-      monthlyRevenue,
-      monthlyGrowth,
+      reportsGenerated: reportsThisMonth.count,
       branchName: branch.branchName,
+      agentReportCoverage: agentCoverage.rows,
     };
 
     res.json(metrics);
