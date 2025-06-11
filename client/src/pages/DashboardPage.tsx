@@ -51,15 +51,6 @@ export default function DashboardPage() {
   const { hasAccess: hasProAccess } = useProAccess();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Route to specialized dashboards based on user role
-  if (user?.role === 'branch_admin') {
-    return <BranchAdminDashboard />;
-  }
-  
-  if (user?.role === 'franchise_admin') {
-    return <FranchiseAdminDashboard />;
-  }
-
   // Fetch property analyzer properties with user-specific query key
   const { data: analyzerProperties, isLoading: isLoadingAnalyzer } = useQuery<AnalyzerProperty[]>({
     queryKey: ['/api/property-analyzer/properties', user?.id],
@@ -71,6 +62,15 @@ export default function DashboardPage() {
     queryKey: ['/api/properties', user?.id],
     enabled: !!user?.id,
   });
+
+  // Route to specialized dashboards based on user role AFTER all hooks
+  if (user?.role === 'branch_admin') {
+    return <BranchAdminDashboard />;
+  }
+  
+  if (user?.role === 'franchise_admin') {
+    return <FranchiseAdminDashboard />;
+  }
 
   // Calculate total properties and breakdown
   const analyzerCount = analyzerProperties?.length || 0;
