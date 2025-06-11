@@ -42,12 +42,12 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
     // Get listings count by status for this branch
     const listingsStatusQuery = await db.execute(sql`
       SELECT 
-        listing_status,
+        status,
         COUNT(*) as count
       FROM propdata_listings
       WHERE branch_id = ${branchId}
-        AND listing_status IN ('Active', 'Pending', 'Sold')
-      GROUP BY listing_status
+        AND status IN ('Active', 'Pending', 'Sold')
+      GROUP BY status
     `);
     
     const listingsByStatus = {
@@ -58,7 +58,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
     };
     
     listingsStatusQuery.rows.forEach((row: any) => {
-      const status = row.listing_status?.toLowerCase();
+      const status = row.status?.toLowerCase();
       const count = parseInt(row.count);
       if (status === 'active') listingsByStatus.active = count;
       else if (status === 'pending') listingsByStatus.pending = count;
@@ -83,7 +83,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
         SELECT propdata_id 
         FROM propdata_listings 
         WHERE branch_id = ${branchId}
-          AND listing_status IN ('Active', 'Pending', 'Sold')
+          AND status IN ('Active', 'Pending', 'Sold')
       )
       AND vr.created_at >= ${startOfLastMonth}
     `);
@@ -99,7 +99,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
         WHERE branch_id = ${branchId}
           AND agent_name IS NOT NULL 
           AND agent_name != ''
-          AND listing_status IN ('Active', 'Pending', 'Sold')
+          AND status IN ('Active', 'Pending', 'Sold')
         GROUP BY agent_name
       ),
       agent_reports AS (
@@ -109,7 +109,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
         FROM propdata_listings pl
         LEFT JOIN valuation_reports vr ON vr.property_id = pl.propdata_id
         WHERE pl.branch_id = ${branchId}
-          AND pl.listing_status IN ('Active', 'Pending', 'Sold')
+          AND pl.status IN ('Active', 'Pending', 'Sold')
         GROUP BY pl.agent_name
       )
       SELECT 
