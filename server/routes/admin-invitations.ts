@@ -95,6 +95,7 @@ router.post("/", requireAdmin, async (req, res) => {
         lastName,
         role,
         token,
+        expiresAt,
         agencyName: agencyId ? 'Agency' : 'Platform', // TODO: Get actual agency name
         invitedBy: `${(req.user as any).firstName} ${(req.user as any).lastName}`,
       });
