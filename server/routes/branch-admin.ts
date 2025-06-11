@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { requireAuth } from "../auth";
 import { db } from "../../db";
-import { agencyBranches, users, propdataListings } from "../../db/schema";
+import { agencyBranches, users, propdataListings, valuationReports } from "../../db/schema";
 import { eq, and, count, desc, sql } from "drizzle-orm";
 
 const router = Router();
