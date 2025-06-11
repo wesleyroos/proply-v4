@@ -43,8 +43,8 @@ export default function BranchAdminDashboard() {
     enabled: !!user?.branchId && user?.role === 'branch_admin',
   });
 
-  // Redirect if not branch admin
-  if (user?.role !== 'branch_admin') {
+  // Show access denied if user is loaded but not branch admin
+  if (user && user.role !== 'branch_admin') {
     return (
       <div className="p-8">
         <Card>
@@ -52,6 +52,26 @@ export default function BranchAdminDashboard() {
             <p className="text-destructive">Access denied. Branch admin privileges required.</p>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  // Show loading while user data is being fetched
+  if (!user) {
+    return (
+      <div className="p-8">
+        <div className="space-y-6">
+          <div className="h-8 bg-gray-200 rounded animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardContent className="pt-6">
+                  <div className="h-20 bg-gray-200 rounded animate-pulse" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
