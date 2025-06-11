@@ -20,10 +20,19 @@ export async function sendAdminInvitationEmail(data: AdminInvitationEmailData): 
   }
 
   // Detect environment and set appropriate base URL
-  const isDevelopment = process.env.NODE_ENV !== 'production';
-  const baseUrl = isDevelopment 
-    ? 'http://localhost:5000' 
-    : (process.env.FRONTEND_URL || 'https://proply.co.za');
+  const isProduction = process.env.NODE_ENV === 'production';
+  const replitDevDomain = process.env.REPLIT_DEV_DOMAIN;
+  
+  let baseUrl;
+  if (isProduction) {
+    baseUrl = process.env.FRONTEND_URL || 'https://proply.co.za';
+  } else if (replitDevDomain) {
+    // In Replit development, use the dev domain
+    baseUrl = `https://${replitDevDomain}`;
+  } else {
+    // Local development
+    baseUrl = 'http://localhost:5000';
+  }
   
   const invitationUrl = `${baseUrl}/admin/accept-invitation?token=${data.token}`;
   
