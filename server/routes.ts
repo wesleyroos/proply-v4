@@ -2014,6 +2014,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', valuationRouter);
   app.use('/api', agenciesRouter);
   app.use('/api/admin/invitations', adminInvitationsRouter);
+  app.use('/api', branchAdminRouter);
   app.use('/api/propdata-debug', propdataDebugRouter);
   // PDF reports routes - integrated directly to avoid Vite routing conflicts
   // Test endpoint for basic PDF generation
