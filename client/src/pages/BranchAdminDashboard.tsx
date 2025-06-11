@@ -21,9 +21,9 @@ interface BranchMetrics {
   reportsGenerated: number;
   branchName: string;
   agentReportCoverage: {
-    agentName: string;
-    listingsCount: number;
-    reportsCount: number;
+    agent_name: string;
+    listings_count: number;
+    reports_count: number;
     coverage: number; // percentage
   }[];
 }
@@ -169,13 +169,13 @@ export default function BranchAdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {metrics.agentReportCoverage.map((agent) => (
-                <div key={agent.agentName} className="space-y-2">
+              {metrics.agentReportCoverage.map((agent, index) => (
+                <div key={agent.agent_name || index} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium">{agent.agentName}</span>
+                      <span className="font-medium">{agent.agent_name}</span>
                       <Badge variant="secondary">
-                        {agent.reportsCount}/{agent.listingsCount} listings
+                        {agent.reports_count}/{agent.listings_count} listings
                       </Badge>
                     </div>
                     <span className="text-sm font-medium">{agent.coverage}%</span>
