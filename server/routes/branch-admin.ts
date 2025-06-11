@@ -18,15 +18,15 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
     if (timeFilter === '30') {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      dateFilterCondition = `AND date_modified >= '${thirtyDaysAgo.toISOString().split('T')[0]}'`;
+      dateFilterCondition = `AND last_modified >= '${thirtyDaysAgo.toISOString().split('T')[0]}'`;
     } else if (timeFilter === '90') {
       const ninetyDaysAgo = new Date();
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-      dateFilterCondition = `AND date_modified >= '${ninetyDaysAgo.toISOString().split('T')[0]}'`;
+      dateFilterCondition = `AND last_modified >= '${ninetyDaysAgo.toISOString().split('T')[0]}'`;
     } else if (timeFilter === '365') {
       const oneYearAgo = new Date();
       oneYearAgo.setDate(oneYearAgo.getDate() - 365);
-      dateFilterCondition = `AND date_modified >= '${oneYearAgo.toISOString().split('T')[0]}'`;
+      dateFilterCondition = `AND last_modified >= '${oneYearAgo.toISOString().split('T')[0]}'`;
     }
 
     // Verify user has access to this branch
@@ -118,7 +118,12 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
           COUNT(CASE WHEN status = 'Sold' THEN 1 END) as sold_count,
           COUNT(CASE WHEN status = 'Archived' THEN 1 END) as archived_count,
           COUNT(CASE WHEN status = 'Valuation' THEN 1 END) as valuation_count,
-          0 as total_active_value
+          COALESCE(SUM(CASE 
+            WHEN status IN ('Active', 'Pending') 
+            AND price IS NOT NULL 
+            AND price::text ~ '^[0-9.]+$'
+            THEN price::numeric 
+          END), 0) as total_active_value
         FROM propdata_listings
         WHERE branch_id = ${branchId}
           AND agent_name IS NOT NULL 
