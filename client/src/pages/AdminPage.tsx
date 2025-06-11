@@ -6,6 +6,9 @@ import { useLocation } from "wouter";
 import type { SelectUser } from "@db/schema";
 import NotificationsMenu from "@/components/NotificationsMenu";
 import { Switch } from "@/components/ui/switch";
+import { AdminInvitationModal } from "@/components/AdminInvitationModal";
+import { PendingInvitations } from "@/components/PendingInvitations";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Components imports
 import {
@@ -67,6 +70,7 @@ import {
   ChevronDown,
   RefreshCcw,
   CreditCard,
+  UserPlus,
 } from "lucide-react";
 
 // Utils
@@ -147,6 +151,8 @@ export default function AdminPage() {
   const [isSandboxMode, setIsSandboxMode] = useState(() => {
     return localStorage.getItem('payfast_sandbox_mode') === 'true';
   });
+  const [isInvitationModalOpen, setIsInvitationModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("users");
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -399,12 +405,19 @@ export default function AdminPage() {
           />
         </div>
 
-        {/* Users Table Card */}
+        {/* Users Management Card */}
         <Card className="overflow-hidden">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>All Users</CardTitle>
+              <CardTitle>User Management</CardTitle>
               <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setIsInvitationModalOpen(true)}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add User
+                </Button>
                 <Input
                   placeholder="Search users..."
                   value={searchQuery}
@@ -448,11 +461,18 @@ export default function AdminPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            {usersLoading ? (
-              <p className="text-muted-foreground p-4">Loading users...</p>
-            ) : (
-              <div className="relative border rounded-md">
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="users">Users</TabsTrigger>
+                <TabsTrigger value="invitations">Pending Invitations</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="users" className="mt-4">
+                {usersLoading ? (
+                  <p className="text-muted-foreground p-4">Loading users...</p>
+                ) : (
+                  <div className="relative border rounded-md">
                 <div className="overflow-x-auto">
                   <div className="inline-block min-w-full align-middle">
                     <Table>
@@ -779,12 +799,23 @@ export default function AdminPage() {
                         ))}
                       </TableBody>
                     </Table>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="invitations" className="mt-4">
+                <PendingInvitations />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
+        
+        <AdminInvitationModal 
+          open={isInvitationModalOpen}
+          onOpenChange={setIsInvitationModalOpen}
+        />
       </div>
     </div>
   );
