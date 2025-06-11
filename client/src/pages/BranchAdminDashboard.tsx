@@ -47,12 +47,13 @@ interface BranchMetrics {
     sold_count: number;
     archived_count: number;
     valuation_count: number;
+    total_active_value: number;
     reports_count: number;
     coverage: number; // percentage
   }[];
 }
 
-type SortField = 'agent_name' | 'listings_count' | 'active_count' | 'pending_count' | 'sold_count' | 'archived_count' | 'valuation_count' | 'reports_count' | 'coverage';
+type SortField = 'agent_name' | 'listings_count' | 'active_count' | 'pending_count' | 'sold_count' | 'archived_count' | 'valuation_count' | 'total_active_value' | 'reports_count' | 'coverage';
 type SortDirection = 'asc' | 'desc';
 
 export default function BranchAdminDashboard() {
@@ -121,6 +122,10 @@ export default function BranchAdminDashboard() {
       case 'valuation_count':
         aValue = Number(a.valuation_count) || 0;
         bValue = Number(b.valuation_count) || 0;
+        break;
+      case 'total_active_value':
+        aValue = Number(a.total_active_value) || 0;
+        bValue = Number(b.total_active_value) || 0;
         break;
       case 'reports_count':
         aValue = Number(a.reports_count) || 0;
@@ -342,6 +347,15 @@ export default function BranchAdminDashboard() {
                       </div>
                     </TableHead>
                     <TableHead 
+                      className="text-center py-2 w-24 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('total_active_value')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Active Value
+                        {getSortIcon('total_active_value')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
                       className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
                       onClick={() => handleSort('reports_count')}
                     >
@@ -384,6 +398,11 @@ export default function BranchAdminDashboard() {
                       </TableCell>
                       <TableCell className="text-center py-1">
                         {agent.valuation_count}
+                      </TableCell>
+                      <TableCell className="text-center py-1">
+                        <div className="text-sm font-medium">
+                          R{(agent.total_active_value || 0).toLocaleString()}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center py-1">
                         {agent.reports_count}
