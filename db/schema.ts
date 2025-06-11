@@ -657,6 +657,7 @@ export const adminInvitations = pgTable("admin_invitations", {
   id: serial("id").primaryKey(),
   email: text("email").notNull(),
   role: text("role").notNull(),
+  agencyId: text("agency_id"), // Store PropData agency ID as string
   franchiseId: integer("franchise_id").references(() => agencyBranches.id),
   branchId: integer("branch_id").references(() => agencyBranches.id),
   token: text("token").unique().notNull().$defaultFn(() => createId()),

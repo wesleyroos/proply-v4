@@ -11,7 +11,7 @@ const router = Router();
 // Create admin invitation
 router.post("/", requireAdmin, async (req, res) => {
   try {
-    const { email, role, franchiseId, branchId, firstName, lastName } = req.body;
+    const { email, role, agencyId, firstName, lastName } = req.body;
     
     // Validate required fields
     if (!email || !role || !firstName || !lastName) {
@@ -25,6 +25,13 @@ router.post("/", requireAdmin, async (req, res) => {
     if (!validRoles.includes(role)) {
       return res.status(400).json({ 
         error: "Invalid role. Must be franchise_admin or branch_admin" 
+      });
+    }
+
+    // For agency admins, agencyId is required
+    if ((role === 'franchise_admin' || role === 'branch_admin') && !agencyId) {
+      return res.status(400).json({ 
+        error: "Agency ID required for agency admin roles" 
       });
     }
 
