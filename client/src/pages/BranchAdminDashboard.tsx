@@ -87,34 +87,36 @@ export default function BranchAdminDashboard() {
 
     switch (sortField) {
       case 'agent_name':
-        aValue = a.agent_name;
-        bValue = b.agent_name;
-        break;
+        aValue = a.agent_name || '';
+        bValue = b.agent_name || '';
+        // Always treat names as strings
+        return sortDirection === 'asc' 
+          ? (aValue as string).localeCompare(bValue as string)
+          : (bValue as string).localeCompare(aValue as string);
       case 'listings_count':
-        aValue = a.listings_count;
-        bValue = b.listings_count;
+        aValue = Number(a.listings_count) || 0;
+        bValue = Number(b.listings_count) || 0;
         break;
       case 'reports_count':
-        aValue = a.reports_count;
-        bValue = b.reports_count;
+        aValue = Number(a.reports_count) || 0;
+        bValue = Number(b.reports_count) || 0;
         break;
       case 'coverage':
-        aValue = a.coverage;
-        bValue = b.coverage;
+        aValue = Number(a.coverage) || 0;
+        bValue = Number(b.coverage) || 0;
         break;
       default:
         return 0;
     }
 
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection === 'asc' 
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    } else {
+    // For numeric fields
+    if (sortField !== 'agent_name') {
       return sortDirection === 'asc' 
         ? (aValue as number) - (bValue as number)
         : (bValue as number) - (aValue as number);
     }
+
+    return 0;
   });
 
   // Show access denied if user is loaded but not branch admin
