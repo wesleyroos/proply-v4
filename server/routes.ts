@@ -719,7 +719,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.post(
-    "/api/admin/users/:id/:action(suspend|unsuspend|change-plan|send-reset-link)",
+    "/api/admin/users/:id/:action(suspend|unsuspend|change-plan|send-reset-link|delete)",
     async (req, res) => {
       if (!req.isAuthenticated() || !req.user?.isAdmin) {
         return res.status(403).send("Not authorized");
@@ -743,15 +743,16 @@ export function registerRoutes(app: Express): Server {
           | "suspend"
           | "unsuspend"
           | "change-plan"
-          | "send-reset-link";
+          | "send-reset-link"
+          | "delete";
         
         if (action !== "send-reset-link") {
-          if (targetUser.isAdmin) {
-            return res.status(400).send("Cannot suspend admin users");
+          if (targetUser.isAdmin && (action === "suspend" || action === "unsuspend" || action === "delete")) {
+            return res.status(400).send(`Cannot ${action} admin users`);
           }
 
-          if (targetUser.id === req.user.id) {
-            return res.status(400).send("Cannot suspend yourself");
+          if (targetUser.id === req.user.id && (action === "suspend" || action === "delete")) {
+            return res.status(400).send(`Cannot ${action} yourself`);
           }
         }
 
@@ -798,6 +799,29 @@ export function registerRoutes(app: Express): Server {
           } catch (error) {
             console.error("Error sending password reset link:", error);
             res.status(500).json({ error: "Failed to send password reset link" });
+          }
+        } else if (action === "delete") {
+          // Handle user deletion
+          try {
+            // First, remove the access code reference from the user
+            await db
+              .update(users)
+              .set({ accessCodeId: null })
+              .where(eq(users.id, userId));
+
+            // Then delete any associated access codes
+            await db.delete(accessCodes).where(eq(accessCodes.usedBy, userId));
+
+            // Delete any properties owned by the user
+            await db.delete(properties).where(eq(properties.userId, userId));
+
+            // Finally, delete the user
+            await db.delete(users).where(eq(users.id, userId));
+
+            res.json({ message: "User deleted successfully" });
+          } catch (error) {
+            console.error("Error deleting user:", error);
+            res.status(500).json({ error: "Failed to delete user and associated data" });
           }
         } else {
           await db
