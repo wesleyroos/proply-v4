@@ -299,6 +299,7 @@ router.post("/:id/resend", requireAdmin, async (req, res) => {
         lastName: 'User',
         role: inv.role,
         token: inv.token,
+        expiresAt: newExpiresAt,
         agencyName: 'Agency',
         invitedBy: `${(req.user as any).firstName} ${(req.user as any).lastName}`,
       });
