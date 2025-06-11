@@ -45,12 +45,14 @@ interface BranchMetrics {
     active_count: number;
     pending_count: number;
     sold_count: number;
+    archived_count: number;
+    valuation_count: number;
     reports_count: number;
     coverage: number; // percentage
   }[];
 }
 
-type SortField = 'agent_name' | 'listings_count' | 'reports_count' | 'coverage';
+type SortField = 'agent_name' | 'listings_count' | 'active_count' | 'pending_count' | 'sold_count' | 'archived_count' | 'valuation_count' | 'reports_count' | 'coverage';
 type SortDirection = 'asc' | 'desc';
 
 export default function BranchAdminDashboard() {
@@ -99,6 +101,26 @@ export default function BranchAdminDashboard() {
       case 'listings_count':
         aValue = Number(a.listings_count) || 0;
         bValue = Number(b.listings_count) || 0;
+        break;
+      case 'active_count':
+        aValue = Number(a.active_count) || 0;
+        bValue = Number(b.active_count) || 0;
+        break;
+      case 'pending_count':
+        aValue = Number(a.pending_count) || 0;
+        bValue = Number(b.pending_count) || 0;
+        break;
+      case 'sold_count':
+        aValue = Number(a.sold_count) || 0;
+        bValue = Number(b.sold_count) || 0;
+        break;
+      case 'archived_count':
+        aValue = Number(a.archived_count) || 0;
+        bValue = Number(b.archived_count) || 0;
+        break;
+      case 'valuation_count':
+        aValue = Number(a.valuation_count) || 0;
+        bValue = Number(b.valuation_count) || 0;
         break;
       case 'reports_count':
         aValue = Number(a.reports_count) || 0;
@@ -248,11 +270,11 @@ export default function BranchAdminDashboard() {
           <CardHeader>
             <CardTitle>Property Reports</CardTitle>
             <CardDescription>
-              Agent performance with valuation reports (Active, Pending, Sold listings only)
+              Agent performance with valuation reports across all listing statuses
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="max-w-2xl">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="h-8">
@@ -266,16 +288,61 @@ export default function BranchAdminDashboard() {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="text-center py-2 w-20 cursor-pointer hover:bg-gray-50"
+                      className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
                       onClick={() => handleSort('listings_count')}
                     >
                       <div className="flex items-center justify-center gap-1">
-                        Listings
+                        Total
                         {getSortIcon('listings_count')}
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="text-center py-2 w-20 cursor-pointer hover:bg-gray-50"
+                      className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('active_count')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Active
+                        {getSortIcon('active_count')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('pending_count')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Pending
+                        {getSortIcon('pending_count')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('sold_count')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Sold
+                        {getSortIcon('sold_count')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('archived_count')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Archived
+                        {getSortIcon('archived_count')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleSort('valuation_count')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        Valuation
+                        {getSortIcon('valuation_count')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
                       onClick={() => handleSort('reports_count')}
                     >
                       <div className="flex items-center justify-center gap-1">
@@ -284,7 +351,7 @@ export default function BranchAdminDashboard() {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="text-center py-2 w-24 cursor-pointer hover:bg-gray-50"
+                      className="text-center py-2 w-20 cursor-pointer hover:bg-gray-50"
                       onClick={() => handleSort('coverage')}
                     >
                       <div className="flex items-center justify-center gap-1">
@@ -300,15 +367,23 @@ export default function BranchAdminDashboard() {
                       <TableCell className="font-medium py-1">
                         {agent.agent_name}
                       </TableCell>
+                      <TableCell className="text-center py-1 font-medium">
+                        {agent.listings_count}
+                      </TableCell>
                       <TableCell className="text-center py-1">
-                        <div className="text-sm">
-                          <div className="font-medium">{agent.listings_count}</div>
-                          <div className="text-xs text-gray-500">
-                            <span className="text-green-600">{agent.active_count}</span>/
-                            <span className="text-yellow-600">{agent.pending_count}</span>/
-                            <span className="text-blue-600">{agent.sold_count}</span>
-                          </div>
-                        </div>
+                        {agent.active_count}
+                      </TableCell>
+                      <TableCell className="text-center py-1">
+                        {agent.pending_count}
+                      </TableCell>
+                      <TableCell className="text-center py-1">
+                        {agent.sold_count}
+                      </TableCell>
+                      <TableCell className="text-center py-1">
+                        {agent.archived_count}
+                      </TableCell>
+                      <TableCell className="text-center py-1">
+                        {agent.valuation_count}
                       </TableCell>
                       <TableCell className="text-center py-1">
                         {agent.reports_count}

@@ -89,7 +89,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
     `);
     const reportsData = reportsQuery.rows[0];
 
-    // Get agent report coverage data from PropData listings (Active, Pending, Sold only)
+    // Get agent report coverage data from PropData listings (all statuses)
     const agentCoverage = await db.execute(sql`
       WITH agent_listings AS (
         SELECT 
@@ -97,12 +97,14 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
           COUNT(*) as listings_count,
           COUNT(CASE WHEN status = 'Active' THEN 1 END) as active_count,
           COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_count,
-          COUNT(CASE WHEN status = 'Sold' THEN 1 END) as sold_count
+          COUNT(CASE WHEN status = 'Sold' THEN 1 END) as sold_count,
+          COUNT(CASE WHEN status = 'Archived' THEN 1 END) as archived_count,
+          COUNT(CASE WHEN status = 'Valuation' THEN 1 END) as valuation_count
         FROM propdata_listings
         WHERE branch_id = ${branchId}
           AND agent_name IS NOT NULL 
           AND agent_name != ''
-          AND status IN ('Active', 'Pending', 'Sold')
+          AND status IS NOT NULL
         GROUP BY agent_name
       ),
       agent_reports AS (
@@ -112,7 +114,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
         FROM propdata_listings pl
         LEFT JOIN valuation_reports vr ON vr.property_id = pl.propdata_id
         WHERE pl.branch_id = ${branchId}
-          AND pl.status IN ('Active', 'Pending', 'Sold')
+          AND pl.status IS NOT NULL
         GROUP BY pl.agent_name
       )
       SELECT 
@@ -121,6 +123,8 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
         al.active_count,
         al.pending_count,
         al.sold_count,
+        al.archived_count,
+        al.valuation_count,
         COALESCE(ar.reports_count, 0) as reports_count,
         CASE 
           WHEN al.listings_count > 0 THEN 
@@ -129,6 +133,7 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
         END as coverage
       FROM agent_listings al
       LEFT JOIN agent_reports ar ON al.agent_name = ar.agent_name
+      WHERE al.listings_count > 0
       ORDER BY coverage DESC, al.agent_name
     `);
 
