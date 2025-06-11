@@ -688,6 +688,7 @@ export function registerRoutes(app: Express): Server {
           subscriptionStatus: users.subscriptionStatus,
           subscriptionExpiryDate: users.subscriptionExpiryDate,
           isAdmin: users.isAdmin,
+          role: users.role,
           accessCode: accessCodes.code,
           accessCodeUsedAt: accessCodes.usedAt,
 
