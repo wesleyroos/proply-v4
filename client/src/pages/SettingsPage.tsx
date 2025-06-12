@@ -446,13 +446,11 @@ function ProfileSection() {
                         <FormControl>
                           <Input 
                             {...field}
-                            placeholder="2018587662207"
                             maxLength={14}
                             onChange={(e) => handleRegistrationNumberChange(e, field.onChange)}
                           />
                         </FormControl>
                         <FormMessage />
-                        <p className="text-sm text-gray-500">Format: YYYY/NNNNNN/NN (slashes added automatically)</p>
                       </FormItem>
                     )}
                   />
