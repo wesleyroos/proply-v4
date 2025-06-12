@@ -558,7 +558,12 @@ function ProfileSection() {
               )}
               <div>
                 <span className="font-medium">Company Name: </span>
-                <span>{user?.company || "Not provided"}</span>
+                <span>
+                  {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
+                    ? (agencyProfile?.companyName || "Not provided")
+                    : (user?.company || "Not provided")
+                  }
+                </span>
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
