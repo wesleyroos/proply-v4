@@ -936,41 +936,50 @@ export default function SettingsPage() {
       setIsProcessingCard(true);
 
       try {
-        // Check if Yoco is in test mode from localStorage
-        // Default to test mode for development
-        const isYocoTestMode = localStorage.getItem('yoco_test_mode') !== 'false';
-        
-        // Create Yoco token (this would normally use Yoco SDK)
-        const tokenResponse = await fetch('/api/payment-methods/tokenize', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'x-yoco-test-mode': isYocoTestMode.toString()
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            cardNumber: cardForm.cardNumber.replace(/\s/g, ''),
-            expiryMonth: cardForm.expiryMonth,
-            expiryYear: cardForm.expiryYear,
-            cvv: cardForm.cvv,
-            cardholderName: cardForm.cardholderName
-          })
-        });
-
-        if (!tokenResponse.ok) {
-          const error = await tokenResponse.json();
-          throw new Error(error.message || 'Failed to process card');
+        // Check if Yoco SDK is loaded
+        if (typeof window.YocoSDK === 'undefined') {
+          throw new Error('Yoco SDK not loaded. Please refresh the page and try again.');
         }
 
-        const tokenData = await tokenResponse.json();
+        // Get environment mode from localStorage
+        const isTestMode = localStorage.getItem('yoco_test_mode') !== 'false';
+        
+        // Get the appropriate public key from environment
+        const publicKeyResponse = await fetch(`/api/yoco/public-key?test=${isTestMode}`, {
+          credentials: 'include'
+        });
+        
+        if (!publicKeyResponse.ok) {
+          throw new Error('Failed to get Yoco public key');
+        }
+        
+        const { publicKey } = await publicKeyResponse.json();
 
-        // Save payment method
+        // Initialize Yoco SDK with the correct public key
+        const yoco = new window.YocoSDK({
+          publicKey: publicKey
+        });
+
+        // Tokenize the card using Yoco SDK
+        const tokenResult = await yoco.tokenizeCard({
+          number: cardForm.cardNumber.replace(/\s/g, ''),
+          expiryMonth: cardForm.expiryMonth,
+          expiryYear: `20${cardForm.expiryYear}`, // Convert YY to YYYY
+          cvv: cardForm.cvv,
+          name: cardForm.cardholderName
+        });
+
+        if (tokenResult.error) {
+          throw new Error(tokenResult.error.message || 'Card tokenization failed');
+        }
+
+        // Save payment method with the token
         const saveResponse = await fetch('/api/payment-methods', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            token: tokenData.token,
+            token: tokenResult.token,
             lastFour: cardForm.cardNumber.slice(-4),
             cardType: detectCardType(cardForm.cardNumber),
             expiryMonth: cardForm.expiryMonth,
@@ -979,7 +988,8 @@ export default function SettingsPage() {
         });
 
         if (!saveResponse.ok) {
-          throw new Error('Failed to save payment method');
+          const error = await saveResponse.json();
+          throw new Error(error.message || 'Failed to save payment method');
         }
 
         toast({
@@ -995,6 +1005,7 @@ export default function SettingsPage() {
           cvv: '',
           cardholderName: ''
         });
+        setIsAddingCard(false);
         refetchPaymentMethods();
 
       } catch (error) {

@@ -2448,6 +2448,8 @@ export function registerRoutes(app: Express): Server {
         return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
       }
 
+      const { token, cardType, lastFour, expiryMonth, expiryYear } = req.body;
+
       if (!token || !cardType || !lastFour || !expiryMonth || !expiryYear) {
         return res.status(400).json({ error: 'Missing required token data' });
       }
@@ -2475,14 +2477,12 @@ export function registerRoutes(app: Express): Server {
       // Save the tokenized payment method
       await db.insert(agencyPaymentMethods).values({
         agencyBranchId: branchId,
-        token: token,
-        lastFour: lastFour,
-        cardType: cardType,
+        yocoToken: token,
+        cardLastFour: lastFour,
+        cardBrand: cardType,
         expiryMonth: parseInt(expiryMonth),
         expiryYear: parseInt(expiryYear),
-        isPrimary: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        addedBy: user.id
       });
 
       res.json({ 
@@ -3197,6 +3197,25 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error updating system setting:', error);
       res.status(500).json({ error: 'Failed to update setting' });
+    }
+  });
+
+  // Yoco public key endpoint
+  app.get('/api/yoco/public-key', async (req, res) => {
+    try {
+      const isTestMode = req.query.test === 'true';
+      const publicKey = isTestMode 
+        ? import.meta.env.YOCO_TEST_PUBLIC_KEY 
+        : import.meta.env.YOCO_PUBLIC_KEY;
+      
+      if (!publicKey) {
+        return res.status(500).json({ error: 'Yoco public key not configured' });
+      }
+      
+      res.json({ publicKey });
+    } catch (error) {
+      console.error('Error getting Yoco public key:', error);
+      res.status(500).json({ error: 'Failed to get public key' });
     }
   });
 
