@@ -37,7 +37,20 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser, SelectInvoice } from "@db/schema";
 import { useQueryClient } from "@tanstack/react-query";
-import { Pencil, AlertTriangle, CheckCircle2, Download, CalendarDays } from "lucide-react";
+import { 
+  Pencil, 
+  AlertTriangle, 
+  CheckCircle2, 
+  Download, 
+  CalendarDays, 
+  CreditCard, 
+  Building2, 
+  MapPin, 
+  FileText,
+  Shield,
+  CheckCircle,
+  Clock
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +63,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 
 // Profile form data interface
@@ -61,6 +75,26 @@ interface ProfileFormData {
   registrationNumber: string;
   businessAddress: string;
   companyLogo?: string;
+}
+
+// Company/Agency form data interface
+interface CompanyFormData {
+  registrationNumber: string;
+  vatNumber: string;
+  businessAddress: string;
+}
+
+interface SecurityFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// Agency information interface
+interface AgencyInfo {
+  franchiseName: string;
+  branchName: string;
+  logoUrl?: string;
 }
 
 function ProfileSection() {
@@ -82,6 +116,14 @@ function ProfileSection() {
       companyLogo: user?.companyLogo || "",
     },
   });
+
+  // Mock agency data for frontend demo (will be replaced with real API)
+  const agencyInfo: AgencyInfo = {
+    franchiseName: user?.role === 'branch_admin' ? "Sotheby's International Realty" : 
+                   user?.role === 'franchise_admin' ? "Sotheby's International Realty" : "",
+    branchName: user?.role === 'branch_admin' ? "Atlantic Seaboard" : "",
+    logoUrl: "/logos/sothebys-logo.png"
+  };
 
   // Update form when user data changes
   useEffect(() => {
@@ -325,6 +367,7 @@ function ProfileSection() {
 
       <CardContent>
         <div className="space-y-6">
+          {/* Personal Information */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground">Personal Information</h3>
             <div className="mt-2 space-y-2">
@@ -339,6 +382,35 @@ function ProfileSection() {
             </div>
           </div>
 
+          {/* Agency Information for Admin Users */}
+          {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Agency Information
+              </h3>
+              <div className="mt-2 space-y-2">
+                <div>
+                  <span className="font-medium">Franchise: </span>
+                  <span>{agencyInfo.franchiseName}</span>
+                </div>
+                {user.role === 'branch_admin' && (
+                  <div>
+                    <span className="font-medium">Branch: </span>
+                    <span>{agencyInfo.branchName}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Role: </span>
+                  <Badge variant={user.role === 'franchise_admin' ? 'default' : 'secondary'}>
+                    {user.role === 'franchise_admin' ? 'Franchise Administrator' : 'Branch Administrator'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Company Information */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground">Company Information</h3>
             <div className="mt-2 space-y-2">
@@ -353,15 +425,15 @@ function ProfileSection() {
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
-                <span>{user?.profile?.vatNumber || user?.vatNumber || "Not provided"}</span>
+                <span>{user?.vatNumber || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">Registration Number: </span>
-                <span>{user?.profile?.registrationNumber || user?.registrationNumber || "Not provided"}</span>
+                <span>{user?.registrationNumber || "Not provided"}</span>
               </div>
               <div>
                 <span className="font-medium">Business Address: </span>
-                <span>{user?.profile?.businessAddress || user?.businessAddress || "Not provided"}</span>
+                <span>{user?.businessAddress || "Not provided"}</span>
               </div>
             </div>
           </div>
@@ -740,6 +812,147 @@ export default function SettingsPage() {
   );
 }
 
+// Agency Billing Components for Admin Users
+function AgencyBillingCycleStatus({ user }: { user: SelectUser | null }) {
+  const isActivated = false; // Mock data - will be replaced with real API
+  
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5" />
+          Billing Cycle Status
+        </CardTitle>
+        <CardDescription>
+          Your agency's billing activation status
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-3">
+          {isActivated ? (
+            <>
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="font-medium text-green-600">Active</p>
+                <p className="text-sm text-muted-foreground">
+                  Billing cycle started on March 1, 2024
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <Clock className="h-5 w-5 text-amber-600" />
+              <div>
+                <p className="font-medium text-amber-600">Pending Activation</p>
+                <p className="text-sm text-muted-foreground">
+                  Contact support to activate your billing cycle
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AgencyPaymentMethod({ user }: { user: SelectUser | null }) {
+  const [showAddCard, setShowAddCard] = useState(false);
+  const hasPaymentMethod = false; // Mock data - will be replaced with real API
+  
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <CreditCard className="h-5 w-5" />
+          Payment Method
+        </CardTitle>
+        <CardDescription>
+          Manage your agency's payment method for billing
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {hasPaymentMethod ? (
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center gap-3">
+              <CreditCard className="h-8 w-8 text-blue-600" />
+              <div>
+                <p className="font-medium">Visa ending in 1234</p>
+                <p className="text-sm text-muted-foreground">Expires 12/25</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                Edit
+              </Button>
+              <Button variant="outline" size="sm">
+                Remove
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">No payment method on file</p>
+            <Dialog open={showAddCard} onOpenChange={setShowAddCard}>
+              <DialogTrigger asChild>
+                <Button>
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Add Payment Method
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Add Payment Method</DialogTitle>
+                  <DialogDescription>
+                    Enter your credit card details for agency billing
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium">Card Number</label>
+                      <Input placeholder="1234 5678 9012 3456" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Cardholder Name</label>
+                      <Input placeholder="John Doe" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium">Expiry Date</label>
+                      <Input placeholder="MM/YY" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">CVV</label>
+                      <Input placeholder="123" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <p className="text-sm text-amber-800">
+                      Card details are securely encrypted and processed by our payment provider
+                    </p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowAddCard(false)}>
+                    Cancel
+                  </Button>
+                  <Button className="bg-[#1BA3FF] hover:bg-[#114D9D]">
+                    Add Card
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrade: () => void }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -747,6 +960,16 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
   const [downgradePauseReason, setDowngradePauseReason] = useState("");
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [showPauseDialog, setShowPauseDialog] = useState(false);
+
+  // Show different content for admin users
+  if (user?.role === 'branch_admin' || user?.role === 'franchise_admin') {
+    return (
+      <div>
+        <AgencyBillingCycleStatus user={user} />
+        <AgencyPaymentMethod user={user} />
+      </div>
+    );
+  }
 
   const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return 'Not available';
