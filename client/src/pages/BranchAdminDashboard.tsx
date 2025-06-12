@@ -302,54 +302,54 @@ export default function BranchAdminDashboard() {
                   Agent performance with valuation reports across all listing statuses
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={timeFilter === '30' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeFilter('30')}
-                  disabled={isFetching}
-                >
-                  {isFetching && timeFilter === '30' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                  Last 30 Days
-                </Button>
-                <Button
-                  variant={timeFilter === '90' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeFilter('90')}
-                  disabled={isFetching}
-                >
-                  {isFetching && timeFilter === '90' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                  Last 90 Days
-                </Button>
-                <Button
-                  variant={timeFilter === '365' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeFilter('365')}
-                  disabled={isFetching}
-                >
-                  {isFetching && timeFilter === '365' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                  Last Year
-                </Button>
-                <Button
-                  variant={timeFilter === 'all' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeFilter('all')}
-                  disabled={isFetching}
-                >
-                  {isFetching && timeFilter === 'all' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                  All Time
-                </Button>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search agents by name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search agents by name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-64"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={timeFilter === '30' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTimeFilter('30')}
+                    disabled={isFetching}
+                  >
+                    {isFetching && timeFilter === '30' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                    Last 30 Days
+                  </Button>
+                  <Button
+                    variant={timeFilter === '90' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTimeFilter('90')}
+                    disabled={isFetching}
+                  >
+                    {isFetching && timeFilter === '90' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                    Last 90 Days
+                  </Button>
+                  <Button
+                    variant={timeFilter === '365' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTimeFilter('365')}
+                    disabled={isFetching}
+                  >
+                    {isFetching && timeFilter === '365' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                    Last Year
+                  </Button>
+                  <Button
+                    variant={timeFilter === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTimeFilter('all')}
+                    disabled={isFetching}
+                  >
+                    {isFetching && timeFilter === 'all' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                    All Time
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
