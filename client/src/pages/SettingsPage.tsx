@@ -96,6 +96,7 @@ interface AgencyProfile {
   franchiseName: string;
   branchName: string;
   logoUrl?: string;
+  companyName?: string;
   vatNumber?: string;
   registrationNumber?: string;
   businessAddress?: string;
@@ -130,7 +131,9 @@ function ProfileSection() {
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      companyName: user?.company || "",
+      companyName: (user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
+        ? (agencyProfile?.companyName || "") 
+        : (user?.company || ""),
       vatNumber: agencyProfile?.vatNumber || user?.vatNumber || "",
       registrationNumber: agencyProfile?.registrationNumber || user?.registrationNumber || "",
       businessAddress: agencyProfile?.businessAddress || user?.businessAddress || "",
@@ -144,7 +147,9 @@ function ProfileSection() {
       form.reset({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
-        companyName: user.company || "",
+        companyName: (user.role === 'branch_admin' || user.role === 'franchise_admin') 
+          ? (agencyProfile?.companyName || "") 
+          : (user.company || ""),
         vatNumber: agencyProfile?.vatNumber || user.vatNumber || "",
         registrationNumber: agencyProfile?.registrationNumber || user.registrationNumber || "",
         businessAddress: agencyProfile?.businessAddress || user.businessAddress || "",
@@ -261,6 +266,7 @@ function ProfileSection() {
           },
           credentials: "include",
           body: JSON.stringify({
+            companyName: data.companyName,
             vatNumber: data.vatNumber,
             registrationNumber: data.registrationNumber,
             businessAddress: data.businessAddress,

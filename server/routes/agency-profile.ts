@@ -156,6 +156,7 @@ router.put("/agency-profile", async (req, res) => {
       franchiseName: updatedAgency.franchiseName,
       branchName: updatedAgency.branchName,
       logoUrl: updatedAgency.logoUrl,
+      companyName: updatedAgency.companyName,
       vatNumber: updatedAgency.vatNumber,
       registrationNumber: updatedAgency.registrationNumber,
       businessAddress: updatedAgency.businessAddress,

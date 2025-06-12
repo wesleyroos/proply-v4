@@ -95,6 +95,7 @@ export const agencyBranches = pgTable("agency_branches", {
   syncFrequency: text("sync_frequency").default("5 minutes").notNull(),
   logoUrl: text("logo_url"), // Path to uploaded agency logo
   // Company information fields
+  companyName: text("company_name"),
   vatNumber: text("vat_number"),
   registrationNumber: text("registration_number"),
   businessAddress: text("business_address"),
