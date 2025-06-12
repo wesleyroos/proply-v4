@@ -2416,8 +2416,8 @@ export function registerRoutes(app: Express): Server {
       // Determine which Yoco credentials to use based on test mode setting
       const isTestMode = req.headers['x-yoco-test-mode'] === 'true';
       const secretKey = isTestMode 
-        ? import.meta.env.YOCO_TEST_SECRET_KEY 
-        : import.meta.env.YOCO_SECRET_KEY;
+        ? process.env.YOCO_TEST_SECRET_KEY 
+        : process.env.YOCO_SECRET_KEY;
 
       if (!secretKey) {
         return res.status(500).json({ error: 'Yoco credentials not configured' });

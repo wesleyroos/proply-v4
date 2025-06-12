@@ -937,7 +937,8 @@ export default function SettingsPage() {
 
       try {
         // Check if Yoco is in test mode from localStorage
-        const isYocoTestMode = localStorage.getItem('yoco_test_mode') === 'true';
+        // Default to test mode for development
+        const isYocoTestMode = localStorage.getItem('yoco_test_mode') !== 'false';
         
         // Create Yoco token (this would normally use Yoco SDK)
         const tokenResponse = await fetch('/api/payment-methods/tokenize', {
@@ -1137,6 +1138,12 @@ export default function SettingsPage() {
                       <Input
                         value={cardForm.cardNumber}
                         onChange={(e) => setCardForm(prev => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const pastedText = e.clipboardData.getData('text');
+                          const formatted = formatCardNumber(pastedText);
+                          setCardForm(prev => ({ ...prev, cardNumber: formatted }));
+                        }}
                         placeholder="1234 5678 9012 3456"
                         maxLength={19}
                         required
