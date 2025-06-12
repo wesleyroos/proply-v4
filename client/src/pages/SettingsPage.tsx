@@ -153,9 +153,53 @@ function ProfileSection() {
     }
   }, [user, agencyProfile, form]);
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (file && (user?.role === 'branch_admin' || user?.role === 'franchise_admin')) {
+      setIsUploadingLogo(true);
+      try {
+        // For admin users, upload directly to agency profile
+        const formData = new FormData();
+        formData.append('logo', file);
+
+        const response = await fetch('/api/agency-profile/logo', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        const result = await response.json();
+        
+        // Update the preview and form
+        setPreviewLogo(result.logoUrl);
+        form.setValue('companyLogo', result.logoUrl);
+        
+        // Refresh agency profile data
+        queryClient.invalidateQueries({ queryKey: ["/api/agency-profile"] });
+        
+        toast({
+          title: "Success",
+          description: "Logo uploaded successfully",
+          duration: 3000,
+        });
+
+      } catch (error) {
+        console.error("Error uploading logo:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to upload logo",
+          duration: 5000,
+        });
+      } finally {
+        setIsUploadingLogo(false);
+      }
+    } else if (file) {
+      // For regular users, handle as base64
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64Data = reader.result as string;
@@ -167,39 +211,75 @@ function ProfileSection() {
   };
 
   const handleProfileUpdate = async (data: ProfileFormData) => {
-    console.log("Starting profile update with data:", data);
     setIsProfileUpdating(true);
     try {
-      const profileData = {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        companyLogo: data.companyLogo || previewLogo,
-        company: data.companyName,
-        vatNumber: data.vatNumber,
-        registrationNumber: data.registrationNumber,
-        businessAddress: data.businessAddress,
-      };
+      // For admin users, update agency profile data
+      if (user?.role === 'branch_admin' || user?.role === 'franchise_admin') {
+        // Update personal information (user table)
+        const userResponse = await fetch("/api/update-profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            company: data.companyName,
+          }),
+        });
 
-      console.log("Sending profile update request with:", profileData);
+        if (!userResponse.ok) {
+          throw new Error(await userResponse.text());
+        }
 
-      const response = await fetch("/api/profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(profileData),
-        credentials: "include",
-      });
+        // Update agency information (agency_branches table)
+        const agencyResponse = await fetch("/api/agency-profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            vatNumber: data.vatNumber,
+            registrationNumber: data.registrationNumber,
+            businessAddress: data.businessAddress,
+          }),
+        });
 
-      if (!response.ok) {
-        console.error("Profile update failed:", await response.text());
-        throw new Error(await response.text());
+        if (!agencyResponse.ok) {
+          throw new Error(await agencyResponse.text());
+        }
+
+        // Refresh queries
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/agency-profile"] });
+      } else {
+        // For regular users, update user table only
+        const response = await fetch("/api/update-profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            company: data.companyName,
+            vatNumber: data.vatNumber,
+            registrationNumber: data.registrationNumber,
+            businessAddress: data.businessAddress,
+            companyLogo: data.companyLogo || previewLogo,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["user"] });
       }
 
-      const updatedUser = await response.json();
-      console.log("Profile update successful:", updatedUser);
-
-      queryClient.setQueryData(["user"], updatedUser);
       setShowEditModal(false);
       toast({
         title: "Success",
@@ -272,13 +352,15 @@ function ProfileSection() {
                 </div>
 
                 <FormItem>
-                  <FormLabel>Company Logo</FormLabel>
+                  <FormLabel>
+                    {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') ? 'Agency Logo' : 'Company Logo'}
+                  </FormLabel>
                   <div className="flex items-start space-x-4">
                     <div>
-                      {(previewLogo || user?.companyLogo) ? (
+                      {(previewLogo || agencyProfile?.logoUrl || user?.companyLogo) ? (
                         <img
-                          src={previewLogo || user?.companyLogo}
-                          alt="Company Logo Preview"
+                          src={previewLogo || agencyProfile?.logoUrl || user?.companyLogo || ''}
+                          alt="Logo Preview"
                           className="w-32 h-32 object-contain border rounded-lg"
                         />
                       ) : (
@@ -293,9 +375,16 @@ function ProfileSection() {
                         accept="image/*"
                         onChange={handleLogoUpload}
                         className="mb-2"
+                        disabled={isUploadingLogo}
                       />
+                      {isUploadingLogo && (
+                        <p className="text-sm text-blue-600">Uploading logo...</p>
+                      )}
                       <p className="text-sm text-gray-500">
-                        Upload your company logo. Recommended size: 400x400px.
+                        {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
+                          ? 'Upload your agency logo. This will be shared across your branch/franchise.'
+                          : 'Upload your company logo. Recommended size: 400x400px.'
+                        }
                       </p>
                     </div>
                   </div>
