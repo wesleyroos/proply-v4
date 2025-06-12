@@ -107,27 +107,29 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
     `);
     const reportsData = reportsQuery.rows[0];
 
-    // Get new listings per month for the last 6 months
+    // Get new listings per month for the last 6 months based on actual listing date
     const listingsPerMonthQuery = await db.execute(sql`
       SELECT 
-        DATE_TRUNC('month', created_at) as month,
+        DATE_TRUNC('month', listing_date) as month,
         COUNT(*) as count
       FROM propdata_listings
       WHERE branch_id = ${branchId}
-        AND created_at >= NOW() - INTERVAL '6 months'
-      GROUP BY DATE_TRUNC('month', created_at)
+        AND listing_date IS NOT NULL
+        AND listing_date >= NOW() - INTERVAL '6 months'
+      GROUP BY DATE_TRUNC('month', listing_date)
       ORDER BY month DESC
     `);
     const listingsPerMonth = listingsPerMonthQuery.rows;
 
-    // Get current month and last month new listings count
+    // Get current month and last month new listings count based on actual listing date
     const newListingsQuery = await db.execute(sql`
       SELECT 
-        COUNT(CASE WHEN created_at >= ${startOfMonth} THEN 1 END) as this_month,
-        COUNT(CASE WHEN created_at >= ${startOfLastMonth} AND created_at < ${startOfMonth} THEN 1 END) as last_month
+        COUNT(CASE WHEN listing_date >= ${startOfMonth} THEN 1 END) as this_month,
+        COUNT(CASE WHEN listing_date >= ${startOfLastMonth} AND listing_date < ${startOfMonth} THEN 1 END) as last_month
       FROM propdata_listings
       WHERE branch_id = ${branchId}
-        AND created_at >= ${startOfLastMonth}
+        AND listing_date IS NOT NULL
+        AND listing_date >= ${startOfLastMonth}
     `);
     const newListingsData = newListingsQuery.rows[0];
 
