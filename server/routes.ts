@@ -3205,10 +3205,11 @@ export function registerRoutes(app: Express): Server {
     try {
       const isTestMode = req.query.test === 'true';
       const publicKey = isTestMode 
-        ? import.meta.env.YOCO_TEST_PUBLIC_KEY 
-        : import.meta.env.YOCO_PUBLIC_KEY;
+        ? process.env.YOCO_TEST_PUBLIC_KEY 
+        : process.env.YOCO_PUBLIC_KEY;
       
       if (!publicKey) {
+        console.error('Missing Yoco public key:', { isTestMode });
         return res.status(500).json({ error: 'Yoco public key not configured' });
       }
       
@@ -3237,8 +3238,8 @@ export function registerRoutes(app: Express): Server {
       const isTestMode = req.headers['x-yoco-test-mode'] === 'true' || req.query.test === 'true';
       
       const secretKey = isTestMode 
-        ? import.meta.env.YOCO_TEST_SECRET_KEY 
-        : import.meta.env.YOCO_SECRET_KEY;
+        ? process.env.YOCO_TEST_SECRET_KEY 
+        : process.env.YOCO_SECRET_KEY;
 
       if (!secretKey) {
         return res.status(500).json({ error: 'Yoco secret key not configured' });
