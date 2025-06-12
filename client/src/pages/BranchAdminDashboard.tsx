@@ -28,8 +28,10 @@ import {
   ChevronUp,
   ChevronDown,
   Loader2,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface BranchMetrics {
   totalAgents: number;
@@ -66,6 +68,7 @@ export default function BranchAdminDashboard() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [persistedData, setPersistedData] = useState<BranchMetrics | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const { data: metrics, isLoading: metricsLoading, isFetching } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId, timeFilter],
@@ -105,67 +108,68 @@ export default function BranchAdminDashboard() {
     return sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
   };
 
-  const sortedAgents = displayData?.agentReportCoverage?.slice().sort((a, b) => {
-    let aValue: string | number;
-    let bValue: string | number;
+  const filteredAndSortedAgents = displayData?.agentReportCoverage
+    ?.filter(agent => 
+      agent.agent_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
+    )
+    ?.slice()
+    .sort((a, b) => {
+      let aValue: string | number;
+      let bValue: string | number;
 
-    switch (sortField) {
-      case 'agent_name':
-        aValue = a.agent_name || '';
-        bValue = b.agent_name || '';
-        // Always treat names as strings
-        return sortDirection === 'asc' 
-          ? (aValue as string).localeCompare(bValue as string)
-          : (bValue as string).localeCompare(aValue as string);
-      case 'listings_count':
-        aValue = Number(a.listings_count) || 0;
-        bValue = Number(b.listings_count) || 0;
-        break;
-      case 'active_count':
-        aValue = Number(a.active_count) || 0;
-        bValue = Number(b.active_count) || 0;
-        break;
-      case 'pending_count':
-        aValue = Number(a.pending_count) || 0;
-        bValue = Number(b.pending_count) || 0;
-        break;
-      case 'sold_count':
-        aValue = Number(a.sold_count) || 0;
-        bValue = Number(b.sold_count) || 0;
-        break;
-      case 'archived_count':
-        aValue = Number(a.archived_count) || 0;
-        bValue = Number(b.archived_count) || 0;
-        break;
-      case 'valuation_count':
-        aValue = Number(a.valuation_count) || 0;
-        bValue = Number(b.valuation_count) || 0;
-        break;
-      case 'total_active_value':
-        aValue = Number(a.total_active_value) || 0;
-        bValue = Number(b.total_active_value) || 0;
-        break;
-      case 'reports_count':
-        aValue = Number(a.reports_count) || 0;
-        bValue = Number(b.reports_count) || 0;
-        break;
-      case 'coverage':
-        aValue = Number(a.coverage) || 0;
-        bValue = Number(b.coverage) || 0;
-        break;
-      default:
-        return 0;
-    }
+      switch (sortField) {
+        case 'agent_name':
+          aValue = a.agent_name || '';
+          bValue = b.agent_name || '';
+          // Always treat names as strings
+          return sortDirection === 'asc' 
+            ? (aValue as string).localeCompare(bValue as string)
+            : (bValue as string).localeCompare(aValue as string);
+        case 'listings_count':
+          aValue = Number(a.listings_count) || 0;
+          bValue = Number(b.listings_count) || 0;
+          break;
+        case 'active_count':
+          aValue = Number(a.active_count) || 0;
+          bValue = Number(b.active_count) || 0;
+          break;
+        case 'pending_count':
+          aValue = Number(a.pending_count) || 0;
+          bValue = Number(b.pending_count) || 0;
+          break;
+        case 'sold_count':
+          aValue = Number(a.sold_count) || 0;
+          bValue = Number(b.sold_count) || 0;
+          break;
+        case 'archived_count':
+          aValue = Number(a.archived_count) || 0;
+          bValue = Number(b.archived_count) || 0;
+          break;
+        case 'valuation_count':
+          aValue = Number(a.valuation_count) || 0;
+          bValue = Number(b.valuation_count) || 0;
+          break;
+        case 'total_active_value':
+          aValue = Number(a.total_active_value) || 0;
+          bValue = Number(b.total_active_value) || 0;
+          break;
+        case 'reports_count':
+          aValue = Number(a.reports_count) || 0;
+          bValue = Number(b.reports_count) || 0;
+          break;
+        case 'coverage':
+          aValue = Number(a.coverage) || 0;
+          bValue = Number(b.coverage) || 0;
+          break;
+        default:
+          return 0;
+      }
 
-    // For numeric fields
-    if (sortField !== 'agent_name') {
+      // For numeric fields
       return sortDirection === 'asc' 
         ? (aValue as number) - (bValue as number)
         : (bValue as number) - (aValue as number);
-    }
-
-    return 0;
-  });
+    });
 
   // Show access denied if user is loaded but not branch admin
   if (user && user.role !== 'branch_admin') {
@@ -337,6 +341,17 @@ export default function BranchAdminDashboard() {
                 </Button>
               </div>
             </div>
+            <div className="mt-4">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search agents by name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -436,7 +451,7 @@ export default function BranchAdminDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedAgents?.map((agent, index) => (
+                  {filteredAndSortedAgents?.map((agent, index) => (
                     <TableRow key={agent.agent_name || index} className="h-8">
                       <TableCell className="font-medium py-1">
                         {agent.agent_name}
