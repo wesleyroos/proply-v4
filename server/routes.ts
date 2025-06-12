@@ -2213,7 +2213,7 @@ export function registerRoutes(app: Express): Server {
       const { agencyId } = req.params;
       const { billingEnabled } = req.body;
       
-      if (!req.user || req.user.role !== 'admin') {
+      if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'system_admin')) {
         console.log('Access denied - user role:', req.user?.role);
         return res.status(403).json({ error: "Admin access required" });
       }
