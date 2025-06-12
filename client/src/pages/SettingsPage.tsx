@@ -91,10 +91,15 @@ interface SecurityFormData {
 }
 
 // Agency information interface
-interface AgencyInfo {
+interface AgencyProfile {
+  id: number;
   franchiseName: string;
   branchName: string;
   logoUrl?: string;
+  vatNumber?: string;
+  registrationNumber?: string;
+  businessAddress?: string;
+  userRole: string;
 }
 
 function ProfileSection() {
