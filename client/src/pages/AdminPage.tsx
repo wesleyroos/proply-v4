@@ -162,6 +162,9 @@ export default function AdminPage() {
   const [isSandboxMode, setIsSandboxMode] = useState(() => {
     return localStorage.getItem('payfast_sandbox_mode') === 'true';
   });
+  const [isYocoTestMode, setIsYocoTestMode] = useState(() => {
+    return localStorage.getItem('yoco_test_mode') === 'true';
+  });
   const [isInvitationModalOpen, setIsInvitationModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("users");
 
@@ -284,6 +287,26 @@ export default function AdminPage() {
     }
   };
 
+  const handleYocoTestToggle = (checked: boolean) => {
+    const message = checked 
+      ? "Enable Yoco test mode? This will use test payment processing for agency billing."
+      : "Disable Yoco test mode? This will use live payment processing for agency billing.";
+    
+    if (window.confirm(message)) {
+      setIsYocoTestMode(checked);
+      localStorage.setItem('yoco_test_mode', checked.toString());
+      toast({
+        title: checked ? "Yoco Test Mode Enabled" : "Yoco Test Mode Disabled",
+        description: checked 
+          ? "Yoco is now in test mode - agency billing will use test credentials."
+          : "Yoco is now in live mode - agency billing will use live credentials.",
+        duration: 3000,
+      });
+    } else {
+      setIsYocoTestMode(!checked);
+    }
+  };
+
   if (!user?.isAdmin) {
     return (
       <div className="container py-6">
@@ -322,6 +345,28 @@ export default function AdminPage() {
               />
               <label htmlFor="sandbox-mode" className="text-sm font-medium text-yellow-800">
                 {isSandboxMode ? "Sandbox Mode (Test)" : "Live Mode (Production)"}
+              </label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Yoco Test Mode Toggle Card */}
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="text-blue-800">Yoco Environment</CardTitle>
+            <CardDescription className="text-blue-700">
+              Control whether Yoco operates in test or live mode for agency billing
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="yoco-test-mode"
+                checked={isYocoTestMode}
+                onCheckedChange={handleYocoTestToggle}
+              />
+              <label htmlFor="yoco-test-mode" className="text-sm font-medium text-blue-800">
+                {isYocoTestMode ? "Test Mode (Agency Billing)" : "Live Mode (Agency Billing)"}
               </label>
             </div>
           </CardContent>

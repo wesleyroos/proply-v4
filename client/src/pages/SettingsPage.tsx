@@ -825,13 +825,16 @@ export default function SettingsPage() {
       setIsAddingCard(true);
 
       try {
-        // Use test public key for development
-        const publicKey = import.meta.env.VITE_YOCO_TEST_PUBLIC_KEY || import.meta.env.VITE_YOCO_PUBLIC_KEY;
+        // Check if Yoco is in test mode from localStorage
+        const isYocoTestMode = localStorage.getItem('yoco_test_mode') === 'true';
         
         // Create Yoco token (this would normally use Yoco SDK)
         const tokenResponse = await fetch('/api/payment-methods/tokenize', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-yoco-test-mode': isYocoTestMode.toString()
+          },
           credentials: 'include',
           body: JSON.stringify({
             cardNumber: cardForm.cardNumber.replace(/\s/g, ''),

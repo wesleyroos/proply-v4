@@ -2286,6 +2286,230 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Payment Methods API Routes for Agency Billing
+  app.get('/api/payment-methods', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      // Get the user's agency branch
+      let branchId = user.branchId;
+      
+      // For franchise admins, get the first branch of their franchise
+      if (user.role === 'franchise_admin' && user.franchiseId) {
+        const [firstBranch] = await db
+          .select()
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, user.franchiseId))
+          .limit(1);
+        
+        if (firstBranch) {
+          branchId = firstBranch.id;
+        }
+      }
+
+      if (!branchId) {
+        return res.status(400).json({ error: "No branch associated with user" });
+      }
+
+      // Fetch payment methods for this branch
+      const paymentMethods = await db.query.agencyPaymentMethods.findMany({
+        where: eq(agencyPaymentMethods.agencyBranchId, branchId)
+      });
+
+      res.json({ paymentMethods });
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+      res.status(500).json({ error: 'Failed to fetch payment methods' });
+    }
+  });
+
+  app.post('/api/payment-methods/tokenize', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      const { cardNumber, expiryMonth, expiryYear, cvv, cardholderName } = req.body;
+
+      // Determine which Yoco credentials to use based on test mode setting
+      const isTestMode = req.headers['x-yoco-test-mode'] === 'true';
+      const secretKey = isTestMode 
+        ? import.meta.env.YOCO_TEST_SECRET_KEY 
+        : import.meta.env.YOCO_SECRET_KEY;
+
+      if (!secretKey) {
+        return res.status(500).json({ error: 'Yoco credentials not configured' });
+      }
+
+      // Create Yoco token using their API
+      const yocoResponse = await fetch('https://online.yoco.com/v1/charges/token', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${secretKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          card: {
+            number: cardNumber,
+            expiryMonth: parseInt(expiryMonth),
+            expiryYear: parseInt(`20${expiryYear}`),
+            cvv: cvv
+          }
+        })
+      });
+
+      if (!yocoResponse.ok) {
+        const errorData = await yocoResponse.json();
+        return res.status(400).json({ 
+          error: 'Card validation failed', 
+          message: errorData.message || 'Invalid card details' 
+        });
+      }
+
+      const tokenData = await yocoResponse.json();
+      
+      res.json({ 
+        token: tokenData.id,
+        message: 'Card tokenized successfully' 
+      });
+
+    } catch (error) {
+      console.error('Error tokenizing card:', error);
+      res.status(500).json({ error: 'Failed to process card' });
+    }
+  });
+
+  app.post('/api/payment-methods', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      const { token, lastFour, cardType, expiryMonth, expiryYear } = req.body;
+
+      // Get the user's agency branch
+      let branchId = user.branchId;
+      
+      // For franchise admins, get the first branch of their franchise
+      if (user.role === 'franchise_admin' && user.franchiseId) {
+        const [firstBranch] = await db
+          .select()
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, user.franchiseId))
+          .limit(1);
+        
+        if (firstBranch) {
+          branchId = firstBranch.id;
+        }
+      }
+
+      if (!branchId) {
+        return res.status(400).json({ error: "No branch associated with user" });
+      }
+
+      // Check if this is the first payment method (make it primary)
+      const { agencyPaymentMethods } = await import("@db/schema");
+      const existingMethods = await db.query.agencyPaymentMethods.findMany({
+        where: eq(agencyPaymentMethods.agencyBranchId, branchId)
+      });
+
+      const isPrimary = existingMethods.length === 0;
+
+      // If this is being set as primary, unset other primary methods
+      if (isPrimary) {
+        await db
+          .update(agencyPaymentMethods)
+          .set({ isPrimary: false })
+          .where(eq(agencyPaymentMethods.agencyBranchId, branchId));
+      }
+
+      // Save payment method
+      const [newPaymentMethod] = await db
+        .insert(agencyPaymentMethods)
+        .values({
+          agencyBranchId: branchId,
+          yocoToken: token,
+          cardType: cardType,
+          lastFour: lastFour,
+          expiryMonth: expiryMonth,
+          expiryYear: expiryYear,
+          isPrimary: isPrimary,
+          isActive: true
+        })
+        .returning();
+
+      res.json({ 
+        success: true,
+        paymentMethod: newPaymentMethod,
+        message: 'Payment method added successfully' 
+      });
+
+    } catch (error) {
+      console.error('Error saving payment method:', error);
+      res.status(500).json({ error: 'Failed to save payment method' });
+    }
+  });
+
+  app.delete('/api/payment-methods/:id', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      const paymentMethodId = parseInt(req.params.id);
+
+      // Get the user's agency branch
+      let branchId = user.branchId;
+      
+      // For franchise admins, get the first branch of their franchise
+      if (user.role === 'franchise_admin' && user.franchiseId) {
+        const [firstBranch] = await db
+          .select()
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, user.franchiseId))
+          .limit(1);
+        
+        if (firstBranch) {
+          branchId = firstBranch.id;
+        }
+      }
+
+      if (!branchId) {
+        return res.status(400).json({ error: "No branch associated with user" });
+      }
+
+      // Verify payment method belongs to this branch
+      const { agencyPaymentMethods } = await import("@db/schema");
+      const paymentMethod = await db.query.agencyPaymentMethods.findFirst({
+        where: and(
+          eq(agencyPaymentMethods.id, paymentMethodId),
+          eq(agencyPaymentMethods.agencyBranchId, branchId)
+        )
+      });
+
+      if (!paymentMethod) {
+        return res.status(404).json({ error: 'Payment method not found' });
+      }
+
+      // Delete payment method
+      await db
+        .delete(agencyPaymentMethods)
+        .where(eq(agencyPaymentMethods.id, paymentMethodId));
+
+      res.json({ success: true, message: 'Payment method removed successfully' });
+
+    } catch (error) {
+      console.error('Error removing payment method:', error);
+      res.status(500).json({ error: 'Failed to remove payment method' });
+    }
+  });
+
   // Demo request endpoint
   app.post("/api/demo-request", async (req, res) => {
     try {
