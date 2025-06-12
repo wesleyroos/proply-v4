@@ -2204,6 +2204,67 @@ export function registerRoutes(app: Express): Server {
   // Rental Performance API endpoint
   app.post("/api/rental-performance", getRentalPerformance);
 
+  // Agency billing toggle endpoint  
+  app.put("/api/admin/agencies/:agencyId/billing", async (req, res) => {
+    try {
+      const { agencyId } = req.params;
+      const { billingEnabled } = req.body;
+      
+      if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      // Import agency billing settings from schema
+      const { agencyBillingSettings, agencyBranches } = await import("@db/schema");
+      
+      // Find the agency branch by the compound ID
+      const agencyBranch = await db.query.agencyBranches.findFirst({
+        where: eq(agencyBranches.id, agencyId)
+      });
+
+      if (!agencyBranch) {
+        return res.status(404).json({ error: "Agency not found" });
+      }
+
+      // Check if billing settings exist, create if not
+      let billingSettings = await db.query.agencyBillingSettings.findFirst({
+        where: eq(agencyBillingSettings.agencyBranchId, parseInt(agencyBranch.id))
+      });
+
+      if (!billingSettings) {
+        // Create initial billing settings
+        await db.insert(agencyBillingSettings).values({
+          agencyBranchId: parseInt(agencyBranch.id),
+          billingEnabled: billingEnabled,
+          pricePerReport: "200.00",
+          billingDay: 1,
+          autoBilling: true
+        });
+        
+        billingSettings = await db.query.agencyBillingSettings.findFirst({
+          where: eq(agencyBillingSettings.agencyBranchId, parseInt(agencyBranch.id))
+        });
+      } else {
+        // Update existing billing settings
+        await db.update(agencyBillingSettings)
+          .set({ 
+            billingEnabled: billingEnabled,
+            updatedAt: new Date()
+          })
+          .where(eq(agencyBillingSettings.agencyBranchId, parseInt(agencyBranch.id)));
+      }
+
+      res.json({ 
+        success: true, 
+        billingEnabled,
+        message: `Billing ${billingEnabled ? 'enabled' : 'disabled'} for agency`
+      });
+    } catch (error) {
+      console.error("Error updating billing status:", error);
+      res.status(500).json({ error: "Failed to update billing status" });
+    }
+  });
+
   // Demo request endpoint
   app.post("/api/demo-request", async (req, res) => {
     try {

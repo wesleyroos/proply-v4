@@ -700,3 +700,124 @@ export const insertAdminInvitationSchema = createInsertSchema(adminInvitations);
 export const selectAdminInvitationSchema = createSelectSchema(adminInvitations);
 export type InsertAdminInvitation = typeof adminInvitations.$inferInsert;
 export type SelectAdminInvitation = typeof adminInvitations.$inferSelect;
+
+// Agency billing tables
+export const agencyBillingSettings = pgTable("agency_billing_settings", {
+  id: serial("id").primaryKey(),
+  agencyBranchId: integer("agency_branch_id").notNull().references(() => agencyBranches.id),
+  billingEnabled: boolean("billing_enabled").default(false),
+  pricePerReport: text("price_per_report").default("200.00").notNull(),
+  billingContactEmail: text("billing_contact_email"),
+  billingDay: integer("billing_day").default(1).notNull(), // day of month to bill
+  autoBilling: boolean("auto_billing").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const agencyPaymentMethods = pgTable("agency_payment_methods", {
+  id: serial("id").primaryKey(),
+  agencyBranchId: integer("agency_branch_id").notNull().references(() => agencyBranches.id),
+  yocoToken: text("yoco_token").notNull(),
+  cardLastFour: text("card_last_four").notNull(),
+  expiryMonth: integer("expiry_month").notNull(),
+  expiryYear: integer("expiry_year").notNull(),
+  cardBrand: text("card_brand"), // visa, mastercard, etc
+  isActive: boolean("is_active").default(true),
+  addedBy: integer("added_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const agencyBillingCycles = pgTable("agency_billing_cycles", {
+  id: serial("id").primaryKey(),
+  agencyBranchId: integer("agency_branch_id").notNull().references(() => agencyBranches.id),
+  billingPeriod: text("billing_period").notNull(), // YYYY-MM format
+  reportCount: integer("report_count").default(0),
+  pricePerReport: text("price_per_report").notNull(),
+  subtotal: text("subtotal").notNull(),
+  vatAmount: text("vat_amount").notNull(),
+  totalAmount: text("total_amount").notNull(),
+  status: text("status").default("pending").notNull(), // pending, paid, failed, cancelled
+  dueDate: timestamp("due_date").notNull(),
+  paidAt: timestamp("paid_at"),
+  yocoPaymentId: text("yoco_payment_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const agencyInvoices = pgTable("agency_invoices", {
+  id: serial("id").primaryKey(),
+  agencyBranchId: integer("agency_branch_id").notNull().references(() => agencyBranches.id),
+  billingCycleId: integer("billing_cycle_id").notNull().references(() => agencyBillingCycles.id),
+  invoiceNumber: text("invoice_number").unique().notNull(),
+  issueDate: timestamp("issue_date").notNull(),
+  dueDate: timestamp("due_date").notNull(),
+  subtotal: text("subtotal").notNull(),
+  vatAmount: text("vat_amount").notNull(),
+  totalAmount: text("total_amount").notNull(),
+  status: text("status").default("draft").notNull(), // draft, sent, paid, overdue
+  pdfPath: text("pdf_path"),
+  sentAt: timestamp("sent_at"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Relations for billing tables
+export const agencyBillingSettingsRelations = relations(agencyBillingSettings, ({ one }) => ({
+  agencyBranch: one(agencyBranches, {
+    fields: [agencyBillingSettings.agencyBranchId],
+    references: [agencyBranches.id],
+  }),
+}));
+
+export const agencyPaymentMethodsRelations = relations(agencyPaymentMethods, ({ one }) => ({
+  agencyBranch: one(agencyBranches, {
+    fields: [agencyPaymentMethods.agencyBranchId],
+    references: [agencyBranches.id],
+  }),
+  addedByUser: one(users, {
+    fields: [agencyPaymentMethods.addedBy],
+    references: [users.id],
+  }),
+}));
+
+export const agencyBillingCyclesRelations = relations(agencyBillingCycles, ({ one, many }) => ({
+  agencyBranch: one(agencyBranches, {
+    fields: [agencyBillingCycles.agencyBranchId],
+    references: [agencyBranches.id],
+  }),
+  invoices: many(agencyInvoices),
+}));
+
+export const agencyInvoicesRelations = relations(agencyInvoices, ({ one }) => ({
+  agencyBranch: one(agencyBranches, {
+    fields: [agencyInvoices.agencyBranchId],
+    references: [agencyBranches.id],
+  }),
+  billingCycle: one(agencyBillingCycles, {
+    fields: [agencyInvoices.billingCycleId],
+    references: [agencyBillingCycles.id],
+  }),
+}));
+
+// Schemas for billing tables
+export const insertAgencyBillingSettingsSchema = createInsertSchema(agencyBillingSettings);
+export const selectAgencyBillingSettingsSchema = createSelectSchema(agencyBillingSettings);
+export type InsertAgencyBillingSettings = typeof agencyBillingSettings.$inferInsert;
+export type SelectAgencyBillingSettings = typeof agencyBillingSettings.$inferSelect;
+
+export const insertAgencyPaymentMethodSchema = createInsertSchema(agencyPaymentMethods);
+export const selectAgencyPaymentMethodSchema = createSelectSchema(agencyPaymentMethods);
+export type InsertAgencyPaymentMethod = typeof agencyPaymentMethods.$inferInsert;
+export type SelectAgencyPaymentMethod = typeof agencyPaymentMethods.$inferSelect;
+
+export const insertAgencyBillingCycleSchema = createInsertSchema(agencyBillingCycles);
+export const selectAgencyBillingCycleSchema = createSelectSchema(agencyBillingCycles);
+export type InsertAgencyBillingCycle = typeof agencyBillingCycles.$inferInsert;
+export type SelectAgencyBillingCycle = typeof agencyBillingCycles.$inferSelect;
+
+export const insertAgencyInvoiceSchema = createInsertSchema(agencyInvoices);
+export const selectAgencyInvoiceSchema = createSelectSchema(agencyInvoices);
+export type InsertAgencyInvoice = typeof agencyInvoices.$inferInsert;
+export type SelectAgencyInvoice = typeof agencyInvoices.$inferSelect;

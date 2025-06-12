@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@db";
-import { propdataListings, syncTracking, agencyBranches } from "@db/schema";
+import { propdataListings, syncTracking, agencyBranches, agencyBillingSettings } from "@db/schema";
 import { desc, count, eq, inArray, sql } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
