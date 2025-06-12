@@ -894,16 +894,18 @@ export class PropdataPdfService {
     this.checkPageBreak();
     this.addSectionHeader("Financial Analysis");
 
+    // Get financial analysis data from valuation report (correct location)
+    const valuationData = data.valuationReport?.valuationData as any;
+    const financingAnalysisData = data.valuationReport?.financingAnalysisData 
+      ? JSON.parse(data.valuationReport.financingAnalysisData) 
+      : null;
 
-
-    // Financing parameters from saved rental data
-    if (data.rentalData?.financingAnalysisData) {
+    // Financing parameters from saved valuation data
+    if (financingAnalysisData?.financingParameters) {
       this.addSubsectionHeader("Financing Details");
 
-      const financing =
-        data.rentalData.financingAnalysisData.financingParameters;
-      const yearlyMetrics =
-        data.rentalData.financingAnalysisData.yearlyMetrics;
+      const financing = financingAnalysisData.financingParameters;
+      const yearlyMetrics = financingAnalysisData.yearlyMetrics;
 
       if (financing) {
         // Financing overview in left-aligned single column format

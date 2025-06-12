@@ -13,20 +13,37 @@ const router = Router();
 async function validateImageSize(imageUrl: string): Promise<boolean> {
   try {
     const response = await fetch(imageUrl, { method: 'HEAD' });
+    
+    if (!response.ok) {
+      console.warn('Image not accessible:', imageUrl, response.status);
+      return false;
+    }
+    
     const contentLength = response.headers.get('content-length');
+    const contentType = response.headers.get('content-type');
+    
+    // Check if it's actually an image
+    if (!contentType || !contentType.startsWith('image/')) {
+      console.warn('Invalid content type for image:', imageUrl, contentType);
+      return false;
+    }
     
     if (contentLength) {
       const sizeInMB = parseInt(contentLength) / (1024 * 1024);
       // OpenAI has a 20MB limit per image, we'll use 15MB as safe threshold
-      return sizeInMB <= 15;
+      const isValidSize = sizeInMB <= 15;
+      if (!isValidSize) {
+        console.warn('Image too large:', imageUrl, `${sizeInMB.toFixed(2)}MB`);
+      }
+      return isValidSize;
     }
     
-    // If we can't determine size, allow it and let OpenAI handle it
+    // If we can't determine size but content type is valid, allow it
     return true;
   } catch (error) {
-    console.warn('Failed to validate image size for:', imageUrl, error);
-    // If validation fails, allow the image and let OpenAI handle it
-    return true;
+    console.warn('Failed to validate image:', imageUrl, error);
+    // If validation fails, reject the image to be safe
+    return false;
   }
 }
 
