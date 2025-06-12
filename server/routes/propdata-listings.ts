@@ -118,7 +118,7 @@ router.get("/propdata/listings", async (req, res) => {
 // GET /api/propdata/listings/sync-status - Get last sync information
 router.get("/propdata/listings/sync-status", async (req, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.isAdmin && req.user?.role !== 'franchise_admin' && req.user?.role !== 'branch_admin') {
       return res.status(403).json({ error: "Admin access required" });
     }
 

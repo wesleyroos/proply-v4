@@ -135,7 +135,7 @@ export default function PropdataListingsPage() {
       }
       return response.json();
     },
-    enabled: !!user?.isAdmin,
+    enabled: !!(user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin'),
     refetchInterval: 30000, // Refetch every 30 seconds to show updated sync status
   });
   
