@@ -354,10 +354,6 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    console.log('User endpoint - session authenticated:', req.isAuthenticated());
-    console.log('User endpoint - session ID:', req.sessionID);
-    console.log('User endpoint - user in session:', req.user ? { id: req.user.id, email: req.user.email } : 'No user');
-    
     if (req.isAuthenticated()) {
       const user = req.user;
       const userData = {
@@ -381,12 +377,8 @@ export function setupAuth(app: Express) {
         registrationNumber: user.registrationNumber,
         businessAddress: user.businessAddress
       };
-      console.log('Sending user data with analyzer usage:', {
-        email: userData.email
-      });
       return res.json(userData);
     }
-    console.log('User not authenticated, returning 401');
     res.status(401).send("Not logged in");
   });
 
