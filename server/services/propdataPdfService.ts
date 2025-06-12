@@ -1031,8 +1031,13 @@ export class PropdataPdfService {
       }
     }
 
+    // Get cashflow analysis data from valuation report (correct location)
+    const cashflowAnalysisData = data.valuationReport?.cashflowAnalysisData 
+      ? JSON.parse(data.valuationReport.cashflowAnalysisData) 
+      : null;
+
     // Revenue projections from saved rental data - match UI format exactly
-    if (data.rentalData?.cashflowAnalysisData?.revenueGrowthTrajectory) {
+    if (cashflowAnalysisData?.revenueGrowthTrajectory) {
       this.addSubsectionHeader("Revenue Projections (8% Annual Growth)");
       
       this.doc.setFontSize(10);
@@ -1050,7 +1055,7 @@ export class PropdataPdfService {
       );
       this.currentY += 12;
 
-      const trajectory = data.rentalData.cashflowAnalysisData.revenueGrowthTrajectory;
+      const trajectory = cashflowAnalysisData?.revenueGrowthTrajectory;
 
       // Create combined table with all percentiles and long-term data (match UI format)
       if (trajectory.shortTerm || trajectory.longTerm) {
@@ -1147,11 +1152,16 @@ export class PropdataPdfService {
       }
     }
 
+    // Get annual property appreciation data from valuation report (correct location)
+    const annualPropertyAppreciationData = data.valuationReport?.annualPropertyAppreciationData 
+      ? JSON.parse(data.valuationReport.annualPropertyAppreciationData) 
+      : null;
+
     // Property Appreciation Projections
-    if (data.rentalData?.annualPropertyAppreciationData) {
+    if (annualPropertyAppreciationData) {
       this.addSubsectionHeader("Property Value Appreciation");
 
-      const appreciation = data.rentalData.annualPropertyAppreciationData;
+      const appreciation = annualPropertyAppreciationData;
 
       this.doc.setFontSize(10);
       this.doc.text(
