@@ -2441,36 +2441,60 @@ export function registerRoutes(app: Express): Server {
         return res.status(500).json({ error: 'Yoco credentials not configured' });
       }
 
-      // Create Yoco token using their API
-      const yocoResponse = await fetch('https://online.yoco.com/v1/charges/token', {
+      // Create Yoco charge to validate and tokenize card
+      const yocoResponse = await fetch('https://api.yoco.com/v1/charges', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${secretKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          card: {
+          amount: 100, // Minimum test amount (1 ZAR)
+          currency: 'ZAR',
+          source: {
+            type: 'card',
             number: cardNumber,
             expiryMonth: parseInt(expiryMonth),
             expiryYear: parseInt(`20${expiryYear}`),
             cvv: cvv
+          },
+          metadata: {
+            test: 'tokenization_only'
           }
         })
       });
 
       if (!yocoResponse.ok) {
-        const errorData = await yocoResponse.json();
+        const errorText = await yocoResponse.text();
+        console.error('Yoco API error:', {
+          status: yocoResponse.status,
+          statusText: yocoResponse.statusText,
+          response: errorText
+        });
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          errorData = { message: 'API error' };
+        }
+        
         return res.status(400).json({ 
           error: 'Card validation failed', 
-          message: errorData.message || 'Invalid card details' 
+          message: errorData.error?.message || errorData.message || 'Invalid card details' 
         });
       }
 
-      const tokenData = await yocoResponse.json();
+      const chargeData = await yocoResponse.json();
+      
+      // Extract card token from the charge response
+      const cardToken = chargeData.source?.id || chargeData.id;
+      const last4 = chargeData.source?.last4 || cardNumber.slice(-4);
       
       res.json({ 
-        token: tokenData.id,
-        message: 'Card tokenized successfully' 
+        token: cardToken,
+        last4: last4,
+        message: 'Card validated and tokenized successfully' 
       });
 
     } catch (error) {
