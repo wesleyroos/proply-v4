@@ -302,17 +302,6 @@ export default function BranchAdminDashboard() {
                   Agent performance with valuation reports across all listing statuses
                 </CardDescription>
               </div>
-            </div>
-            <div className="flex justify-between items-center mt-4 gap-4">
-              <div className="relative max-w-sm flex-shrink-0">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search agents by name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
               <div className="flex gap-2">
                 <Button
                   variant={timeFilter === '30' ? 'default' : 'outline'}
@@ -350,6 +339,17 @@ export default function BranchAdminDashboard() {
                   {isFetching && timeFilter === 'all' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                   All Time
                 </Button>
+              </div>
+            </div>
+            <div className="mt-4">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search agents by name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
             </div>
           </CardHeader>
