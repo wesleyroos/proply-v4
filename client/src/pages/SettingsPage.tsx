@@ -736,7 +736,16 @@ export default function SettingsPage() {
                   <CardDescription>View and download your billing history</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {user?.subscriptionStatus === "pro" ? (
+                  {/* Show different content based on user type */}
+                  {user?.role === 'branch_admin' || user?.role === 'franchise_admin' ? (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-2">Agency Invoice History</p>
+                      <p className="text-sm text-muted-foreground">
+                        Agency invoices will appear here once billing cycle is activated
+                      </p>
+                    </div>
+                  ) : user?.subscriptionStatus === "pro" ? (
                     invoicesLoading ? (
                       <div className="text-center py-4">
                         <span className="loading loading-spinner loading-md"></span>
@@ -763,7 +772,7 @@ export default function SettingsPage() {
                               <TableCell className="text-right">
                                 R{typeof invoice.amount === 'string' ?
                                   parseFloat(invoice.amount).toFixed(2) :
-                                  invoice.amount.toFixed(2)}
+                                  0}
                               </TableCell>
                               <TableCell className="capitalize">{invoice.status}</TableCell>
                               <TableCell className="text-right">
