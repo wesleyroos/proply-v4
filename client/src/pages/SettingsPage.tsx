@@ -153,6 +153,26 @@ function ProfileSection() {
     }
   }, [user, agencyProfile, form]);
 
+  // Format SA business registration number (YYYY/NNNNNN/NN)
+  const formatRegistrationNumber = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+    
+    // Apply SA business registration number format
+    if (numbers.length <= 4) {
+      return numbers;
+    } else if (numbers.length <= 10) {
+      return `${numbers.slice(0, 4)}/${numbers.slice(4)}`;
+    } else {
+      return `${numbers.slice(0, 4)}/${numbers.slice(4, 10)}/${numbers.slice(10, 12)}`;
+    }
+  };
+
+  const handleRegistrationNumberChange = (event: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
+    const formatted = formatRegistrationNumber(event.target.value);
+    onChange(formatted);
+  };
+
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && (user?.role === 'branch_admin' || user?.role === 'franchise_admin')) {
@@ -424,9 +444,15 @@ function ProfileSection() {
                       <FormItem>
                         <FormLabel>Business Registration Number</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="XXXX/XXXXXX/XX" />
+                          <Input 
+                            {...field}
+                            placeholder="2018587662207"
+                            maxLength={14}
+                            onChange={(e) => handleRegistrationNumberChange(e, field.onChange)}
+                          />
                         </FormControl>
                         <FormMessage />
+                        <p className="text-sm text-gray-500">Format: YYYY/NNNNNN/NN (slashes added automatically)</p>
                       </FormItem>
                     )}
                   />
