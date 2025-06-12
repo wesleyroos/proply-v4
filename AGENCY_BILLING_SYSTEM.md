@@ -221,10 +221,57 @@ Payment Info:
 - High usage spikes
 - Payment method expiring
 
+## Pricing Model
+
+### Volume-Based Pricing Structure
+```
+Base Rate: 1-50 reports/month = R200 per report (no discount)
+Tier 1: 51-100 reports/month = R180 per report (10% discount)
+Tier 2: 101-200 reports/month = R160 per report (20% discount)
+Tier 3: 201+ reports/month = R140 per report (30% discount)
+```
+
+### Calculation Logic
+Progressive pricing where discounts apply only to reports above each threshold:
+
+```javascript
+function calculateMonthlyBill(reportCount) {
+  let total = 0;
+  
+  if (reportCount <= 50) {
+    // All reports at base rate
+    total = reportCount * 200;
+  } else if (reportCount <= 100) {
+    // First 50 at base rate, remainder at tier 1
+    total = (50 * 200) + ((reportCount - 50) * 180);
+  } else if (reportCount <= 200) {
+    // 50 base + 50 tier 1 + remainder tier 2
+    total = (50 * 200) + (50 * 180) + ((reportCount - 100) * 160);
+  } else {
+    // 50 base + 50 tier 1 + 100 tier 2 + remainder tier 3
+    total = (50 * 200) + (50 * 180) + (100 * 160) + ((reportCount - 200) * 140);
+  }
+  
+  return total;
+}
+```
+
+### Example Monthly Bills
+- **25 reports**: 25 × R200 = R5,000
+- **75 reports**: (50 × R200) + (25 × R180) = R10,000 + R4,500 = R14,500
+- **150 reports**: (50 × R200) + (50 × R180) + (50 × R160) = R27,000
+- **250 reports**: (50 × R200) + (50 × R180) + (100 × R160) + (50 × R140) = R42,000
+
+### Benefits
+- Protects smaller agencies with full rate for typical usage (1-50 reports)
+- Encourages high usage with meaningful enterprise-level discounts
+- Progressive savings structure rewards power users
+- Clear breakpoints that are easy to understand and communicate
+
 ## Future Enhancements
 
 1. **Multi-currency support** for international agencies
-2. **Volume discounts** based on usage tiers
-3. **Credit notes** for refunds/adjustments
-4. **Payment plans** for large bills
+2. **Credit notes** for refunds/adjustments
+3. **Payment plans** for large bills
+4. **Annual commitment discounts** for long-term contracts
 5. **API access** for agencies to integrate billing data
