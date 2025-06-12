@@ -29,6 +29,9 @@ import {
   ChevronDown,
   Loader2,
   Search,
+  Plus,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +46,12 @@ interface BranchMetrics {
   };
   reportsThisMonth: number;
   reportsLastMonth: number;
+  newListingsThisMonth: number;
+  newListingsLastMonth: number;
+  listingsPerMonth: {
+    month: string;
+    count: number;
+  }[];
   branchName: string;
   agentReportCoverage: {
     agent_name: string;
@@ -245,48 +254,72 @@ export default function BranchAdminDashboard() {
           </p>
         </div>
 
-        {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
+        {/* Key Metrics Cards - Compact 2x2 Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-blue-900">Total Listings</CardTitle>
+              <Building2 className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{displayData.listingsByStatus.total.toLocaleString()}</div>
-              <div className="flex gap-2 mt-2">
-                <Badge variant="default">{displayData.listingsByStatus.active} Active</Badge>
-                <Badge variant="secondary">{displayData.listingsByStatus.pending} Pending</Badge>
-                <Badge variant="outline">{displayData.listingsByStatus.sold} Sold</Badge>
+              <div className="text-2xl font-bold text-blue-900">{displayData.listingsByStatus.total.toLocaleString()}</div>
+              <div className="flex gap-1 mt-1 flex-wrap">
+                <Badge variant="default" className="text-xs px-1.5 py-0.5">{displayData.listingsByStatus.active} Active</Badge>
+                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">{displayData.listingsByStatus.pending} Pending</Badge>
+                <Badge variant="outline" className="text-xs px-1.5 py-0.5">{displayData.listingsByStatus.sold} Sold</Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Property listings for {displayData.branchName}
-              </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Reports This Month</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-green-900">New Listings</CardTitle>
+              <Plus className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{displayData.reportsThisMonth}</div>
-              <p className="text-xs text-muted-foreground">
-                Generated this month ({displayData.reportsLastMonth} last month)
-              </p>
+              <div className="text-2xl font-bold text-green-900">{displayData.newListingsThisMonth}</div>
+              <div className="flex items-center gap-1 mt-1">
+                {displayData.newListingsThisMonth >= displayData.newListingsLastMonth ? (
+                  <TrendingUp className="h-3 w-3 text-green-600" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-red-500" />
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {displayData.newListingsLastMonth} last month
+                </p>
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Agents</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-purple-900">Reports Generated</CardTitle>
+              <FileText className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{displayData.totalAgents}</div>
-              <p className="text-xs text-muted-foreground">
-                Active agents
+              <div className="text-2xl font-bold text-purple-900">{displayData.reportsThisMonth}</div>
+              <div className="flex items-center gap-1 mt-1">
+                {displayData.reportsThisMonth >= displayData.reportsLastMonth ? (
+                  <TrendingUp className="h-3 w-3 text-green-600" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-red-500" />
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {displayData.reportsLastMonth} last month
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-orange-900">Active Agents</CardTitle>
+              <Users className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-900">{displayData.totalAgents}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                With property listings
               </p>
             </CardContent>
           </Card>

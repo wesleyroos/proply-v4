@@ -107,6 +107,30 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
     `);
     const reportsData = reportsQuery.rows[0];
 
+    // Get new listings per month for the last 6 months
+    const listingsPerMonthQuery = await db.execute(sql`
+      SELECT 
+        DATE_TRUNC('month', created_at) as month,
+        COUNT(*) as count
+      FROM propdata_listings
+      WHERE branch_id = ${branchId}
+        AND created_at >= NOW() - INTERVAL '6 months'
+      GROUP BY DATE_TRUNC('month', created_at)
+      ORDER BY month DESC
+    `);
+    const listingsPerMonth = listingsPerMonthQuery.rows;
+
+    // Get current month and last month new listings count
+    const newListingsQuery = await db.execute(sql`
+      SELECT 
+        COUNT(CASE WHEN created_at >= ${startOfMonth} THEN 1 END) as this_month,
+        COUNT(CASE WHEN created_at >= ${startOfLastMonth} AND created_at < ${startOfMonth} THEN 1 END) as last_month
+      FROM propdata_listings
+      WHERE branch_id = ${branchId}
+        AND created_at >= ${startOfLastMonth}
+    `);
+    const newListingsData = newListingsQuery.rows[0];
+
     // Get agent report coverage data from PropData listings (all statuses)
     const agentCoverage = await db.execute(sql`
       WITH agent_listings AS (
@@ -171,6 +195,9 @@ router.get("/branch/:branchId/metrics", requireAuth, async (req, res) => {
       listingsByStatus: listingsByStatus,
       reportsThisMonth: reportsData.this_month as number,
       reportsLastMonth: reportsData.last_month as number,
+      newListingsThisMonth: newListingsData.this_month as number,
+      newListingsLastMonth: newListingsData.last_month as number,
+      listingsPerMonth: listingsPerMonth,
       branchName: branch.branchName,
       agentReportCoverage: agentCoverage.rows,
     };
