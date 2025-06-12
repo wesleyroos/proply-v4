@@ -127,15 +127,24 @@ export function ControlPanel() {
   // Billing toggle mutation
   const billingToggleMutation = useMutation({
     mutationFn: async ({ agencyId, enabled }: { agencyId: string; enabled: boolean }) => {
+      console.log('Billing toggle mutation called:', { agencyId, enabled });
       const response = await fetch(`/api/admin/agencies/${agencyId}/billing`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ billingEnabled: enabled }),
       });
-      if (!response.ok) throw new Error('Failed to update billing status');
-      return response.json();
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        throw new Error(`Failed to update billing status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log('Success response:', result);
+      return result;
     },
     onSuccess: (data, variables) => {
+      console.log('Mutation successful:', data);
       toast({
         title: "Billing updated",
         description: `Billing ${variables.enabled ? 'enabled' : 'disabled'} successfully`,
@@ -143,6 +152,7 @@ export function ControlPanel() {
       queryClient.invalidateQueries({ queryKey: ["/api/agencies"] });
     },
     onError: (error: any) => {
+      console.error('Mutation error:', error);
       toast({
         title: "Billing update failed",
         description: error.message || "Failed to update billing status",
@@ -360,6 +370,8 @@ export function ControlPanel() {
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.preventDefault();
+                              e.stopPropagation();
+                              console.log('Billing dropdown clicked for agency:', agency.id, 'current status:', agency.billingEnabled);
                               billingToggleMutation.mutate({ 
                                 agencyId: agency.id, 
                                 enabled: !agency.billingEnabled 

@@ -2207,10 +2207,14 @@ export function registerRoutes(app: Express): Server {
   // Agency billing toggle endpoint  
   app.put("/api/admin/agencies/:agencyId/billing", async (req, res) => {
     try {
+      console.log('Billing toggle endpoint hit:', req.params, req.body);
+      console.log('User:', req.user ? { id: req.user.id, role: req.user.role } : 'No user');
+      
       const { agencyId } = req.params;
       const { billingEnabled } = req.body;
       
       if (!req.user || req.user.role !== 'admin') {
+        console.log('Access denied - user role:', req.user?.role);
         return res.status(403).json({ error: "Admin access required" });
       }
 
