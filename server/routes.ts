@@ -2333,9 +2333,32 @@ export function registerRoutes(app: Express): Server {
 
       const { propertyId } = req.params;
       
-      const valuation = await db.query.valuationReports.findFirst({
-        where: and(eq(valuationReports.propertyId, propertyId), eq(valuationReports.userId, req.user.id))
-      });
+      let valuation;
+      
+      if (req.user.isAdmin || req.user.role === 'franchise_admin') {
+        // Admin and franchise admin can see all reports
+        valuation = await db.query.valuationReports.findFirst({
+          where: eq(valuationReports.propertyId, propertyId)
+        });
+      } else if (req.user.role === 'branch_admin') {
+        // Branch admin can see reports for properties in their branch
+        valuation = await db.query.valuationReports.findFirst({
+          where: eq(valuationReports.propertyId, propertyId),
+          with: {
+            user: true
+          }
+        });
+        
+        // Check if the report belongs to someone in the same branch
+        if (valuation && valuation.user.branchId !== req.user.branchId) {
+          valuation = null;
+        }
+      } else {
+        // Regular users can only see their own reports
+        valuation = await db.query.valuationReports.findFirst({
+          where: and(eq(valuationReports.propertyId, propertyId), eq(valuationReports.userId, req.user.id))
+        });
+      }
 
       if (valuation) {
         res.json(valuation);
