@@ -540,9 +540,14 @@ function ProfileSection() {
           <div>
             <h3 className="text-sm font-medium text-muted-foreground">Company Information</h3>
             <div className="mt-2 space-y-2">
-              {user?.companyLogo && (
+              {/* Show agency logo for admin users, user logo for regular users */}
+              {((user?.role === 'branch_admin' || user?.role === 'franchise_admin') ? agencyProfile?.logoUrl : user?.companyLogo) && (
                 <div className="w-24 h-24 rounded overflow-hidden mb-4">
-                  <img src={user.companyLogo} alt="Company Logo" className="w-full h-full object-contain" />
+                  <img 
+                    src={((user?.role === 'branch_admin' || user?.role === 'franchise_admin') ? agencyProfile?.logoUrl : user?.companyLogo) || ''} 
+                    alt="Company Logo" 
+                    className="w-full h-full object-contain" 
+                  />
                 </div>
               )}
               <div>
@@ -551,15 +556,30 @@ function ProfileSection() {
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
-                <span>{user?.vatNumber || "Not provided"}</span>
+                <span>
+                  {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
+                    ? (agencyProfile?.vatNumber || "Not provided")
+                    : (user?.vatNumber || "Not provided")
+                  }
+                </span>
               </div>
               <div>
                 <span className="font-medium">Registration Number: </span>
-                <span>{user?.registrationNumber || "Not provided"}</span>
+                <span>
+                  {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
+                    ? (agencyProfile?.registrationNumber || "Not provided")
+                    : (user?.registrationNumber || "Not provided")
+                  }
+                </span>
               </div>
               <div>
                 <span className="font-medium">Business Address: </span>
-                <span>{user?.businessAddress || "Not provided"}</span>
+                <span>
+                  {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
+                    ? (agencyProfile?.businessAddress || "Not provided")
+                    : (user?.businessAddress || "Not provided")
+                  }
+                </span>
               </div>
             </div>
           </div>
