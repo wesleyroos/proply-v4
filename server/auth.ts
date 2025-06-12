@@ -104,11 +104,7 @@ export function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
   
-  // Add session debugging middleware after passport initialization
-  app.use((req, res, next) => {
-    console.log(`Session: ${req.sessionID}, Authenticated: ${req.isAuthenticated()}, User: ${req.user ? req.user.id : 'none'}, Cookie: ${req.headers.cookie || 'none'}`);
-    next();
-  });
+  // Session middleware setup complete
 
   passport.use(
     new LocalStrategy({
