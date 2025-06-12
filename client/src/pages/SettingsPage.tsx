@@ -906,6 +906,9 @@ export default function SettingsPage() {
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [isProcessingCard, setIsProcessingCard] = useState(false);
     const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true);
+    const [isTestingPayment, setIsTestingPayment] = useState(false);
+    const [isProcessingTestPayment, setIsProcessingTestPayment] = useState(false);
+    const [testPaymentAmount, setTestPaymentAmount] = useState('10.00');
 
     // Fetch existing payment methods
     const { data: paymentMethodsData, refetch: refetchPaymentMethods } = useQuery({
@@ -1019,6 +1022,93 @@ export default function SettingsPage() {
       }
     };
 
+    const handleTestPayment = async () => {
+      setIsProcessingTestPayment(true);
+
+      try {
+        // Check if Yoco SDK is loaded
+        if (typeof window.YocoSDK === 'undefined') {
+          throw new Error('Yoco SDK not loaded. Please refresh the page and try again.');
+        }
+
+        // Get environment mode from localStorage
+        const isTestMode = localStorage.getItem('yoco_test_mode') !== 'false';
+        
+        // Get the appropriate public key from environment
+        const publicKeyResponse = await fetch(`/api/yoco/public-key?test=${isTestMode}`, {
+          credentials: 'include'
+        });
+        
+        if (!publicKeyResponse.ok) {
+          throw new Error('Failed to get Yoco public key');
+        }
+        
+        const { publicKey } = await publicKeyResponse.json();
+
+        // Initialize Yoco SDK with the correct public key
+        const yoco = new window.YocoSDK({
+          publicKey: publicKey
+        });
+
+        // Use test card data for demo
+        const testCardData = {
+          number: '4111111111111111',
+          expiryMonth: '12',
+          expiryYear: '2025',
+          cvv: '123',
+          name: 'Test Cardholder'
+        };
+
+        // Tokenize the test card using Yoco SDK
+        const tokenResult = await yoco.tokenizeCard(testCardData);
+
+        if (tokenResult.error) {
+          throw new Error(tokenResult.error.message || 'Card tokenization failed');
+        }
+
+        // Process demo charge
+        const amountInCents = Math.round(parseFloat(testPaymentAmount) * 100);
+        
+        const chargeResponse = await fetch('/api/yoco/demo-charge', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-yoco-test-mode': isTestMode.toString()
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            token: tokenResult.token,
+            amountInCents,
+            currency: 'ZAR',
+            description: `Demo payment - R${testPaymentAmount}`
+          })
+        });
+
+        if (!chargeResponse.ok) {
+          const error = await chargeResponse.json();
+          throw new Error(error.details || error.message || 'Payment failed');
+        }
+
+        const chargeData = await chargeResponse.json();
+
+        toast({
+          title: "Test payment successful",
+          description: `Demo charge of R${testPaymentAmount} processed successfully. Charge ID: ${chargeData.charge?.id || 'N/A'}`
+        });
+
+        setIsTestingPayment(false);
+
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Test payment failed",
+          description: error instanceof Error ? error.message : "An unknown error occurred"
+        });
+      } finally {
+        setIsProcessingTestPayment(false);
+      }
+    };
+
     const detectCardType = (cardNumber: string) => {
       const number = cardNumber.replace(/\s/g, '');
       if (number.startsWith('4')) return 'Visa';
@@ -1113,6 +1203,55 @@ export default function SettingsPage() {
                     </Button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Demo Payment Test Section */}
+            {paymentMethodsData?.length > 0 && (
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-medium text-sm">Test Payment System</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsTestingPayment(!isTestingPayment)}
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Test Payment
+                  </Button>
+                </div>
+
+                {isTestingPayment && (
+                  <div className="p-4 border rounded-lg bg-blue-50">
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Test the payment system with a small demo charge
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <label className="text-sm font-medium">Amount (ZAR)</label>
+                          <Input
+                            type="number"
+                            value={testPaymentAmount}
+                            onChange={(e) => setTestPaymentAmount(e.target.value)}
+                            placeholder="10.00"
+                            className="w-24 mt-1"
+                            min="1"
+                            max="100"
+                            step="0.01"
+                          />
+                        </div>
+                        <Button
+                          onClick={handleTestPayment}
+                          disabled={isProcessingTestPayment}
+                          className="mt-6"
+                        >
+                          {isProcessingTestPayment ? "Processing..." : "Process Test Payment"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

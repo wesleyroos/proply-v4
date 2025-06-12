@@ -3219,6 +3219,72 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Demo charge endpoint to test Yoco integration
+  app.post('/api/yoco/demo-charge', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      const { token, amountInCents, currency = 'ZAR', description = 'Demo Payment' } = req.body;
+
+      if (!token || !amountInCents) {
+        return res.status(400).json({ error: 'Missing required fields: token and amountInCents' });
+      }
+
+      // Check test mode from request header or default to test
+      const isTestMode = req.headers['x-yoco-test-mode'] === 'true' || req.query.test === 'true';
+      
+      const secretKey = isTestMode 
+        ? import.meta.env.YOCO_TEST_SECRET_KEY 
+        : import.meta.env.YOCO_SECRET_KEY;
+
+      if (!secretKey) {
+        return res.status(500).json({ error: 'Yoco secret key not configured' });
+      }
+
+      // Make charge to Yoco API
+      const chargeResponse = await fetch('https://online.yoco.com/v1/charges/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${secretKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          token,
+          amountInCents,
+          currency,
+          metadata: {
+            description,
+            userId: user.id.toString(),
+            testMode: isTestMode.toString()
+          }
+        })
+      });
+
+      const chargeData = await chargeResponse.json();
+
+      if (!chargeResponse.ok) {
+        console.error('Yoco charge failed:', chargeData);
+        return res.status(400).json({ 
+          error: 'Payment failed', 
+          details: chargeData.displayMessage || chargeData.message 
+        });
+      }
+
+      res.json({
+        success: true,
+        charge: chargeData,
+        message: 'Demo payment processed successfully'
+      });
+
+    } catch (error) {
+      console.error('Error processing demo charge:', error);
+      res.status(500).json({ error: 'Failed to process demo payment' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
