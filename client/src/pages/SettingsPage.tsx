@@ -51,7 +51,8 @@ import {
   Plus,
   Trash2,
   CheckCircle,
-  Clock
+  Clock,
+  BarChart3
 } from "lucide-react";
 import {
   AlertDialog,
@@ -789,6 +790,115 @@ export default function SettingsPage() {
   });
   const [, setLocation] = useLocation();
 
+  // Billing Usage Overview Component
+  const BillingUsageOverview = () => {
+    const { data: billingCycles, isLoading } = useQuery({
+      queryKey: ['/api/agency-billing/cycles'],
+      queryFn: async () => {
+        const response = await fetch('/api/agency-billing/cycles', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch billing cycles');
+        }
+        return response.json();
+      },
+      enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
+    });
+
+    if (isLoading) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Report Usage Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-4">Loading billing data...</div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+    const currentCycle = billingCycles?.billingCycles?.find((cycle: any) => cycle.billingPeriod === currentMonth);
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" />
+            Report Usage Overview
+          </CardTitle>
+          <CardDescription>
+            Monthly report generation usage and billing information
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Current Month Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-[#007B8A]">
+                {currentCycle?.reportCount || 0}
+              </div>
+              <div className="text-sm text-muted-foreground">Reports This Month</div>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-green-600">
+                R{currentCycle?.subtotal || '0.00'}
+              </div>
+              <div className="text-sm text-muted-foreground">Subtotal (Excl. VAT)</div>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">
+                R{currentCycle?.totalAmount || '0.00'}
+              </div>
+              <div className="text-sm text-muted-foreground">Total (Incl. VAT)</div>
+            </div>
+          </div>
+
+          {/* Recent Billing Cycles */}
+          {billingCycles?.billingCycles?.length > 0 && (
+            <div>
+              <h3 className="font-medium text-sm mb-3">Recent Billing Cycles</h3>
+              <div className="space-y-2">
+                {billingCycles.billingCycles.slice(0, 3).map((cycle: any) => (
+                  <div key={cycle.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <div className="font-medium">{cycle.billingPeriod}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {cycle.reportCount} reports • R{cycle.pricePerReport} per report
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">R{cycle.totalAmount}</div>
+                      <div className={`text-xs px-2 py-1 rounded-full ${
+                        cycle.status === 'paid' ? 'bg-green-100 text-green-800' :
+                        cycle.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {cycle.status}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(!billingCycles?.billingCycles || billingCycles.billingCycles.length === 0) && (
+            <div className="text-center py-8 text-muted-foreground">
+              <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <div className="font-medium">No billing cycles yet</div>
+              <div className="text-sm">Generate reports to start tracking usage</div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   // Payment Methods Section Component
   const PaymentMethodsSection = () => {
