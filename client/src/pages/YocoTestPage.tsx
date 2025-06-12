@@ -299,7 +299,7 @@ export default function YocoTestPage() {
                         <XCircle className="w-4 h-4 text-red-600" />
                       )}
                       <span className="font-medium">{result.cardName}</span>
-                      <Badge variant={result.success ? "success" : "destructive"}>
+                      <Badge variant={result.success ? "secondary" : "destructive"}>
                         {result.success ? "Success" : "Failed"}
                       </Badge>
                     </div>
