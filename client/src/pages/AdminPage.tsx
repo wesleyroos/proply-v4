@@ -330,7 +330,7 @@ export default function AdminPage() {
     
     if (window.confirm(message)) {
       setIsYocoTestMode(checked);
-      localStorage.setItem('yoco_test_mode', checked.toString());
+      updateYocoTestMode.mutate(checked);
       toast({
         title: checked ? "Yoco Test Mode Enabled" : "Yoco Test Mode Disabled",
         description: checked 
@@ -338,8 +338,6 @@ export default function AdminPage() {
           : "Yoco is now in live mode - agency billing will use live credentials.",
         duration: 3000,
       });
-    } else {
-      setIsYocoTestMode(!checked);
     }
   };
 
