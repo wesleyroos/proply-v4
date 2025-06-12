@@ -894,18 +894,16 @@ export class PropdataPdfService {
     this.checkPageBreak();
     this.addSectionHeader("Financial Analysis");
 
-    // Get financial analysis data from valuation report (correct location)
-    const valuationData = data.valuationReport?.valuationData as any;
-    const financingAnalysisData = data.valuationReport?.financingAnalysisData 
-      ? JSON.parse(data.valuationReport.financingAnalysisData) 
-      : null;
 
-    // Financing parameters from saved valuation data
-    if (financingAnalysisData?.financingParameters) {
+
+    // Financing parameters from saved rental data
+    if (data.rentalData?.financingAnalysisData) {
       this.addSubsectionHeader("Financing Details");
 
-      const financing = financingAnalysisData.financingParameters;
-      const yearlyMetrics = financingAnalysisData.yearlyMetrics;
+      const financing =
+        data.rentalData.financingAnalysisData.financingParameters;
+      const yearlyMetrics =
+        data.rentalData.financingAnalysisData.yearlyMetrics;
 
       if (financing) {
         // Financing overview in left-aligned single column format
@@ -1031,13 +1029,8 @@ export class PropdataPdfService {
       }
     }
 
-    // Get cashflow analysis data from valuation report (correct location)
-    const cashflowAnalysisData = data.valuationReport?.cashflowAnalysisData 
-      ? JSON.parse(data.valuationReport.cashflowAnalysisData) 
-      : null;
-
     // Revenue projections from saved rental data - match UI format exactly
-    if (cashflowAnalysisData?.revenueGrowthTrajectory) {
+    if (data.rentalData?.cashflowAnalysisData?.revenueGrowthTrajectory) {
       this.addSubsectionHeader("Revenue Projections (8% Annual Growth)");
       
       this.doc.setFontSize(10);
@@ -1055,7 +1048,7 @@ export class PropdataPdfService {
       );
       this.currentY += 12;
 
-      const trajectory = cashflowAnalysisData?.revenueGrowthTrajectory;
+      const trajectory = data.rentalData.cashflowAnalysisData.revenueGrowthTrajectory;
 
       // Create combined table with all percentiles and long-term data (match UI format)
       if (trajectory.shortTerm || trajectory.longTerm) {
@@ -1152,16 +1145,11 @@ export class PropdataPdfService {
       }
     }
 
-    // Get annual property appreciation data from valuation report (correct location)
-    const annualPropertyAppreciationData = data.valuationReport?.annualPropertyAppreciationData 
-      ? JSON.parse(data.valuationReport.annualPropertyAppreciationData) 
-      : null;
-
     // Property Appreciation Projections
-    if (annualPropertyAppreciationData) {
+    if (data.rentalData?.annualPropertyAppreciationData) {
       this.addSubsectionHeader("Property Value Appreciation");
 
-      const appreciation = annualPropertyAppreciationData;
+      const appreciation = data.rentalData.annualPropertyAppreciationData;
 
       this.doc.setFontSize(10);
       this.doc.text(
