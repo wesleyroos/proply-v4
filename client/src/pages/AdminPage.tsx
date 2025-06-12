@@ -362,46 +362,51 @@ export default function AdminPage() {
           {user?.isAdmin && <NotificationsMenu />}
         </div>
 
-        {/* PayFast Sandbox Toggle Card */}
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader>
-            <CardTitle className="text-yellow-800">PayFast Environment</CardTitle>
-            <CardDescription className="text-yellow-700">
-              Control whether PayFast operates in sandbox (test) or live mode
+        {/* Payment Environment Controls */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Payment Environment Controls</CardTitle>
+            <CardDescription>
+              Configure payment processing modes for different systems
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="sandbox-mode"
-                checked={isSandboxMode}
-                onCheckedChange={handleSandboxToggle}
-              />
-              <label htmlFor="sandbox-mode" className="text-sm font-medium text-yellow-800">
-                {isSandboxMode ? "Sandbox Mode (Test)" : "Live Mode (Production)"}
-              </label>
-            </div>
-          </CardContent>
-        </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* PayFast Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg border border-yellow-200 bg-yellow-50">
+                <div className="flex-1">
+                  <h4 className="font-medium text-yellow-800">PayFast</h4>
+                  <p className="text-sm text-yellow-700">Individual billing</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="sandbox-mode"
+                    checked={isSandboxMode}
+                    onCheckedChange={handleSandboxToggle}
+                  />
+                  <span className="text-sm font-medium text-yellow-800 min-w-[80px]">
+                    {isSandboxMode ? "Test" : "Live"}
+                  </span>
+                </div>
+              </div>
 
-        {/* Yoco Test Mode Toggle Card */}
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-blue-800">Yoco Environment</CardTitle>
-            <CardDescription className="text-blue-700">
-              Control whether Yoco operates in test or live mode for agency billing
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="yoco-test-mode"
-                checked={isYocoTestMode}
-                onCheckedChange={handleYocoTestToggle}
-              />
-              <label htmlFor="yoco-test-mode" className="text-sm font-medium text-blue-800">
-                {isYocoTestMode ? "Test Mode (Agency Billing)" : "Live Mode (Agency Billing)"}
-              </label>
+              {/* Yoco Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg border border-blue-200 bg-blue-50">
+                <div className="flex-1">
+                  <h4 className="font-medium text-blue-800">Yoco</h4>
+                  <p className="text-sm text-blue-700">Agency billing</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="yoco-test-mode"
+                    checked={isYocoTestMode}
+                    onCheckedChange={handleYocoTestToggle}
+                  />
+                  <span className="text-sm font-medium text-blue-800 min-w-[80px]">
+                    {isYocoTestMode ? "Test" : "Live"}
+                  </span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
