@@ -102,6 +102,14 @@ router.get("/agencies", async (req, res) => {
         // Get the main branch (first one) for franchise-level data
         const mainBranch = franchise.branches[0];
         
+        // Get billing settings for the main branch
+        let billingSettings = null;
+        if (mainBranch) {
+          billingSettings = await db.query.agencyBillingSettings.findFirst({
+            where: eq(agencyBillingSettings.agencyBranchId, mainBranch.id)
+          });
+        }
+        
         return {
           ...franchise,
           totalProperties: propertyCount?.count || 0,
@@ -116,6 +124,7 @@ router.get("/agencies", async (req, res) => {
           franchiseName: mainBranch?.franchiseName || franchise.name,
           branchName: mainBranch?.branchName || null,
           mainBranchId: mainBranch?.id || null,
+          billingEnabled: billingSettings?.billingEnabled || false,
         };
       })
     );
@@ -142,7 +151,8 @@ router.get("/agencies", async (req, res) => {
           errorMessage: lastSync.errorMessage
         } : null,
         autoSyncEnabled: true,
-        syncFrequency: "5 minutes"
+        syncFrequency: "5 minutes",
+        billingEnabled: false
       });
     }
 

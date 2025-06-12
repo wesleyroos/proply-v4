@@ -2217,9 +2217,9 @@ export function registerRoutes(app: Express): Server {
       // Import agency billing settings from schema
       const { agencyBillingSettings, agencyBranches } = await import("@db/schema");
       
-      // Find the agency branch by the compound ID
+      // Find the agency branch by the slug (string ID)
       const agencyBranch = await db.query.agencyBranches.findFirst({
-        where: eq(agencyBranches.id, agencyId)
+        where: eq(agencyBranches.slug, agencyId)
       });
 
       if (!agencyBranch) {
@@ -2228,13 +2228,13 @@ export function registerRoutes(app: Express): Server {
 
       // Check if billing settings exist, create if not
       let billingSettings = await db.query.agencyBillingSettings.findFirst({
-        where: eq(agencyBillingSettings.agencyBranchId, parseInt(agencyBranch.id))
+        where: eq(agencyBillingSettings.agencyBranchId, agencyBranch.id)
       });
 
       if (!billingSettings) {
         // Create initial billing settings
         await db.insert(agencyBillingSettings).values({
-          agencyBranchId: parseInt(agencyBranch.id),
+          agencyBranchId: agencyBranch.id,
           billingEnabled: billingEnabled,
           pricePerReport: "200.00",
           billingDay: 1,
@@ -2242,7 +2242,7 @@ export function registerRoutes(app: Express): Server {
         });
         
         billingSettings = await db.query.agencyBillingSettings.findFirst({
-          where: eq(agencyBillingSettings.agencyBranchId, parseInt(agencyBranch.id))
+          where: eq(agencyBillingSettings.agencyBranchId, agencyBranch.id)
         });
       } else {
         // Update existing billing settings
@@ -2251,7 +2251,7 @@ export function registerRoutes(app: Express): Server {
             billingEnabled: billingEnabled,
             updatedAt: new Date()
           })
-          .where(eq(agencyBillingSettings.agencyBranchId, parseInt(agencyBranch.id)));
+          .where(eq(agencyBillingSettings.agencyBranchId, agencyBranch.id));
       }
 
       res.json({ 

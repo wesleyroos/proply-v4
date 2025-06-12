@@ -372,7 +372,6 @@ export function ControlPanel() {
                               <span>{agency.billingEnabled ? 'Disable' : 'Enable'} Billing</span>
                               <Switch
                                 checked={agency.billingEnabled || false}
-                                size="sm"
                                 className="ml-2"
                                 onClick={(e) => e.stopPropagation()}
                               />
