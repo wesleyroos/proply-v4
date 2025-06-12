@@ -135,9 +135,9 @@ export function ControlPanel() {
       });
       console.log('Response status:', response.status);
       if (!response.ok) {
-        const errorData = await response.text();
+        const errorData = await response.json();
         console.error('Error response:', errorData);
-        throw new Error(`Failed to update billing status: ${response.status}`);
+        throw new Error(errorData.message || errorData.error || `Failed to update billing status: ${response.status}`);
       }
       const result = await response.json();
       console.log('Success response:', result);
