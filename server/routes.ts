@@ -18,6 +18,11 @@ import {
   valuationReports,
   rentalPerformanceData,
   propdataListings,
+  agencyBranches,
+  agencyPaymentMethods,
+  agencyBillingSettings,
+  agencyBillingCycles,
+  agencyInvoices,
 } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -28,6 +33,75 @@ import { trackReportGeneration } from "./utils/report-tracker";
 
 import { sql } from "drizzle-orm";
 import { priceLabsUsage, reportGenerations } from "@db/schema";
+
+// Function to track agency report usage for billing
+async function trackAgencyReportUsage(agencyBranchId: number, userId: number, propertyAddress: string) {
+  try {
+    const currentDate = new Date();
+    const billingPeriod = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}`;
+    
+    // Get or create billing cycle for this month
+    let [billingCycle] = await db
+      .select()
+      .from(agencyBillingCycles)
+      .where(
+        and(
+          eq(agencyBillingCycles.agencyBranchId, agencyBranchId),
+          eq(agencyBillingCycles.billingPeriod, billingPeriod)
+        )
+      )
+      .limit(1);
+
+    if (!billingCycle) {
+      // Get billing settings for pricing
+      const [billingSettings] = await db
+        .select()
+        .from(agencyBillingSettings)
+        .where(eq(agencyBillingSettings.agencyBranchId, agencyBranchId))
+        .limit(1);
+
+      const pricePerReport = parseFloat(billingSettings?.pricePerReport || "200.00");
+      
+      // Create new billing cycle
+      [billingCycle] = await db
+        .insert(agencyBillingCycles)
+        .values({
+          agencyBranchId,
+          billingPeriod,
+          reportCount: 1,
+          pricePerReport: pricePerReport.toFixed(2),
+          subtotal: pricePerReport.toFixed(2),
+          vatAmount: (pricePerReport * 0.15).toFixed(2), // 15% VAT
+          totalAmount: (pricePerReport * 1.15).toFixed(2),
+          status: "pending",
+          dueDate: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, billingSettings?.billingDay || 1)
+        })
+        .returning();
+    } else {
+      // Update existing billing cycle
+      const newReportCount = billingCycle.reportCount + 1;
+      const pricePerReport = parseFloat(billingCycle.pricePerReport);
+      const newSubtotal = newReportCount * pricePerReport;
+      const newVatAmount = newSubtotal * 0.15;
+      const newTotalAmount = newSubtotal + newVatAmount;
+
+      await db
+        .update(agencyBillingCycles)
+        .set({
+          reportCount: newReportCount,
+          subtotal: newSubtotal.toFixed(2),
+          vatAmount: newVatAmount.toFixed(2),
+          totalAmount: newTotalAmount.toFixed(2),
+          updatedAt: new Date()
+        })
+        .where(eq(agencyBillingCycles.id, billingCycle.id));
+    }
+
+    console.log(`Agency billing: Tracked report usage for branch ${agencyBranchId}, period ${billingPeriod}`);
+  } catch (error) {
+    console.error('Error tracking agency report usage:', error);
+  }
+}
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
@@ -1382,23 +1456,22 @@ export function registerRoutes(app: Express): Server {
         JSON.stringify(analysisResult, null, 2),
       );
 
-      // Get current user data first
-      // const [currentUser] = await db
-      //   .select({
-      //     propertyAnalyzerUsage: users.propertyAnalyzerUsage
-      //   })
-      //   .from(users)
-      //   .where(eq(users.id, req.user!.id))
-      //   .limit(1);
-
-      // const newUsage = (user?.propertyAnalyzerUsage || 0) + 1;
-      const newCount = (user?.analysisCount || 0) + 1;
-
-      console.log("Before incrementing analysis count:", {
-        userId: user?.id,
-        email: user?.email,
-        currentCount: user?.analysisCount || 0
-      });
+      // Check if user belongs to an agency with billing enabled
+      let shouldChargeAgency = false;
+      let agencyBranchId = null;
+      
+      if (user?.branchId) {
+        const [billingSettings] = await db
+          .select()
+          .from(agencyBillingSettings)
+          .where(eq(agencyBillingSettings.agencyBranchId, user.branchId))
+          .limit(1);
+        
+        if (billingSettings?.billingEnabled) {
+          shouldChargeAgency = true;
+          agencyBranchId = user.branchId;
+        }
+      }
 
       // Increment the user's analysis count
       const [updatedUser] = await db
@@ -1412,6 +1485,11 @@ export function registerRoutes(app: Express): Server {
         })
         .where(eq(users.id, req.user!.id))
         .returning();
+
+      // If agency billing is enabled, track the report charge
+      if (shouldChargeAgency && agencyBranchId) {
+        await trackAgencyReportUsage(agencyBranchId, user.id, req.body.address);
+      }
 
       const analysisResponse = {
         ...analysisResult,

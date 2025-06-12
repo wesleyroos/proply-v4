@@ -1011,56 +1011,61 @@ export default function SettingsPage() {
                 <form onSubmit={handleAddCard} className="space-y-4 p-4 border rounded-lg bg-gray-50">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <FormLabel>Cardholder Name</FormLabel>
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Cardholder Name</label>
                       <Input
                         value={cardForm.cardholderName}
                         onChange={(e) => setCardForm(prev => ({ ...prev, cardholderName: e.target.value }))}
                         placeholder="John Doe"
                         required
+                        className="mt-1"
                       />
                     </div>
 
                     <div className="md:col-span-2">
-                      <FormLabel>Card Number</FormLabel>
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Card Number</label>
                       <Input
                         value={cardForm.cardNumber}
                         onChange={(e) => setCardForm(prev => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
                         placeholder="1234 5678 9012 3456"
                         maxLength={19}
                         required
+                        className="mt-1"
                       />
                     </div>
 
                     <div>
-                      <FormLabel>Expiry Month</FormLabel>
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Expiry Month</label>
                       <Input
                         value={cardForm.expiryMonth}
                         onChange={(e) => setCardForm(prev => ({ ...prev, expiryMonth: e.target.value }))}
                         placeholder="MM"
                         maxLength={2}
                         required
+                        className="mt-1"
                       />
                     </div>
 
                     <div>
-                      <FormLabel>Expiry Year</FormLabel>
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Expiry Year</label>
                       <Input
                         value={cardForm.expiryYear}
                         onChange={(e) => setCardForm(prev => ({ ...prev, expiryYear: e.target.value }))}
                         placeholder="YY"
                         maxLength={2}
                         required
+                        className="mt-1"
                       />
                     </div>
 
                     <div>
-                      <FormLabel>CVV</FormLabel>
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">CVV</label>
                       <Input
                         value={cardForm.cvv}
                         onChange={(e) => setCardForm(prev => ({ ...prev, cvv: e.target.value }))}
                         placeholder="123"
                         maxLength={4}
                         required
+                        className="mt-1"
                       />
                     </div>
                   </div>
@@ -1102,8 +1107,12 @@ export default function SettingsPage() {
               {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
                 <TabsTrigger value="payment-methods">Payment Methods</TabsTrigger>
               )}
-              <TabsTrigger value="billing">Billing</TabsTrigger>
-              <TabsTrigger value="invoices">Invoices</TabsTrigger>
+              {(user?.role !== 'branch_admin' && user?.role !== 'franchise_admin') && (
+                <>
+                  <TabsTrigger value="billing">Billing</TabsTrigger>
+                  <TabsTrigger value="invoices">Invoices</TabsTrigger>
+                </>
+              )}
             </TabsList>
 
             <TabsContent value="profile">
