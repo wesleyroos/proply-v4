@@ -86,6 +86,7 @@ router.get("/agency-profile", async (req, res) => {
       franchiseName: agency.franchiseName,
       branchName: agency.branchName,
       logoUrl: agency.logoUrl,
+      companyName: agency.companyName,
       vatNumber: agency.vatNumber,
       registrationNumber: agency.registrationNumber,
       businessAddress: agency.businessAddress,
@@ -110,7 +111,7 @@ router.put("/agency-profile", async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const { vatNumber, registrationNumber, businessAddress } = req.body;
+    const { companyName, vatNumber, registrationNumber, businessAddress } = req.body;
 
     let branchId = req.user.branchId;
     
@@ -135,6 +136,7 @@ router.put("/agency-profile", async (req, res) => {
     await db
       .update(agencyBranches)
       .set({
+        companyName,
         vatNumber,
         registrationNumber,
         businessAddress,
