@@ -80,7 +80,7 @@ CREATE TABLE agency_billing_settings (
   id SERIAL PRIMARY KEY,
   agency_branch_id INTEGER NOT NULL REFERENCES agency_branches(id),
   billing_enabled BOOLEAN DEFAULT false,
-  price_per_report DECIMAL(10,2) DEFAULT 50.00,
+  price_per_report DECIMAL(10,2) DEFAULT 200.00,
   billing_contact_email VARCHAR(255),
   billing_day INTEGER DEFAULT 1, -- day of month to bill
   auto_billing BOOLEAN DEFAULT true,
