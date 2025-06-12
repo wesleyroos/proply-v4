@@ -1,0 +1,1175 @@
+Yocco API Documentation: 
+
+Developers
+Yoco offers you the quickest and easiest way to process card payments - both in-person, and on your online store. The Yoco Developers site details how to integrate your apps, stores or systems to process payments.
+Explore
+
+In Person
+Supercharge your point-of-sale application by adding Yoco card machine payments.
+
+Checkout
+Our simplest integration method. A checkout page that you can easily redirect to from your website or app.
+
+WooCommerce
+Add Yoco payment plugin to your WooCommerce website within a few clicks
+Authentication
+In order to interact with any of the API endpoints, you must provide your API secret key as part of the request. You can find your secret key in the Yoco Business Portal after signing up.
+The secret key should be included in the header of the API request. You can provide the secret key by using bearer authentication and the Authorization header. To do this, prepend Bearer to the secret key and insert it into the Authorization header.
+Authorization: Bearer <secret-key>
+See here for more information about the integration keys.
+important
+Only Checkouts that have been created using live keys can be refunded.
+caution
+Your API keys are used to identify you and enable payments, so be sure to keep them safe. Never share your secret key or publish it in code, such as on GitHub. All API requests must be made over HTTPS.
+
+
+Idempotency
+What is idempotency?
+An API call or operation is idempotent if it always produces the same outcome, regardless of how many times it is executed. This ensures that accidental duplicate calls do not cause unintended consequences.
+The idempotency key is a unique string created by the client and is used by the server to recognise subsequent retries of the same request.
+Idempotent requests using our API
+Yoco enables idempotency by allowing API operations to include an idempotency key, which is a unique string. This key acts as a safeguard against accidental duplicate calls that could lead to undesired outcomes.
+important
+This feature is especially valuable when an API call fails due to network issues or the temporary unavailability of Yoco's services.
+The method for creating unique idempotency keys is flexible, but we recommend using UUIDs or other randomly generated strings.
+Idempotency works by saving the resulting status code and body of the first request made for any given idempotency key, regardless of whether it succeeded or failed. Subsequent requests with the same key return the same result, status code and a response header of Idempotent-Replayed set to true.
+Keys are removed from the system automatically after 24 hours. A subsequent request with the same key after its expiry period, will be treated as a new request.
+To execute an idempotent request, include an additional element called Idempotency-Key in the request headers.
+cURL
+curl -X POST 'https://payments.yoco.com/api/<ENDPOINT>' \
+ --header 'Idempotency-Key: <idempotency-key>'
+important
+All POST requests accept idempotency keys.
+Sending idempotency keys in GET and DELETE requests has no effect and should be avoided, as these requests are idempotent by definition.
+
+Getting started
+Checkout is a low-code payment integration that allows for a quick and seamless payment experience.
+You can integrate with Checkout to accept various payment methods effortlessly, thanks to its simple developer integration.
+important
+To receive payments online with Yoco and get hold of your integration keys, you need a Yoco profile.
+Sign up for a Yoco account.
+Checkout
+
+Checkout is our simplest payment integration and requires little technical know-how.
+Create a checkout session.
+Redirect the customer to the checkout page.
+Verify the payment status.
+
+Accept a payment
+Simply integrate with our Checkout API library and you are ready to accept payments!
+caution
+The Checkout API should only be called from your server. This flow ensures the security of your payments and provides a trusted result to your server.
+Steps
+Create the Checkout
+Redirect the customer to the Checkout page
+Verify that the payment is successful
+1. Create the Checkout
+The Checkout API requires authenticated access, see here for more details.
+A Checkout represents what your customer sees on the payment page such as the amount to collect, currency and any other additional details. Add an endpoint on your server that creates a Checkout.
+https://payments.yoco.com/api/checkouts
+Headers
+Parameter
+Type
+Description
+Authorization
+string
+The secret key for your account.
+Idempotency-Key
+string
+An optional idempotency key enables you to safely retry a request without risking the user being charged multiple times.
+
+Body
+Parameter
+Type
+Description
+amount
+integer
+The final amount you would like to charge the customer, in cents. Including all the discounts and applicable taxes.
+currency
+string
+The 3-letter currency code in ISO 4217 format. Currently we only support ZAR.
+cancelUrl
+string
+The URL to redirect customers to when the checkout is cancelled.
+successUrl
+string
+The URL to optionally redirect customers to when the checkout completes successfully.
+failureUrl
+string
+The URL to optionally redirect customers to when the checkout does not complete successfully.
+metadata
+map
+Used to record additional details about the checkout, often used to reconcile data with an external system.
+totalDiscount
+integer
+The total discount, in cents, is used for display only. It must already be included in the amount to collect.
+totalTaxAmount
+integer
+The total tax, in cents, is used for display only. It must already be included in the amount to collect.
+subtotalAmount
+integer
+The subtotal, in cents, is used for display only and represents the total value collected including taxes and excluding discounts.
+lineItems
+list
+The line items are used for display only and provide additional details for the items purchased during checkout.
+
+important
+We do not recommend using the successUrl as a way to verify if the payment was successful. Rather follow the instructions in Step 3: Verify that the payment is successful.
+caution
+The following fields are solely utilised for display purposes and never subject to validation: totalDiscount, totalTaxAmount, subtotalAmount and lineItems.
+Before creating the Checkout, it is important to do your own validation on these fields.
+Sample request
+cURL
+curl --location --request POST 'https://payments.yoco.com/api/checkouts' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <secret-key>' \
+--data-raw '{
+ "amount": 900,
+ "currency": "ZAR"
+}'
+important
+Replace <secret-key\> with your secret API integration key. For more information, see here.
+important
+We do not accept payments that are less than R2.
+Sample response
+The Checkout response contains a redirectUrl which is used to redirect the customer to the checkout page.
+Successful
+HTTP: 200 OK
+{
+   "id": "ch_9LVKD8GnAj7f39DFbn4F16bE",
+   "redirectUrl": "https://c.yoco.com/checkout/ch_9LVKD8GnAj7f39DFbn4F16bE",
+   "status": "created",
+   "amount": 900,
+   "currency": "ZAR",
+   "paymentId": null,
+   "cancelUrl": null,
+   "successUrl": null,
+   "failureUrl": null,
+   "metadata": {
+       "checkoutId": "ch_9LVKD8GnAj7f39DFbn4F16bE",
+       "paymentFacilitator": "yoco-online-checkout"
+   },
+   "merchantId": "1687579359397-9ecd46a3-83f9-4563-8def-20ac11p67087",
+   "totalDiscount": null,
+   "totalTaxAmount": null,
+   "subtotalAmount": null,
+   "lineItems": null,
+   "externalId": null,
+   "processingMode": "live"
+}
+important
+You should retain the id and redirectUrl returned. This will be used in the following steps.
+More examples:
+Checkout with discounts and tax.
+Checkout with line items, discounts and tax.
+2. Redirect the customer to the Checkout page
+After creating the Checkout, redirect your customer to the redirectUrl. This will redirect the customer to the checkout page where they can complete the payment.
+3. Verify that the payment is successful
+When a payment is successful, we will send a webhook event to your server. It is highly recommended to use webhooks to check the payment status before fulfilling the order.
+For more information on receiving webhook events, see here.
+The status of the payment can be verified by referring to the type field of the webhook event. A payment is considered successful if its type is marked as payment.succeeded.
+important
+For more information about the successful payment event, see here.
+Errors
+The Checkout API uses conventional HTTP response codes to indicate the success or failure of requests. In general, codes in the 2xx range indicate success. Codes in the 4xx range indicate an error that failed given the information provided (e.g., a required parameter was omitted, etc.). Codes in the 5xx range indicate an error with our servers. (These do not happen often.)
+General errors
+Description
+Reason
+Solution
+CORS
+The request is not being sent over HTTPS from your server. Browser security prevents a web page from making requests to a different domain than the one that served the web page. This restriction is called the same-origin policy.
+Ensure you are making calls to the the Checkout API from your server and use HTTPs for those calls. This also ensures your secret key is not exposed.
+
+HTTP response errors
+Below are potential errors that may occur, along with additional information to assist you in resolving them. Please note that this list is not exhaustive.
+Status code
+Description
+Reason
+Solution
+403
+A key is required, but has not been specified.
+Secret API key is not included in header, or is incorrect.
+Confirm that the Authorization header is included in your request and that the API key is correct. For more information, see here.
+409
+Conflict
+A request with the same idempotency key is already being processed.
+Try again later, or use a different idempotency key.
+422
+The request payload (method, path, parameters) does not match the original request.
+An initial request was sent with an idempotency key, followed by a subsequent request with the same idempotency key.
+Confirm that the Idempotency-Key header is unique for each request.
+
+
+
+Checkout with discounts and tax
+Request
+In the following request we will create a Checkout session with totalDiscount, totalTaxAmount and subtotalAmount.
+caution
+Here's a breakdown of these values:
+The amount is required and represents the total to collect for payment after discounts, inclusive of taxes.
+The subtotalAmount represents the total before any discounts, inclusive of taxes.
+The totalDiscount represents the reduction in price applied across all the products or services.
+The totalTaxAmount represents the total tax added to the price of the products or services.
+The totalDiscount, totalTaxAmount and subtotalAmount values are optional and these values are for display purposes only and do not have an effect on the amount collected.
+cURL
+curl --location --request POST 'https://payments.yoco.com/api/checkouts' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <secret-key>' \
+--data-raw '{
+ "amount": 900,
+ "currency": "ZAR",
+ "totalDiscount": 100,
+ "totalTaxAmount": 117,
+ "subtotalAmount": 1000
+}'
+important
+Replace <secret-key\> with your secret API integration key. For more information, see here.
+important
+Given the amount to collect and totalDiscount to apply, the subtotalAmount and totalTaxAmount can be calculated as follows:
+subtotalAmount = amount + totalDiscount
+totalTaxAmount = amount - (amount)/(1.15)
+Response
+Successful
+HTTP: 200 OK
+{
+   {
+       "id": "ch_9LVKD8GnAj7f39DFbn4F16bE",
+       "redirectUrl": "https://c.yoco.com/checkout/ch_9LVKD8GnAj7f39DFbn4F16bE",
+       "status": "created",
+       "amount": 900,
+       "currency": "ZAR",
+       "paymentId": null,
+       "cancelUrl": null,
+       "successUrl": null,
+       "failureUrl": null,
+       "metadata": {
+           "checkoutId": "ch_9LVKD8GnAj7f39DFbn4F16bE",
+           "paymentFacilitator": "yoco-online-checkout"
+       },
+       "merchantId": "1687579359397-9ecd46a3-83f9-4563-8def-20ac11p67087",
+       "totalDiscount": 100,
+       "totalTaxAmount": 117,
+       "subtotalAmount": 1000,
+       "lineItems": null,
+       "externalId": null,
+       "processingMode": "live"
+   }
+}
+
+
+Checkout with line items, discounts and tax
+Request
+In the following request we will create a Checkout session with lineItems, totalDiscount, totalTaxAmount and subtotalAmount.
+caution
+Here's a breakdown of these values:
+The amount is required and represents the total to collect for payment after discounts, inclusive of taxes.
+The subtotalAmount represents the total before any discounts, inclusive of taxes.
+The totalDiscount represents the reduction in price applied across all the products or services.
+The totalTaxAmount represents the total tax added to the price of the products or services.
+The lineItems, totalDiscount, totalTaxAmount and subtotalAmount values are optional and these values are for display purposes only and do not have an effect on the amount collected.
+cURL
+curl --location --request POST 'https://payments.yoco.com/api/checkouts' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <secret-key>' \
+--data-raw '{
+ "amount": 900,
+ "currency": "ZAR",
+ "lineItems": [
+   {
+     "displayName": "Chips",
+     "quantity": 1,
+     "pricingDetails": {
+       "price": 1000
+     }
+   }
+ ],
+ "totalDiscount": 100,
+ "totalTaxAmount": 117,
+ "subtotalAmount": 1000
+}'
+important
+Replace <secret-key\> with your secret API integration key. For more information, see here.
+important
+Given the amount to collect and totalDiscount to apply, the subtotalAmount and totalTaxAmount can be calculated as follows:
+subtotalAmount = amount + totalDiscount
+totalTaxAmount = amount - (amount)/(1.15)
+Response
+Successful
+HTTP: 200 OK
+{
+   {
+       "id": "ch_9LVKD8GnAj7f39DFbn4F16bE",
+       "redirectUrl": "https://c.yoco.com/checkout/ch_9LVKD8GnAj7f39DFbn4F16bE",
+       "status": "created",
+       "amount": 900,
+       "currency": "ZAR",
+       "paymentId": null,
+       "cancelUrl": null,
+       "successUrl": null,
+       "failureUrl": null,
+       "metadata": {
+           "checkoutId": "ch_9LVKD8GnAj7f39DFbn4F16bE",
+           "paymentFacilitator": "yoco-online-checkout"
+       },
+       "merchantId": "1687579359397-9ecd46a3-83f9-4563-8def-20ac11p67087",
+       "totalDiscount": 100,
+       "totalTaxAmount": 117,
+       "subtotalAmount": 1000,
+       "lineItems": [
+           {
+             "displayName": "Chips",
+             "quantity": 1,
+             "pricingDetails": {
+               "price": 1000
+             }
+           }
+         ],
+       "externalId": null,
+       "processingMode": "live"
+   }
+}
+
+
+Refund a payment
+Using our Checkout API, you have the ability to refund any successfully processed card payment.
+Steps
+Initiate a refund
+Verify that the refund is successful
+1. Initiate a refund
+The Checkout API requires authenticated access, see here for more details.
+To initiate a refund for a payment made with our Checkout API, you can add an endpoint on your server that uses the Checkout id as a reference.
+important
+You can find the Checkout id in the payments flow by referring to Step 1: Create the Checkout.
+https://payments.yoco.com/api/checkouts/{id}/refund
+Headers
+Parameter
+Type
+Description
+Authorization
+string
+The secret key for your account.
+Idempotency-Key
+string
+An optional idempotency key enables you to safely retry a request without risking the user being charged multiple times.
+
+Body
+Parameter
+Type
+Description
+amount
+integer
+The amount requested to refund the customer, in cents. For a refund of R2.50, specify 250 as the amount (R2.50 × 100 = 250 cents). If not specified, the full remaining refundable balance will be processed.
+metadata
+map
+Used to record additional details about the refund, often used to reconcile data with an external system.
+
+Sample request
+cURL
+curl --location --request POST 'https://payments.yoco.com/api/checkouts/ch_9LVKD8GnAj7f39DFbn4F16bE/refund' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <secret-key>'
+important
+Replace <secret-key\> with your secret API integration key. For more information, see here.
+important
+In order to process a refund, the Checkout must have been created using live keys.
+Sample response
+A refund request may take some time to complete. A status field value of successful in the response indicates whether the request has been accepted for processing.
+Successful
+HTTP: 202 Accepted
+{
+   "id" : "ch_9LVKD8GnAj7f39DFbn4F16bE",
+   "refundId" : "rfd_r72Lbce7jZ46y7HgycNJ5Fvrb",
+   "message" : "Your refund has been processed",
+   "status" : "successful"
+}
+2. Verify that the refund is successful
+When a refund is successful, we will send a webhook event to your server. It is highly recommended to use webhooks to check the refund status before continuing.
+For more information on receiving webhook events, see here.
+The status of the refund can be verified by referring to the type field of the webhook event. A refund is considered successful if its type is marked as refund.succeeded.
+important
+For more information about the successful refund event, see here.
+Errors
+The Checkout API uses conventional HTTP response codes to indicate the success or failure of requests. In general, codes in the 2xx range indicate success. Codes in the 4xx range indicate an error that failed given the information provided (e.g., a required parameter was omitted, etc.). Codes in the 5xx range indicate an error with our servers. (These do not happen often.)
+General errors
+Description
+Reason
+Solution
+CORS
+The request is not being sent over HTTPS from your server. Browser security prevents a web page from making requests to a different domain than the one that served the web page. This restriction is called the same-origin policy.
+Ensure you are making calls to the the Checkout API from your server and use HTTPs for those calls. This also ensures your secret key is not exposed.
+
+HTTP response errors
+Below are potential errors that may occur, along with additional information to assist you in resolving them. Please note that this list is not exhaustive.
+Status code
+Description
+Reason
+Solution
+403
+A key is required, but has not been specified.
+Secret API key is not included in header, or is incorrect.
+Confirm that the Authorization header is included in your request and that the API key is correct. For more information, see here.
+409
+Conflict
+A request with the same idempotency key is already being processed.
+Try again later, or use a different idempotency key.
+422
+The request payload (method, path, parameters) does not match the original request.
+An initial request was sent with an idempotency key, followed by a subsequent request with the same idempotency key.
+Confirm that the Idempotency-Key header is unique for each request.
+
+
+
+Listen for events
+Webhooks are used to handle requests that may take longer to process, such as payments or refunds.
+Instead of waiting for an immediate response, webhooks provide real-time notifications once these events are completed. This ensures that you remain updated without the need for constant polling or manual checks.
+To start receiving webhook events, you need to create an endpoint for handling webhook notifications and then register it.
+important
+We suggest using a tunneling service such as ngrok to test your webhook implementation.
+Steps
+Create the webhook endpoint
+Register the webhook
+Verify the event origin
+Filter events
+1. Create the webhook endpoint
+To set up a webhook, you need to create a single API endpoint on your server or application that can handle HTTPS POST requests. This endpoint will be automatically triggered whenever there is a change in the status of your payment or refund. By doing this, you can effortlessly receive the webhook notifications and handle them appropriately.
+To confirm the processing of a webhook, it's important to respond with a 2xx status code within a reasonable timeframe. It is recommended to send the response within 15 seconds to ensure timely confirmation.
+important
+This endpoint will be used in both live and test modes, with the event appropriately indicating the mode.
+important
+If the response does not include a 2xx status code, we will continue sending events. Each message is attempted according to the following schedule, starting each period after the failure of the previous attempt:
+Immediately
+Retry after 5 seconds
+Retry after 5 minutes
+Retry after 30 minutes
+Retry after 2 hours
+Retry after 5 hours
+Retry after 10 hours
+Additional retry after 10 hours
+Node.js
+Python
+// Using Express
+
+
+app.post("/my/webhook/url", function(req, res) {
+   const requestBody = req.rawBody;
+
+
+   // Verify and process the received data
+
+
+   res.send(200);
+});
+caution
+To prevent interception of the data, it is important to ensure that the endpoint is secured with HTTPS.
+2. Register the webhook
+important
+To prevent potential issues, we recommend registering only one webhook. If you need to delete any extra webhooks, see here.
+To start receiving webhook events on the endpoint you created in Step 1: Create the webhook endpoint, you should register it using our API.
+This endpoint requires authenticated access, see here for more details.
+https://payments.yoco.com/api/webhooks
+Headers
+Parameter
+Type
+Description
+Authorization
+string
+The secret key for your account.
+
+Body
+Parameter
+Type
+Description
+name
+string
+The name you want to give to the webhook you are registering.
+url
+string
+The URL where the webhook events will be sent. Refer to the URL created in Step 1: Create the webhook endpoint.
+
+Sample request
+cURL
+curl --location --request POST 'https://payments.yoco.com/api/webhooks' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <secret-key>' \
+--data-raw '{
+ "name": "my-webhook",
+ "url": "https://my-application/my/webhook/url"
+}'
+important
+Replace <secret-key\> with your secret API integration key. For more information, see here.
+Sample response
+Successful
+HTTPS: 201 CREATED
+{
+   "id": "sub_PgrMbbNpWGVc147s6AnHM6aE",
+   "name": "my-webhook",
+   "url": "https://my-application/my/webhook/url",
+   "mode": "live",
+   "secret": "whsec_M0U0MDI3QjYzMEQ0NTK5NDNCIjVFMENCMDEzNzc1QkE="
+}
+caution
+The secret will be used in Step 3: Verify the event origin. It is important to save this value for future use since it is provided only once.
+3. Verify the event origin
+Anyone can make a POST request to your event handler. Before processing the event, always verify the origin. For more information on how to mitigate such attacks, see here.
+4. Filter events
+Your webhook endpoint will receive all payment events processed through our system. However, you will need to filter these events using the Checkout id to ensure you only handle the relevant ones.
+Inside the metadata of the webhook event, you'll find a field called checkoutId. Compare this field with your own Checkout id, and if they match, you can proceed to process the event.
+important
+You can find the Checkout id in the payments flow by referring to Step 1: Create the Checkout.
+
+
+Verifying the events
+Webhooks carry a certain level of security risk, as malicious actors can attempt to send fake webhooks, posing as legitimate services. This can lead to security vulnerabilities and other application issues.
+To ensure the authenticity of received events from Yoco, the following two actions are required:
+Avoiding replay attacks
+Validating the signature
+Avoiding replay attacks
+Inside the webhook header there is an additional field webhook-timestamp to indicate the Unix timestamp of when the webhook was signed. Use this timestamp to drastically reduce the chance of a replay attack.
+Because the timestamp is included in the header, the same header cannot be sent with a different timestamp without causing an invalid signature. When verifying the signature, you should also validate that the timestamp is within an acceptable threshold from your current system time (in Unix epoch format).
+We recommend a threshold of up to 3 minutes. If Yoco retries sending the webhook notification event, the timestamp at the time of sending the retried event is used, so each attempt would have a new timestamp and therefore a new hash.
+Validating the signature
+Events sent from our service contain the webhook-signature header. To ensure the webhook's authenticity and confirm its origin from our service, follow the provided steps to compare a generated signature with the signature from the header.
+Steps
+Construct the signed content
+Determine the expected signature
+Compare signatures
+1. Construct the signed content
+To generate the signed content, concatenate the values of the webhook-id header, webhook-timestamp header, and the raw request body using a full stop character as a separator.
+Node.js
+Python
+// Using Express
+
+
+const headers = req.headers;
+const requestBody = req.rawBody;
+
+
+const id = headers['webhook-id'];
+const timestamp = headers['webhook-timestamp'];
+
+
+const signedContent = `${id}.${timestamp}.${requestBody}`;
+caution
+Make sure to use the raw request body in this step. Any minor modification to the body will generate a completely different signature.
+2. Determine the expected signature
+To calculate the expected signature, use the secret key and the signed content to generate a HMAC SHA256 signature. Then, encode this value using base64 encoding.
+Node.js
+Python
+const crypto = require('crypto');
+
+
+const secret = 'whsec_M0U0MDI3QjYzMEQ0NTK5NDNCIjVFMENCMDEzNzc1QkE=';
+const secretBytes = new Buffer(secret.split('_')[1], "base64");
+
+
+const expectedSignature = crypto
+   .createHmac('sha256', secretBytes)
+   .update(signedContent)
+   .digest('base64');
+important
+Before calculating the expected signature, ensure that you exclude the whsec_ prefix from the secret key.
+3. Compare signatures
+The webhook-signature header consists of a list of signatures and their version identifiers, separated by spaces. Typically, the signature list consists of only one element, but it can contain any number of signatures.
+For example:
+v1,g0hM9SsE+OTPJTGt/tmIKtSyZlE3uFJELVlNIOLJ1OE= v1,bm9ldHUjKzFob2VudXRob2VodWUzMjRvdWVvdW9ldQo= v2,MzJsNDk4MzI0K2VvdSMjMTEjQEBAQDEyMzMzMzEyMwo=
+important
+Before verifying the signature, make sure to remove the version prefix and delimiter (e.g., v1,).
+The generated signature should be compared with the signature sent in the webhook-signature header. If the generated signature matches the provided signature, you can proceed with processing the webhook event.
+caution
+When comparing the signatures, it is recommended to use a constant-time string comparison method to prevent timing attacks.
+Example
+Node.js
+Python
+const express = require('express');
+const crypto = require('crypto');
+const getRawBody = require('raw-body');
+
+
+const app = express();
+
+
+app.use((req, res, next) => {
+   getRawBody(req, {
+       length: req.headers['content-length'],
+       encoding: 'utf-8'
+   }, (err, rawBody) => {
+       if (err) return next(err);
+       req.rawBody = rawBody;
+       next();
+   });
+});
+
+
+// Using Express
+app.post("/my/webhook/url", function(req, res) {
+   const headers = req.headers;
+   const requestBody = req.rawBody;
+
+
+   // Construct the signed content
+   const id = headers['webhook-id'];
+   const timestamp = headers['webhook-timestamp'];
+
+
+   const signedContent = `${id}.${timestamp}.${requestBody}`;
+
+
+   // Determine the expected signature
+   const secret = 'whsec_M0U0MDI3QjYzMEQ0NTK5NDNCIjVFMENCMDEzNzc1QkE=';
+   const secretBytes = new Buffer(secret.split('_')[1], "base64");
+
+
+   const expectedSignature = crypto
+       .createHmac('sha256', secretBytes)
+       .update(signedContent)
+       .digest('base64');
+
+
+   // Compare the signatures
+   const signature = headers['webhook-signature'].split(' ')[0].split(',')[1]
+   if (crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))) {
+       // process webhook event
+       return res.send(200);
+   }
+   // do not process webhook event
+   return res.send(403);
+});
+
+
+app.listen(3000, () => {
+   console.log('Server is running on port 3000');
+});
+
+
+List all webhooks
+To retrieve a list of all your registered webhooks, you can make use of the following endpoint in your API. This endpoint will provide you with comprehensive information about your webhooks, including their unique identifiers.
+Please note that this endpoint requires authenticated access, see here for more details.
+https://payments.yoco.com/api/webhooks
+Headers
+Parameter
+Type
+Description
+Authorization
+string
+The secret key for your account.
+
+Sample request
+cURL
+curl --location --request GET 'https://payments.yoco.com/api/webhooks' \
+--header 'Authorization: Bearer <secret key>'
+important
+Replace <secret-key\> with your secret API integration key. For more information, see here.
+Sample response
+Successful
+HTTPS: 200 OK
+{
+   "subscriptions": [
+       {
+           "id": "sub_PgrMbbNpWGVc147s6AnHM6aE",
+           "name": "my-webhook",
+           "url": "https://my-application/my/webhook/url",
+           "mode": "live"
+       }
+   ]
+}
+
+
+Delete a webhook
+To delete a registered webhook, you can make use of the following endpoint in your API.
+This endpoint requires authenticated access, see here for more details.
+https://payments.yoco.com/api/webhooks/{id}
+Headers
+Parameter
+Type
+Description
+Authorization
+string
+The secret key for your account.
+
+Path parameters
+Parameter
+Type
+Description
+id
+string
+The unique identifier for the webhook.
+
+important
+You can find the webhook identifier by calling the API endpoint specified in List all webhooks.
+Sample request
+cURL
+curl --location --request DELETE 'https://payments.yoco.com/api/webhooks/sub_PgrMbbNpWGVc147s6AnHM6aE' \
+--header 'Authorization: Bearer <secret key>'
+important
+Replace <secret-key\> with your secret API integration key. For more information, see here.
+Sample response
+Successful
+HTTPS: 200 OK
+{
+   "message" : "subscription sub_PgrMbbNpWGVc147s6AnHM6aE successfully deleted"
+}
+
+
+Successful payment
+Now that you have set up the necessary structure and security measures to ensure that any event you process is from Yoco, you can proceed to handle the successful payment event.
+You can verify the payment status by checking the type field of the webhook event. A payment is considered successful if its type is set to payment.succeeded.
+Event structure
+Parameter
+Type
+Description
+id
+string
+The unique identifier for the event.
+type
+string
+The type of event, one of payment.succeeded, refund.succeeded or refund.failed.
+payload
+object
+The payload consists of additional information related to the event, for example, the Payment or Refund object.
+
++ Show child attributes
+
+Sample event
+Successful Payment
+{
+   "id": "evt_1EAwK8Mjy2DT38WIWntiZWxm",
+   "type": "payment.succeeded",
+   "createdDate": "2024-06-15T15:51:55.260284Z",
+   "payload": {
+       "id": "p_bx4bY9JA6r4UwAKFyAjHY2bE",
+       "type": "payment",
+       "createdDate": "2024-06-15T17:51:54.405141Z",
+       "amount": 900,
+       "currency": "ZAR",
+       "paymentMethodDetails": {
+           "type": "card",
+           "card": {
+               "expiryMonth": 2,
+               "expiryYear": 30,
+               "maskedCard": "************1111",
+               "scheme": "visa"
+           }
+       },
+       "status": "succeeded",
+       "mode": "live",
+       "metadata": {
+           "checkoutId": "ch_9LVKD8GnAj7f39DFbn4F16bE"
+       }
+   }
+}
+
+
+Successful refund
+Now that you have set up the necessary structure and security measures to ensure that any event you process is from Yoco, you can proceed to handle the successful refund event.
+You can verify the refund status by checking the type field of the webhook event. A refund is considered successful if its type is set to refund.succeeded.
+Event structure
+Parameter
+Type
+Description
+id
+string
+The unique identifier for the event.
+type
+string
+The type of event, one of payment.succeeded, refund.succeeded or refund.failed.
+payload
+object
+The payload consists of additional information related to the event, for example, the Payment or Refund object.
+
++ Show child attributes
+
+Sample events
+Full Refund
+{
+   "id": "evt_1EAwK8Mjy2DT38WIWntiZWxm",
+   "type": "refund.succeeded",
+   "createdDate": "2024-06-15T15:51:55.260284Z",
+   "payload": {
+       "id": "rfd_ZgjMZb2A8VpSAZBte6ku1w6E",
+       "type": "refund",
+       "createdDate": "2024-06-15T17:51:54.405141Z",
+       "amount": 900,
+       "currency": "ZAR",
+       "paymentId": "p_bx4bY9JA6r4UwAKFyAjHY2bE",
+       "status": "succeeded",
+       "mode": "live",
+       "metadata": {
+           "checkoutId": "ch_9LVKD8GnAj7f39DFbn4F16bE"
+       }
+   }
+}
+
+
+Partial Refund
+
+{
+   "id": "evt_1EAwK8Mjy2DT38WIWntiZWxm",
+   "type": "refund.succeeded",
+   "createdDate": "2024-06-15T15:51:55.260284Z",
+   "payload": {
+       "id": "rfd_ZgjMZb2A8VpSAZBte6ku1w6E",
+       "type": "refund",
+       "createdDate": "2024-06-15T17:51:54.405141Z",
+       "amount": 300,
+       "refundableAmount": 600,
+       "currency": "ZAR",
+       "paymentId": "p_bx4bY9JA6r4UwAKFyAjHY2bE",
+       "status": "succeeded",
+       "mode": "live",
+       "metadata": {
+           "checkoutId": "ch_9LVKD8GnAj7f39DFbn4F16bE"
+       }
+   }
+}
+
+Failed refund
+Now that you have set up the necessary structure and security measures to ensure that any event you process is from Yoco, you can proceed to handle the failed refund event.
+You can verify the refund status by checking the type field of the webhook event. A refund is considered failed if its type is set to refund.failed.
+Event structure
+Parameter
+Type
+Description
+id
+string
+The unique identifier for the event.
+type
+string
+The type of event, one of payment.succeeded, refund.succeeded or refund.failed.
+payload
+object
+The payload consists of additional information related to the event, for example, the Payment or Refund object.
+
++ Show child attributes
+
+Sample events
+Full Refund
+{
+   "id": "evt_1EAwK8Mjy2DT38WIWntiZWxm",
+   "type": "refund.failed",
+   "createdDate": "2024-06-15T15:51:55.260284Z",
+   "payload": {
+       "id": "rfd_ZgjMZb2A8VpSAZBte6ku1w6E",
+       "type": "refund",
+       "createdDate": "2024-06-15T17:51:54.405141Z",
+       "amount": 900,
+       "currency": "ZAR",
+       "paymentId": "p_bx4bY9JA6r4UwAKFyAjHY2bE",
+       "status": "failed",
+       "mode": "live",
+       "failureReason" : "Refund declined.",
+       "metadata": {
+           "checkoutId": "ch_9LVKD8GnAj7f39DFbn4F16bE"
+       }
+   }
+}
+
+
+Partial Refund
+
+
+{
+    "id": "evt_1EAwK8Mjy2DT38WIWntiZWxm",
+    "type": "refund.failed",
+    "createdDate": "2024-06-15T15:51:55.260284Z",
+    "payload": {
+        "id": "rfd_ZgjMZb2A8VpSAZBte6ku1w6E",
+        "type": "refund",
+        "createdDate": "2024-06-15T17:51:54.405141Z",
+        "amount": 400,
+        "refundableAmount": 300,
+        "currency": "ZAR",
+        "paymentId": "p_bx4bY9JA6r4UwAKFyAjHY2bE",
+        "status": "failed",
+        "mode": "live",
+        "failureReason" : "Invalid refund amount. Please enter a valid amount and try again.",
+        "metadata": {
+            "checkoutId": "ch_9LVKD8GnAj7f39DFbn4F16bE"
+        }
+    }
+}
+
+
+Checkout
+Attributes
+Parameter
+Type
+Description
+id
+string
+The unique identifier for the checkout.
+paymentId
+string
+The unique identifier for the payment.
+redirectUrl
+string
+The URL to redirect customers to in order to complete the checkout.
+status
+enum
+The status of the checkout, one of created, started, processing, completed or refunded.
+amount
+integer
+The final amount you would like to charge the customer, in cents. Including all the discounts and applicable taxes.
+currency
+string
+The 3-letter currency code in ISO 4217 format. Currently we only support ZAR.
+successUrl
+string
+The URL to optionally redirect customers to when the checkout completes successfully.
+cancelUrl
+string
+The URL to redirect customers to when the checkout is cancelled.
+failureUrl
+string
+The URL to optionally redirect customers to when the checkout does not complete successfully.
+metadata
+map
+Used to record additional details about the checkout, often used to reconcile data with an external system.
+merchantId
+string
+Reference used internally to identify the merchant.
+totalDiscount
+integer
+The total discount, in cents, is used for display only. It must already be included in the amount to collect.
+totalTaxAmount
+integer
+The total tax, in cents, is used for display only. It must already be included in the amount to collect.
+subtotalAmount
+integer
+The subtotal, in cents, is used for display only and represents the total value collected including taxes and excluding discounts.
+lineItems
+list
+The line items are used for display only and provide additional details for the items purchased during checkout.
+
++ Show child attributes
+processingMode
+string
+The mode of the checkout, as determined from the key used to create the checkout. One of either live or test.
+
+
+
+
+Payment
+Attributes
+Parameter
+Type
+Description
+id
+string
+The unique identifier for the payment.
+status
+enum
+The status of the payment, one of created, draft, unconfirmed, pending, processing, succeeded, cancelled, authorized or refunded.
+createdDate
+string
+The specific date and time that the payment process was initiated.
+amount
+integer
+The final amount you would like to charge the customer, in cents. Including all the discounts and applicable taxes.
+currency
+string
+The 3-letter currency code in ISO 4217 format. Currently we only support ZAR.
+paymentMethodDetails
+object
+Additional information about the payment method used to complete the payment.
+
++ Show child attributes
+paymentMethod
+string
+The unique identifier for the payment method.
+customer
+string
+The unique identifier for the customer.
+error
+object
+Additional information about the reason behind the payment processing failure.
+
++ Show child attributes
+mode
+enum
+The mode of the payment, one of either live or test.
+
+
+
+Refund
+Attributes
+Parameter
+Type
+Description
+id
+string
+The unique identifier for the refund.
+status
+enum
+The status of the refund, one of created, succeeded or failed.
+createdDate
+string
+The specific date and time that the refund process was initiated.
+amount
+integer
+The final amount requested to refund the customer, in cents.
+refundableAmount
+integer
+The full remaining refundable balance that can still be refunded, in cents. This field is only populated for partial refunds.
+currency
+string
+The 3-letter currency code in ISO 4217 format. Currently we only support ZAR.
+paymentId
+string
+The unique identifier of the payment associated with the refund.
+failureReason
+string
+The reason for the refund failure, provided only when the refund fails.
+mode
+enum
+The mode of the refund, one of either live or test.
+
+
+
+Overview
+You can now accept payments with Yoco in your online store. Integrate the Yoco payment gateway into your WooCommerce, Wix or Shopify website and start accepting online payments immediately.
+
+API integration keys
+Integration keys are used by all of your SDKs and APIs to secure and link your payments to your business.
+Securing your keys
+Create a Yoco account
+Fetch your keys from the Yoco Business Portal
+1. Create a Yoco account
+Before you can get started, you will need to create a Yoco account.
+2. Fetch your keys from the Yoco Business Portal
+Once you have a Yoco account, you can fetch your integration keys in the Yoco Business Portal. To locate your keys, go to Sell Online → Payment Gateway.
+In total, you will receive four keys:
+set of test mode public and secret keys for testing purposes
+set of live mode public and secret keys for actual transactions
+note
+Secret keys start with: sk_test_ (for test mode) or sk_live_ (for live mode).
+note
+Public keys start with: pk_test_ (for test mode) or pk_live_ (for live mode).
+Test mode
+Test mode allows you to test your integration without the risk of affecting real transactions or moving actual money. To enable test mode, use your test secret key in the Authorization header, as seen here.
+While in test mode, the processingMode field of your Checkout will be set to test. This field is returned in Step 1: Create the Checkout and Step 3: Verify that the payment is successful of the Checkout lifecycle. The value of processingMode is determined by the API keys you use.
+When attempting a test payment, it is recommended to utilise our provided test card details.
+note
+Your test transactions will not appear in your Sales History.
+important
+Refunds are not supported for transactions made in test mode.
+To test your refund integration, you will need to perform a transaction in live mode.
+Further Info
+Your secret key should be stored securely on your server and is used to authenticate API calls made by your server to Yoco.
+caution
+You should never include your secret key in your front-end code or on your website.
+
+
+Reconciling Checkout API Payments with Daily Payouts Made Easy
+Matching your Checkout API payments with daily payouts is essential for accurate financial records. In this guide, we'll explain how to do this using Yoco Portal's Export feature, making sure all successful transactions are correctly recorded.
+Steps
+Get your Checkout ID
+Access the export feature
+Choose the payout to reconcile
+Export payment records
+Match payment records
+Reconciliation
+1. Get your Checkout ID
+When creating a checkout using the Checkout API, ensure to retain the checkout id provided in the response. You will need this id for reconciling transactions with your daily payouts.
+2. Access the export feature
+Log in to your merchant portal.
+Navigate to the Sales and Refunds section.
+In the Sales and Refunds section, click on Payouts.
+You will see a list of your recent payouts in the Payout History.
+3. Choose the payout to reconcile
+Select the specific payout you want to reconcile by clicking on it. You will be directed to the payout details page.
+4. Export payment records
+On the bottom of the payout details page, you will find an Export button. Click on it to initiate the export process.
+The system will generate a CSV file containing the payment records associated with the selected payout.
+5. Match payment records
+Once the download is complete, you can open the file.
+In the exported file, you will see various columns containing payment information, including the Online Reference column.
+The Online Reference column contains unique IDs for each payment. For example, ch_ngopqZ91r65hl8Osp2IPDrxB.
+Use this id to cross-reference to match successful transactions.
+6. Reconciliation
+Refer to the payout report, which will only include successful transactions that have been either paid out or subtracted for refunds.
+For each transaction, check if the Online Reference in the payout report matches to the Checkout id provided the API response data.
+If there is a match, mark the transaction as successfully reconciled.
+By following these steps, you can successfully reconcile your processed payments against your daily payout, ensuring that your financial records are accurate and up-to-date. If you encounter any issues or have questions, don't hesitate to reach out to our customer support for assistance.
+
+
+Testing information
+Test keys
+If you want to test the api without signing up for keys of your own, you can use the following keys:
+Public Key: pk_test_ed3c54a6gOol69qa7f45
+Secret Key:  sk_test_960bfde0VBrLlpK098e4ffeb53e1
+Test card
+Card number
+Scenario
+4111 1111 1111 1111
+Successful transaction
+
+You can use any future expiry date (mm/yy) and 3 digit cvc with our test card.
+note
+Test transactions do not appear on your portal dashboard or sales report
+important
+We do not accept payments less than R2.
+Therefore, the amount should be higher than R2 (i.e. 200 cents).
+
+
+Supported currencies
+Currently, we only support South African Rand transactions. Additional currencies will be added in the future.
+ISO 4217 Currency Code
+Currency
+ZAR
+South African Rand
+
+
+
+Design resources
+Here is the official branding which you can add to your website.
+Logo suite
+Browse through the logos below and select the ones you want to download. Downloading is effortless — just click on your preferred logo to get it instantly.
+Yoco logo
+
+Visa logo
+
+Mastercard logo
+
+American Express logo
+
+Apple Pay logo
+
+Google Pay logo
+
+Instant EFT logo
+
+
+
+Getting Started
+The Yoco SDK allows app developers to integrate with Yoco card machines to accept in-person payments from within their application. The most common scenario is to accept Yoco payments from within your Point of Sale application.
+Unfortunately due to high demand and limited resources, we are only able to integrate with a limited number of partners. Please complete the Yoco Integrations form to request access.
+
+
+Installation
+Once you have got Cocoapods installed, you will need to create a file called Podfile in your projects root directory and put the following code snippet inside:
+source 'https://github.com/CocoaPods/Specs.git'
+
+
+use_frameworks!
+
+
+platform :ios, '11.0'
+
+
+target 'Your_Target_Name' do
+ pod 'YocoSDK', '~> 5.2.6'
+end
+Once complete, change 'Your_Target_Name' to your projects name (unless the target has a different name) then open up a terminal and go to your projects root directory and run the following command:
+pod install --repo-update
+You should now be able to open up your projects .xcworkspace file in your projects root directory and be ready to go!
+note
+The Yoco SDK requires a minimum deployment target of iOS 11.0
+warning
+If you get an error that contains:
+fatal: repository ‘https://gitlab.com/yoco-public/yoco-sdk-mobile-ios.git’ not found
+Please ensure that you are using the flag --repo-update when calling pod install and that you have specified a version of the Pod. You will only need to do this the first time you install the pod.
+warning
+If you get an error regarding versions:
+[!] CocoaPods could not find compatible versions for pod "YocoSDK":
+Please ensure that you use the flag --repo-update when calling pod install to update local podspec cache.
+

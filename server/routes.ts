@@ -2369,6 +2369,14 @@ export function registerRoutes(app: Express): Server {
   // Payment Methods API Routes for Agency Billing
   app.get('/api/payment-methods', async (req, res) => {
     try {
+      // Debug session authentication
+      console.log('Payment methods request - session authenticated:', req.isAuthenticated());
+      console.log('Payment methods request - user:', req.user ? { id: req.user.id, email: req.user.email, role: req.user.role } : 'No user');
+      
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
       const user = req.user;
       if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
         return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
