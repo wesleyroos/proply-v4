@@ -67,28 +67,47 @@ interface BranchMetrics {
   }[];
 }
 
-type SortField = 'agent_name' | 'listings_count' | 'active_count' | 'pending_count' | 'sold_count' | 'archived_count' | 'valuation_count' | 'total_active_value' | 'reports_count' | 'coverage';
-type SortDirection = 'asc' | 'desc';
-type TimeFilter = '30' | '90' | '365' | 'all';
+type SortField =
+  | "agent_name"
+  | "listings_count"
+  | "active_count"
+  | "pending_count"
+  | "sold_count"
+  | "archived_count"
+  | "valuation_count"
+  | "total_active_value"
+  | "reports_count"
+  | "coverage";
+type SortDirection = "asc" | "desc";
+type TimeFilter = "30" | "90" | "365" | "all";
 
 export default function BranchAdminDashboard() {
   const { user } = useUser();
-  const [sortField, setSortField] = useState<SortField>('coverage');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
-  const [persistedData, setPersistedData] = useState<BranchMetrics | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortField, setSortField] = useState<SortField>("coverage");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+  const [persistedData, setPersistedData] = useState<BranchMetrics | null>(
+    null,
+  );
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const { data: metrics, isLoading: metricsLoading, isFetching } = useQuery<BranchMetrics>({
+  const {
+    data: metrics,
+    isLoading: metricsLoading,
+    isFetching,
+  } = useQuery<BranchMetrics>({
     queryKey: ["/api/branch/metrics", user?.branchId, timeFilter],
     queryFn: async () => {
-      const response = await fetch(`/api/branch/${user?.branchId}/metrics?timeFilter=${timeFilter}`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `/api/branch/${user?.branchId}/metrics?timeFilter=${timeFilter}`,
+        {
+          credentials: "include",
+        },
+      );
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
-    enabled: !!user?.branchId && user?.role === 'branch_admin',
+    enabled: !!user?.branchId && user?.role === "branch_admin",
     staleTime: 30000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
@@ -105,21 +124,27 @@ export default function BranchAdminDashboard() {
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
   const getSortIcon = (field: SortField) => {
     if (sortField !== field) return null;
-    return sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
+    return sortDirection === "asc" ? (
+      <ChevronUp className="h-4 w-4" />
+    ) : (
+      <ChevronDown className="h-4 w-4" />
+    );
   };
 
   const filteredAndSortedAgents = displayData?.agentReportCoverage
-    ?.filter(agent => 
-      agent.agent_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
+    ?.filter(
+      (agent) =>
+        agent.agent_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        false,
     )
     ?.slice()
     .sort((a, b) => {
@@ -127,46 +152,46 @@ export default function BranchAdminDashboard() {
       let bValue: string | number;
 
       switch (sortField) {
-        case 'agent_name':
-          aValue = a.agent_name || '';
-          bValue = b.agent_name || '';
+        case "agent_name":
+          aValue = a.agent_name || "";
+          bValue = b.agent_name || "";
           // Always treat names as strings
-          return sortDirection === 'asc' 
+          return sortDirection === "asc"
             ? (aValue as string).localeCompare(bValue as string)
             : (bValue as string).localeCompare(aValue as string);
-        case 'listings_count':
+        case "listings_count":
           aValue = Number(a.listings_count) || 0;
           bValue = Number(b.listings_count) || 0;
           break;
-        case 'active_count':
+        case "active_count":
           aValue = Number(a.active_count) || 0;
           bValue = Number(b.active_count) || 0;
           break;
-        case 'pending_count':
+        case "pending_count":
           aValue = Number(a.pending_count) || 0;
           bValue = Number(b.pending_count) || 0;
           break;
-        case 'sold_count':
+        case "sold_count":
           aValue = Number(a.sold_count) || 0;
           bValue = Number(b.sold_count) || 0;
           break;
-        case 'archived_count':
+        case "archived_count":
           aValue = Number(a.archived_count) || 0;
           bValue = Number(b.archived_count) || 0;
           break;
-        case 'valuation_count':
+        case "valuation_count":
           aValue = Number(a.valuation_count) || 0;
           bValue = Number(b.valuation_count) || 0;
           break;
-        case 'total_active_value':
+        case "total_active_value":
           aValue = Number(a.total_active_value) || 0;
           bValue = Number(b.total_active_value) || 0;
           break;
-        case 'reports_count':
+        case "reports_count":
           aValue = Number(a.reports_count) || 0;
           bValue = Number(b.reports_count) || 0;
           break;
-        case 'coverage':
+        case "coverage":
           aValue = Number(a.coverage) || 0;
           bValue = Number(b.coverage) || 0;
           break;
@@ -175,18 +200,20 @@ export default function BranchAdminDashboard() {
       }
 
       // For numeric fields
-      return sortDirection === 'asc' 
+      return sortDirection === "asc"
         ? (aValue as number) - (bValue as number)
         : (bValue as number) - (aValue as number);
     });
 
   // Show access denied if user is loaded but not branch admin
-  if (user && user.role !== 'branch_admin') {
+  if (user && user.role !== "branch_admin") {
     return (
       <div className="p-8">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-destructive">Access denied. Branch admin privileges required.</p>
+            <p className="text-destructive">
+              Access denied. Branch admin privileges required.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -248,7 +275,9 @@ export default function BranchAdminDashboard() {
     <div className="p-8">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Branch Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Branch Dashboard
+          </h1>
           <p className="text-muted-foreground">
             {displayData.branchName} - Key metrics overview
           </p>
@@ -258,28 +287,43 @@ export default function BranchAdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-900">Total Listings</CardTitle>
+              <CardTitle className="text-sm font-medium text-blue-900">
+                Total Listings
+              </CardTitle>
               <Building2 className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-900">{displayData.listingsByStatus.total.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-blue-900">
+                {displayData.listingsByStatus.total.toLocaleString()}
+              </div>
               <div className="flex gap-1 mt-1 flex-wrap">
-                <Badge variant="default" className="text-xs px-1.5 py-0.5">{displayData.listingsByStatus.active} Active</Badge>
-                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">{displayData.listingsByStatus.pending} Pending</Badge>
-                <Badge variant="outline" className="text-xs px-1.5 py-0.5">{displayData.listingsByStatus.sold} Sold</Badge>
+                <Badge variant="default" className="text-xs px-1.5 py-0.5">
+                  {displayData.listingsByStatus.active} Active
+                </Badge>
+                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                  {displayData.listingsByStatus.pending} Pending
+                </Badge>
+                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                  {displayData.listingsByStatus.sold} Sold
+                </Badge>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-900">Listed This Month</CardTitle>
+              <CardTitle className="text-sm font-medium text-green-900">
+                Listed This Month
+              </CardTitle>
               <Plus className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-900">{displayData.newListingsThisMonth || 0}</div>
+              <div className="text-2xl font-bold text-green-900">
+                {displayData.newListingsThisMonth || 0}
+              </div>
               <div className="flex items-center gap-1 mt-1">
-                {(displayData.newListingsThisMonth || 0) >= (displayData.newListingsLastMonth || 0) ? (
+                {(displayData.newListingsThisMonth || 0) >=
+                (displayData.newListingsLastMonth || 0) ? (
                   <TrendingUp className="h-3 w-3 text-green-600" />
                 ) : (
                   <TrendingDown className="h-3 w-3 text-red-500" />
@@ -296,13 +340,18 @@ export default function BranchAdminDashboard() {
 
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-900">Reports Generated</CardTitle>
+              <CardTitle className="text-sm font-medium text-purple-900">
+                Reports Generated
+              </CardTitle>
               <FileText className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-900">{displayData.reportsThisMonth}</div>
+              <div className="text-2xl font-bold text-purple-900">
+                {displayData.reportsThisMonth}
+              </div>
               <div className="flex items-center gap-1 mt-1">
-                {displayData.reportsThisMonth >= displayData.reportsLastMonth ? (
+                {displayData.reportsThisMonth >=
+                displayData.reportsLastMonth ? (
                   <TrendingUp className="h-3 w-3 text-green-600" />
                 ) : (
                   <TrendingDown className="h-3 w-3 text-red-500" />
@@ -316,11 +365,15 @@ export default function BranchAdminDashboard() {
 
           <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-orange-900">Active Agents</CardTitle>
+              <CardTitle className="text-sm font-medium text-orange-900">
+                Active Agents
+              </CardTitle>
               <Users className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-900">{displayData.totalAgents}</div>
+              <div className="text-2xl font-bold text-orange-900">
+                {displayData.totalAgents}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 With property listings
               </p>
@@ -333,9 +386,10 @@ export default function BranchAdminDashboard() {
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle>Property Reports</CardTitle>
+                <CardTitle>Agent Statistics</CardTitle>
                 <CardDescription>
-                  Agent performance with valuation reports across all listing statuses
+                  Agent performance with valuation reports across all listing
+                  statuses
                 </CardDescription>
               </div>
               <div className="flex items-center gap-3">
@@ -350,39 +404,47 @@ export default function BranchAdminDashboard() {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant={timeFilter === '30' ? 'default' : 'outline'}
+                    variant={timeFilter === "30" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTimeFilter('30')}
+                    onClick={() => setTimeFilter("30")}
                     disabled={isFetching}
                   >
-                    {isFetching && timeFilter === '30' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                    {isFetching && timeFilter === "30" && (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    )}
                     Last 30 Days
                   </Button>
                   <Button
-                    variant={timeFilter === '90' ? 'default' : 'outline'}
+                    variant={timeFilter === "90" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTimeFilter('90')}
+                    onClick={() => setTimeFilter("90")}
                     disabled={isFetching}
                   >
-                    {isFetching && timeFilter === '90' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                    {isFetching && timeFilter === "90" && (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    )}
                     Last 90 Days
                   </Button>
                   <Button
-                    variant={timeFilter === '365' ? 'default' : 'outline'}
+                    variant={timeFilter === "365" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTimeFilter('365')}
+                    onClick={() => setTimeFilter("365")}
                     disabled={isFetching}
                   >
-                    {isFetching && timeFilter === '365' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                    {isFetching && timeFilter === "365" && (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    )}
                     Last Year
                   </Button>
                   <Button
-                    variant={timeFilter === 'all' ? 'default' : 'outline'}
+                    variant={timeFilter === "all" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTimeFilter('all')}
+                    onClick={() => setTimeFilter("all")}
                     disabled={isFetching}
                   >
-                    {isFetching && timeFilter === 'all' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                    {isFetching && timeFilter === "all" && (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    )}
                     All Time
                   </Button>
                 </div>
@@ -391,97 +453,103 @@ export default function BranchAdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <Table className={isFetching ? "opacity-60 transition-opacity duration-200" : "transition-opacity duration-200"}>
+              <Table
+                className={
+                  isFetching
+                    ? "opacity-60 transition-opacity duration-200"
+                    : "transition-opacity duration-200"
+                }
+              >
                 <TableHeader>
                   <TableRow className="h-8">
-                    <TableHead 
+                    <TableHead
                       className="py-2 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('agent_name')}
+                      onClick={() => handleSort("agent_name")}
                     >
                       <div className="flex items-center gap-1">
                         Agent
-                        {getSortIcon('agent_name')}
+                        {getSortIcon("agent_name")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('listings_count')}
+                      onClick={() => handleSort("listings_count")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Total
-                        {getSortIcon('listings_count')}
+                        {getSortIcon("listings_count")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('active_count')}
+                      onClick={() => handleSort("active_count")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Active
-                        {getSortIcon('active_count')}
+                        {getSortIcon("active_count")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('pending_count')}
+                      onClick={() => handleSort("pending_count")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Pending
-                        {getSortIcon('pending_count')}
+                        {getSortIcon("pending_count")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('sold_count')}
+                      onClick={() => handleSort("sold_count")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Sold
-                        {getSortIcon('sold_count')}
+                        {getSortIcon("sold_count")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('archived_count')}
+                      onClick={() => handleSort("archived_count")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Archived
-                        {getSortIcon('archived_count')}
+                        {getSortIcon("archived_count")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('valuation_count')}
+                      onClick={() => handleSort("valuation_count")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Valuation
-                        {getSortIcon('valuation_count')}
+                        {getSortIcon("valuation_count")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-24 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('total_active_value')}
+                      onClick={() => handleSort("total_active_value")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Active Value
-                        {getSortIcon('total_active_value')}
+                        {getSortIcon("total_active_value")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-16 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('reports_count')}
+                      onClick={() => handleSort("reports_count")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Reports
-                        {getSortIcon('reports_count')}
+                        {getSortIcon("reports_count")}
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="text-center py-2 w-20 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleSort('coverage')}
+                      onClick={() => handleSort("coverage")}
                     >
                       <div className="flex items-center justify-center gap-1">
                         Coverage
-                        {getSortIcon('coverage')}
+                        {getSortIcon("coverage")}
                       </div>
                     </TableHead>
                   </TableRow>
@@ -514,7 +582,7 @@ export default function BranchAdminDashboard() {
                         <div className="text-sm font-medium">
                           {(() => {
                             const value = Number(agent.total_active_value) || 0;
-                            if (value === 0) return 'R0';
+                            if (value === 0) return "R0";
                             const millions = value / 1000000;
                             return `R${millions.toFixed(1)}M`;
                           })()}
@@ -524,8 +592,14 @@ export default function BranchAdminDashboard() {
                         {agent.reports_count}
                       </TableCell>
                       <TableCell className="text-center py-1">
-                        <Badge 
-                          variant={agent.coverage > 50 ? "default" : agent.coverage > 20 ? "secondary" : "destructive"}
+                        <Badge
+                          variant={
+                            agent.coverage > 50
+                              ? "default"
+                              : agent.coverage > 20
+                                ? "secondary"
+                                : "destructive"
+                          }
                           className="text-xs px-2 py-0"
                         >
                           {agent.coverage}%
