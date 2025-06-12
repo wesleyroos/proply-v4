@@ -1216,7 +1216,7 @@ export default function SettingsPage() {
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
               {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
-                <TabsTrigger value="payment-methods">Payment Methods</TabsTrigger>
+                <TabsTrigger value="payment-methods">Agency Billing</TabsTrigger>
               )}
               {(user?.role !== 'branch_admin' && user?.role !== 'franchise_admin') && (
                 <>
