@@ -2413,20 +2413,11 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Check if this is the first payment method (make it primary)
-      const { agencyPaymentMethods } = await import("@db/schema");
       const existingMethods = await db.query.agencyPaymentMethods.findMany({
         where: eq(agencyPaymentMethods.agencyBranchId, branchId)
       });
 
       const isPrimary = existingMethods.length === 0;
-
-      // If this is being set as primary, unset other primary methods
-      if (isPrimary) {
-        await db
-          .update(agencyPaymentMethods)
-          .set({ isPrimary: false })
-          .where(eq(agencyPaymentMethods.agencyBranchId, branchId));
-      }
 
       // Save payment method
       const [newPaymentMethod] = await db
@@ -2434,12 +2425,12 @@ export function registerRoutes(app: Express): Server {
         .values({
           agencyBranchId: branchId,
           yocoToken: token,
-          cardType: cardType,
-          lastFour: lastFour,
-          expiryMonth: expiryMonth,
-          expiryYear: expiryYear,
-          isPrimary: isPrimary,
-          isActive: true
+          cardBrand: cardType,
+          cardLastFour: lastFour,
+          expiryMonth: parseInt(expiryMonth),
+          expiryYear: parseInt(expiryYear),
+          isActive: true,
+          addedBy: user.id
         })
         .returning();
 
