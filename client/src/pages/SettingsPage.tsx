@@ -794,6 +794,7 @@ export default function SettingsPage() {
   const PaymentMethodsSection = () => {
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [isAddingCard, setIsAddingCard] = useState(false);
+    const [isProcessingCard, setIsProcessingCard] = useState(false);
     const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true);
 
     // Fetch existing payment methods
@@ -822,7 +823,7 @@ export default function SettingsPage() {
 
     const handleAddCard = async (e: React.FormEvent) => {
       e.preventDefault();
-      setIsAddingCard(true);
+      setIsProcessingCard(true);
 
       try {
         // Check if Yoco is in test mode from localStorage
@@ -892,7 +893,7 @@ export default function SettingsPage() {
           description: error instanceof Error ? error.message : "Please try again"
         });
       } finally {
-        setIsAddingCard(false);
+        setIsProcessingCard(false);
       }
     };
 
@@ -1071,8 +1072,8 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="flex gap-2 pt-4">
-                    <Button type="submit" disabled={isAddingCard}>
-                      {isAddingCard ? "Processing..." : "Add Payment Method"}
+                    <Button type="submit" disabled={isProcessingCard}>
+                      {isProcessingCard ? "Processing..." : "Add Payment Method"}
                     </Button>
                     <Button 
                       type="button" 
@@ -1121,7 +1122,10 @@ export default function SettingsPage() {
 
             {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
               <TabsContent value="payment-methods">
-                <PaymentMethodsSection />
+                <div className="space-y-6">
+                  <BillingUsageOverview />
+                  <PaymentMethodsSection />
+                </div>
               </TabsContent>
             )}
 

@@ -2579,6 +2579,53 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get agency billing cycles (usage overview)
+  app.get("/api/agency-billing/cycles", async (req, res) => {
+    try {
+      const user = req.user as SelectUser;
+      if (!user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Only allow branch/franchise admins
+      if (user.role !== 'branch_admin' && user.role !== 'franchise_admin') {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Get user's branch ID
+      let branchId = user.branchId;
+      
+      if (user.role === 'franchise_admin' && user.franchiseId) {
+        const [firstBranch] = await db
+          .select()
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, user.franchiseId))
+          .limit(1);
+        
+        if (firstBranch) {
+          branchId = firstBranch.id;
+        }
+      }
+
+      if (!branchId) {
+        return res.status(400).json({ error: "No branch associated with user" });
+      }
+
+      // Get billing cycles for the last 6 months
+      const billingCycles = await db
+        .select()
+        .from(agencyBillingCycles)
+        .where(eq(agencyBillingCycles.agencyBranchId, branchId))
+        .orderBy(sql`${agencyBillingCycles.billingPeriod} DESC`)
+        .limit(6);
+
+      res.json({ billingCycles });
+    } catch (error) {
+      console.error('Error fetching billing cycles:', error);
+      res.status(500).json({ error: "Failed to fetch billing cycles" });
+    }
+  });
+
   // Demo request endpoint
   app.post("/api/demo-request", async (req, res) => {
     try {
