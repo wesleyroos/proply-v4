@@ -77,15 +77,15 @@ declare global {
 export function setupAuth(app: Express) {
   const MemoryStore = createMemoryStore(session);
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.REPL_ID || "proply-session-secret",
-    resave: false,
-    saveUninitialized: false,
+    secret: "proply-session-secret-stable", // Use a stable secret
+    resave: true, // Force session save on each request
+    saveUninitialized: true, // Save uninitialized sessions
     name: 'proply.sid',
     cookie: {
       httpOnly: false, // Allow client-side access for debugging
       sameSite: 'lax',
       secure: false,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: '/'
     },
     store: new MemoryStore({
