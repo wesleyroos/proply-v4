@@ -16,6 +16,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 import { 
   BadgeCheck, 
   AlertTriangle, 
@@ -27,7 +36,10 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  BarChart3
+  BarChart3,
+  MoreHorizontal,
+  CreditCard,
+  Upload
 } from 'lucide-react';
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +66,7 @@ interface Agency {
   } | null;
   autoSyncEnabled: boolean;
   syncFrequency: string;
+  billingEnabled?: boolean;
 }
 
 interface SyncHistory {
@@ -106,6 +119,33 @@ export function ControlPanel() {
       toast({
         title: "Sync failed",
         description: error.message || "Failed to sync agency data",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Billing toggle mutation
+  const billingToggleMutation = useMutation({
+    mutationFn: async ({ agencyId, enabled }: { agencyId: string; enabled: boolean }) => {
+      const response = await fetch(`/api/admin/agencies/${agencyId}/billing`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ billingEnabled: enabled }),
+      });
+      if (!response.ok) throw new Error('Failed to update billing status');
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Billing updated",
+        description: `Billing ${variables.enabled ? 'enabled' : 'disabled'} successfully`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/agencies"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Billing update failed",
+        description: error.message || "Failed to update billing status",
         variant: "destructive",
       });
     },
@@ -262,45 +302,84 @@ export function ControlPanel() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          disabled={syncMutation.isPending || agency.status === 'syncing'}
-                          onClick={() => syncMutation.mutate({ agencyId: agency.id })}
-                        >
-                          {syncMutation.isPending ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <RefreshCcw className="w-3 h-3" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          
+                          <DropdownMenuItem
+                            disabled={syncMutation.isPending || agency.status === 'syncing'}
+                            onClick={() => syncMutation.mutate({ agencyId: agency.id })}
+                          >
+                            <RefreshCcw className="mr-2 h-4 w-4" />
+                            Quick Sync
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem
+                            disabled={syncMutation.isPending || agency.status === 'syncing'}
+                            onClick={() => syncMutation.mutate({ agencyId: agency.id, forceFullSync: true })}
+                          >
+                            <Database className="mr-2 h-4 w-4" />
+                            Full Sync
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedAgencyName(agency.franchiseName || agency.name);
+                              setStatsModalOpen(true);
+                            }}
+                          >
+                            <BarChart3 className="mr-2 h-4 w-4" />
+                            View Stats
+                          </DropdownMenuItem>
+                          
+                          {agency.mainBranchId && (
+                            <DropdownMenuItem asChild>
+                              <div className="flex items-center">
+                                <Upload className="mr-2 h-4 w-4" />
+                                <AgencyLogoUpload
+                                  agencyId={parseInt(agency.mainBranchId)}
+                                  agencyName={agency.franchiseName || agency.name}
+                                  currentLogoUrl={agency.logoUrl}
+                                />
+                              </div>
+                            </DropdownMenuItem>
                           )}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          disabled={syncMutation.isPending || agency.status === 'syncing'}
-                          onClick={() => syncMutation.mutate({ agencyId: agency.id, forceFullSync: true })}
-                        >
-                          <Database className="w-3 h-3" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedAgencyName(agency.franchiseName || agency.name);
-                            setStatsModalOpen(true);
-                          }}
-                        >
-                          <BarChart3 className="w-3 h-3" />
-                        </Button>
-                        {agency.mainBranchId && (
-                          <AgencyLogoUpload
-                            agencyId={parseInt(agency.mainBranchId)}
-                            agencyName={agency.franchiseName || agency.name}
-                            currentLogoUrl={agency.logoUrl}
-                          />
-                        )}
-                      </div>
+                          
+                          <DropdownMenuSeparator />
+                          
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              billingToggleMutation.mutate({ 
+                                agencyId: agency.id, 
+                                enabled: !agency.billingEnabled 
+                              });
+                            }}
+                            disabled={billingToggleMutation.isPending}
+                          >
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            <div className="flex items-center justify-between w-full">
+                              <span>{agency.billingEnabled ? 'Disable' : 'Enable'} Billing</span>
+                              <Switch
+                                checked={agency.billingEnabled || false}
+                                size="sm"
+                                className="ml-2"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))
