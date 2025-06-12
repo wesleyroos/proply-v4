@@ -109,41 +109,49 @@ function ProfileSection() {
   const [isProfileUpdating, setIsProfileUpdating] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+  // Fetch agency profile data for admin users
+  const { data: agencyProfile } = useQuery<AgencyProfile>({
+    queryKey: ['/api/agency-profile'],
+    queryFn: async () => {
+      const response = await fetch('/api/agency-profile', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch agency profile');
+      }
+      return response.json();
+    },
+    enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
+  });
 
   const form = useForm<ProfileFormData>({
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       companyName: user?.company || "",
-      vatNumber: user?.vatNumber || "",
-      registrationNumber: user?.registrationNumber || "",
-      businessAddress: user?.businessAddress || "",
-      companyLogo: user?.companyLogo || "",
+      vatNumber: agencyProfile?.vatNumber || user?.vatNumber || "",
+      registrationNumber: agencyProfile?.registrationNumber || user?.registrationNumber || "",
+      businessAddress: agencyProfile?.businessAddress || user?.businessAddress || "",
+      companyLogo: agencyProfile?.logoUrl || user?.companyLogo || "",
     },
   });
 
-  // Mock agency data for frontend demo (will be replaced with real API)
-  const agencyInfo: AgencyInfo = {
-    franchiseName: user?.role === 'branch_admin' ? "Sotheby's International Realty" : 
-                   user?.role === 'franchise_admin' ? "Sotheby's International Realty" : "",
-    branchName: user?.role === 'branch_admin' ? "Atlantic Seaboard" : "",
-    logoUrl: "/logos/sothebys-logo.png"
-  };
-
-  // Update form when user data changes
+  // Update form when user data or agency profile changes
   useEffect(() => {
     if (user) {
       form.reset({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         companyName: user.company || "",
-        vatNumber: user.vatNumber || "",
-        registrationNumber: user.registrationNumber || "",
-        businessAddress: user.businessAddress || "",
-        companyLogo: user.companyLogo || "",
+        vatNumber: agencyProfile?.vatNumber || user.vatNumber || "",
+        registrationNumber: agencyProfile?.registrationNumber || user.registrationNumber || "",
+        businessAddress: agencyProfile?.businessAddress || user.businessAddress || "",
+        companyLogo: agencyProfile?.logoUrl || user.companyLogo || "",
       });
     }
-  }, [user, form]);
+  }, [user, agencyProfile, form]);
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -388,7 +396,7 @@ function ProfileSection() {
           </div>
 
           {/* Agency Information for Admin Users */}
-          {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
+          {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && agencyProfile && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
@@ -397,12 +405,12 @@ function ProfileSection() {
               <div className="mt-2 space-y-2">
                 <div>
                   <span className="font-medium">Franchise: </span>
-                  <span>{agencyInfo.franchiseName}</span>
+                  <span>{agencyProfile.franchiseName}</span>
                 </div>
-                {user.role === 'branch_admin' && (
+                {user.role === 'branch_admin' && agencyProfile.branchName && (
                   <div>
                     <span className="font-medium">Branch: </span>
-                    <span>{agencyInfo.branchName}</span>
+                    <span>{agencyProfile.branchName}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
