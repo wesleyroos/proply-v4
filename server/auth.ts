@@ -82,10 +82,11 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     name: 'proply.sid',
     cookie: {
-      httpOnly: true,
+      httpOnly: false, // Allow client-side access for debugging
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      secure: false,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/'
     },
     store: new MemoryStore({
       checkPeriod: 86400000,
@@ -102,6 +103,12 @@ export function setupAuth(app: Express) {
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
+  
+  // Add session debugging middleware after passport initialization
+  app.use((req, res, next) => {
+    console.log(`Session: ${req.sessionID}, Authenticated: ${req.isAuthenticated()}, User: ${req.user ? req.user.id : 'none'}, Cookie: ${req.headers.cookie || 'none'}`);
+    next();
+  });
 
   passport.use(
     new LocalStrategy({
