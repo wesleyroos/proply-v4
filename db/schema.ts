@@ -701,6 +701,16 @@ export const selectAdminInvitationSchema = createSelectSchema(adminInvitations);
 export type InsertAdminInvitation = typeof adminInvitations.$inferInsert;
 export type SelectAdminInvitation = typeof adminInvitations.$inferSelect;
 
+// System settings table
+export const systemSettings = pgTable("system_settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").unique().notNull(),
+  value: text("value").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Agency billing tables
 export const agencyBillingSettings = pgTable("agency_billing_settings", {
   id: serial("id").primaryKey(),
@@ -821,3 +831,9 @@ export const insertAgencyInvoiceSchema = createInsertSchema(agencyInvoices);
 export const selectAgencyInvoiceSchema = createSelectSchema(agencyInvoices);
 export type InsertAgencyInvoice = typeof agencyInvoices.$inferInsert;
 export type SelectAgencyInvoice = typeof agencyInvoices.$inferSelect;
+
+// System settings schemas
+export const insertSystemSettingSchema = createInsertSchema(systemSettings);
+export const selectSystemSettingSchema = createSelectSchema(systemSettings);
+export type InsertSystemSetting = typeof systemSettings.$inferInsert;
+export type SelectSystemSetting = typeof systemSettings.$inferSelect;

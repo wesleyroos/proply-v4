@@ -23,6 +23,7 @@ import {
   agencyBillingSettings,
   agencyBillingCycles,
   agencyInvoices,
+  systemSettings,
 } from "@db/schema";
 import { eq, and } from "drizzle-orm";
 import fetch from "node-fetch";
@@ -2413,14 +2414,18 @@ export function registerRoutes(app: Express): Server {
 
       const { cardNumber, expiryMonth, expiryYear, cvv, cardholderName } = req.body;
 
-      // Determine which Yoco credentials to use based on test mode setting
-      const isTestMode = req.headers['x-yoco-test-mode'] === 'true';
+      // Get Yoco test mode from database system settings
+      const yocoTestModeSetting = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, 'yoco_test_mode')
+      });
+      
+      const isTestMode = yocoTestModeSetting?.value === 'true';
       
       console.log('Yoco environment check:', {
         isTestMode,
         hasTestSecret: !!process.env.YOCO_TEST_SECRET_KEY,
         hasLiveSecret: !!process.env.YOCO_SECRET_KEY,
-        testModeHeader: req.headers['x-yoco-test-mode']
+        settingValue: yocoTestModeSetting?.value
       });
       
       const secretKey = isTestMode 
