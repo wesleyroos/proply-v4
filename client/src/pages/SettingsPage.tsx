@@ -48,6 +48,8 @@ import {
   MapPin, 
   FileText,
   Shield,
+  Plus,
+  Trash2,
   CheckCircle,
   Clock
 } from "lucide-react";
@@ -788,6 +790,303 @@ export default function SettingsPage() {
   const [, setLocation] = useLocation();
 
 
+  // Payment Methods Section Component
+  const PaymentMethodsSection = () => {
+    const [paymentMethods, setPaymentMethods] = useState([]);
+    const [isAddingCard, setIsAddingCard] = useState(false);
+    const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true);
+
+    // Fetch existing payment methods
+    const { data: paymentMethodsData, refetch: refetchPaymentMethods } = useQuery({
+      queryKey: ['/api/payment-methods'],
+      queryFn: async () => {
+        const response = await fetch('/api/payment-methods', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch payment methods');
+        }
+        return response.json();
+      },
+      enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
+    });
+
+    // Card form state
+    const [cardForm, setCardForm] = useState({
+      cardNumber: '',
+      expiryMonth: '',
+      expiryYear: '',
+      cvv: '',
+      cardholderName: ''
+    });
+
+    const handleAddCard = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsAddingCard(true);
+
+      try {
+        // Use test public key for development
+        const publicKey = import.meta.env.VITE_YOCO_TEST_PUBLIC_KEY || import.meta.env.VITE_YOCO_PUBLIC_KEY;
+        
+        // Create Yoco token (this would normally use Yoco SDK)
+        const tokenResponse = await fetch('/api/payment-methods/tokenize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            cardNumber: cardForm.cardNumber.replace(/\s/g, ''),
+            expiryMonth: cardForm.expiryMonth,
+            expiryYear: cardForm.expiryYear,
+            cvv: cardForm.cvv,
+            cardholderName: cardForm.cardholderName
+          })
+        });
+
+        if (!tokenResponse.ok) {
+          const error = await tokenResponse.json();
+          throw new Error(error.message || 'Failed to process card');
+        }
+
+        const tokenData = await tokenResponse.json();
+
+        // Save payment method
+        const saveResponse = await fetch('/api/payment-methods', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            token: tokenData.token,
+            lastFour: cardForm.cardNumber.slice(-4),
+            cardType: detectCardType(cardForm.cardNumber),
+            expiryMonth: cardForm.expiryMonth,
+            expiryYear: cardForm.expiryYear
+          })
+        });
+
+        if (!saveResponse.ok) {
+          throw new Error('Failed to save payment method');
+        }
+
+        toast({
+          title: "Payment method added",
+          description: "Your card has been securely saved for billing."
+        });
+
+        // Reset form and refresh data
+        setCardForm({
+          cardNumber: '',
+          expiryMonth: '',
+          expiryYear: '',
+          cvv: '',
+          cardholderName: ''
+        });
+        refetchPaymentMethods();
+
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Failed to add payment method",
+          description: error instanceof Error ? error.message : "Please try again"
+        });
+      } finally {
+        setIsAddingCard(false);
+      }
+    };
+
+    const detectCardType = (cardNumber: string) => {
+      const number = cardNumber.replace(/\s/g, '');
+      if (number.startsWith('4')) return 'Visa';
+      if (number.startsWith('5') || number.startsWith('2')) return 'Mastercard';
+      if (number.startsWith('3')) return 'American Express';
+      return 'Unknown';
+    };
+
+    const formatCardNumber = (value: string) => {
+      const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+      const matches = v.match(/\d{4,16}/g);
+      const match = matches && matches[0] || '';
+      const parts = [];
+      for (let i = 0, len = match.length; i < len; i += 4) {
+        parts.push(match.substring(i, i + 4));
+      }
+      if (parts.length) {
+        return parts.join(' ');
+      } else {
+        return v;
+      }
+    };
+
+    const removePaymentMethod = async (methodId: number) => {
+      try {
+        const response = await fetch(`/api/payment-methods/${methodId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to remove payment method');
+        }
+
+        toast({
+          title: "Payment method removed",
+          description: "Card has been removed from your account."
+        });
+
+        refetchPaymentMethods();
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Failed to remove payment method",
+          description: error instanceof Error ? error.message : "Please try again"
+        });
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              Payment Methods
+            </CardTitle>
+            <CardDescription>
+              Manage payment methods for agency billing. Reports will be charged to your active payment method.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Existing Payment Methods */}
+            {paymentMethodsData?.paymentMethods?.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-medium text-sm">Saved Payment Methods</h3>
+                {paymentMethodsData.paymentMethods.map((method: any) => (
+                  <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="w-5 h-5 text-muted-foreground" />
+                      <div>
+                        <div className="font-medium">
+                          {method.cardType} •••• {method.lastFour}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Expires {method.expiryMonth}/{method.expiryYear}
+                          {method.isPrimary && (
+                            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                              Primary
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removePaymentMethod(method.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add New Payment Method */}
+            <div className="border-t pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-medium text-sm">Add New Payment Method</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAddingCard(!isAddingCard)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Card
+                </Button>
+              </div>
+
+              {isAddingCard && (
+                <form onSubmit={handleAddCard} className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <FormLabel>Cardholder Name</FormLabel>
+                      <Input
+                        value={cardForm.cardholderName}
+                        onChange={(e) => setCardForm(prev => ({ ...prev, cardholderName: e.target.value }))}
+                        placeholder="John Doe"
+                        required
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <FormLabel>Card Number</FormLabel>
+                      <Input
+                        value={cardForm.cardNumber}
+                        onChange={(e) => setCardForm(prev => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
+                        placeholder="1234 5678 9012 3456"
+                        maxLength={19}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <FormLabel>Expiry Month</FormLabel>
+                      <Input
+                        value={cardForm.expiryMonth}
+                        onChange={(e) => setCardForm(prev => ({ ...prev, expiryMonth: e.target.value }))}
+                        placeholder="MM"
+                        maxLength={2}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <FormLabel>Expiry Year</FormLabel>
+                      <Input
+                        value={cardForm.expiryYear}
+                        onChange={(e) => setCardForm(prev => ({ ...prev, expiryYear: e.target.value }))}
+                        placeholder="YY"
+                        maxLength={2}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <FormLabel>CVV</FormLabel>
+                      <Input
+                        value={cardForm.cvv}
+                        onChange={(e) => setCardForm(prev => ({ ...prev, cvv: e.target.value }))}
+                        placeholder="123"
+                        maxLength={4}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button type="submit" disabled={isAddingCard}>
+                      {isAddingCard ? "Processing..." : "Add Payment Method"}
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={() => setIsAddingCard(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Your payment information is securely processed by Yoco and encrypted for storage.
+                  </div>
+                </form>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <div className="p-6">
@@ -797,6 +1096,9 @@ export default function SettingsPage() {
             <TabsList>
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
+              {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
+                <TabsTrigger value="payment-methods">Payment Methods</TabsTrigger>
+              )}
               <TabsTrigger value="billing">Billing</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
             </TabsList>
@@ -804,6 +1106,12 @@ export default function SettingsPage() {
             <TabsContent value="profile">
               <ProfileSection />
             </TabsContent>
+
+            {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
+              <TabsContent value="payment-methods">
+                <PaymentMethodsSection />
+              </TabsContent>
+            )}
 
             <TabsContent value="security">
               <Card>
