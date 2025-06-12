@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
@@ -162,9 +162,7 @@ export default function AdminPage() {
   const [isSandboxMode, setIsSandboxMode] = useState(() => {
     return localStorage.getItem('payfast_sandbox_mode') === 'true';
   });
-  const [isYocoTestMode, setIsYocoTestMode] = useState(() => {
-    return localStorage.getItem('yoco_test_mode') === 'true';
-  });
+  const [isYocoTestMode, setIsYocoTestMode] = useState(false);
   const [isInvitationModalOpen, setIsInvitationModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("users");
 
@@ -187,6 +185,44 @@ export default function AdminPage() {
   } = useQuery<UserStats>({
     queryKey: ["/api/admin/stats"],
     enabled: !!user?.isAdmin,
+  });
+
+  const {
+    data: yocoTestModeSetting,
+    isLoading: yocoSettingLoading,
+  } = useQuery<{key: string; value: string}>({
+    queryKey: ["/api/system-settings/yoco_test_mode"],
+    enabled: !!user?.isAdmin,
+  });
+
+  // Update local state when setting is loaded
+  React.useEffect(() => {
+    if (yocoTestModeSetting?.value) {
+      setIsYocoTestMode(yocoTestModeSetting.value === 'true');
+    }
+  }, [yocoTestModeSetting]);
+
+  const updateYocoTestMode = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const response = await fetch('/api/system-settings/yoco_test_mode', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ value: enabled.toString() })
+      });
+      if (!response.ok) throw new Error('Failed to update setting');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/system-settings/yoco_test_mode"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update Yoco test mode setting",
+        variant: "destructive",
+      });
+    },
   });
 
   const userActionMutation = useMutation({

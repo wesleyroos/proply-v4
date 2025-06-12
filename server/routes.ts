@@ -3123,6 +3123,66 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // System Settings API endpoints
+  app.get('/api/system-settings/:key', async (req, res) => {
+    try {
+      const user = req.user as SelectUser;
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { key } = req.params;
+      const setting = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, key)
+      });
+
+      if (!setting) {
+        return res.status(404).json({ error: 'Setting not found' });
+      }
+
+      res.json(setting);
+    } catch (error) {
+      console.error('Error fetching system setting:', error);
+      res.status(500).json({ error: 'Failed to fetch setting' });
+    }
+  });
+
+  app.put('/api/system-settings/:key', async (req, res) => {
+    try {
+      const user = req.user as SelectUser;
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { key } = req.params;
+      const { value } = req.body;
+
+      // Update or create the setting
+      await db.insert(systemSettings)
+        .values({
+          key,
+          value,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: systemSettings.key,
+          set: {
+            value,
+            updatedAt: new Date()
+          }
+        });
+
+      const updatedSetting = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, key)
+      });
+
+      res.json(updatedSetting);
+    } catch (error) {
+      console.error('Error updating system setting:', error);
+      res.status(500).json({ error: 'Failed to update setting' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
