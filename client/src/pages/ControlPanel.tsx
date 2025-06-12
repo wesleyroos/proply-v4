@@ -369,8 +369,6 @@ export function ControlPanel() {
                           
                           <DropdownMenuItem
                             onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
                               console.log('Billing dropdown clicked for agency:', agency.id, 'current status:', agency.billingEnabled);
                               billingToggleMutation.mutate({ 
                                 agencyId: agency.id, 
@@ -380,14 +378,10 @@ export function ControlPanel() {
                             disabled={billingToggleMutation.isPending}
                           >
                             <CreditCard className="mr-2 h-4 w-4" />
-                            <div className="flex items-center justify-between w-full">
-                              <span>{agency.billingEnabled ? 'Disable' : 'Enable'} Billing</span>
-                              <Switch
-                                checked={agency.billingEnabled || false}
-                                className="ml-2"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            <span>{agency.billingEnabled ? 'Disable' : 'Enable'} Billing</span>
+                            {agency.billingEnabled && (
+                              <Badge variant="secondary" className="ml-auto">Enabled</Badge>
+                            )}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
