@@ -198,6 +198,7 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/propdata-reports/") || // PropData PDF reports
       req.path === "/pdf-test" || // PDF test endpoint
       req.path.startsWith("/pdf-generate/") || // PDF generation endpoint
+      req.path === "/yoco/public-key" || // Yoco public key endpoint
       req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept") // Admin invitation acceptance
     ) {
       return next();
@@ -2405,14 +2406,13 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.post('/api/payment-methods/tokenize', async (req, res) => {
+  // Get Yoco configuration for client-side tokenization
+  app.get('/api/payment-methods/yoco-config', async (req, res) => {
     try {
       const user = req.user;
       if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
         return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
       }
-
-      const { cardNumber, expiryMonth, expiryYear, cvv, cardholderName } = req.body;
 
       // Get Yoco test mode from database system settings
       const yocoTestModeSetting = await db.query.systemSettings.findFirst({
@@ -2421,61 +2421,79 @@ export function registerRoutes(app: Express): Server {
       
       const isTestMode = yocoTestModeSetting?.value === 'true';
       
-      console.log('Yoco environment check:', {
-        isTestMode,
-        hasTestSecret: !!process.env.YOCO_TEST_SECRET_KEY,
-        hasLiveSecret: !!process.env.YOCO_SECRET_KEY,
-        settingValue: yocoTestModeSetting?.value
-      });
-      
-      const secretKey = isTestMode 
-        ? process.env.YOCO_TEST_SECRET_KEY 
-        : process.env.YOCO_SECRET_KEY;
+      const publicKey = isTestMode 
+        ? process.env.YOCO_TEST_PUBLIC_KEY 
+        : process.env.YOCO_PUBLIC_KEY;
 
-      if (!secretKey) {
-        console.error('Yoco credentials missing:', {
-          isTestMode,
-          testKeyExists: !!process.env.YOCO_TEST_SECRET_KEY,
-          liveKeyExists: !!process.env.YOCO_SECRET_KEY
-        });
-        return res.status(500).json({ error: 'Yoco credentials not configured' });
+      if (!publicKey) {
+        return res.status(500).json({ error: 'Yoco configuration not available' });
       }
 
-      // Create Yoco token using their API
-      const yocoResponse = await fetch('https://online.yoco.com/v1/charges/token', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${secretKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          card: {
-            number: cardNumber,
-            expiryMonth: parseInt(expiryMonth),
-            expiryYear: parseInt(`20${expiryYear}`),
-            cvv: cvv
-          }
-        })
-      });
-
-      if (!yocoResponse.ok) {
-        const errorData = await yocoResponse.json();
-        return res.status(400).json({ 
-          error: 'Card validation failed', 
-          message: errorData.message || 'Invalid card details' 
-        });
-      }
-
-      const tokenData = await yocoResponse.json();
-      
       res.json({ 
-        token: tokenData.id,
-        message: 'Card tokenized successfully' 
+        publicKey,
+        isTestMode,
+        testCard: isTestMode ? '4111111111111111' : null
       });
 
     } catch (error) {
-      console.error('Error tokenizing card:', error);
-      res.status(500).json({ error: 'Failed to process card' });
+      console.error('Error getting Yoco config:', error);
+      res.status(500).json({ error: 'Failed to get payment configuration' });
+    }
+  });
+
+  // Validate and store tokenized payment method
+  app.post('/api/payment-methods/save-token', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      const { token, cardType, lastFour, expiryMonth, expiryYear } = req.body;
+
+      if (!token || !cardType || !lastFour || !expiryMonth || !expiryYear) {
+        return res.status(400).json({ error: 'Missing required token data' });
+      }
+
+      // Get the user's agency branch
+      let branchId = user.branchId;
+      
+      // For franchise admins, get the first branch of their franchise
+      if (user.role === 'franchise_admin' && user.franchiseId) {
+        const [firstBranch] = await db
+          .select()
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, user.franchiseId))
+          .limit(1);
+        
+        if (firstBranch) {
+          branchId = firstBranch.id;
+        }
+      }
+
+      if (!branchId) {
+        return res.status(400).json({ error: "No branch associated with user" });
+      }
+
+      // Save the tokenized payment method
+      await db.insert(agencyPaymentMethods).values({
+        agencyBranchId: branchId,
+        yocoToken: token,
+        cardLastFour: lastFour,
+        cardBrand: cardType,
+        expiryMonth: parseInt(expiryMonth),
+        expiryYear: parseInt(expiryYear),
+        addedBy: user.id
+      });
+
+      res.json({ 
+        success: true,
+        message: 'Payment method saved successfully' 
+      });
+
+    } catch (error) {
+      console.error('Error saving tokenized payment method:', error);
+      res.status(500).json({ error: 'Failed to save payment method' });
     }
   });
 
@@ -3180,6 +3198,92 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error updating system setting:', error);
       res.status(500).json({ error: 'Failed to update setting' });
+    }
+  });
+
+  // Yoco public key endpoint
+  app.get('/api/yoco/public-key', async (req, res) => {
+    try {
+      const isTestMode = req.query.test === 'true';
+      const publicKey = isTestMode 
+        ? process.env.YOCO_TEST_PUBLIC_KEY 
+        : process.env.YOCO_PUBLIC_KEY;
+      
+      if (!publicKey) {
+        console.error('Missing Yoco public key:', { isTestMode });
+        return res.status(500).json({ error: 'Yoco public key not configured' });
+      }
+      
+      res.json({ publicKey });
+    } catch (error) {
+      console.error('Error getting Yoco public key:', error);
+      res.status(500).json({ error: 'Failed to get public key' });
+    }
+  });
+
+  // Demo charge endpoint to test Yoco integration
+  app.post('/api/yoco/demo-charge', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      const { token, amountInCents, currency = 'ZAR', description = 'Demo Payment' } = req.body;
+
+      if (!token || !amountInCents) {
+        return res.status(400).json({ error: 'Missing required fields: token and amountInCents' });
+      }
+
+      // Check test mode from request header or default to test
+      const isTestMode = req.headers['x-yoco-test-mode'] === 'true' || req.query.test === 'true';
+      
+      const secretKey = isTestMode 
+        ? process.env.YOCO_TEST_SECRET_KEY 
+        : process.env.YOCO_SECRET_KEY;
+
+      if (!secretKey) {
+        return res.status(500).json({ error: 'Yoco secret key not configured' });
+      }
+
+      // Make charge to Yoco API
+      const chargeResponse = await fetch('https://online.yoco.com/v1/charges/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${secretKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          token,
+          amountInCents,
+          currency,
+          metadata: {
+            description,
+            userId: user.id.toString(),
+            testMode: isTestMode.toString()
+          }
+        })
+      });
+
+      const chargeData = await chargeResponse.json();
+
+      if (!chargeResponse.ok) {
+        console.error('Yoco charge failed:', chargeData);
+        return res.status(400).json({ 
+          error: 'Payment failed', 
+          details: chargeData.displayMessage || chargeData.message 
+        });
+      }
+
+      res.json({
+        success: true,
+        charge: chargeData,
+        message: 'Demo payment processed successfully'
+      });
+
+    } catch (error) {
+      console.error('Error processing demo charge:', error);
+      res.status(500).json({ error: 'Failed to process demo payment' });
     }
   });
 

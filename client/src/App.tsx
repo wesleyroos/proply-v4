@@ -48,6 +48,7 @@ import AgentsPage from "./pages/AgentsPage";
 import PropdataListingsPage from "./pages/PropdataListingsPage";
 import DownloadSuccessPage from "./pages/DownloadSuccessPage";
 import AcceptInvitationPage from "./pages/AcceptInvitationPage";
+import YocoTestPage from "./pages/YocoTestPage";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useUser();
@@ -265,6 +266,7 @@ function App() {
             <Route path="/subscription" component={() => <ProtectedRoute component={SubscriptionPage} />} />
             <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
             <Route path="/dashboard/propdata-listings" component={() => <ProtectedRoute component={PropdataListingsPage} />} />
+            <Route path="/yoco-test" component={() => <ProtectedRoute component={YocoTestPage} />} />
             <Route path="/airbnb-yield-calculator" component={() => (
               <PageTransition>
                 <AirbnbYieldCalculator />
