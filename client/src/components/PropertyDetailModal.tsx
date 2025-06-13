@@ -344,6 +344,7 @@ export default function PropertyDetailModal({
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
+  const [isSavingFinancing, setIsSavingFinancing] = useState(false);
   // FINANCING PARAMETERS - Database-backed single source of truth
   // These parameters are loaded from valuation_reports table and saved on update
   // This ensures PDF generation uses exact same data user sees in modal
@@ -916,11 +917,40 @@ export default function PropertyDetailModal({
 
   // FINANCING PARAMETERS - Save to database for single source of truth
   const saveFinancingParameters = async () => {
-    if (!property?.propdataId || !valuationReport?.price) return;
+    if (!property?.propdataId || !property?.price) return;
 
-    const success = await calculateAndSaveFinancialData(tempFinancingParams);
-    if (success) {
+    setIsSavingFinancing(true);
+    try {
+      const response = await fetch(`/api/valuation/${property.propdataId}/financing`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          depositPercentage: tempFinancingParams.depositPercentage,
+          interestRate: tempFinancingParams.interestRate,
+          loanTerm: tempFinancingParams.loanTermYears,
+          purchasePrice: property.price
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update financing parameters');
+      }
+
+      const result = await response.json();
+      
+      // Invalidate and refetch the valuation report to get updated data
+      queryClient.invalidateQueries({ queryKey: ['valuationReport', property.propdataId] });
+      
       setIsFinancingModalOpen(false);
+      
+    } catch (error) {
+      console.error('Error updating financing parameters:', error);
+      alert('Failed to update financing parameters. Please try again.');
+    } finally {
+      setIsSavingFinancing(false);
     }
   };
 
@@ -3537,10 +3567,24 @@ export default function PropertyDetailModal({
                 setTempFinancingParams(financingParams); // Reset temp values
                 setIsFinancingModalOpen(false);
               }}
+              disabled={isSavingFinancing}
             >
               Cancel
             </Button>
-            <Button onClick={saveFinancingParameters}>Update</Button>
+            <Button 
+              onClick={saveFinancingParameters}
+              disabled={isSavingFinancing}
+              className="bg-[#1ba2ff] hover:bg-[#1ba2ff]/90"
+            >
+              {isSavingFinancing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update'
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
