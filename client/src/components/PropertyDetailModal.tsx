@@ -160,6 +160,8 @@ export default function PropertyDetailModal({
   const [isSendingReport, setIsSendingReport] = useState(false);
   const [showSendReportDialog, setShowSendReportDialog] = useState(false);
   const [sendToAgent, setSendToAgent] = useState(false);
+  const [sendToCustomEmail, setSendToCustomEmail] = useState(false);
+  const [customEmail, setCustomEmail] = useState("");
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [imagesPerView, setImagesPerView] = useState(4);
   const [showAllImages, setShowAllImages] = useState(false);
@@ -1213,6 +1215,9 @@ export default function PropertyDetailModal({
       if (sendToAgent && property.agentEmail) {
         recipients.push(property.agentEmail);
       }
+      if (sendToCustomEmail && customEmail.trim()) {
+        recipients.push(customEmail.trim());
+      }
 
       const response = await fetch(
         `/api/propdata-reports/send/${property.propdataId}`,
@@ -1233,10 +1238,21 @@ export default function PropertyDetailModal({
       }
 
       const result = await response.json();
-      const recipientText =
-        recipients.length > 1
-          ? `wesley@proply.co.za and ${property.agentEmail}`
-          : "wesley@proply.co.za";
+      
+      // Build recipient text dynamically
+      let recipientText = "wesley@proply.co.za";
+      const additionalRecipients = [];
+      if (sendToAgent && property.agentEmail) {
+        additionalRecipients.push(property.agentEmail);
+      }
+      if (sendToCustomEmail && customEmail.trim()) {
+        additionalRecipients.push(customEmail.trim());
+      }
+      
+      if (additionalRecipients.length > 0) {
+        recipientText += ` and ${additionalRecipients.join(', ')}`;
+      }
+      
       alert(
         `Report has been generated and sent to ${recipientText}. The download link will be available for 30 days.`,
       );
@@ -1249,6 +1265,8 @@ export default function PropertyDetailModal({
     } finally {
       setIsSendingReport(false);
       setSendToAgent(false);
+      setSendToCustomEmail(false);
+      setCustomEmail("");
     }
   };
 
@@ -3579,6 +3597,37 @@ export default function PropertyDetailModal({
                   No agent email available for this property.
                 </div>
               )}
+
+              {/* Custom Email Option */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="send-to-custom"
+                    checked={sendToCustomEmail}
+                    onCheckedChange={(checked) =>
+                      setSendToCustomEmail(checked as boolean)
+                    }
+                  />
+                  <Label
+                    htmlFor="send-to-custom"
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    Send to custom email
+                  </Label>
+                </div>
+                {sendToCustomEmail && (
+                  <div className="ml-6">
+                    <Input
+                      type="email"
+                      placeholder="Enter email address"
+                      value={customEmail}
+                      onChange={(e) => setCustomEmail(e.target.value)}
+                      className="w-full"
+                      autoFocus
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
