@@ -916,11 +916,38 @@ export default function PropertyDetailModal({
 
   // FINANCING PARAMETERS - Save to database for single source of truth
   const saveFinancingParameters = async () => {
-    if (!property?.propdataId || !valuationReport?.price) return;
+    if (!property?.propdataId || !property?.price) return;
 
-    const success = await calculateAndSaveFinancialData(tempFinancingParams);
-    if (success) {
-      setIsFinancingModalOpen(false);
+    try {
+      const response = await fetch(
+        `/api/valuation-reports/${property.propdataId}/financing`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            depositPercentage: tempFinancingParams.depositPercentage,
+            interestRate: tempFinancingParams.interestRate,
+            loanTerm: tempFinancingParams.loanTermYears,
+            purchasePrice: parseFloat(property.price.toString()),
+          }),
+        },
+      );
+
+      if (response.ok) {
+        console.log("Successfully updated financing parameters");
+        // Refetch valuation data to get updated parameters
+        await refetchValuation();
+        setIsFinancingModalOpen(false);
+      } else {
+        console.error("Failed to update financing parameters");
+        alert("Failed to update financing parameters. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error updating financing parameters:", error);
+      alert("Failed to update financing parameters. Please try again.");
     }
   };
 
