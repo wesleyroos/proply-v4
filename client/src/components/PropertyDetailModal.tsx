@@ -1317,62 +1317,33 @@ export default function PropertyDetailModal({
 
   // Render Financing Analysis content
   const renderFinancingAnalysis = () => {
-    if (!property) {
+    if (!property || !valuationReport?.financingAnalysisData) {
       return (
         <div className="py-8 text-center">
           <p className="text-muted-foreground">
-            Property data required for financing analysis
+            Loading financing analysis...
           </p>
         </div>
       );
     }
 
-    // Financing parameters - using dynamic state
-    const propertyPrice = parseFloat(property.price.toString());
-    const depositPercentage = financingParams.depositPercentage / 100;
-    const loanToValue = 1 - depositPercentage;
-    const interestRate = financingParams.interestRate / 100;
-    const loanTermYears = financingParams.loanTermYears;
-    const loanTermMonths = loanTermYears * 12;
+    // Use pre-calculated financing analysis data from database
+    const financingData = valuationReport.financingAnalysisData;
+    const years = [1, 2, 3, 4, 5, 10, 20];
 
-    // Calculate loan amount and monthly payment
-    const depositAmount = propertyPrice * depositPercentage;
-    const loanAmount = propertyPrice * loanToValue;
-    const monthlyInterestRate = interestRate / 12;
-
-    // Monthly payment calculation using standard mortgage formula
-    const monthlyPayment =
-      (loanAmount *
-        (monthlyInterestRate *
-          Math.pow(1 + monthlyInterestRate, loanTermMonths))) /
-      (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
-
-    // Calculate financing metrics for each year
-    const calculateFinancingMetrics = (year: number) => {
-      const monthsElapsed = year * 12;
-      let remainingBalance = loanAmount;
-      let totalPrincipalPaid = 0;
-
-      // Calculate principal paid and remaining balance
-      for (
-        let month = 1;
-        month <= monthsElapsed && month <= loanTermMonths;
-        month++
-      ) {
-        const interestPayment = remainingBalance * monthlyInterestRate;
-        const principalPayment = monthlyPayment - interestPayment;
-        totalPrincipalPaid += principalPayment;
-        remainingBalance -= principalPayment;
+    // Helper function to get metrics for a specific year
+    const getMetricsForYear = (year: number) => {
+      const yearKey = `year${year}`;
+      if (financingData.yearlyMetrics && financingData.yearlyMetrics[yearKey]) {
+        return financingData.yearlyMetrics[yearKey];
       }
-
+      // Fallback - should not happen with proper data
       return {
-        monthlyPayment,
-        equityBuildup: totalPrincipalPaid,
-        remainingBalance: Math.max(0, remainingBalance),
+        monthlyPayment: 0,
+        equityBuildup: 0,
+        remainingBalance: 0,
       };
     };
-
-    const years = [1, 2, 3, 4, 5, 10, 20];
 
     return (
       <div className="space-y-4">
@@ -1382,22 +1353,22 @@ export default function PropertyDetailModal({
             <div>
               <span className="text-muted-foreground">Deposit:</span>
               <div className="font-medium">
-                {formatCurrency(depositAmount)} (
-                {financingParams.depositPercentage}%)
+                {formatCurrency(financingData.financingParameters.depositAmount)} (
+                {financingData.financingParameters.depositPercentage}%)
               </div>
             </div>
             <div>
               <span className="text-muted-foreground">Loan Amount:</span>
-              <div className="font-medium">{formatCurrency(loanAmount)}</div>
+              <div className="font-medium">{formatCurrency(financingData.financingParameters.loanAmount)}</div>
             </div>
             <div>
               <span className="text-muted-foreground">Interest Rate:</span>
-              <div className="font-medium">{financingParams.interestRate}%</div>
+              <div className="font-medium">{financingData.financingParameters.interestRate}%</div>
             </div>
             <div>
               <span className="text-muted-foreground">Term:</span>
               <div className="font-medium">
-                {financingParams.loanTermYears} years
+                {financingData.financingParameters.loanTerm} years
               </div>
             </div>
             <div className="flex justify-end">
@@ -1437,7 +1408,7 @@ export default function PropertyDetailModal({
               <tr className="border-b hover:bg-gray-50/50">
                 <td className="py-2 px-3 font-medium">Monthly Bond Payment</td>
                 {years.map((year) => {
-                  const metrics = calculateFinancingMetrics(year);
+                  const metrics = getMetricsForYear(year);
                   return (
                     <td key={year} className="text-center py-2 px-3">
                       {formatCurrency(metrics.monthlyPayment)}
@@ -1452,7 +1423,7 @@ export default function PropertyDetailModal({
                   Equity Build-up
                 </td>
                 {years.map((year) => {
-                  const metrics = calculateFinancingMetrics(year);
+                  const metrics = getMetricsForYear(year);
                   return (
                     <td key={year} className="text-center py-2 px-3">
                       {formatCurrency(metrics.equityBuildup)}
@@ -1467,7 +1438,7 @@ export default function PropertyDetailModal({
                   Remaining Loan Balance
                 </td>
                 {years.map((year) => {
-                  const metrics = calculateFinancingMetrics(year);
+                  const metrics = getMetricsForYear(year);
                   return (
                     <td key={year} className="text-center py-2 px-3">
                       {formatCurrency(metrics.remainingBalance)}
@@ -1494,12 +1465,12 @@ export default function PropertyDetailModal({
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={years.map((year) => {
-                    const metrics = calculateFinancingMetrics(year);
+                    const metrics = getMetricsForYear(year);
                     return {
                       year: `Year ${year}`,
                       equityBuildup: metrics.equityBuildup,
                       remainingBalance: metrics.remainingBalance,
-                      totalLoanAmount: loanAmount,
+                      totalLoanAmount: financingData.financingParameters.loanAmount,
                     };
                   })}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
