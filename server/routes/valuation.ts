@@ -955,6 +955,52 @@ router.patch("/:propertyId/financing", async (req, res) => {
 
     console.log('Successfully updated financing parameters in database');
 
+    // Now recalculate and update the complete financing analysis data
+    const loanTermMonths = loanTerm * 12;
+    const monthlyInterestRate = monthlyRate;
+    
+    const financingAnalysisData = {
+      financingParameters: {
+        depositAmount,
+        depositPercentage: parseFloat(depositPercentage),
+        loanAmount,
+        interestRate: parseFloat(interestRate),
+        loanTerm: parseInt(loanTerm),
+        monthlyPayment: monthlyRepayment
+      },
+      yearlyMetrics: [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
+        const monthsElapsed = year * 12;
+        let remainingBalance = loanAmount;
+        let totalPrincipalPaid = 0;
+
+        for (let month = 1; month <= monthsElapsed && month <= loanTermMonths; month++) {
+          const interestPayment = remainingBalance * monthlyInterestRate;
+          const principalPayment = monthlyRepayment - interestPayment;
+          totalPrincipalPaid += principalPayment;
+          remainingBalance -= principalPayment;
+        }
+
+        acc[`year${year}`] = {
+          monthlyPayment: monthlyRepayment,
+          equityBuildup: totalPrincipalPaid,
+          remainingBalance: Math.max(0, remainingBalance)
+        };
+        return acc;
+      }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
+    };
+
+    // Update the financing analysis data in the database
+    await db.execute(sql`
+      UPDATE valuation_reports 
+      SET 
+        financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
+        updated_at = NOW()
+      WHERE property_id = ${propertyId} 
+        AND user_id = ${req.user.id}
+    `);
+
+    console.log('Successfully updated financing analysis data in database');
+
     // Return the updated financing data
     res.json({
       success: true,
