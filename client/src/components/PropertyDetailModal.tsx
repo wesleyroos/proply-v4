@@ -71,7 +71,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import PropertyMap from "./PropertyMap";
+import { initGoogleMaps } from "@/lib/maps";
 
 // Utility function to create optimized image URLs for faster loading
 const createOptimizedImageUrl = (
@@ -339,7 +339,8 @@ export default function PropertyDetailModal({
   const [lastAddressSaveTime, setLastAddressSaveTime] = useState<number | null>(
     null,
   );
-
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
   const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
   // FINANCING PARAMETERS - Database-backed single source of truth
   // These parameters are loaded from valuation_reports table and saved on update
@@ -409,7 +410,62 @@ export default function PropertyDetailModal({
     setEditedAddress(property?.address || "");
   }, [property?.propdataId, isOpen]);
 
+  // Google Maps initialization - using PropertyMap.tsx pattern
+  useEffect(() => {
+    if (!isOpen || !property?.address || activeTab !== "overview") return;
 
+    let isMounted = true;
+
+    const initializeMap = async () => {
+      try {
+        await initGoogleMaps();
+
+        if (!isMounted || !mapRef.current) return;
+
+        const geocoder = new window.google.maps.Geocoder();
+        const defaultLocation = { lat: -33.918861, lng: 18.4233 };
+
+        const map = new window.google.maps.Map(mapRef.current, {
+          center: defaultLocation,
+          zoom: 15,
+          mapTypeId: window.google.maps.MapTypeId.SATELLITE,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          gestureHandling: "cooperative",
+        });
+
+        geocoder.geocode(
+          { address: property.address },
+          (results: any, status: any) => {
+            if (status === "OK" && results?.[0]) {
+              const location = results[0].geometry.location;
+              map.setCenter(location);
+              map.setZoom(16);
+
+              new window.google.maps.Marker({
+                map,
+                position: location,
+                title: "Property Location",
+              });
+              setMapLoaded(true);
+            } else {
+              console.error("Geocoding failed:", status);
+            }
+          },
+        );
+      } catch (error) {
+        console.error("Map initialization error:", error);
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      isMounted = false;
+      setMapLoaded(false);
+    };
+  }, [isOpen, property?.address, activeTab]);
 
   // Save valuation to database
   const saveValuationToDatabase = async (valuationData: any) => {
