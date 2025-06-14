@@ -10,6 +10,7 @@ interface YocoSDKInstance {
     currency: string;
     name?: string;
     description?: string;
+    mountElement?: string;
     callback?: (result: YocoResult) => void;
   }): void;
 }

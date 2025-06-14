@@ -965,23 +965,7 @@ export default function SettingsPage() {
 
         console.log('Yoco SDK available:', !!window.YocoSDK);
         console.log('Public key:', publicKey);
-        
-        // Create a dedicated container in the document body for Yoco
-        const yocoContainer = document.createElement('div');
-        yocoContainer.id = 'yoco-checkout-container';
-        yocoContainer.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          z-index: 10000;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        `;
-        document.body.appendChild(yocoContainer);
+        console.log('Mount exists:', !!document.querySelector('#yoco-mount'));
 
         // Initialize Yoco SDK with the correct public key
         const yoco = new window.YocoSDK({
@@ -989,14 +973,22 @@ export default function SettingsPage() {
         });
 
         console.log('Yoco SDK instance created:', yoco);
-        console.log('Container added to DOM, triggering Yoco popup...');
         
+        console.log('Popup config:', {
+          amountInCents: 100,
+          currency: 'ZAR',
+          name: cardForm.cardholderName,
+          description: 'Card verification for payment method setup',
+          mountElement: '#yoco-mount'
+        });
+
         // Use Yoco popup for secure tokenization with R1.00 authorization
         yoco.popup({
           amountInCents: 100, // R1.00 authorization amount
           currency: 'ZAR',
           name: cardForm.cardholderName,
           description: 'Card verification for payment method setup',
+          mountElement: '#yoco-mount',
           callback: async (result: any) => {
             console.log('Yoco popup callback triggered with result:', result);
             try {
@@ -1063,12 +1055,6 @@ export default function SettingsPage() {
                 description: error instanceof Error ? error.message : "Please try again"
               });
               setIsProcessingCard(false);
-            } finally {
-              // Always cleanup the container
-              const container = document.getElementById('yoco-checkout-container');
-              if (container) {
-                document.body.removeChild(container);
-              }
             }
           }
         });
@@ -1082,11 +1068,7 @@ export default function SettingsPage() {
         });
         setIsProcessingCard(false);
         
-        // Cleanup container on error
-        const container = document.getElementById('yoco-checkout-container');
-        if (container) {
-          document.body.removeChild(container);
-        }
+        // No cleanup needed for mount element as it's persistent
       }
     };
 

@@ -1,0 +1,96 @@
+Below is the quickest way to get rid of 
+css
+No mount location was specified and one could not be calculated so we have fallen back to manual DisplayMethod
+The SDK simply has nowhere in the DOM to attach its iframe, so it drops into the “manual” display method.
+Give it a fixed element and pass that element (or its selector) in the options.
+1. Add a dedicated mount point that never disappears
+index.html (or the outermost React template):
+html
+<body>
+  <div id="root"></div>
+
+  <!--  Yoco will mount its iframe here  -->
+  <div id="yoco-mount" style="position:relative; z-index:9999;"></div>
+</body>
+If you cannot touch the HTML template, add it once at runtime:
+ts
+// utils/yocoMount.ts
+export const ensureYocoMount = () => {
+  if (!document.getElementById('yoco-mount')) {
+    const div = document.createElement('div');
+    div.id = 'yoco-mount';
+    div.style.position = 'relative';
+    div.style.zIndex = '9999';
+    document.body.appendChild(div);
+  }
+};
+Call ensureYocoMount() once in your root component’s useEffect.
+2. Pass the mount element/selector when you open the popup
+ts
+import { ensureYocoMount } from './utils/yocoMount';
+
+declare global {
+  interface Window { YocoSDK: any; }
+}
+
+const publicKey = 'pk_test_4f7422aemWMAwOV52a94';
+
+const yoco = new window.YocoSDK({ publicKey });
+
+export const openYocoPopup = async () => {
+  ensureYocoMount();
+
+  const options = {
+    amountInCents: 100,
+    currency: 'ZAR',
+    name: 'Ben Dryden',
+    description: 'Card verification for payment method setup',
+    // 👇  either of these works – depends on SDK version
+    mountElement: '#yoco-mount',   // v2+
+    // container: '#yoco-mount',   // older builds
+    callback: (result: any) => {
+      console.log('Yoco callback', result);
+      if (result.error) {
+        // handle error
+      } else {
+        // send token to backend etc.
+      }
+    },
+  };
+
+  console.log('Mount exists:', !!document.querySelector('#yoco-mount'));
+  console.log('Popup config:', options);
+
+  yoco.popup(options);   // or yoco.checkout(options) depending on API
+};
+3. Typical React handler
+ts
+const handleAddCard = () => {
+  try {
+    openYocoPopup();
+  } catch (err) {
+    console.error('Yoco popup failed:', err);
+  }
+};
+What you should see in the console
+yaml
+Yoco SDK available: true
+Mount exists: true
+Popup config: { amountInCents: 100, …, mountElement: '#yoco-mount' }
+[iframe appears in #yoco-mount]
+If the mount element is found (true) and the popup still falls back to manual display, double‑check:
+You are only loading one copy of the Yoco script.
+The SDK version is ≥ 2.0.0 (older betas sometimes ignored mountElement).
+No CSS on the page hides #yoco-mount (display:none, visibility:hidden etc.).
+Alternative: the new “payments” API
+If you prefer the card‑field approach instead of the popup:
+ts
+const yoco = new window.YocoSDK({ publicKey });
+
+const payment = yoco.payments.createPayment({
+  amountInCents: 100,
+  currency: 'ZAR',
+});
+
+const card = payment.createCard();
+card.mount('#yoco-mount');   // same dedicated container
