@@ -11,8 +11,25 @@ interface YocoSDKInstance {
     name?: string;
     description?: string;
     mountElement?: string;
+    container?: string;
     callback?: (result: YocoResult) => void;
   }): void;
+  
+  payments: {
+    createPayment(config: {
+      amountInCents: number;
+      currency: string;
+    }): YocoPayment;
+  };
+}
+
+interface YocoPayment {
+  createCard(): YocoCard;
+}
+
+interface YocoCard {
+  mount(selector: string): void;
+  on(event: string, callback: (result: any) => void): void;
 }
 
 interface YocoResult {

@@ -974,23 +974,27 @@ export default function SettingsPage() {
 
         console.log('Yoco SDK instance created:', yoco);
         
-        console.log('Popup config:', {
-          amountInCents: 100,
-          currency: 'ZAR',
-          name: cardForm.cardholderName,
-          description: 'Card verification for payment method setup',
-          mountElement: '#yoco-mount'
-        });
-
-        // Use Yoco popup for secure tokenization with R1.00 authorization
-        yoco.popup({
-          amountInCents: 100, // R1.00 authorization amount
-          currency: 'ZAR',
-          name: cardForm.cardholderName,
-          description: 'Card verification for payment method setup',
-          mountElement: '#yoco-mount',
-          callback: async (result: any) => {
-            console.log('Yoco popup callback triggered with result:', result);
+        // Try the newer payments API approach instead of popup
+        console.log('Attempting payments API approach...');
+        
+        try {
+          const payment = yoco.payments.createPayment({
+            amountInCents: 100,
+            currency: 'ZAR'
+          });
+          
+          console.log('Payment instance created:', payment);
+          
+          const card = payment.createCard();
+          console.log('Card instance created:', card);
+          
+          // Mount the card form to our dedicated element
+          card.mount('#yoco-mount');
+          console.log('Card mounted to #yoco-mount');
+          
+          // Listen for successful tokenization
+          card.on('payment.result', async (result: any) => {
+            console.log('Yoco payment.result callback triggered with result:', result);
             try {
               if (result.error) {
                 console.error('Yoco callback error:', result.error);
@@ -1056,8 +1060,17 @@ export default function SettingsPage() {
               });
               setIsProcessingCard(false);
             }
-          }
-        });
+          });
+          
+        } catch (paymentsApiError) {
+          console.warn('Payments API not available, falling back to popup:', paymentsApiError);
+          setIsProcessingCard(false);
+          toast({
+            variant: "destructive", 
+            title: "Payment initialization failed",
+            description: "Please try again or contact support"
+          });
+        }
 
       } catch (error) {
         console.error('Error initializing Yoco payment:', error);
