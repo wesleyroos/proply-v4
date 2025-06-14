@@ -987,6 +987,7 @@ export default function SettingsPage() {
           currency: 'ZAR',
           name: cardForm.cardholderName,
           description: 'Card verification for payment method setup',
+          mountElement: '#yoco-popup-container',
           callback: async (result: any) => {
             console.log('Yoco popup callback triggered with result:', result);
             try {
@@ -1104,6 +1105,7 @@ export default function SettingsPage() {
           currency: 'ZAR',
           name: 'Test Payment',
           description: `Demo payment - R${testPaymentAmount}`,
+          mountElement: '#yoco-popup-container',
           callback: async (result: any) => {
             try {
               if (result.error) {
