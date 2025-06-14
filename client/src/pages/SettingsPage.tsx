@@ -954,9 +954,9 @@ export default function SettingsPage() {
         
         const { publicKey } = await publicKeyResponse.json();
 
-        // Validate form fields
-        if (!cardForm.cardholderName || !cardForm.cardNumber || !cardForm.expiryMonth || !cardForm.expiryYear || !cardForm.cvv) {
-          throw new Error('Please fill in all card details');
+        // Validate cardholder name
+        if (!cardForm.cardholderName) {
+          throw new Error('Please enter the cardholder name');
         }
 
         console.log('Yoco SDK available:', !!window.YocoSDK);
@@ -1021,10 +1021,6 @@ export default function SettingsPage() {
 
               // Reset form and refresh data
               setCardForm({
-                cardNumber: '',
-                expiryMonth: '',
-                expiryYear: '',
-                cvv: '',
                 cardholderName: ''
               });
               setIsAddingCard(false);
