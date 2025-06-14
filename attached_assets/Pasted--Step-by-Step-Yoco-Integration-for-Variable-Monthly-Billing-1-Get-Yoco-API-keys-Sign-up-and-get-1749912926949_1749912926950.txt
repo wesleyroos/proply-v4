@@ -20,10 +20,10 @@ Edit
 
   document.getElementById('payButton').addEventListener('click', function () {
     yoco.showPopup({
-      amountInCents: 100, // Temporary R1 or R0 authorization
+      amountInCents: 200, // Minimum R2.00 authorization (Yoco requirement)
       currency: 'ZAR',
       name: 'Save Card for Billing',
-      description: 'Tokenizing card for monthly billing',
+      description: 'R2.00 authorization for card tokenization (will be refunded)',
       callback: function (result) {
         if (result.error) {
           alert("Error occurred: " + result.error.message);

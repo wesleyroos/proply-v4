@@ -978,10 +978,10 @@ export default function SettingsPage() {
         console.log('Using Yoco showPopup for card tokenization...');
         
         yoco.showPopup({
-          amountInCents: 100, // R1.00 temporary authorization for card tokenization
+          amountInCents: 200, // R2.00 minimum required by Yoco for card tokenization
           currency: 'ZAR',
           name: 'Save Card for Billing',
-          description: 'Tokenizing card for monthly billing',
+          description: 'R2.00 authorization for card tokenization (will be refunded)',
           callback: async (result: any) => {
             console.log('Yoco popup callback triggered with result:', result);
             try {
@@ -1063,81 +1063,7 @@ export default function SettingsPage() {
       }
     };
 
-    const handleTestPayment = async () => {
-      setIsProcessingTestPayment(true);
 
-      try {
-        // Check if Yoco SDK is loaded
-        if (typeof window.YocoSDK === 'undefined') {
-          throw new Error('Yoco SDK not loaded. Please refresh the page and try again.');
-        }
-
-        // Get environment mode from localStorage
-        const isTestMode = localStorage.getItem('yoco_test_mode') !== 'false';
-        
-        // Get the appropriate public key from environment
-        const publicKeyResponse = await fetch(`/api/yoco/public-key?test=${isTestMode}`, {
-          credentials: 'include'
-        });
-        
-        if (!publicKeyResponse.ok) {
-          throw new Error('Failed to get Yoco public key');
-        }
-        
-        const { publicKey } = await publicKeyResponse.json();
-
-        // Initialize Yoco SDK with the correct public key
-        const yoco = new window.YocoSDK({
-          publicKey: publicKey
-        });
-
-        // Use Yoco popup for test payment
-        const amountInCents = Math.round(parseFloat(testPaymentAmount) * 100);
-        
-        yoco.showPopup({
-          amountInCents: amountInCents,
-          currency: 'ZAR',
-          name: 'Test Payment',
-          description: `Demo payment - R${testPaymentAmount}`,
-          callback: async (result: any) => {
-            try {
-              if (result.error) {
-                throw new Error(result.error.message || 'Payment failed');
-              }
-
-              if (!result.id) {
-                throw new Error('No charge ID received from Yoco');
-              }
-
-              toast({
-                title: "Test payment successful",
-                description: `Demo charge of R${testPaymentAmount} processed successfully. Charge ID: ${result.id}`
-              });
-
-              setIsTestingPayment(false);
-
-            } catch (error) {
-              toast({
-                variant: "destructive",
-                title: "Test payment failed",
-                description: error instanceof Error ? error.message : "An unknown error occurred"
-              });
-            } finally {
-              setIsProcessingTestPayment(false);
-            }
-          }
-        });
-
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Test payment failed",
-          description: error instanceof Error ? error.message : "An unknown error occurred"
-        });
-      } finally {
-        setIsProcessingTestPayment(false);
-      }
-    };
 
     const detectCardType = (cardNumber: string) => {
       const number = cardNumber.replace(/\s/g, '');
@@ -1236,54 +1162,7 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Demo Payment Test Section */}
-            {paymentMethodsData?.length > 0 && (
-              <div className="border-t pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-sm">Test Payment System</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsTestingPayment(!isTestingPayment)}
-                  >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Test Payment
-                  </Button>
-                </div>
 
-                {isTestingPayment && (
-                  <div className="p-4 border rounded-lg bg-blue-50">
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600 mb-2">
-                        Test the payment system with a small demo charge
-                      </p>
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <label className="text-sm font-medium">Amount (ZAR)</label>
-                          <Input
-                            type="number"
-                            value={testPaymentAmount}
-                            onChange={(e) => setTestPaymentAmount(e.target.value)}
-                            placeholder="10.00"
-                            className="w-24 mt-1"
-                            min="1"
-                            max="100"
-                            step="0.01"
-                          />
-                        </div>
-                        <Button
-                          onClick={handleTestPayment}
-                          disabled={isProcessingTestPayment}
-                          className="mt-6"
-                        >
-                          {isProcessingTestPayment ? "Processing..." : "Process Test Payment"}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Add New Payment Method */}
             <div className="border-t pt-6">
