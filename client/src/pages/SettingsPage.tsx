@@ -958,15 +958,28 @@ export default function SettingsPage() {
         
         const { publicKey } = await publicKeyResponse.json();
 
+        // Debug: Check if Yoco SDK is loaded
+        console.log('Yoco SDK available:', !!window.YocoSDK);
+        console.log('Public key:', publicKey);
+        
         // Initialize Yoco SDK with the correct public key
         const yoco = new window.YocoSDK({
           publicKey: publicKey
         });
 
+        console.log('Yoco SDK instance created:', yoco);
+
         // Validate form fields
         if (!cardForm.cardholderName || !cardForm.cardNumber || !cardForm.expiryMonth || !cardForm.expiryYear || !cardForm.cvv) {
           throw new Error('Please fill in all card details');
         }
+
+        console.log('Starting Yoco popup with config:', {
+          amountInCents: 100,
+          currency: 'ZAR',
+          name: cardForm.cardholderName,
+          description: 'Card verification for payment method setup'
+        });
 
         // Use Yoco popup for secure tokenization with R1.00 authorization
         yoco.popup({
@@ -975,14 +988,19 @@ export default function SettingsPage() {
           name: cardForm.cardholderName,
           description: 'Card verification for payment method setup',
           callback: async (result: any) => {
+            console.log('Yoco popup callback triggered with result:', result);
             try {
               if (result.error) {
+                console.error('Yoco callback error:', result.error);
                 throw new Error(result.error.message || 'Card authorization failed');
               }
 
               if (!result.id) {
+                console.error('No charge ID in result:', result);
                 throw new Error('No charge ID received from Yoco');
               }
+
+              console.log('Processing successful charge:', result.id);
 
               // Extract card details from the form
               const lastFour = cardForm.cardNumber.slice(-4);
@@ -1028,18 +1046,19 @@ export default function SettingsPage() {
               refetchPaymentMethods();
 
             } catch (error) {
+              console.error('Error saving payment method:', error);
               toast({
                 variant: "destructive",
                 title: "Failed to save payment method",
                 description: error instanceof Error ? error.message : "Please try again"
               });
-            } finally {
               setIsProcessingCard(false);
             }
           }
         });
 
       } catch (error) {
+        console.error('Error initializing Yoco payment:', error);
         toast({
           variant: "destructive",
           title: "Failed to initialize payment",
