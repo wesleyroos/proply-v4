@@ -11,7 +11,6 @@ interface YocoSDKInstance {
     name?: string;
     description?: string;
     callback?: (result: YocoResult) => void;
-    mountElement?: string | HTMLElement;
   }): void;
 }
 
