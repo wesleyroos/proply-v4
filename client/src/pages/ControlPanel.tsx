@@ -16,14 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { Switch } from "@/components/ui/switch";
 import { 
   BadgeCheck, 
@@ -37,7 +30,6 @@ import {
   XCircle,
   Loader2,
   BarChart3,
-  MoreHorizontal,
   CreditCard,
   Upload
 } from 'lucide-react';
@@ -330,7 +322,7 @@ export function ControlPanel() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center text-muted-foreground">
                     No agencies configured
                   </TableCell>
                 </TableRow>
