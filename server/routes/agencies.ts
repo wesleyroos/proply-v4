@@ -125,6 +125,8 @@ router.get("/agencies", async (req, res) => {
           branchName: mainBranch?.branchName || null,
           mainBranchId: mainBranch?.id || null,
           billingEnabled: billingSettings?.billingEnabled || false,
+          syncFrequency: mainBranch?.syncFrequency || franchise.syncFrequency || "5 minutes",
+          autoSyncEnabled: mainBranch?.autoSyncEnabled ?? franchise.autoSyncEnabled ?? true,
         };
       })
     );
