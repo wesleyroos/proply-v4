@@ -909,6 +909,7 @@ export default function SettingsPage() {
     const [isTestingPayment, setIsTestingPayment] = useState(false);
     const [isProcessingTestPayment, setIsProcessingTestPayment] = useState(false);
     const [testPaymentAmount, setTestPaymentAmount] = useState('10.00');
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState<{open: boolean, methodId: number | null}>({ open: false, methodId: null });
 
     // Fetch existing payment methods
     const { data: paymentMethodsData, refetch: refetchPaymentMethods } = useQuery({
@@ -1016,7 +1017,7 @@ export default function SettingsPage() {
 
               toast({
                 title: "Payment method added",
-                description: "Your card has been securely saved for billing. The R1.00 authorization will be refunded."
+                description: "Your card has been securely saved for billing. The R2.00 authorization will be refunded."
               });
 
               // Reset form and refresh data
@@ -1055,9 +1056,15 @@ export default function SettingsPage() {
 
 
 
-    const removePaymentMethod = async (methodId: number) => {
+    const confirmDeletePaymentMethod = (methodId: number) => {
+      setDeleteConfirmModal({ open: true, methodId });
+    };
+
+    const removePaymentMethod = async () => {
+      if (!deleteConfirmModal.methodId) return;
+      
       try {
-        const response = await fetch(`/api/payment-methods/${methodId}`, {
+        const response = await fetch(`/api/payment-methods/${deleteConfirmModal.methodId}`, {
           method: 'DELETE',
           credentials: 'include'
         });
@@ -1071,6 +1078,7 @@ export default function SettingsPage() {
           description: "Card has been removed from your account."
         });
 
+        setDeleteConfirmModal({ open: false, methodId: null });
         refetchPaymentMethods();
       } catch (error) {
         toast({
@@ -1119,7 +1127,7 @@ export default function SettingsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => removePaymentMethod(method.id)}
+                      onClick={() => confirmDeletePaymentMethod(method.id)}
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1203,6 +1211,24 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Delete Confirmation Modal */}
+        <AlertDialog open={deleteConfirmModal.open} onOpenChange={(open) => setDeleteConfirmModal({ open, methodId: null })}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove Payment Method</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to remove this payment method? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={removePaymentMethod} className="bg-red-600 hover:bg-red-700">
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   };
