@@ -974,14 +974,14 @@ export default function SettingsPage() {
 
         console.log('Yoco SDK instance created:', yoco);
         
-        // Use Yoco popup - accepting manual display method
-        console.log('Using Yoco popup (manual display method is acceptable)...');
+        // Use Yoco's official showPopup method for card tokenization
+        console.log('Using Yoco showPopup for card tokenization...');
         
-        yoco.popup({
-          amountInCents: 100,
-          currency: 'ZAR', 
-          name: cardForm.cardholderName,
-          description: 'Card verification for payment method setup',
+        yoco.showPopup({
+          amountInCents: 100, // R1.00 temporary authorization for card tokenization
+          currency: 'ZAR',
+          name: 'Save Card for Billing',
+          description: 'Tokenizing card for monthly billing',
           callback: async (result: any) => {
             console.log('Yoco popup callback triggered with result:', result);
             try {
@@ -995,27 +995,25 @@ export default function SettingsPage() {
                 throw new Error('No charge ID received from Yoco');
               }
 
-              console.log('Processing successful charge:', result.id);
+              console.log('Received card token:', result.id);
 
-              // Extract card details from the form
+              // Extract card details for storage
               const lastFour = cardForm.cardNumber.slice(-4);
               const cardType = detectCardType(cardForm.cardNumber);
 
-              // Save payment method with charge details
-              const saveResponse = await fetch('/api/payment-methods/save-card-from-charge', {
+              // Send token to backend for secure storage
+              const saveResponse = await fetch('/api/payment-methods/save-token', {
                 method: 'POST',
                 headers: { 
-                  'Content-Type': 'application/json',
-                  'x-yoco-test-mode': isTestMode.toString()
+                  'Content-Type': 'application/json'
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                  chargeId: result.id,
-                  lastFour: lastFour,
+                  token: result.id,
                   cardType: cardType,
+                  lastFour: lastFour,
                   expiryMonth: cardForm.expiryMonth,
-                  expiryYear: cardForm.expiryYear,
-                  cardholderName: cardForm.cardholderName
+                  expiryYear: cardForm.expiryYear
                 })
               });
 
@@ -1096,7 +1094,7 @@ export default function SettingsPage() {
         // Use Yoco popup for test payment
         const amountInCents = Math.round(parseFloat(testPaymentAmount) * 100);
         
-        yoco.popup({
+        yoco.showPopup({
           amountInCents: amountInCents,
           currency: 'ZAR',
           name: 'Test Payment',

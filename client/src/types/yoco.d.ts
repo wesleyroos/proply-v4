@@ -5,22 +5,22 @@ declare global {
 }
 
 interface YocoSDKInstance {
-  popup(config: {
+  showPopup(config: {
     amountInCents: number;
     currency: string;
     name?: string;
     description?: string;
-    mountElement?: string;
-    container?: string;
     callback?: (result: YocoResult) => void;
   }): void;
   
-  payments: {
-    createPayment(config: {
-      amountInCents: number;
-      currency: string;
-    }): YocoPayment;
-  };
+  // Legacy popup method for backward compatibility
+  popup?(config: {
+    amountInCents: number;
+    currency: string;
+    name?: string;
+    description?: string;
+    callback?: (result: YocoResult) => void;
+  }): void;
 }
 
 interface YocoPayment {

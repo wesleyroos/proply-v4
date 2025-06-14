@@ -1,0 +1,77 @@
+✅ Step-by-Step Yoco Integration for Variable Monthly Billing
+🔹 1. Get Yoco API keys
+Sign up and get your public and secret API keys from the Yoco dashboard:
+👉 https://www.yoco.com/za/resources/docs/#authentication
+
+🔹 2. Use Yoco Web SDK to Capture Card Details
+Add Yoco’s card payment UI to your frontend to securely tokenize a user’s card:
+
+👉 Frontend (React or HTML + JS):
+html
+Copy
+Edit
+<script src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"></script>
+<button id="payButton">Save Card</button>
+
+<script>
+  const yoco = new window.YocoSDK({
+    publicKey: 'pk_test_...',
+  });
+
+  document.getElementById('payButton').addEventListener('click', function () {
+    yoco.showPopup({
+      amountInCents: 100, // Temporary R1 or R0 authorization
+      currency: 'ZAR',
+      name: 'Save Card for Billing',
+      description: 'Tokenizing card for monthly billing',
+      callback: function (result) {
+        if (result.error) {
+          alert("Error occurred: " + result.error.message);
+        } else {
+          const token = result.id;
+          // Send token to your backend for storage
+          fetch('/api/save-card-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token }),
+          });
+        }
+      }
+    });
+  });
+</script>
+🔹 3. Store the Token Securely in Your Backend
+In your backend (Node.js / Python / etc.), store the token securely along with the user's ID. Don’t store card details — just the token.
+
+🔹 4. Charge the Card Later with Variable Amounts
+Each month, when you need to bill the user:
+
+👉 Backend Charge Request (Node.js example using axios):
+js
+Copy
+Edit
+const axios = require('axios');
+
+async function chargeCard(token, amountInCents) {
+  const response = await axios.post(
+    'https://online.yoco.com/v1/charges/',
+    {
+      token,
+      amountInCents,
+      currency: 'ZAR'
+    },
+    {
+      headers: {
+        'X-Auth-Secret-Key': 'sk_test_...'
+      }
+    }
+  );
+  return response.data;
+}
+📌 Note: Yoco’s tokens expire after first use, so if you need to charge the card repeatedly, you must:
+
+Use the token only for an initial “save card” R1 test charge.
+
+Then request a permanent payment method token via Yoco support (this currently requires enabling “Recurring Payments” in closed beta).
+
+OR, ask the user to re-enter card details every few months.
