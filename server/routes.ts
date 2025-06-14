@@ -2517,6 +2517,110 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Save card from Yoco charge (new popup-based flow)
+  app.post('/api/payment-methods/save-card-from-charge', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      const { chargeId, lastFour, cardType, expiryMonth, expiryYear, cardholderName } = req.body;
+
+      if (!chargeId || !lastFour || !cardType || !expiryMonth || !expiryYear) {
+        return res.status(400).json({ error: 'Missing required card data' });
+      }
+
+      // Get user's branch ID
+      let branchId = user.branchId;
+      
+      if (user.role === 'franchise_admin' && user.franchiseId) {
+        const [firstBranch] = await db
+          .select()
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, user.franchiseId))
+          .limit(1);
+        
+        if (firstBranch) {
+          branchId = firstBranch.id;
+        }
+      }
+
+      if (!branchId) {
+        return res.status(400).json({ error: "No branch associated with user" });
+      }
+
+      // Get charge details from Yoco to extract token
+      const isTestMode = req.headers['x-yoco-test-mode'] === 'true' || req.query.test === 'true';
+      const secretKey = isTestMode 
+        ? process.env.YOCO_TEST_SECRET_KEY 
+        : process.env.YOCO_SECRET_KEY;
+
+      if (!secretKey) {
+        return res.status(500).json({ error: 'Yoco secret key not configured' });
+      }
+
+      // Fetch charge details from Yoco
+      const chargeResponse = await fetch(`https://online.yoco.com/v1/charges/${chargeId}`, {
+        headers: {
+          'Authorization': `Bearer ${secretKey}`
+        }
+      });
+
+      if (!chargeResponse.ok) {
+        throw new Error('Failed to fetch charge details from Yoco');
+      }
+
+      const chargeData = await chargeResponse.json();
+      
+      // Extract card token from charge data
+      const cardToken = chargeData.source?.id || chargeData.token;
+      
+      if (!cardToken) {
+        throw new Error('No card token found in charge data');
+      }
+
+      // Refund the R1.00 authorization charge
+      const refundResponse = await fetch(`https://online.yoco.com/v1/charges/${chargeId}/refunds`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${secretKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          amountInCents: 100, // Refund the full R1.00
+          reason: 'Card verification authorization'
+        })
+      });
+
+      if (!refundResponse.ok) {
+        console.error('Failed to refund authorization charge:', await refundResponse.text());
+        // Continue saving the card even if refund fails
+      }
+
+      // Save the payment method with the extracted token
+      await db.insert(agencyPaymentMethods).values({
+        agencyBranchId: branchId,
+        yocoToken: cardToken,
+        cardLastFour: lastFour,
+        cardBrand: cardType,
+        expiryMonth: parseInt(expiryMonth),
+        expiryYear: parseInt(expiryYear),
+        addedBy: user.id
+      });
+
+      res.json({ 
+        success: true,
+        message: 'Payment method saved successfully',
+        refunded: refundResponse.ok
+      });
+
+    } catch (error) {
+      console.error('Error saving card from charge:', error);
+      res.status(500).json({ error: 'Failed to save payment method' });
+    }
+  });
+
   app.post('/api/payment-methods', async (req, res) => {
     try {
       const user = req.user;

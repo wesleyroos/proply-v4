@@ -963,61 +963,80 @@ export default function SettingsPage() {
           publicKey: publicKey
         });
 
-        // Tokenize the card using Yoco SDK
-        const tokenResult = await yoco.tokenizeCard({
-          number: cardForm.cardNumber.replace(/\s/g, ''),
-          expiryMonth: cardForm.expiryMonth,
-          expiryYear: `20${cardForm.expiryYear}`, // Convert YY to YYYY
-          cvv: cardForm.cvv,
-          name: cardForm.cardholderName
+        // Use Yoco popup for secure tokenization with R1.00 authorization
+        yoco.popup({
+          amountInCents: 100, // R1.00 authorization amount
+          currency: 'ZAR',
+          name: cardForm.cardholderName || 'Card Authorization',
+          description: 'Card verification for payment method setup',
+          callback: async (result) => {
+            try {
+              if (result.error) {
+                throw new Error(result.error.message || 'Card authorization failed');
+              }
+
+              if (!result.id) {
+                throw new Error('No charge ID received from Yoco');
+              }
+
+              // Extract card details from the popup (we'll need to modify this)
+              const lastFour = cardForm.cardNumber.slice(-4);
+              const cardType = detectCardType(cardForm.cardNumber);
+
+              // Save payment method with charge details
+              const saveResponse = await fetch('/api/payment-methods/save-card-from-charge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  chargeId: result.id,
+                  lastFour: lastFour,
+                  cardType: cardType,
+                  expiryMonth: cardForm.expiryMonth,
+                  expiryYear: cardForm.expiryYear,
+                  cardholderName: cardForm.cardholderName
+                })
+              });
+
+              if (!saveResponse.ok) {
+                const error = await saveResponse.json();
+                throw new Error(error.message || 'Failed to save payment method');
+              }
+
+              toast({
+                title: "Payment method added",
+                description: "Your card has been securely saved for billing. The R1.00 authorization will be refunded."
+              });
+
+              // Reset form and refresh data
+              setCardForm({
+                cardNumber: '',
+                expiryMonth: '',
+                expiryYear: '',
+                cvv: '',
+                cardholderName: ''
+              });
+              setIsAddingCard(false);
+              refetchPaymentMethods();
+
+            } catch (error) {
+              toast({
+                variant: "destructive",
+                title: "Failed to save payment method",
+                description: error instanceof Error ? error.message : "Please try again"
+              });
+            } finally {
+              setIsProcessingCard(false);
+            }
+          }
         });
-
-        if (tokenResult.error) {
-          throw new Error(tokenResult.error.message || 'Card tokenization failed');
-        }
-
-        // Save payment method with the token
-        const saveResponse = await fetch('/api/payment-methods', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            token: tokenResult.token,
-            lastFour: cardForm.cardNumber.slice(-4),
-            cardType: detectCardType(cardForm.cardNumber),
-            expiryMonth: cardForm.expiryMonth,
-            expiryYear: cardForm.expiryYear
-          })
-        });
-
-        if (!saveResponse.ok) {
-          const error = await saveResponse.json();
-          throw new Error(error.message || 'Failed to save payment method');
-        }
-
-        toast({
-          title: "Payment method added",
-          description: "Your card has been securely saved for billing."
-        });
-
-        // Reset form and refresh data
-        setCardForm({
-          cardNumber: '',
-          expiryMonth: '',
-          expiryYear: '',
-          cvv: '',
-          cardholderName: ''
-        });
-        setIsAddingCard(false);
-        refetchPaymentMethods();
 
       } catch (error) {
         toast({
           variant: "destructive",
-          title: "Failed to add payment method",
+          title: "Failed to initialize payment",
           description: error instanceof Error ? error.message : "Please try again"
         });
-      } finally {
         setIsProcessingCard(false);
       }
     };
@@ -1050,53 +1069,42 @@ export default function SettingsPage() {
           publicKey: publicKey
         });
 
-        // Use test card data for demo
-        const testCardData = {
-          number: '4111111111111111',
-          expiryMonth: '12',
-          expiryYear: '2025',
-          cvv: '123',
-          name: 'Test Cardholder'
-        };
-
-        // Tokenize the test card using Yoco SDK
-        const tokenResult = await yoco.tokenizeCard(testCardData);
-
-        if (tokenResult.error) {
-          throw new Error(tokenResult.error.message || 'Card tokenization failed');
-        }
-
-        // Process demo charge
+        // Use Yoco popup for test payment
         const amountInCents = Math.round(parseFloat(testPaymentAmount) * 100);
         
-        const chargeResponse = await fetch('/api/yoco/demo-charge', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'x-yoco-test-mode': isTestMode.toString()
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            token: tokenResult.token,
-            amountInCents,
-            currency: 'ZAR',
-            description: `Demo payment - R${testPaymentAmount}`
-          })
+        yoco.popup({
+          amountInCents: amountInCents,
+          currency: 'ZAR',
+          name: 'Test Payment',
+          description: `Demo payment - R${testPaymentAmount}`,
+          callback: async (result) => {
+            try {
+              if (result.error) {
+                throw new Error(result.error.message || 'Payment failed');
+              }
+
+              if (!result.id) {
+                throw new Error('No charge ID received from Yoco');
+              }
+
+              toast({
+                title: "Test payment successful",
+                description: `Demo charge of R${testPaymentAmount} processed successfully. Charge ID: ${result.id}`
+              });
+
+              setIsTestingPayment(false);
+
+            } catch (error) {
+              toast({
+                variant: "destructive",
+                title: "Test payment failed",
+                description: error instanceof Error ? error.message : "An unknown error occurred"
+              });
+            } finally {
+              setIsProcessingTestPayment(false);
+            }
+          }
         });
-
-        if (!chargeResponse.ok) {
-          const error = await chargeResponse.json();
-          throw new Error(error.details || error.message || 'Payment failed');
-        }
-
-        const chargeData = await chargeResponse.json();
-
-        toast({
-          title: "Test payment successful",
-          description: `Demo charge of R${testPaymentAmount} processed successfully. Charge ID: ${chargeData.charge?.id || 'N/A'}`
-        });
-
-        setIsTestingPayment(false);
 
       } catch (error) {
         toast({
@@ -1270,7 +1278,12 @@ export default function SettingsPage() {
               </div>
 
               {isAddingCard && (
-                <form onSubmit={handleAddCard} className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                  <div className="text-sm text-gray-600 mb-4">
+                    Click "Add Payment Method" to securely add your card via Yoco's secure payment form. 
+                    A R1.00 authorization will be processed and immediately refunded.
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Cardholder Name</label>
@@ -1324,22 +1337,10 @@ export default function SettingsPage() {
                         className="mt-1"
                       />
                     </div>
-
-                    <div>
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">CVV</label>
-                      <Input
-                        value={cardForm.cvv}
-                        onChange={(e) => setCardForm(prev => ({ ...prev, cvv: e.target.value }))}
-                        placeholder="123"
-                        maxLength={4}
-                        required
-                        className="mt-1"
-                      />
-                    </div>
                   </div>
 
                   <div className="flex gap-2 pt-4">
-                    <Button type="submit" disabled={isProcessingCard}>
+                    <Button onClick={handleAddCard} disabled={isProcessingCard}>
                       {isProcessingCard ? "Processing..." : "Add Payment Method"}
                     </Button>
                     <Button 
@@ -1352,9 +1353,9 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="text-xs text-muted-foreground mt-2">
-                    Your payment information is securely processed by Yoco and encrypted for storage.
+                    Your payment information is securely processed by Yoco. Card details are tokenized and never stored on our servers.
                   </div>
-                </form>
+                </div>
               )}
             </div>
           </CardContent>

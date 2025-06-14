@@ -5,19 +5,23 @@ declare global {
 }
 
 interface YocoSDKInstance {
-  tokenizeCard(cardData: {
-    number: string;
-    expiryMonth: string;
-    expiryYear: string;
-    cvv: string;
-    name: string;
-  }): Promise<{
-    token?: string;
-    error?: {
-      message: string;
-      code?: string;
-    };
-  }>;
+  popup(config: {
+    amountInCents: number;
+    currency: string;
+    name?: string;
+    description?: string;
+    callback?: (result: YocoResult) => void;
+  }): void;
+}
+
+interface YocoResult {
+  id?: string;
+  token?: string;
+  error?: {
+    message: string;
+    code?: string;
+  };
+  status?: string;
 }
 
 export {};
