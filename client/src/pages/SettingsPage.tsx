@@ -54,17 +54,6 @@ import {
   Clock,
   BarChart3
 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 
@@ -1213,22 +1202,24 @@ export default function SettingsPage() {
         </Card>
 
         {/* Delete Confirmation Modal */}
-        <AlertDialog open={deleteConfirmModal.open} onOpenChange={(open) => setDeleteConfirmModal({ open, methodId: null })}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Remove Payment Method</AlertDialogTitle>
-              <AlertDialogDescription>
+        <Dialog open={deleteConfirmModal.open} onOpenChange={(open) => setDeleteConfirmModal({ open, methodId: null })}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Remove Payment Method</DialogTitle>
+              <DialogDescription>
                 Are you sure you want to remove this payment method? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={removePaymentMethod} className="bg-red-600 hover:bg-red-700">
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteConfirmModal({ open: false, methodId: null })}>
+                Cancel
+              </Button>
+              <Button onClick={removePaymentMethod} className="bg-red-600 hover:bg-red-700">
                 Remove
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   };
