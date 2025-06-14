@@ -10,7 +10,6 @@ interface YocoSDKInstance {
     currency: string;
     name?: string;
     description?: string;
-    displayMethod?: string;
     callback?: (result: YocoResult) => void;
   }): void;
 }
@@ -23,6 +22,18 @@ interface YocoResult {
     code?: string;
   };
   status?: string;
+  amountInCents?: number;
+  currency?: string;
+  createdDate?: string;
+  source?: {
+    type: string;
+    gatewayToken: string;
+  };
+}
+
+interface YocoError {
+  message: string;
+  code?: string;
 }
 
 export {};

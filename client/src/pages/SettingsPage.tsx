@@ -959,7 +959,7 @@ export default function SettingsPage() {
         const { publicKey } = await publicKeyResponse.json();
 
         // Initialize Yoco SDK with the correct public key
-        const yoco = new window.YocoSDK({
+        const yoco = window.YocoSDK.create({
           publicKey: publicKey
         });
 
@@ -969,17 +969,13 @@ export default function SettingsPage() {
         }
 
         // Use Yoco popup for secure tokenization with R1.00 authorization
-        yoco.popup({
+        yoco.create('popup', {
           amountInCents: 100, // R1.00 authorization amount
           currency: 'ZAR',
           name: cardForm.cardholderName,
           description: 'Card verification for payment method setup',
-          callback: async (result) => {
+          successCallback: async (result: YocoResult) => {
             try {
-              if (result.error) {
-                throw new Error(result.error.message || 'Card authorization failed');
-              }
-
               if (!result.id) {
                 throw new Error('No charge ID received from Yoco');
               }
