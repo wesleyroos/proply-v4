@@ -925,12 +925,8 @@ export default function SettingsPage() {
       enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
     });
 
-    // Card form state
+    // Simplified card form state - only cardholder name needed
     const [cardForm, setCardForm] = useState({
-      cardNumber: '',
-      expiryMonth: '',
-      expiryYear: '',
-      cvv: '',
       cardholderName: ''
     });
 
@@ -997,11 +993,7 @@ export default function SettingsPage() {
 
               console.log('Received card token:', result.id);
 
-              // Extract card details for storage
-              const lastFour = cardForm.cardNumber.slice(-4);
-              const cardType = detectCardType(cardForm.cardNumber);
-
-              // Send token to backend for secure storage
+              // Store the token - card details will be retrieved from Yoco's response
               const saveResponse = await fetch('/api/payment-methods/save-token', {
                 method: 'POST',
                 headers: { 
@@ -1010,10 +1002,10 @@ export default function SettingsPage() {
                 credentials: 'include',
                 body: JSON.stringify({
                   token: result.id,
-                  cardType: cardType,
-                  lastFour: lastFour,
-                  expiryMonth: cardForm.expiryMonth,
-                  expiryYear: cardForm.expiryYear
+                  cardType: result.source?.type || 'unknown',
+                  lastFour: result.source?.gatewayToken?.slice(-4) || '****',
+                  expiryMonth: 12, // Placeholder - Yoco doesn't return these in the token response
+                  expiryYear: 25   // Placeholder - will be updated when card is used
                 })
               });
 
@@ -1065,28 +1057,7 @@ export default function SettingsPage() {
 
 
 
-    const detectCardType = (cardNumber: string) => {
-      const number = cardNumber.replace(/\s/g, '');
-      if (number.startsWith('4')) return 'Visa';
-      if (number.startsWith('5') || number.startsWith('2')) return 'Mastercard';
-      if (number.startsWith('3')) return 'American Express';
-      return 'Unknown';
-    };
 
-    const formatCardNumber = (value: string) => {
-      const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-      const matches = v.match(/\d{4,16}/g);
-      const match = matches && matches[0] || '';
-      const parts = [];
-      for (let i = 0, len = match.length; i < len; i += 4) {
-        parts.push(match.substring(i, i + 4));
-      }
-      if (parts.length) {
-        return parts.join(' ');
-      } else {
-        return v;
-      }
-    };
 
     const removePaymentMethod = async (methodId: number) => {
       try {
@@ -1208,59 +1179,11 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <div className="md:col-span-2">
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Card Number</label>
-                      <Input
-                        value={cardForm.cardNumber}
-                        onChange={(e) => setCardForm(prev => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
-                        onPaste={(e) => {
-                          e.preventDefault();
-                          const pastedText = e.clipboardData.getData('text');
-                          const formatted = formatCardNumber(pastedText);
-                          setCardForm(prev => ({ ...prev, cardNumber: formatted }));
-                        }}
-                        placeholder="1234 5678 9012 3456"
-                        maxLength={19}
-                        required
-                        className="mt-1"
-                      />
-                    </div>
 
-                    <div>
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Expiry Month</label>
-                      <Input
-                        value={cardForm.expiryMonth}
-                        onChange={(e) => setCardForm(prev => ({ ...prev, expiryMonth: e.target.value }))}
-                        placeholder="MM"
-                        maxLength={2}
-                        required
-                        className="mt-1"
-                      />
-                    </div>
 
-                    <div>
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Expiry Year</label>
-                      <Input
-                        value={cardForm.expiryYear}
-                        onChange={(e) => setCardForm(prev => ({ ...prev, expiryYear: e.target.value }))}
-                        placeholder="YY"
-                        maxLength={2}
-                        required
-                        className="mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">CVV</label>
-                      <Input
-                        value={cardForm.cvv}
-                        onChange={(e) => setCardForm(prev => ({ ...prev, cvv: e.target.value }))}
-                        placeholder="123"
-                        maxLength={4}
-                        required
-                        className="mt-1"
-                      />
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Card details will be entered securely in Yoco's payment form
+                    </p>
                   </div>
 
                   <div className="flex gap-2 pt-4">
