@@ -46,6 +46,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AddAgencyModal } from "@/components/AddAgencyModal";
 import { AgencyLogoUpload } from "@/components/AgencyLogoUpload";
 import { AgencyStatsModal } from "@/components/AgencyStatsModal";
+import { AgencyDetailModal } from "@/components/AgencyDetailModal";
 
 interface Agency {
   id: string;
@@ -90,6 +91,8 @@ export function ControlPanel() {
   const queryClient = useQueryClient();
   const [statsModalOpen, setStatsModalOpen] = useState(false);
   const [selectedAgencyName, setSelectedAgencyName] = useState<string>("");
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
 
   // Fetch agencies data
   const { data: agenciesData, isLoading, error } = useQuery<AgenciesData>({
@@ -312,79 +315,16 @@ export function ControlPanel() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            className="h-8 w-8 p-0"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          
-                          <DropdownMenuItem
-                            disabled={syncMutation.isPending || agency.status === 'syncing'}
-                            onClick={() => syncMutation.mutate({ agencyId: agency.id })}
-                          >
-                            <RefreshCcw className="mr-2 h-4 w-4" />
-                            Quick Sync
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuItem
-                            disabled={syncMutation.isPending || agency.status === 'syncing'}
-                            onClick={() => syncMutation.mutate({ agencyId: agency.id, forceFullSync: true })}
-                          >
-                            <Database className="mr-2 h-4 w-4" />
-                            Full Sync
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedAgencyName(agency.franchiseName || agency.name);
-                              setStatsModalOpen(true);
-                            }}
-                          >
-                            <BarChart3 className="mr-2 h-4 w-4" />
-                            View Stats
-                          </DropdownMenuItem>
-                          
-                          {agency.mainBranchId && (
-                            <DropdownMenuItem asChild>
-                              <div className="flex items-center">
-                                <Upload className="mr-2 h-4 w-4" />
-                                <AgencyLogoUpload
-                                  agencyId={parseInt(agency.mainBranchId)}
-                                  agencyName={agency.franchiseName || agency.name}
-                                  currentLogoUrl={agency.logoUrl}
-                                />
-                              </div>
-                            </DropdownMenuItem>
-                          )}
-                          
-                          <DropdownMenuSeparator />
-                          
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              console.log('Billing dropdown clicked for agency:', agency.id, 'current status:', agency.billingEnabled);
-                              billingToggleMutation.mutate({ 
-                                agencyId: agency.id, 
-                                enabled: !agency.billingEnabled 
-                              });
-                            }}
-                            disabled={billingToggleMutation.isPending}
-                          >
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            <span>{agency.billingEnabled ? 'Disable' : 'Enable'} Billing</span>
-                            {agency.billingEnabled && (
-                              <Badge variant="secondary" className="ml-auto">Enabled</Badge>
-                            )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedAgency(agency);
+                          setDetailModalOpen(true);
+                        }}
+                      >
+                        Manage
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -491,6 +431,20 @@ export function ControlPanel() {
         isOpen={statsModalOpen}
         onClose={() => setStatsModalOpen(false)}
         agencyName={selectedAgencyName}
+      />
+
+      {/* Agency Detail Modal */}
+      <AgencyDetailModal
+        agency={selectedAgency}
+        isOpen={detailModalOpen}
+        onClose={() => {
+          setDetailModalOpen(false);
+          setSelectedAgency(null);
+        }}
+        onStatsClick={(agencyName) => {
+          setSelectedAgencyName(agencyName);
+          setStatsModalOpen(true);
+        }}
       />
     </div>
   );

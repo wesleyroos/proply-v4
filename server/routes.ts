@@ -2366,6 +2366,60 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get payment methods for a specific agency (for admin control panel)
+  app.get('/api/agencies/:agencyId/payment-methods', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'system_admin' && user.role !== 'admin')) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { agencyId } = req.params;
+      
+      // Find the agency branch by slug
+      const agencyBranch = await db.query.agencyBranches.findFirst({
+        where: eq(agencyBranches.slug, agencyId)
+      });
+
+      if (!agencyBranch) {
+        return res.status(404).json({ error: 'Agency not found' });
+      }
+
+      // Fetch payment methods for this branch
+      const paymentMethods = await db.query.agencyPaymentMethods.findMany({
+        where: eq(agencyPaymentMethods.agencyBranchId, agencyBranch.id),
+        with: {
+          addedByUser: {
+            columns: {
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          }
+        }
+      });
+
+      // Transform the data to match the expected format
+      const transformedMethods = paymentMethods.map(method => ({
+        id: method.id,
+        cardBrand: method.cardBrand,
+        cardLastFour: method.cardLastFour,
+        expiryMonth: method.expiryMonth,
+        expiryYear: method.expiryYear,
+        isPrimary: false, // We can add this logic later if needed
+        addedAt: method.createdAt,
+        addedBy: method.addedByUser ? 
+          `${method.addedByUser.firstName} ${method.addedByUser.lastName}` : 
+          'Unknown'
+      }));
+
+      res.json({ paymentMethods: transformedMethods });
+    } catch (error) {
+      console.error('Error fetching agency payment methods:', error);
+      res.status(500).json({ error: 'Failed to fetch payment methods' });
+    }
+  });
+
   // Payment Methods API Routes for Agency Billing
   app.get('/api/payment-methods', async (req, res) => {
     try {
