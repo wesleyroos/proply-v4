@@ -91,7 +91,8 @@ This is a property investment analysis platform that helps users compare short-t
 - Docker containerization for Cloud Run deployment
 
 ## Changelog
-- June 14, 2025. Initial setup
+- June 14, 2025: Initial setup
+- June 14, 2025: Completed Yoco payment integration with secure tokenization, R2.00 authorization, confirmation modals, and proper database storage
 
 ## User Preferences
 

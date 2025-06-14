@@ -1116,7 +1116,7 @@ export default function SettingsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => confirmDeletePaymentMethod(method.id)}
+                      onClick={() => setDeleteConfirmModal({ open: true, methodId: method.id })}
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
