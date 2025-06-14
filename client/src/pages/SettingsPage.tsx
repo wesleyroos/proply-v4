@@ -963,11 +963,16 @@ export default function SettingsPage() {
           publicKey: publicKey
         });
 
+        // Validate form fields
+        if (!cardForm.cardholderName || !cardForm.cardNumber || !cardForm.expiryMonth || !cardForm.expiryYear || !cardForm.cvv) {
+          throw new Error('Please fill in all card details');
+        }
+
         // Use Yoco popup for secure tokenization with R1.00 authorization
         yoco.popup({
           amountInCents: 100, // R1.00 authorization amount
           currency: 'ZAR',
-          name: cardForm.cardholderName || 'Card Authorization',
+          name: cardForm.cardholderName,
           description: 'Card verification for payment method setup',
           callback: async (result) => {
             try {
@@ -979,14 +984,17 @@ export default function SettingsPage() {
                 throw new Error('No charge ID received from Yoco');
               }
 
-              // Extract card details from the popup (we'll need to modify this)
+              // Extract card details from the form
               const lastFour = cardForm.cardNumber.slice(-4);
               const cardType = detectCardType(cardForm.cardNumber);
 
               // Save payment method with charge details
               const saveResponse = await fetch('/api/payment-methods/save-card-from-charge', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'x-yoco-test-mode': isTestMode.toString()
+                },
                 credentials: 'include',
                 body: JSON.stringify({
                   chargeId: result.id,
@@ -1333,6 +1341,18 @@ export default function SettingsPage() {
                         onChange={(e) => setCardForm(prev => ({ ...prev, expiryYear: e.target.value }))}
                         placeholder="YY"
                         maxLength={2}
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">CVV</label>
+                      <Input
+                        value={cardForm.cvv}
+                        onChange={(e) => setCardForm(prev => ({ ...prev, cvv: e.target.value }))}
+                        placeholder="123"
+                        maxLength={4}
                         required
                         className="mt-1"
                       />

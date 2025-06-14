@@ -2551,8 +2551,18 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Get charge details from Yoco to extract token
-      const isTestMode = req.headers['x-yoco-test-mode'] === 'true' || req.query.test === 'true';
-      const secretKey = isTestMode 
+      const isTestMode = req.headers['x-yoco-test-mode'] === 'true' || req.query.test === 'true' || localStorage?.getItem('yoco_test_mode') !== 'false';
+      
+      // Get Yoco test mode from database system settings if not provided in headers
+      let finalTestMode = isTestMode;
+      if (!isTestMode) {
+        const yocoTestModeSetting = await db.query.systemSettings.findFirst({
+          where: eq(systemSettings.key, 'yoco_test_mode')
+        });
+        finalTestMode = yocoTestModeSetting?.value === 'true';
+      }
+      
+      const secretKey = finalTestMode 
         ? process.env.YOCO_TEST_SECRET_KEY 
         : process.env.YOCO_SECRET_KEY;
 
