@@ -126,13 +126,32 @@ export class PayFastService {
       subscription_type: '2' // Ad-hoc subscription
     };
 
+    // Generate signature with the exact data that will be sent
     const signature = this.generateSignature(data);
-    const params = new URLSearchParams({ ...data, signature });
-
-    const tokenizeUrl = this.config.isTestMode
-      ? `https://sandbox.payfast.co.za/eng/process?${params.toString()}`
-      : `https://www.payfast.co.za/eng/process?${params.toString()}`;
-
+    
+    // Create URL manually to ensure proper encoding
+    const baseUrl = this.config.isTestMode
+      ? 'https://sandbox.payfast.co.za/eng/process'
+      : 'https://www.payfast.co.za/eng/process';
+    
+    // Build query string manually to match signature generation
+    const sortedKeys = Object.keys(data).sort();
+    let queryString = '';
+    
+    for (const key of sortedKeys) {
+      const value = data[key];
+      if (value !== '' && value !== null && value !== undefined) {
+        queryString += `${key}=${encodeURIComponent(value.toString().trim())}&`;
+      }
+    }
+    
+    // Add signature to query string
+    queryString += `signature=${signature}`;
+    
+    const tokenizeUrl = `${baseUrl}?${queryString}`;
+    
+    console.log('Final PayFast tokenize URL:', tokenizeUrl);
+    
     return tokenizeUrl;
   }
 
