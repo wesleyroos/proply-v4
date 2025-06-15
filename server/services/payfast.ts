@@ -44,32 +44,34 @@ export class PayFastService {
   private baseUrl: string;
 
   constructor(isTestMode: boolean = false) {
+    // Use live PayFast credentials for better reliability
+    const useLive = true; // Force live mode
+    
     this.config = {
-      merchantId: isTestMode 
-        ? process.env.PAYFAST_TEST_MERCHANT_ID!
-        : process.env.PAYFAST_MERCHANT_ID!,
-      merchantKey: isTestMode 
-        ? process.env.PAYFAST_TEST_MERCHANT_KEY!
-        : process.env.PAYFAST_MERCHANT_KEY!,
-      passphrase: isTestMode 
-        ? process.env.PAYFAST_TEST_PASSPHRASE!
-        : process.env.PAYFAST_PASSPHRASE!,
-      isTestMode
+      merchantId: useLive 
+        ? process.env.PAYFAST_MERCHANT_ID!
+        : process.env.PAYFAST_TEST_MERCHANT_ID!,
+      merchantKey: useLive 
+        ? process.env.PAYFAST_MERCHANT_KEY!
+        : process.env.PAYFAST_TEST_MERCHANT_KEY!,
+      passphrase: useLive 
+        ? process.env.PAYFAST_PASSPHRASE!
+        : process.env.PAYFAST_TEST_PASSPHRASE!,
+      isTestMode: false // Always use live mode
     };
 
-    console.log('PayFast Service Config:', {
+    console.log('PayFast Service Config (LIVE MODE):', {
       merchantId: this.config.merchantId,
       merchantKey: this.config.merchantKey?.substring(0, 5) + '***',
       passphrase: this.config.passphrase?.substring(0, 5) + '***',
       isTestMode: this.config.isTestMode
     });
 
-    this.baseUrl = isTestMode 
-      ? 'https://api.payfast.co.za' 
-      : 'https://api.payfast.co.za';
+    // Use live PayFast URLs
+    this.baseUrl = 'https://api.payfast.co.za';
 
     if (!this.config.merchantId || !this.config.merchantKey || !this.config.passphrase) {
-      throw new Error(`Missing PayFast ${isTestMode ? 'test' : 'live'} credentials`);
+      throw new Error('Missing PayFast live credentials');
     }
   }
 
@@ -112,9 +114,8 @@ export class PayFastService {
     // Generate signature and URL parameters using identical encoding
     const { signature, encodedParams } = this.generateSignatureAndParams(data);
     
-    const baseUrl = this.config.isTestMode
-      ? 'https://sandbox.payfast.co.za/eng/process'
-      : 'https://www.payfast.co.za/eng/process';
+    // Always use live PayFast for production reliability
+    const baseUrl = 'https://www.payfast.co.za/eng/process';
     
     // Use the exact same encoded parameters that were used for signature generation
     const tokenizeUrl = `${baseUrl}?${encodedParams}&signature=${signature}`;
