@@ -3535,8 +3535,8 @@ export function registerRoutes(app: Express): Server {
       const returnUrl = `${baseUrl}/payment-setup-success`;
       const cancelUrl = `${baseUrl}/payment-setup-cancel`;
       
-      // Create tokenization URL
-      const tokenizeUrl = await payfast.createTokenizeUrl(returnUrl, cancelUrl, 5.00);
+      // Create tokenization URL (amount 0 for tokenization)
+      const tokenizeUrl = await payfast.createTokenizeUrl(returnUrl, cancelUrl, 0);
       
       res.json({ 
         success: true,
@@ -3547,6 +3547,48 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error creating PayFast tokenize URL:', error);
       res.status(500).json({ error: 'Failed to create tokenization URL' });
+    }
+  });
+
+  // PayFast webhook/notification endpoint
+  app.post('/api/payfast/notify', async (req, res) => {
+    try {
+      console.log('PayFast webhook received:', req.body);
+      
+      // PayFast sends webhook data as form-encoded
+      const webhookData = req.body;
+      
+      // Import PayFast service
+      const { PayFastService } = await import('./services/payfast');
+      const payfast = new PayFastService(true); // Use test mode for webhook validation
+      
+      // Validate webhook signature
+      const receivedSignature = webhookData.signature;
+      delete webhookData.signature; // Remove signature from data before validation
+      
+      const isValid = payfast.validateWebhookSignature(webhookData, receivedSignature);
+      
+      if (!isValid) {
+        console.error('Invalid PayFast webhook signature');
+        return res.status(400).json({ error: 'Invalid signature' });
+      }
+
+      // Handle tokenization success
+      if (webhookData.payment_status === 'COMPLETE' && webhookData.token) {
+        console.log('PayFast tokenization successful, token:', webhookData.token);
+        
+        // Store the token in the database
+        // This would typically be associated with the user who initiated the tokenization
+        // For now, just log the success
+        console.log('Token received from PayFast:', webhookData.token);
+      }
+
+      // Respond to PayFast
+      res.status(200).send('OK');
+
+    } catch (error) {
+      console.error('Error processing PayFast webhook:', error);
+      res.status(500).json({ error: 'Failed to process webhook' });
     }
   });
 

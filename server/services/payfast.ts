@@ -67,31 +67,34 @@ export class PayFastService {
   }
 
   private generateSignature(data: Record<string, any>): string {
-    // Create parameter string for signature - PayFast specific format
-    // IMPORTANT: Use raw values (not URL encoded) for signature generation
-    const sortedKeys = Object.keys(data).sort();
-    let paramString = '';
-    
-    for (const key of sortedKeys) {
-      const value = data[key];
-      if (value !== '' && value !== null && value !== undefined) {
-        // Use raw values for signature generation
-        paramString += `${key}=${value.toString().trim()}&`;
+    // PayFast official signature generation - exact implementation
+    // Arrange the array by key alphabetically
+    let ordered_data: Record<string, any> = {};
+    Object.keys(data).sort().forEach(key => {
+      ordered_data[key] = data[key];
+    });
+    data = ordered_data;
+
+    // Create the get string
+    let getString = '';
+    for (let key in data) {
+      if (data[key] !== '' && data[key] !== null && data[key] !== undefined) {
+        getString += key + '=' + encodeURIComponent(data[key]).replace(/%20/g, '+') + '&';
       }
     }
+
+    // Remove the last '&'
+    getString = getString.substring(0, getString.length - 1);
     
-    // Remove trailing &
-    paramString = paramString.slice(0, -1);
-    
-    // Add passphrase if provided (raw value for signature)
-    if (this.config.passphrase && this.config.passphrase.trim()) {
-      paramString += `&passphrase=${this.config.passphrase.trim()}`;
+    // Add passphrase if provided
+    if (this.config.passphrase) {
+      getString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
     }
-    
-    console.log('PayFast signature string (raw values):', paramString);
-    
-    // Generate MD5 hash
-    const signature = crypto.createHash('md5').update(paramString).digest('hex');
+
+    console.log('PayFast signature string (official format):', getString);
+
+    // Hash the data and create the signature
+    const signature = crypto.createHash("md5").update(getString).digest("hex");
     console.log('PayFast generated signature:', signature);
     
     return signature;
@@ -113,21 +116,21 @@ export class PayFastService {
     };
   }
 
-  async createTokenizeUrl(returnUrl: string, cancelUrl: string, amount: number = 5.00): Promise<string> {
+  async createTokenizeUrl(returnUrl: string, cancelUrl: string, amount: number = 0): Promise<string> {
+    // For tokenization, amount should be 0 as per PayFast docs
     const data = {
       merchant_id: this.config.merchantId,
       merchant_key: this.config.merchantKey,
       return_url: returnUrl,
       cancel_url: cancelUrl,
       notify_url: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payfast/notify`,
-      amount: amount.toFixed(2),
-      item_name: 'Payment Method Setup',
+      amount: '0.00', // Tokenization requires 0 amount
+      item_name: 'Card-on-file',
       item_description: 'Setup payment method for agency billing',
-      payment_method: 'cc',
-      subscription_type: '2' // Ad-hoc subscription
+      subscription_type: '2' // Ad-hoc subscription for tokenization
     };
 
-    // Generate signature with the exact data that will be sent
+    // Generate signature using the official PayFast format
     const signature = this.generateSignature(data);
     
     // Create URL manually to ensure proper encoding
@@ -154,6 +157,14 @@ export class PayFastService {
     console.log('Final PayFast tokenize URL:', tokenizeUrl);
     
     return tokenizeUrl;
+  }
+
+
+
+  validateWebhookSignature(data: Record<string, any>, receivedSignature: string): boolean {
+    // Generate signature for webhook validation using the same method as forms
+    const calculatedSignature = this.generateSignature(data);
+    return calculatedSignature === receivedSignature;
   }
 
   async chargeToken(token: string, request: PayFastAdHocChargeRequest): Promise<PayFastAdHocChargeResponse> {

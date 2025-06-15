@@ -1,0 +1,53 @@
+Authentication
+Data integrity is ensured through a signature together with passphrase passed in the header of all requests.
+
+
+Merchant Passphrase
+The passphrase is used to salt the signature (as described below).
+The passphrase is considered a secret between the merchant and Payfast and should never be sent or given out.
+
+The merchant may set their own passphrase by:
+
+Login to Payfast using their merchant credentials.
+Clicking on "Settings", and then "Edit" under the Security Pass Phrase section.
+Inputting the desired passphrase and click "Update"
+A passphrase must be set by the merchant before any API interaction is allowed
+Signature Generation:
+A generated MD5 signature must be passed in the header of the request and this hash is used to ensure the integrity of the data transfer.
+
+Signature generation steps
+
+Sort all the submitted variables (header, body, query string parameters and passphrase) in alphabetical order.
+NOTE: When in test mode the testing parameter should be excluded from the signature.
+Create a string by concatenating all the non-empty, sorted variables, with ‘&’ used as a separator.
+Each value should also be urlencoded (eg. “merchant-id=10000100&passphrase=​passphrase&..&version=v1”)
+Make sure there is no trailing '&'
+MD5 hash your string.
+Variable order: The pairs must be listed in alphabetical order eg. email_address=john@doe.com&​name_first=John&name_last=Doe
+* Do not use the custom payment signature format, which requires pairs to be listed in the order in which they appear in the documentation!
+Signature generation
+Node.js
+const crypto = require("crypto");
+
+// Signature generation
+const generateAPISignature = (data, passPhrase = null) => {
+    // Arrange the array by key alphabetically for API calls
+    let ordered_data = {};
+    Object.keys(data).sort().forEach(key => {
+        ordered_data[key] = data[key];
+    });
+    data = ordered_data;
+
+    // Create the get string
+    let getString = '';
+    for (let key in data) {
+        getString += key + '=' + encodeURIComponent(data[key]).replace(/%20/g,'+') + '&';
+    }
+
+    // Remove the last '&'
+    getString = getString.substring(0, getString.length - 1);
+    if (passPhrase !== null) {getString +=`&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`;}
+
+    // Hash the data and create the signature
+    return crypto.createHash("md5").update(getString).digest("hex");
+} 
