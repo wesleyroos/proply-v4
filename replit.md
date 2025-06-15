@@ -58,8 +58,9 @@ This is a property investment analysis platform that helps users compare short-t
 ## External Dependencies
 
 ### Payment Processing
-- **Yoco** payment gateway for South African market
+- **PayFast** payment gateway for South African market with ad-hoc tokenization support
 - Test and live API keys configured for different environments
+- Supports variable monthly billing with tiered pricing structure
 
 ### APIs and Services
 - **Google Maps JavaScript API** for mapping functionality
@@ -94,6 +95,7 @@ This is a property investment analysis platform that helps users compare short-t
 - June 14, 2025: Initial setup
 - June 14, 2025: Completed Yoco payment integration with secure tokenization, R2.00 authorization, confirmation modals, and proper database storage
 - June 15, 2025: Implemented comprehensive automated billing system with tiered pricing structure, monthly scheduling, invoice generation, and transaction tracking
+- June 15, 2025: Migrated from Yoco to PayFast payment gateway due to Yoco's deprecated token charging API. Implemented PayFast ad-hoc tokenization with tiered pricing (1-50: R200, 51-100: R180, 101-150: R160, 151-200: R140, 200+: R140)
 
 ## User Preferences
 

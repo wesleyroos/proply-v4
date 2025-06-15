@@ -173,7 +173,7 @@ async function recordTransaction(
   invoiceId: string, 
   agencyId: string, 
   amount: number, 
-  yocoResponse: YocoChargeResponse,
+  payfastResponse: PayFastChargeResponse,
   success: boolean,
   errorMessage?: string
 ): Promise<void> {
@@ -184,10 +184,10 @@ async function recordTransaction(
     invoiceId,
     agencyId,
     amount: amount.toString(),
-    yocoTransactionId: yocoResponse.id,
-    yocoPaymentId: yocoResponse.id,
+    payfastTransactionId: payfastResponse.data?.pf_payment_id || 'unknown',
+    payfastPaymentId: payfastResponse.data?.pf_payment_id || 'unknown',
     status: success ? 'completed' : 'failed',
-    gatewayResponse: yocoResponse,
+    gatewayResponse: payfastResponse,
     errorMessage,
     processedAt: new Date(),
   });
@@ -230,18 +230,18 @@ async function processAgencyBilling(billing: BillingCalculation, month: number, 
     const invoiceId = await createInvoice(billing, month.toString(), year);
     
     // Charge the card
-    const yocoResponse = await chargeAgencyCard(billing.agencyId, billing.amount, invoiceId);
+    const payfastResponse = await chargeAgencyCard(billing.agencyId, billing.amount, invoiceId);
     
-    const success = yocoResponse.status === 'successful';
+    const success = payfastResponse.code === 200 && payfastResponse.status === 'success';
     
     // Record transaction
     await recordTransaction(
       invoiceId,
       billing.agencyId,
       billing.amount,
-      yocoResponse,
+      payfastResponse,
       success,
-      yocoResponse.failure_reason
+      payfastResponse.message
     );
     
     // Update invoice status
@@ -256,7 +256,7 @@ async function processAgencyBilling(billing: BillingCalculation, month: number, 
       billing.agencyId,
       success,
       billing.amount,
-      yocoResponse.failure_reason
+      payfastResponse.message
     );
     
     console.log(`Billing completed for ${billing.agencyId}: ${success ? 'SUCCESS' : 'FAILED'}`);
@@ -271,7 +271,7 @@ async function processAgencyBilling(billing: BillingCalculation, month: number, 
         invoiceId,
         billing.agencyId,
         billing.amount,
-        { id: 'failed', status: 'failed', amount: billing.amount, currency: 'ZAR', created_date: new Date().toISOString() },
+        { code: 500, status: 'error', message: error instanceof Error ? error.message : 'Unknown error' },
         false,
         error instanceof Error ? error.message : 'Unknown error'
       );
