@@ -37,6 +37,92 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+function TestPaymentForm({ agencyId }: { agencyId: string }) {
+  const [testAmount, setTestAmount] = useState("5.00");
+  const { toast } = useToast();
+  
+  const testPaymentMutation = useMutation({
+    mutationFn: async ({ amount }: { amount: number }) => {
+      const response = await fetch(`/api/admin/agencies/${agencyId}/test-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Test payment failed');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Test Payment Successful",
+        description: `R${testAmount} test charge completed successfully. Transaction ID: ${data.transactionId}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Test Payment Failed",
+        description: error.message || "Failed to process test payment",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleTestPayment = () => {
+    const amount = parseFloat(testAmount);
+    if (amount < 1 || amount > 50) {
+      toast({
+        title: "Invalid Amount",
+        description: "Test amount must be between R1 and R50",
+        variant: "destructive",
+      });
+      return;
+    }
+    testPaymentMutation.mutate({ amount });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="testAmount">Test Amount (ZAR)</Label>
+          <Input
+            id="testAmount"
+            type="number"
+            min="1"
+            max="50"
+            step="0.01"
+            value={testAmount}
+            onChange={(e) => setTestAmount(e.target.value)}
+            placeholder="5.00"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Minimum R1, Maximum R50
+          </p>
+        </div>
+        <div className="flex items-end">
+          <Button
+            onClick={handleTestPayment}
+            disabled={testPaymentMutation.isPending}
+            className="w-full"
+          >
+            {testPaymentMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <CreditCard className="mr-2 h-4 w-4" />
+            Test Payment
+          </Button>
+        </div>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <p className="text-sm text-blue-800">
+          <strong>Note:</strong> This will charge the stored payment method with the test amount. 
+          You can refund this transaction if needed. Use this to verify the payment method works before automated billing.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 interface Agency {
   id: string;
   name: string;
@@ -706,7 +792,7 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                         <span className="text-sm font-medium">Paid</span>
                       </div>
                       <div className="text-2xl font-bold mt-1">
-                        {reportStats.invoices.filter(inv => inv.status === 'paid').length}
+                        {reportStats.invoices.filter((inv: any) => inv.status === 'paid').length}
                       </div>
                     </CardContent>
                   </Card>
@@ -873,7 +959,7 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <TestPayment agencyId={agency.id} />
+                  <TestPaymentForm agencyId={agency.id} />
                 </CardContent>
               </Card>
             )}

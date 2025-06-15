@@ -2454,6 +2454,110 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Test payment for agency
+  app.post('/api/admin/agencies/:agencyId/test-payment', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'system_admin' && user.role !== 'admin')) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { agencyId } = req.params;
+      const { amount } = req.body;
+
+      if (!amount || amount < 1 || amount > 50) {
+        return res.status(400).json({ error: 'Test amount must be between R1 and R50' });
+      }
+
+      // Find the agency branch by slug
+      const agencyBranch = await db.query.agencyBranches.findFirst({
+        where: eq(agencyBranches.slug, agencyId)
+      });
+
+      if (!agencyBranch) {
+        return res.status(404).json({ error: 'Agency not found' });
+      }
+
+      // Get agency payment methods
+      const { agencyPaymentMethods } = await import("@db/schema");
+      const paymentMethods = await db.query.agencyPaymentMethods.findMany({
+        where: eq(agencyPaymentMethods.agencyBranchId, agencyBranch.id)
+      });
+
+      if (paymentMethods.length === 0) {
+        return res.status(400).json({ error: 'No payment methods found for this agency' });
+      }
+
+      // Use the primary payment method or first available
+      const primaryMethod = paymentMethods.find(pm => pm.isPrimary) || paymentMethods[0];
+
+      // Create Yoco payment
+      const timestamp = Date.now().toString();
+      const signature = crypto
+        .createHmac('sha256', import.meta.env.YOCO_WEBHOOK_SECRET!)
+        .update(timestamp)
+        .digest('hex');
+
+      const yocoResponse = await fetch('https://online.yoco.com/v1/charges/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.YOCO_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+          'merchant-id': import.meta.env.YOCO_MERCHANT_ID,
+          'version': '2022-09-01',
+          'timestamp': timestamp,
+          'signature': signature,
+        } as HeadersInit,
+        body: JSON.stringify({
+          token: primaryMethod.yocoToken,
+          amountInCents: Math.round(amount * 100),
+          currency: 'ZAR',
+          metadata: {
+            agencyId,
+            type: 'test_payment',
+            description: `Test payment for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`
+          }
+        })
+      });
+
+      const yocoData = await yocoResponse.json();
+
+      if (!yocoResponse.ok) {
+        console.error('Yoco test payment error:', yocoData);
+        return res.status(400).json({ 
+          error: yocoData.displayMessage || 'Test payment failed' 
+        });
+      }
+
+      // Log the test payment transaction
+      const { agencyBillingTransactions } = await import("@db/schema");
+      await db.insert(agencyBillingTransactions).values({
+        agencyBranchId: agencyBranch.id,
+        amount: amount.toString(),
+        status: 'completed',
+        transactionId: yocoData.id,
+        description: `Test payment - R${amount}`,
+        processedAt: new Date(),
+      });
+
+      console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${yocoData.id}`);
+
+      res.json({
+        success: true,
+        transactionId: yocoData.id,
+        amount,
+        message: 'Test payment completed successfully'
+      });
+
+    } catch (error) {
+      console.error('Error processing test payment:', error);
+      res.status(500).json({ error: 'Failed to process test payment' });
+    }
+  });
+
   // Get report statistics for a specific agency (for admin control panel)
   app.get('/api/agencies/:agencyId/report-stats', async (req, res) => {
     try {
