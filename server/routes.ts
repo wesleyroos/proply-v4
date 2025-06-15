@@ -25,14 +25,12 @@ import {
   agencyInvoices,
   systemSettings,
 } from "@db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gte, lt, sql } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
 import { trackPriceLabsApiCall } from "./utils/pricelabs-tracker";
 import { trackReportGeneration } from "./utils/report-tracker";
-
-import { sql } from "drizzle-orm";
 import { priceLabsUsage, reportGenerations } from "@db/schema";
 
 // Function to track agency report usage for billing
@@ -1994,6 +1992,96 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error updating rental performance:", error);
       res.status(500).json({ error: "Failed to update rental performance" });
+    }
+  });
+
+  // Automated billing management endpoints
+  app.post("/api/admin/trigger-billing", async (req, res) => {
+    try {
+      const { triggerManualBilling } = await import('./billing/automated-billing');
+      await triggerManualBilling();
+      res.json({ success: true, message: "Manual billing triggered successfully" });
+    } catch (error) {
+      console.error("Manual billing failed:", error);
+      res.status(500).json({ error: "Failed to trigger manual billing" });
+    }
+  });
+
+  app.get("/api/admin/billing-preview/:year/:month", async (req, res) => {
+    try {
+      const { year, month } = req.params;
+      const yearNum = parseInt(year);
+      const monthNum = parseInt(month);
+      
+      const startDate = new Date(yearNum, monthNum - 1, 1);
+      const endDate = new Date(yearNum, monthNum, 1);
+      
+      // Get usage data for preview
+      const monthlyUsage = await db
+        .select({
+          agencyId: reportGenerations.agencyId,
+          agencyName: reportGenerations.agencyName,
+          reportCount: sql<number>`COUNT(*)::int`,
+        })
+        .from(reportGenerations)
+        .where(
+          and(
+            gte(reportGenerations.timestamp, startDate),
+            lt(reportGenerations.timestamp, endDate)
+          )
+        )
+        .groupBy(reportGenerations.agencyId, reportGenerations.agencyName);
+
+      // Calculate tiered billing for each agency
+      const billingPreview = monthlyUsage.map(usage => {
+        let amount = 0;
+        let remaining = usage.reportCount;
+        
+        // Tier 1: 1-50 reports at R200 each
+        if (remaining > 0) {
+          const tier1Count = Math.min(remaining, 50);
+          amount += tier1Count * 200;
+          remaining -= tier1Count;
+        }
+        
+        // Tier 2: 51-100 reports at R180 each
+        if (remaining > 0) {
+          const tier2Count = Math.min(remaining, 50);
+          amount += tier2Count * 180;
+          remaining -= tier2Count;
+        }
+        
+        // Tier 3: 101-150 reports at R160 each
+        if (remaining > 0) {
+          const tier3Count = Math.min(remaining, 50);
+          amount += tier3Count * 160;
+          remaining -= tier3Count;
+        }
+        
+        // Tier 4: 151-200 reports at R140 each
+        if (remaining > 0) {
+          const tier4Count = Math.min(remaining, 50);
+          amount += tier4Count * 140;
+          remaining -= tier4Count;
+        }
+        
+        // Tier 5: 200+ reports at R140 each
+        if (remaining > 0) {
+          amount += remaining * 140;
+        }
+        
+        return {
+          agencyId: usage.agencyId,
+          agencyName: usage.agencyName,
+          reportCount: usage.reportCount,
+          amount
+        };
+      });
+
+      res.json({ billingPreview, totalAgencies: billingPreview.length });
+    } catch (error) {
+      console.error("Failed to generate billing preview:", error);
+      res.status(500).json({ error: "Failed to generate billing preview" });
     }
   });
 

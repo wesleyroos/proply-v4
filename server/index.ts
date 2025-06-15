@@ -89,3 +89,6 @@ app.use('/static-assets', express.static('public'));
     process.exit(1);
   }
 })();
+
+// Start automated billing system
+startAutomatedBilling();
