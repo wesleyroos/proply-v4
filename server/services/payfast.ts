@@ -46,16 +46,23 @@ export class PayFastService {
   constructor(isTestMode: boolean = false) {
     this.config = {
       merchantId: isTestMode 
-        ? process.env.PAYFAST_TEST_MERCHANT_ID! 
-        : process.env.PAYFAST_MERCHANT_ID!,
+        ? (import.meta.env.PAYFAST_TEST_MERCHANT_ID || process.env.PAYFAST_TEST_MERCHANT_ID)!
+        : (import.meta.env.PAYFAST_MERCHANT_ID || process.env.PAYFAST_MERCHANT_ID)!,
       merchantKey: isTestMode 
-        ? process.env.PAYFAST_TEST_MERCHANT_KEY! 
-        : process.env.PAYFAST_MERCHANT_KEY!,
+        ? (import.meta.env.PAYFAST_TEST_MERCHANT_KEY || process.env.PAYFAST_TEST_MERCHANT_KEY)!
+        : (import.meta.env.PAYFAST_MERCHANT_KEY || process.env.PAYFAST_MERCHANT_KEY)!,
       passphrase: isTestMode 
-        ? process.env.PAYFAST_TEST_PASSPHRASE! 
-        : process.env.PAYFAST_PASSPHRASE!,
+        ? (import.meta.env.PAYFAST_TEST_PASSPHRASE || process.env.PAYFAST_TEST_PASSPHRASE)!
+        : (import.meta.env.PAYFAST_PASSPHRASE || process.env.PAYFAST_PASSPHRASE)!,
       isTestMode
     };
+
+    console.log('PayFast Service Config:', {
+      merchantId: this.config.merchantId,
+      merchantKey: this.config.merchantKey?.substring(0, 5) + '***',
+      passphrase: this.config.passphrase?.substring(0, 5) + '***',
+      isTestMode: this.config.isTestMode
+    });
 
     this.baseUrl = isTestMode 
       ? 'https://api.payfast.co.za' 
