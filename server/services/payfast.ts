@@ -125,50 +125,29 @@ export class PayFastService {
   }
 
   private generateSignatureAndParams(data: Record<string, any>): { signature: string; encodedParams: string } {
-    console.log('\n=== PAYFAST FORM SIGNATURE DEBUG ===');
-    console.log('1. Input data:', JSON.stringify(data, null, 2));
+    console.log('\n=== PAYFAST OFFICIAL METHOD ===');
     
-    // For tokenization (subscription_type=2), use only core fields for signature
-    // URLs and descriptions might not be needed in signature generation
-    const coreFields: Record<string, any> = {
-      merchant_id: data.merchant_id,
-      merchant_key: data.merchant_key,
-      amount: data.amount,
-      item_name: data.item_name,
-      subscription_type: data.subscription_type
-    };
-    
-    console.log('2. Using core tokenization fields only for signature:');
-    console.log(JSON.stringify(coreFields, null, 2));
-    
-    // Sort keys alphabetically like PayFast's official Node.js code
-    const sortedKeys = Object.keys(coreFields).sort();
-    
-    // Build signature string using PayFast's exact approach
+    // Use PayFast's exact documented approach: ALL fields, alphabetical order, URL encoded
     let signatureString = '';
     let encodedParams = '';
     
-    console.log('3. Processing core parameters in alphabetical order:');
-    for (const key of sortedKeys) {
-      if (coreFields[key] !== undefined && coreFields[key] !== '' && coreFields[key] !== null) {
-        const rawValue = coreFields[key].toString().trim();
-        
-        // For signature: use raw values (no encoding needed for core fields)
-        signatureString += `${key}=${rawValue}&`;
-        
-        console.log(`   ${key}: "${rawValue}" (raw for signature)`);
-      }
-    }
+    // Sort ALL keys alphabetically 
+    const sortedKeys = Object.keys(data).sort();
+    console.log('Processing all fields alphabetically:', sortedKeys);
     
-    // Build full URL parameters (all fields, encoded)
-    console.log('4. Building full URL parameters (all fields):');
-    const allSortedKeys = Object.keys(data).sort();
-    for (const key of allSortedKeys) {
+    // Process each field exactly as PayFast documents
+    for (const key of sortedKeys) {
       if (data[key] !== undefined && data[key] !== '' && data[key] !== null) {
-        const rawValue = data[key].toString().trim();
-        const encodedValue = encodeURIComponent(rawValue).replace(/%20/g, '+');
+        const value = data[key].toString().trim();
+        
+        // PayFast requirement: URL encode with + for spaces
+        const encodedValue = encodeURIComponent(value).replace(/%20/g, '+');
+        
+        // Both signature and URL use encoded values
+        signatureString += `${key}=${encodedValue}&`;
         encodedParams += `${key}=${encodedValue}&`;
-        console.log(`   ${key}: "${rawValue}" -> "${encodedValue}" (URL-encoded)`);
+        
+        console.log(`${key}: "${value}" -> "${encodedValue}"`);
       }
     }
     
@@ -176,19 +155,19 @@ export class PayFastService {
     signatureString = signatureString.slice(0, -1);
     encodedParams = encodedParams.slice(0, -1);
     
-    // Add passphrase to signature (raw value for core fields approach)
+    // Add passphrase (also URL encoded)
     if (this.config.passphrase) {
-      signatureString += `&passphrase=${this.config.passphrase.trim()}`;
-      console.log('5. Added passphrase (raw):', this.config.passphrase.trim());
+      const encodedPassphrase = encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, '+');
+      signatureString += `&passphrase=${encodedPassphrase}`;
+      console.log('Added passphrase (encoded):', encodedPassphrase);
     }
     
-    console.log('6. Final signature string (core fields + raw passphrase):', signatureString);
-    console.log('7. Final URL parameters (all fields encoded):', encodedParams);
+    console.log('Signature string:', signatureString);
     
     // Generate MD5 hash
     const signature = crypto.createHash("md5").update(signatureString).digest("hex");
-    console.log('7. Generated form signature:', signature);
-    console.log('=== END FORM DEBUG ===\n');
+    console.log('Generated signature:', signature);
+    console.log('=== END ===\n');
     
     return { signature, encodedParams };
   }
