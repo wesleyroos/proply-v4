@@ -313,28 +313,25 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                   <CardTitle>Last Synchronization Results</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
-                      <div className="text-3xl font-bold text-green-600 mb-2">
-                        {agency.lastSyncResult.newListings}
-                      </div>
-                      <div className="text-sm font-medium text-green-700">New Listings</div>
+                  <div className="flex items-center gap-8 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-muted-foreground">New:</span>
+                      <span className="font-bold text-green-600">{agency.lastSyncResult.newListings}</span>
                     </div>
-                    <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="text-3xl font-bold text-blue-600 mb-2">
-                        {agency.lastSyncResult.updatedListings}
-                      </div>
-                      <div className="text-sm font-medium text-blue-700">Updated Listings</div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-muted-foreground">Updated:</span>
+                      <span className="font-bold text-blue-600">{agency.lastSyncResult.updatedListings}</span>
                     </div>
-                    <div className="text-center p-6 bg-red-50 rounded-lg border border-red-200">
-                      <div className="text-3xl font-bold text-red-600 mb-2">
-                        {agency.lastSyncResult.errors}
-                      </div>
-                      <div className="text-sm font-medium text-red-700">Errors</div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="text-muted-foreground">Errors:</span>
+                      <span className="font-bold text-red-600">{agency.lastSyncResult.errors}</span>
                     </div>
                   </div>
                   {agency.lastSyncResult.errorMessage && (
-                    <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                       <p className="text-sm text-red-700 font-medium">Error Details:</p>
                       <p className="text-sm text-red-600 mt-1">{agency.lastSyncResult.errorMessage}</p>
                     </div>
