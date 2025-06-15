@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { db } from '@db/index';
-import { reportGenerations, agencyInvoices, transactionHistory } from '@db/schema';
+import { reportGenerations, agencyInvoices, transactionHistory, agencyBillingSettings, agencyBranches } from '@db/schema';
 import { sql, gte, lt, eq, and } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -9,6 +9,7 @@ interface BillingCalculation {
   agencyName: string;
   reportCount: number;
   amount: number;
+  billingEnabled: boolean;
 }
 
 interface YocoChargeResponse {
@@ -61,32 +62,36 @@ function calculateTieredBilling(reportCount: number): number {
   return amount;
 }
 
-// Get monthly usage for all agencies
+// Get monthly usage for agencies with billing enabled
 async function getMonthlyUsageByAgency(year: number, month: number): Promise<BillingCalculation[]> {
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 1);
   
-  // Get usage data
+  // Get usage data with billing status check
   const monthlyUsage = await db
     .select({
       agencyId: reportGenerations.agencyId,
       agencyName: reportGenerations.agencyName,
       reportCount: sql<number>`COUNT(*)::int`,
+      billingEnabled: agencyBillingSettings.billingEnabled,
     })
     .from(reportGenerations)
+    .leftJoin(agencyBranches, eq(reportGenerations.agencyId, agencyBranches.slug))
+    .leftJoin(agencyBillingSettings, eq(agencyBranches.id, agencyBillingSettings.agencyBranchId))
     .where(
       and(
         gte(reportGenerations.timestamp, startDate),
         lt(reportGenerations.timestamp, endDate)
       )
     )
-    .groupBy(reportGenerations.agencyId, reportGenerations.agencyName);
+    .groupBy(reportGenerations.agencyId, reportGenerations.agencyName, agencyBillingSettings.billingEnabled);
 
   return monthlyUsage.map(usage => ({
     agencyId: usage.agencyId,
     agencyName: usage.agencyName,
     reportCount: usage.reportCount,
-    amount: calculateTieredBilling(usage.reportCount)
+    amount: calculateTieredBilling(usage.reportCount),
+    billingEnabled: usage.billingEnabled || false
   }));
 }
 
@@ -179,6 +184,11 @@ async function processAgencyBilling(billing: BillingCalculation, month: number, 
     return;
   }
 
+  if (!billing.billingEnabled) {
+    console.log(`Skipping ${billing.agencyId} - billing not enabled for this agency`);
+    return;
+  }
+
   try {
     console.log(`Processing billing for ${billing.agencyId}: ${billing.reportCount} reports, R${billing.amount}`);
     
@@ -254,8 +264,11 @@ export async function runMonthlyBilling(): Promise<void> {
     
     console.log(`Found ${agencyBilling.length} agencies with usage`);
     
-    // Process each agency sequentially to avoid rate limiting
-    for (const billing of agencyBilling) {
+    const billableAgencies = agencyBilling.filter(a => a.billingEnabled);
+    console.log(`${billableAgencies.length} agencies have billing enabled`);
+    
+    // Process each billable agency sequentially to avoid rate limiting
+    for (const billing of billableAgencies) {
       await processAgencyBilling(billing, month + 1, year);
       
       // Small delay between charges to be respectful to payment processor
