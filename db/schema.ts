@@ -232,7 +232,7 @@ export const agencyInvoices = pgTable("agency_invoices", {
   reportCount: integer("report_count").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   invoiceDate: date("invoice_date").notNull(),
-  dueDate: date("due_date").notNull(),
+  // Removed due_date since we bill immediately on 1st of month
   status: text("status").notNull().default('pending'), // pending, paid, overdue, cancelled
   paidAt: timestamp("paid_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

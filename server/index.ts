@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { createServer } from "net";
 import aiRouter from './routes/ai';
 import './services/autoSync'; // Initialize auto-sync service
+import { startAutomatedBilling } from './billing/automated-billing';
 
 const app = express();
 
