@@ -118,22 +118,32 @@ export class PayFastService {
   }
 
   private generateSignatureAndParams(data: Record<string, any>): { signature: string; encodedParams: string } {
+    console.log('\n=== PAYFAST SIGNATURE DEBUG ===');
+    console.log('1. Input data:', JSON.stringify(data, null, 2));
+    
     // PayFast official signature generation - ensure consistency
     // Arrange the array by key alphabetically
     let ordered_data: Record<string, any> = {};
     Object.keys(data).sort().forEach(key => {
       ordered_data[key] = data[key];
     });
+    console.log('2. Ordered data keys:', Object.keys(ordered_data));
 
     // Create the encoded parameter string for BOTH signature and URL
     let encodedParams = '';
     let signatureString = '';
     
+    console.log('3. Processing each parameter:');
     for (let key in ordered_data) {
       if (ordered_data[key] !== '' && ordered_data[key] !== null && ordered_data[key] !== undefined) {
-        const encodedValue = encodeURIComponent(ordered_data[key]).replace(/%20/g, '+');
-        encodedParams += `${key}=${encodedValue}&`;
-        signatureString += `${key}=${encodedValue}&`;
+        const rawValue = ordered_data[key].toString().trim();
+        const urlEncoded = encodeURIComponent(rawValue);
+        const payfastEncoded = urlEncoded.replace(/%20/g, '+');
+        
+        console.log(`   ${key}: "${rawValue}" -> "${urlEncoded}" -> "${payfastEncoded}"`);
+        
+        encodedParams += `${key}=${payfastEncoded}&`;
+        signatureString += `${key}=${payfastEncoded}&`;
       }
     }
 
@@ -141,17 +151,40 @@ export class PayFastService {
     encodedParams = encodedParams.substring(0, encodedParams.length - 1);
     signatureString = signatureString.substring(0, signatureString.length - 1);
     
+    console.log('4. URL parameters (before passphrase):', encodedParams);
+    console.log('5. Signature string (before passphrase):', signatureString);
+    
     // Add passphrase to signature string only (not to URL)
     if (this.config.passphrase) {
-      signatureString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
+      const passphraseEncoded = encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+");
+      signatureString += `&passphrase=${passphraseEncoded}`;
+      console.log('6. Passphrase added to signature:', passphraseEncoded);
     }
 
-    console.log('PayFast signature string (official format):', signatureString);
-    console.log('PayFast URL parameters:', encodedParams);
+    console.log('7. Final signature string:', signatureString);
+    console.log('8. Final URL parameters:', encodedParams);
 
     // Hash the signature string
     const signature = crypto.createHash("md5").update(signatureString).digest("hex");
-    console.log('PayFast generated signature:', signature);
+    console.log('9. Generated MD5 signature:', signature);
+    
+    // Let's also test what PayFast might be expecting
+    console.log('\n=== SIGNATURE VERIFICATION TEST ===');
+    
+    // Test with different encoding approaches
+    const testApproaches = [
+      { name: 'Current approach', string: signatureString },
+      { name: 'Without + replacement', string: signatureString.replace(/\+/g, '%20') },
+      { name: 'Raw values', string: Object.keys(ordered_data).sort().map(k => `${k}=${ordered_data[k]}`).join('&') + (this.config.passphrase ? `&passphrase=${this.config.passphrase}` : '') }
+    ];
+    
+    testApproaches.forEach(approach => {
+      const testSig = crypto.createHash("md5").update(approach.string).digest("hex");
+      console.log(`${approach.name}: ${testSig}`);
+      console.log(`  String: ${approach.string}`);
+    });
+    
+    console.log('=== END DEBUG ===\n');
     
     return { signature, encodedParams };
   }
