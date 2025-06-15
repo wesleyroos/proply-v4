@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -78,6 +79,16 @@ interface ReportStats {
   reportTypes: {
     reportType: string;
     count: number;
+  }[];
+  invoices: {
+    id: string;
+    month: string;
+    monthName: string;
+    reportCount: number;
+    amount: number;
+    invoiceDate: string;
+    status: 'upcoming' | 'paid' | 'overdue';
+    dueDate: string;
   }[];
 }
 
@@ -296,7 +307,7 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
               Overview
@@ -304,6 +315,10 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
             <TabsTrigger value="usage" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Usage
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Invoices
             </TabsTrigger>
             <TabsTrigger value="billing" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
@@ -641,6 +656,163 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                   <p className="text-lg font-medium text-muted-foreground">No Usage Data Available</p>
                   <p className="text-sm text-muted-foreground mt-2">
                     Usage statistics and billing information will appear here once the agency starts generating property reports
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="invoices" className="mt-6 space-y-6">
+            {loadingReports ? (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  Loading invoice history...
+                </CardContent>
+              </Card>
+            ) : reportStats?.invoices && reportStats.invoices.length > 0 ? (
+              <>
+                {/* Invoice Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium">Total Invoices</span>
+                      </div>
+                      <div className="text-2xl font-bold mt-1">{reportStats.invoices.length}</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-orange-600" />
+                        <span className="text-sm font-medium">Upcoming</span>
+                      </div>
+                      <div className="text-2xl font-bold mt-1">
+                        {reportStats.invoices.filter(inv => inv.status === 'upcoming').length}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium">Paid</span>
+                      </div>
+                      <div className="text-2xl font-bold mt-1">
+                        {reportStats.invoices.filter(inv => inv.status === 'paid').length}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Invoices Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Invoice History</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-2 font-medium">Invoice ID</th>
+                            <th className="text-left py-3 px-2 font-medium">Period</th>
+                            <th className="text-right py-3 px-2 font-medium">Reports</th>
+                            <th className="text-right py-3 px-2 font-medium">Amount</th>
+                            <th className="text-left py-3 px-2 font-medium">Invoice Date</th>
+                            <th className="text-left py-3 px-2 font-medium">Due Date</th>
+                            <th className="text-left py-3 px-2 font-medium">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reportStats.invoices.map((invoice) => (
+                            <tr key={invoice.id} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-2 font-mono text-sm">{invoice.id}</td>
+                              <td className="py-3 px-2">{invoice.monthName}</td>
+                              <td className="py-3 px-2 text-right">{invoice.reportCount}</td>
+                              <td className="py-3 px-2 text-right font-medium">
+                                R{invoice.amount.toLocaleString()}
+                              </td>
+                              <td className="py-3 px-2">
+                                {format(new Date(invoice.invoiceDate), 'MMM d, yyyy')}
+                              </td>
+                              <td className="py-3 px-2">
+                                {format(new Date(invoice.dueDate), 'MMM d, yyyy')}
+                              </td>
+                              <td className="py-3 px-2">
+                                <Badge 
+                                  variant={
+                                    invoice.status === 'paid' ? 'default' :
+                                    invoice.status === 'upcoming' ? 'secondary' :
+                                    'destructive'
+                                  }
+                                  className={
+                                    invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                    invoice.status === 'upcoming' ? 'bg-orange-100 text-orange-800' :
+                                    'bg-red-100 text-red-800'
+                                  }
+                                >
+                                  {invoice.status === 'upcoming' ? 'Upcoming' : 
+                                   invoice.status === 'paid' ? 'Paid' : 'Overdue'}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Next Invoice Preview */}
+                {reportStats.currentMonth > 0 && (
+                  <Card className="border-orange-200 bg-orange-50/50">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-orange-800">
+                        <Calendar className="h-5 w-5" />
+                        Next Invoice Preview
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Current Month Usage</div>
+                          <div className="text-lg font-bold">{reportStats.currentMonth} reports</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Estimated Amount</div>
+                          <div className="text-lg font-bold text-orange-600">
+                            R{calculateBillingAmount(reportStats.currentMonth).toLocaleString()}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Invoice Date</div>
+                          <div className="text-lg font-medium">
+                            {format(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1), 'MMM d, yyyy')}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Due Date</div>
+                          <div className="text-lg font-medium">
+                            {format(new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1), 'MMM d, yyyy')}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-lg font-medium text-muted-foreground">No Invoices Available</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Invoice history will appear here once the agency starts generating property reports
                   </p>
                 </CardContent>
               </Card>

@@ -2439,12 +2439,60 @@ export function registerRoutes(app: Express): Server {
         .groupBy(reportGenerations.reportType)
         .orderBy(sql`COUNT(*) DESC`);
 
+      // Get invoice history (simulated based on monthly stats)
+      const invoices = monthlyStats.map((stat, index) => {
+        const reportCount = Number(stat.reports) || 0;
+        let amount = 0;
+        
+        // Calculate tiered billing amount
+        let remaining = reportCount;
+        if (remaining > 0) {
+          const tier1Count = Math.min(remaining, 50);
+          amount += tier1Count * 200;
+          remaining -= tier1Count;
+        }
+        if (remaining > 0) {
+          const tier2Count = Math.min(remaining, 50);
+          amount += tier2Count * 180;
+          remaining -= tier2Count;
+        }
+        if (remaining > 0) {
+          const tier3Count = Math.min(remaining, 50);
+          amount += tier3Count * 160;
+          remaining -= tier3Count;
+        }
+        if (remaining > 0) {
+          const tier4Count = Math.min(remaining, 50);
+          amount += tier4Count * 140;
+          remaining -= tier4Count;
+        }
+        if (remaining > 0) {
+          amount += remaining * 140;
+        }
+
+        // Create invoice date (1st of following month)
+        const invoiceDate = new Date(String(stat.month) + '-01');
+        invoiceDate.setMonth(invoiceDate.getMonth() + 1);
+        
+        return {
+          id: `INV-${String(stat.month).replace('-', '')}`,
+          month: String(stat.month),
+          monthName: String(stat.monthName),
+          reportCount,
+          amount,
+          invoiceDate: invoiceDate.toISOString().split('T')[0],
+          status: index === 0 ? 'upcoming' : 'paid', // Latest is upcoming, rest are paid
+          dueDate: new Date(invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days after invoice
+        };
+      }).reverse(); // Show newest first
+
       res.json({
         currentMonth: currentMonth[0]?.reports || 0,
         previousMonth: previousMonth[0]?.reports || 0,
         totalReports: totalReports[0]?.reports || 0,
         monthlyStats: monthlyStats.reverse(), // Reverse to show oldest to newest for charts
-        reportTypes
+        reportTypes,
+        invoices
       });
     } catch (error) {
       console.error('Error fetching agency report stats:', error);
