@@ -122,41 +122,30 @@ export class PayFastService {
     console.log('1. Input data:', JSON.stringify(data, null, 2));
     
     // PayFast FORM signature generation (different from API signature)
-    // For form submissions to eng/process, use documentation order, not alphabetical
-    // Based on PayFast documentation: "Do not use the custom payment signature format"
-    // means API uses alphabetical, but forms use documentation order
+    // Using PayFast's own Node.js signature generation approach (alphabetical order)
+    // Based on their official documentation Node.js example
     
-    // PayFast documentation order from their tokenization example
-    const formOrder = [
-      'merchant_id',
-      'merchant_key',
-      'subscription_type', 
-      'amount',
-      'item_name',
-      'return_url',
-      'cancel_url',
-      'notify_url',
-      'item_description' // Optional field, include if present
-    ];
+    console.log('2. Using PayFast alphabetical order (matching their Node.js example)');
     
-    console.log('2. Using PayFast form documentation order (not alphabetical)');
+    // Sort keys alphabetically like PayFast's official Node.js code
+    const sortedKeys = Object.keys(data).sort();
     
-    // Build signature string using raw values (no URL encoding)
+    // Build signature string using PayFast's exact approach
     let signatureString = '';
     let encodedParams = '';
     
-    console.log('3. Processing parameters in documentation order:');
-    for (const key of formOrder) {
+    console.log('3. Processing parameters in alphabetical order:');
+    for (const key of sortedKeys) {
       if (data[key] !== undefined && data[key] !== '' && data[key] !== null) {
         const rawValue = data[key].toString().trim();
         
-        // For BOTH signature and URL: use urlencode() equivalent (spaces become +)
+        // Use PayFast's exact encoding: encodeURIComponent + replace %20 with +
         const encodedValue = encodeURIComponent(rawValue).replace(/%20/g, '+');
         
         signatureString += `${key}=${encodedValue}&`;
         encodedParams += `${key}=${encodedValue}&`;
         
-        console.log(`   ${key}: "${rawValue}" -> "${encodedValue}" (URL-encoded for both)`);
+        console.log(`   ${key}: "${rawValue}" -> "${encodedValue}" (PayFast encoding)`);
       }
     }
     
@@ -164,11 +153,11 @@ export class PayFastService {
     signatureString = signatureString.slice(0, -1);
     encodedParams = encodedParams.slice(0, -1);
     
-    // Add passphrase to signature only (not URL) - also URL-encoded
+    // Add passphrase exactly like PayFast's Node.js example
     if (this.config.passphrase) {
       const encodedPassphrase = encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, '+');
       signatureString += `&passphrase=${encodedPassphrase}`;
-      console.log('4. Added passphrase to signature (URL-encoded):', encodedPassphrase);
+      console.log('4. Added passphrase (PayFast style):', encodedPassphrase);
     }
     
     console.log('5. Final signature string (URL-encoded values):', signatureString);
