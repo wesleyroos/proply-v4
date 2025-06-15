@@ -1,0 +1,114 @@
+🔐 AUTHORISATION
+Required Headers for Every API Request:
+
+merchant-id: Your 8-digit Payfast Merchant ID
+
+version: API version (e.g., v1)
+
+timestamp: Current timestamp (ISO 8601 format – YYYY-MM-DDTHH:MM:SS+02:00)
+
+signature: MD5 hash of sorted parameters and passphrase
+
+Passphrase Setup:
+
+Must be manually configured in your Payfast dashboard under Settings > Security Pass Phrase
+
+Acts as a shared secret for generating signatures
+
+Never expose or share this value publicly
+
+IP Whitelisting:
+
+Optional security setting
+
+Requests must originate from listed IPs if enabled (set under Recurring Billing > IP Whitelist)
+
+✍️ SIGNATURE GENERATION
+Purpose: Ensures integrity and authenticity of requests
+
+Steps:
+
+Sort all header, body, and query parameters alphabetically by key
+
+URL encode all values (%20 replaced by +)
+
+Concatenate into a single string using & as a separator
+
+Append passphrase as: &passphrase=your_passphrase
+
+Remove trailing &
+
+Generate MD5 hash of the full string (lowercase hex digest)
+
+Node.js Sample Code:
+
+javascript
+Copy
+Edit
+const crypto = require("crypto");
+
+const generateAPISignature = (data, passPhrase = null) => {
+    let ordered_data = {};
+    Object.keys(data).sort().forEach(key => {
+        ordered_data[key] = data[key];
+    });
+
+    let getString = '';
+    for (let key in ordered_data) {
+        getString += key + '=' + encodeURIComponent(ordered_data[key]).replace(/%20/g,'+') + '&';
+    }
+
+    getString = getString.slice(0, -1); // Remove trailing &
+    if (passPhrase) getString += `&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`;
+    
+    return crypto.createHash("md5").update(getString).digest("hex");
+};
+🔁 RECURRING BILLING & TOKENISATION
+Base URL:
+https://api.payfast.co.za/subscriptions/:token/[action]
+
+Common Headers (Required):
+merchant-id: Your merchant ID
+
+version: API version (e.g. v1)
+
+timestamp: ISO-8601 timestamp
+
+signature: MD5 signature (see above)
+
+Key Endpoints:
+Action	Endpoint	Method	Purpose
+Fetch Subscription	/subscriptions/:token/fetch	GET	View subscription details
+Pause Subscription	/subscriptions/:token/pause	PUT	Temporarily suspend billing
+Unpause Subscription	/subscriptions/:token/unpause	PUT	Resume paused subscription
+Cancel Subscription	/subscriptions/:token/cancel	PUT	Cancel and stop billing
+Update Subscription	/subscriptions/:token/update	PATCH	Modify amount, frequency, cycles, etc.
+Charge Token	/subscriptions/:token/adhoc	POST	Charge variable amount via token
+
+Tokenised Charge Example:
+POST /subscriptions/:token/adhoc
+
+json
+Copy
+Edit
+{
+  "amount": 2500,
+  "item_name": "Usage-Based Billing",
+  "item_description": "May usage charges",
+  "m_payment_id": "invoice-2025-06-01"
+}
+Successful Response:
+
+json
+Copy
+Edit
+{
+  "code": 200,
+  "status": "success",
+  "data": {
+    "response": true,
+    "message": "Transaction was successful(00)",
+    "pf_payment_id": "1324567"
+  }
+}
+This is the minimal yet complete scope you need to build or integrate Payfast recurring billing with tokenisation and variable monthly charges in a secure, compliant manner. Let me know if you want sample Postman requests or automated signature functions in another language.

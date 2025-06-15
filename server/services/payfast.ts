@@ -125,56 +125,43 @@ export class PayFastService {
   }
 
   private generateSignatureAndParams(data: Record<string, any>): { signature: string; encodedParams: string } {
-    console.log('\n=== PAYFAST TOKENIZATION SIGNATURE ===');
+    console.log('\n=== PAYFAST OFFICIAL SIGNATURE METHOD ===');
     
-    // For tokenization (subscription_type=2), use CORE fields only in signature
-    // This is different from regular payments which include all fields
-    const coreFields = {
-      merchant_id: data.merchant_id,
-      merchant_key: data.merchant_key,
-      amount: data.amount,
-      item_name: data.item_name,
-      subscription_type: data.subscription_type
-    };
-    
-    console.log('Using core tokenization fields for signature:', Object.keys(coreFields));
-    
-    // Build signature using CORE fields only (alphabetically sorted)
-    let signatureString = '';
-    const coreSortedKeys = Object.keys(coreFields).sort();
-    
-    for (const key of coreSortedKeys) {
-      const value = coreFields[key].toString().trim();
-      signatureString += `${key}=${value}&`;
-      console.log(`${key}: "${value}"`);
+    // Use PayFast's exact official method from their documentation
+    let ordered_data: Record<string, any> = {};
+    Object.keys(data).sort().forEach(key => {
+      ordered_data[key] = data[key];
+    });
+
+    let getString = '';
+    for (let key in ordered_data) {
+      const encodedValue = encodeURIComponent(ordered_data[key]).replace(/%20/g, '+');
+      getString += key + '=' + encodedValue + '&';
+      console.log(`${key}: "${ordered_data[key]}" -> "${encodedValue}"`);
     }
+
+    getString = getString.slice(0, -1); // Remove trailing &
     
-    // Remove trailing & and add passphrase
-    signatureString = signatureString.slice(0, -1);
     if (this.config.passphrase) {
-      signatureString += `&passphrase=${this.config.passphrase.trim()}`;
+      const encodedPassphrase = encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, '+');
+      getString += `&passphrase=${encodedPassphrase}`;
+      console.log('Added passphrase (encoded):', encodedPassphrase);
     }
     
-    console.log('Core signature string:', signatureString);
+    console.log('Final signature string:', getString);
     
-    // Generate signature from core fields
-    const signature = crypto.createHash("md5").update(signatureString).digest("hex");
+    // Generate MD5 signature
+    const signature = crypto.createHash("md5").update(getString).digest("hex");
     console.log('Generated signature:', signature);
+    console.log('=== END ===\n');
     
-    // Build URL parameters with ALL fields (encoded)
+    // For URL params, use the same encoded string (without passphrase)
     let encodedParams = '';
-    const allSortedKeys = Object.keys(data).sort();
-    
-    for (const key of allSortedKeys) {
-      if (data[key] !== undefined && data[key] !== '' && data[key] !== null) {
-        const rawValue = data[key].toString().trim();
-        const encodedValue = encodeURIComponent(rawValue).replace(/%20/g, '+');
-        encodedParams += `${key}=${encodedValue}&`;
-      }
+    for (let key in ordered_data) {
+      const encodedValue = encodeURIComponent(ordered_data[key]).replace(/%20/g, '+');
+      encodedParams += key + '=' + encodedValue + '&';
     }
     encodedParams = encodedParams.slice(0, -1);
-    
-    console.log('=== END ===\n');
     
     return { signature, encodedParams };
   }
