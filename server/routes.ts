@@ -2546,7 +2546,7 @@ export function registerRoutes(app: Express): Server {
 
       console.log('Yoco API request body:', JSON.stringify(requestBody, null, 2));
 
-      const yocoResponse = await fetch('https://online.yoco.com/v1/charges/', {
+      const yocoResponse = await fetch('https://online.yoco.com/v1/checkouts/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${secretKey}`,

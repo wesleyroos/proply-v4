@@ -1,0 +1,62 @@
+Login attempt with email: wesley@proply.co.za
+Login successful for user: 2
+6:03:07 PM [express] POST /api/login 200 in 358ms :: {"id":2,"email":"wesley@proply.co.za","firstNam…
+6:03:08 PM [express] GET /api/user 304 in 96ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+6:03:08 PM [express] GET /api/agencies 200 in 460ms :: {"agencies":[{"id":"sothebys-atlantic-seaboar…
+6:03:10 PM [express] GET /api/agencies/sothebys-atlantic-seaboard/payment-methods 304 in 182ms :: {"…
+6:03:11 PM [express] GET /api/agencies/sothebys-atlantic-seaboard/report-stats 304 in 359ms :: {"cur…
+=== TEST PAYMENT ENDPOINT HIT === {
+  agencyId: 'sothebys-atlantic-seaboard',
+  body: { amount: 5 },
+  authenticated: true,
+  user: 'wesley@proply.co.za'
+}
+Payment method details: { id: 4, tokenLength: 28, cardLast4: '****', isActive: true }
+Yoco payment request details: {
+  mode: 'TEST',
+  amount: 5,
+  amountInCents: 500,
+  hasToken: true,
+  tokenPrefix: 'tok_j0xEvU...'
+}
+Yoco API request body: {
+  "token": "tok_j0xEvUMqOKbAlvCzGFX2cxjo",
+  "amountInCents": 500,
+  "currency": "ZAR",
+  "metadata": {
+    "agencyId": "sothebys-atlantic-seaboard",
+    "type": "test_payment",
+    "description": "Test payment for Sotheby's International Realty - Atlantic Seaboard"
+  }
+}
+Yoco API response: {
+  status: 500,
+  ok: false,
+  headers: {
+    'alt-svc': 'h3=":443"; ma=86400',
+    'cf-cache-status': 'DYNAMIC',
+    'cf-placement': 'local-ORD',
+    'cf-ray': '9503fba12dbd58ee-ORD',
+    connection: 'keep-alive',
+    'content-length': '186',
+    'content-type': 'application/json; charset=utf-8',
+    date: 'Sun, 15 Jun 2025 18:03:13 GMT',
+    deprecation: 'Deprecation: 30 June 2023 | Sunset: 30 September 2023 | Link: https://developer.yoco.com/online/api-reference/checkout/getting-started | Contact: checkoutAPI@yoco.com',
+    server: 'cloudflare',
+    'set-cookie': '_cfuvid=2Isg0DBdq2Eqgdgdz8digBhBhLxFh0XyTj39tSW53zs-1750010593836-0.0.1.1-604800000; path=/; domain=.yoco.com; HttpOnly; Secure; SameSite=None',
+    vary: 'Accept-Encoding'
+  },
+  data: {
+    errorType: 'server_error',
+    errorCode: 'server_error',
+    errorMessage: 'Something went wrong. Please try again at a later stage',
+    displayMessage: 'Payment failed, please try again later'
+  }
+}
+Yoco test payment error: {
+  errorType: 'server_error',
+  errorCode: 'server_error',
+  errorMessage: 'Something went wrong. Please try again at a later stage',
+  displayMessage: 'Payment failed, please try again later'
+}
+6:03:13 PM [express] POST /api/admin/agencies/sothebys-atlantic-seaboard/test-payment 400 in 660ms :…
