@@ -27,11 +27,15 @@ import {
   TrendingUp,
   TrendingDown,
   Activity,
+  TestTube,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { AgencyLogoUpload } from "./AgencyLogoUpload";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Agency {
   id: string;
@@ -855,6 +859,24 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                 </div>
               </CardContent>
             </Card>
+
+            {/* Test Payment */}
+            {agency.billingEnabled && (
+              <Card className="border-yellow-200 bg-yellow-50/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-yellow-800">
+                    <TestTube className="h-5 w-5" />
+                    Test Payment
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Test the stored payment method with a small amount to verify it works before billing
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <TestPayment agencyId={agency.id} />
+                </CardContent>
+              </Card>
+            )}
 
             {/* Payment Methods */}
             <Card>
