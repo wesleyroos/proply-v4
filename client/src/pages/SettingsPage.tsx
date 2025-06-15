@@ -925,119 +925,42 @@ export default function SettingsPage() {
       setIsProcessingCard(true);
 
       try {
-        // Check if Yoco SDK is loaded
-        if (typeof window.YocoSDK === 'undefined') {
-          throw new Error('Yoco SDK not loaded. Please refresh the page and try again.');
-        }
-
-        // Get environment mode from localStorage
-        const isTestMode = localStorage.getItem('yoco_test_mode') !== 'false';
-        
-        // Get the appropriate public key from environment
-        const publicKeyResponse = await fetch(`/api/yoco/public-key?test=${isTestMode}`, {
-          credentials: 'include'
+        // Get PayFast tokenization URL
+        const tokenizeResponse = await fetch('/api/payfast/create-tokenize-url', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
         
-        if (!publicKeyResponse.ok) {
-          throw new Error('Failed to get Yoco public key');
+        if (!tokenizeResponse.ok) {
+          throw new Error('Failed to create PayFast tokenization URL');
         }
         
-        const { publicKey } = await publicKeyResponse.json();
+        const { tokenizeUrl } = await tokenizeResponse.json();
 
         // Validate cardholder name
         if (!cardForm.cardholderName) {
           throw new Error('Please enter the cardholder name');
         }
 
-        console.log('Yoco SDK available:', !!window.YocoSDK);
-        console.log('Public key:', publicKey);
-        console.log('Mount exists:', !!document.querySelector('#yoco-mount'));
-
-        // Initialize Yoco SDK with the correct public key
-        const yoco = new window.YocoSDK({
-          publicKey: publicKey
-        });
-
-        console.log('Yoco SDK instance created:', yoco);
+        console.log('Redirecting to PayFast tokenization URL:', tokenizeUrl);
         
-        // Use Yoco's official showPopup method for card tokenization
-        console.log('Using Yoco showPopup for card tokenization...');
+        // Store cardholder name for when user returns from PayFast
+        localStorage.setItem('pending_cardholder_name', cardForm.cardholderName);
         
-        yoco.showPopup({
-          amountInCents: 200, // R2.00 minimum required by Yoco for card tokenization
-          currency: 'ZAR',
-          name: 'Save Card for Billing',
-          description: 'R2.00 authorization for card tokenization (will be refunded)',
-          callback: async (result: any) => {
-            console.log('Yoco popup callback triggered with result:', result);
-            try {
-              if (result.error) {
-                console.error('Yoco callback error:', result.error);
-                throw new Error(result.error.message || 'Card authorization failed');
-              }
-
-              if (!result.id) {
-                console.error('No charge ID in result:', result);
-                throw new Error('No charge ID received from Yoco');
-              }
-
-              console.log('Received card token:', result.id);
-
-              // Store the token - card details will be retrieved from Yoco's response
-              const saveResponse = await fetch('/api/payment-methods/save-token', {
-                method: 'POST',
-                headers: { 
-                  'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                  token: result.id,
-                  cardType: result.source?.type || 'unknown',
-                  lastFour: result.source?.gatewayToken?.slice(-4) || '****',
-                  expiryMonth: 12, // Placeholder - Yoco doesn't return these in the token response
-                  expiryYear: 25   // Placeholder - will be updated when card is used
-                })
-              });
-
-              if (!saveResponse.ok) {
-                const error = await saveResponse.json();
-                throw new Error(error.message || 'Failed to save payment method');
-              }
-
-              toast({
-                title: "Payment method added",
-                description: "Your card has been securely saved for billing. The R2.00 authorization will be refunded."
-              });
-
-              // Reset form and refresh data
-              setCardForm({
-                cardholderName: ''
-              });
-              setIsAddingCard(false);
-              refetchPaymentMethods();
-
-            } catch (error) {
-              console.error('Error saving payment method:', error);
-              toast({
-                variant: "destructive",
-                title: "Failed to save payment method",
-                description: error instanceof Error ? error.message : "Please try again"
-              });
-              setIsProcessingCard(false);
-            }
-          }
-        });
+        // Redirect to PayFast tokenization page
+        window.location.href = tokenizeUrl;
 
       } catch (error) {
-        console.error('Error initializing Yoco payment:', error);
+        console.error('Error creating PayFast tokenization URL:', error);
         toast({
           variant: "destructive",
           title: "Failed to initialize payment",
           description: error instanceof Error ? error.message : "Please try again"
         });
         setIsProcessingCard(false);
-        
-        // No cleanup needed for mount element as it's persistent
       }
     };
 
@@ -1145,8 +1068,8 @@ export default function SettingsPage() {
               {isAddingCard && (
                 <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
                   <div className="text-sm text-gray-600 mb-4">
-                    Click "Add Payment Method" to securely add your card via Yoco's secure payment form. 
-                    A R2.00 authorization will be processed and immediately refunded.
+                    Click "Add Payment Method" to securely add your card via PayFast's secure payment form. 
+                    A R5.00 authorization will be processed for tokenization.
                   </div>
 
                   {/* Test Card Information */}
@@ -1175,7 +1098,7 @@ export default function SettingsPage() {
 
 
                     <p className="text-xs text-muted-foreground mt-2">
-                      Card details will be entered securely in Yoco's payment form
+                      Card details will be entered securely in PayFast's payment form
                     </p>
                   </div>
 
