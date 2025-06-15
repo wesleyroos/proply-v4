@@ -2501,8 +2501,8 @@ export function registerRoutes(app: Express): Server {
       
       const isTestMode = yocoModeSetting?.value === 'true';
       const secretKey = isTestMode 
-        ? import.meta.env.YOCO_TEST_SECRET_KEY 
-        : import.meta.env.YOCO_SECRET_KEY;
+        ? process.env.YOCO_TEST_SECRET_KEY 
+        : process.env.YOCO_SECRET_KEY;
 
       if (!secretKey) {
         return res.status(500).json({ 
