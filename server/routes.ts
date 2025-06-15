@@ -2546,13 +2546,27 @@ export function registerRoutes(app: Express): Server {
 
       console.log('Yoco API request body:', JSON.stringify(requestBody, null, 2));
 
-      const yocoResponse = await fetch('https://online.yoco.com/v1/checkouts/', {
+      // Try the newer charges endpoint with different structure
+      const chargeRequestBody = {
+        source: primaryMethod.yocoToken,
+        amount: Math.round(amount * 100),
+        currency: 'ZAR',
+        metadata: {
+          agencyId,
+          type: 'test_payment',
+          description: `Test payment for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`
+        }
+      };
+
+      console.log('Yoco charge request body:', JSON.stringify(chargeRequestBody, null, 2));
+
+      const yocoResponse = await fetch('https://online.yoco.com/v1/charges', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${secretKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(chargeRequestBody)
       });
 
       const yocoData = await yocoResponse.json();
