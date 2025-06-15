@@ -67,36 +67,8 @@ export class PayFastService {
   }
 
   private generateSignature(data: Record<string, any>): string {
-    // PayFast official signature generation - exact implementation
-    // Arrange the array by key alphabetically
-    let ordered_data: Record<string, any> = {};
-    Object.keys(data).sort().forEach(key => {
-      ordered_data[key] = data[key];
-    });
-    data = ordered_data;
-
-    // Create the get string
-    let getString = '';
-    for (let key in data) {
-      if (data[key] !== '' && data[key] !== null && data[key] !== undefined) {
-        getString += key + '=' + encodeURIComponent(data[key]).replace(/%20/g, '+') + '&';
-      }
-    }
-
-    // Remove the last '&'
-    getString = getString.substring(0, getString.length - 1);
-    
-    // Add passphrase if provided
-    if (this.config.passphrase) {
-      getString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
-    }
-
-    console.log('PayFast signature string (official format):', getString);
-
-    // Hash the data and create the signature
-    const signature = crypto.createHash("md5").update(getString).digest("hex");
-    console.log('PayFast generated signature:', signature);
-    
+    // Use the new unified method for consistency
+    const { signature } = this.generateSignatureAndParams(data);
     return signature;
   }
 
@@ -130,33 +102,58 @@ export class PayFastService {
       subscription_type: '2' // Ad-hoc subscription for tokenization
     };
 
-    // Generate signature using the official PayFast format
-    const signature = this.generateSignature(data);
+    // Generate signature and URL parameters using identical encoding
+    const { signature, encodedParams } = this.generateSignatureAndParams(data);
     
-    // Create URL manually to ensure proper encoding
     const baseUrl = this.config.isTestMode
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
     
-    // Build query string manually to match signature generation
-    const sortedKeys = Object.keys(data).sort();
-    let queryString = '';
-    
-    for (const key of sortedKeys) {
-      const value = data[key as keyof typeof data];
-      if (value !== '' && value !== null && value !== undefined) {
-        queryString += `${key}=${encodeURIComponent(value.toString().trim())}&`;
-      }
-    }
-    
-    // Add signature to query string
-    queryString += `signature=${signature}`;
-    
-    const tokenizeUrl = `${baseUrl}?${queryString}`;
+    // Use the exact same encoded parameters that were used for signature generation
+    const tokenizeUrl = `${baseUrl}?${encodedParams}&signature=${signature}`;
     
     console.log('Final PayFast tokenize URL:', tokenizeUrl);
     
     return tokenizeUrl;
+  }
+
+  private generateSignatureAndParams(data: Record<string, any>): { signature: string; encodedParams: string } {
+    // PayFast official signature generation - ensure consistency
+    // Arrange the array by key alphabetically
+    let ordered_data: Record<string, any> = {};
+    Object.keys(data).sort().forEach(key => {
+      ordered_data[key] = data[key];
+    });
+
+    // Create the encoded parameter string for BOTH signature and URL
+    let encodedParams = '';
+    let signatureString = '';
+    
+    for (let key in ordered_data) {
+      if (ordered_data[key] !== '' && ordered_data[key] !== null && ordered_data[key] !== undefined) {
+        const encodedValue = encodeURIComponent(ordered_data[key]).replace(/%20/g, '+');
+        encodedParams += `${key}=${encodedValue}&`;
+        signatureString += `${key}=${encodedValue}&`;
+      }
+    }
+
+    // Remove the last '&' from both strings
+    encodedParams = encodedParams.substring(0, encodedParams.length - 1);
+    signatureString = signatureString.substring(0, signatureString.length - 1);
+    
+    // Add passphrase to signature string only (not to URL)
+    if (this.config.passphrase) {
+      signatureString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, "+")}`;
+    }
+
+    console.log('PayFast signature string (official format):', signatureString);
+    console.log('PayFast URL parameters:', encodedParams);
+
+    // Hash the signature string
+    const signature = crypto.createHash("md5").update(signatureString).digest("hex");
+    console.log('PayFast generated signature:', signature);
+    
+    return { signature, encodedParams };
   }
 
 

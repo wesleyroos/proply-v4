@@ -1,0 +1,25 @@
+ 
+            
+            
+           GET https://sandbox.payfast.co.za/eng/process?amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup%20payment%20method%20for%20agency%20billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2&signature=47c43f8ab5ec1434721ac2d1642a7794 400 (Bad Request)
+handleAddCard @ a4d7da24-d166-4fff-8…ttingsPage.tsx:1400
+await in handleAddCard
+callCallback2 @ a4d7da24-d166-4fff-8….js?v=5ec61fec:3674
+invokeGuardedCallbackDev @ a4d7da24-d166-4fff-8….js?v=5ec61fec:3699
+invokeGuardedCallback @ a4d7da24-d166-4fff-8….js?v=5ec61fec:3733
+invokeGuardedCallbackAndCatchFirstError @ a4d7da24-d166-4fff-8….js?v=5ec61fec:3736
+executeDispatch @ a4d7da24-d166-4fff-8….js?v=5ec61fec:7014
+processDispatchQueueItemsInOrder @ a4d7da24-d166-4fff-8….js?v=5ec61fec:7034
+processDispatchQueue @ a4d7da24-d166-4fff-8….js?v=5ec61fec:7043
+dispatchEventsForPlugins @ a4d7da24-d166-4fff-8….js?v=5ec61fec:7051
+(anonymous) @ a4d7da24-d166-4fff-8….js?v=5ec61fec:7174
+batchedUpdates$1 @ a4d7da24-d166-4fff-8…js?v=5ec61fec:18913
+batchedUpdates @ a4d7da24-d166-4fff-8….js?v=5ec61fec:3579
+dispatchEventForPluginEventSystem @ a4d7da24-d166-4fff-8….js?v=5ec61fec:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ a4d7da24-d166-4fff-8….js?v=5ec61fec:5478
+dispatchEvent @ a4d7da24-d166-4fff-8….js?v=5ec61fec:5472
+dispatchDiscreteEvent @ a4d7da24-d166-4fff-8….js?v=5ec61fec:5449
+process:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+process:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+process:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+process:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
