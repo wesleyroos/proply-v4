@@ -2494,23 +2494,12 @@ export function registerRoutes(app: Express): Server {
       // Use the first available payment method (agency payment methods don't have isPrimary field)
       const primaryMethod = paymentMethods[0];
 
-      // Create Yoco payment
-      const timestamp = Date.now().toString();
-      const crypto = await import('crypto');
-      const signature = crypto
-        .createHmac('sha256', import.meta.env.YOCO_WEBHOOK_SECRET!)
-        .update(timestamp)
-        .digest('hex');
-
+      // Create Yoco payment (simplified according to their API docs)
       const yocoResponse = await fetch('https://online.yoco.com/v1/charges/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${import.meta.env.YOCO_SECRET_KEY}`,
           'Content-Type': 'application/json',
-          'merchant-id': import.meta.env.YOCO_MERCHANT_ID!,
-          'version': '2022-09-01',
-          'timestamp': timestamp,
-          'signature': signature,
         },
         body: JSON.stringify({
           token: primaryMethod.yocoToken,
