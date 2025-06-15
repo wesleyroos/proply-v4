@@ -2493,6 +2493,13 @@ export function registerRoutes(app: Express): Server {
 
       // Use the first available payment method (agency payment methods don't have isPrimary field)
       const primaryMethod = paymentMethods[0];
+      
+      console.log('Payment method details:', {
+        id: primaryMethod.id,
+        tokenLength: primaryMethod.yocoToken?.length,
+        cardLast4: primaryMethod.cardLastFour,
+        isActive: primaryMethod.isActive
+      });
 
       // Get Yoco mode setting from database
       const yocoModeSetting = await db.query.systemSettings.findFirst({
@@ -2510,26 +2517,45 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
+      console.log('Yoco payment request details:', {
+        mode: isTestMode ? 'TEST' : 'LIVE',
+        amount: amount,
+        amountInCents: Math.round(amount * 100),
+        hasToken: !!primaryMethod.yocoToken,
+        tokenPrefix: primaryMethod.yocoToken?.substring(0, 10) + '...'
+      });
+
       // Create Yoco payment (respects admin mode toggle)
+      const requestBody = {
+        token: primaryMethod.yocoToken,
+        amountInCents: Math.round(amount * 100),
+        currency: 'ZAR',
+        metadata: {
+          agencyId,
+          type: 'test_payment',
+          description: `Test payment for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`
+        }
+      };
+
+      console.log('Yoco API request body:', JSON.stringify(requestBody, null, 2));
+
       const yocoResponse = await fetch('https://online.yoco.com/v1/charges/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${secretKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          token: primaryMethod.yocoToken,
-          amountInCents: Math.round(amount * 100),
-          currency: 'ZAR',
-          metadata: {
-            agencyId,
-            type: 'test_payment',
-            description: `Test payment for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`
-          }
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const yocoData = await yocoResponse.json();
+      
+      console.log('Yoco API response:', {
+        status: yocoResponse.status,
+        ok: yocoResponse.ok,
+        headers: Object.fromEntries(yocoResponse.headers.entries()),
+        data: yocoData
+      });
 
       if (!yocoResponse.ok) {
         console.error('Yoco test payment error:', yocoData);
