@@ -67,26 +67,33 @@ export class PayFastService {
   }
 
   private generateSignature(data: Record<string, any>): string {
-    // Create parameter string for signature
+    // Create parameter string for signature - PayFast specific format
+    // Important: Do NOT URL encode values in signature string, only in final URL
     const sortedKeys = Object.keys(data).sort();
     let paramString = '';
     
     for (const key of sortedKeys) {
-      if (data[key] !== '' && data[key] !== null && data[key] !== undefined) {
-        paramString += `${key}=${encodeURIComponent(data[key].toString().trim())}&`;
+      const value = data[key];
+      if (value !== '' && value !== null && value !== undefined) {
+        paramString += `${key}=${value.toString().trim()}&`;
       }
     }
     
     // Remove trailing &
     paramString = paramString.slice(0, -1);
     
-    // Add passphrase
-    if (this.config.passphrase) {
-      paramString += `&passphrase=${encodeURIComponent(this.config.passphrase.trim())}`;
+    // Add passphrase if provided (without URL encoding for signature)
+    if (this.config.passphrase && this.config.passphrase.trim()) {
+      paramString += `&passphrase=${this.config.passphrase.trim()}`;
     }
     
+    console.log('PayFast signature string:', paramString);
+    
     // Generate MD5 hash
-    return crypto.createHash('md5').update(paramString).digest('hex');
+    const signature = crypto.createHash('md5').update(paramString).digest('hex');
+    console.log('PayFast generated signature:', signature);
+    
+    return signature;
   }
 
   private createAuthHeaders(): Record<string, string> {
