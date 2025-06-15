@@ -93,6 +93,7 @@ This is a property investment analysis platform that helps users compare short-t
 ## Changelog
 - June 14, 2025: Initial setup
 - June 14, 2025: Completed Yoco payment integration with secure tokenization, R2.00 authorization, confirmation modals, and proper database storage
+- June 15, 2025: Implemented comprehensive automated billing system with tiered pricing structure, monthly scheduling, invoice generation, and transaction tracking
 
 ## User Preferences
 
