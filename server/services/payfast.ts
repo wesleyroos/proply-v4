@@ -46,14 +46,14 @@ export class PayFastService {
   constructor(isTestMode: boolean = false) {
     this.config = {
       merchantId: isTestMode 
-        ? (import.meta.env.PAYFAST_TEST_MERCHANT_ID || process.env.PAYFAST_TEST_MERCHANT_ID)!
-        : (import.meta.env.PAYFAST_MERCHANT_ID || process.env.PAYFAST_MERCHANT_ID)!,
+        ? process.env.PAYFAST_TEST_MERCHANT_ID!
+        : process.env.PAYFAST_MERCHANT_ID!,
       merchantKey: isTestMode 
-        ? (import.meta.env.PAYFAST_TEST_MERCHANT_KEY || process.env.PAYFAST_TEST_MERCHANT_KEY)!
-        : (import.meta.env.PAYFAST_MERCHANT_KEY || process.env.PAYFAST_MERCHANT_KEY)!,
+        ? process.env.PAYFAST_TEST_MERCHANT_KEY!
+        : process.env.PAYFAST_MERCHANT_KEY!,
       passphrase: isTestMode 
-        ? (import.meta.env.PAYFAST_TEST_PASSPHRASE || process.env.PAYFAST_TEST_PASSPHRASE)!
-        : (import.meta.env.PAYFAST_PASSPHRASE || process.env.PAYFAST_PASSPHRASE)!,
+        ? process.env.PAYFAST_TEST_PASSPHRASE!
+        : process.env.PAYFAST_PASSPHRASE!,
       isTestMode
     };
 
