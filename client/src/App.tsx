@@ -28,6 +28,8 @@ import ContactPage from "./pages/ContactPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailurePage from "./pages/PaymentFailurePage";
+import PaymentSetupSuccess from "./pages/PaymentSetupSuccess";
+import PaymentSetupCancel from "./pages/PaymentSetupCancel";
 import ControlPanel from "./pages/ControlPanel";
 import { useUser } from "./hooks/use-user";
 import { useToast } from "./hooks/use-toast";
@@ -270,6 +272,16 @@ function App() {
             <Route path="/airbnb-yield-calculator" component={() => (
               <PageTransition>
                 <AirbnbYieldCalculator />
+              </PageTransition>
+            )} />
+            <Route path="/payment-setup-success" component={() => (
+              <PageTransition>
+                <PaymentSetupSuccess />
+              </PageTransition>
+            )} />
+            <Route path="/payment-setup-cancel" component={() => (
+              <PageTransition>
+                <PaymentSetupCancel />
               </PageTransition>
             )} />
             <Route component={NotFound} />

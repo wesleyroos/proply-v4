@@ -125,29 +125,29 @@ export class PayFastService {
   }
 
   private generateSignatureAndParams(data: Record<string, any>): { signature: string; encodedParams: string } {
-    console.log('\n=== PAYFAST OFFICIAL METHOD ===');
-    
-    // Use PayFast's exact documented approach: ALL fields, alphabetical order, URL encoded
-    let signatureString = '';
-    let encodedParams = '';
+    console.log('\n=== PAYFAST SIGNATURE GENERATION ===');
     
     // Sort ALL keys alphabetically 
     const sortedKeys = Object.keys(data).sort();
-    console.log('Processing all fields alphabetically:', sortedKeys);
+    console.log('Processing fields:', sortedKeys);
     
-    // Process each field exactly as PayFast documents
+    let signatureString = '';
+    let encodedParams = '';
+    
+    // For signature: use RAW values (no encoding)
+    // For URL params: use encoded values
     for (const key of sortedKeys) {
       if (data[key] !== undefined && data[key] !== '' && data[key] !== null) {
-        const value = data[key].toString().trim();
+        const rawValue = data[key].toString().trim();
+        const encodedValue = encodeURIComponent(rawValue).replace(/%20/g, '+');
         
-        // PayFast requirement: URL encode with + for spaces
-        const encodedValue = encodeURIComponent(value).replace(/%20/g, '+');
+        // Signature uses raw values
+        signatureString += `${key}=${rawValue}&`;
         
-        // Both signature and URL use encoded values
-        signatureString += `${key}=${encodedValue}&`;
+        // URL params use encoded values
         encodedParams += `${key}=${encodedValue}&`;
         
-        console.log(`${key}: "${value}" -> "${encodedValue}"`);
+        console.log(`${key}: raw="${rawValue}" encoded="${encodedValue}"`);
       }
     }
     
@@ -155,14 +155,13 @@ export class PayFastService {
     signatureString = signatureString.slice(0, -1);
     encodedParams = encodedParams.slice(0, -1);
     
-    // Add passphrase (also URL encoded)
+    // Add passphrase to signature (raw value)
     if (this.config.passphrase) {
-      const encodedPassphrase = encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, '+');
-      signatureString += `&passphrase=${encodedPassphrase}`;
-      console.log('Added passphrase (encoded):', encodedPassphrase);
+      signatureString += `&passphrase=${this.config.passphrase.trim()}`;
+      console.log('Added passphrase (raw):', this.config.passphrase.trim());
     }
     
-    console.log('Signature string:', signatureString);
+    console.log('Signature string (raw values):', signatureString);
     
     // Generate MD5 hash
     const signature = crypto.createHash("md5").update(signatureString).digest("hex");

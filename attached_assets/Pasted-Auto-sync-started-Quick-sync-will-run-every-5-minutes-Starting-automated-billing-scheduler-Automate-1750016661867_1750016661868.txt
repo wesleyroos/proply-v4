@@ -1,0 +1,55 @@
+Auto-sync started: Quick sync will run every 5 minutes
+Starting automated billing scheduler
+Automated billing scheduler started - will run at 9:00 AM on the 1st of each month
+7:43:10 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+7:43:16 PM [express] GET /api/user 401 in 3ms
+7:43:25 PM [express] GET /api/user 401 in 1ms
+7:43:25 PM [express] GET /api/user 401 in 1ms
+7:43:34 PM [express] GET /api/user 401 in 2ms
+7:43:34 PM [express] GET /api/agency-profile 401 in 1ms
+7:43:35 PM [express] GET /api/user 401 in 1ms
+Login attempt with email: ben@proply.co.za
+Login successful for user: 142
+7:43:39 PM [express] POST /api/login 200 in 300ms :: {"id":142,"email":"ben@proply.co.za","firstName…
+7:43:39 PM [express] GET /api/user 304 in 49ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+7:43:40 PM [express] GET /api/agency-profile 304 in 94ms :: {"id":1,"franchiseName":"Sotheby's Inter…
+7:43:41 PM [express] GET /api/payment-methods 304 in 99ms :: {"paymentMethods":[]}
+7:43:41 PM [express] GET /api/agency-billing/cycles 304 in 246ms :: {"billingCycles":[]}
+PayFast Service Config: {
+  merchantId: '10036450',
+  merchantKey: '8dafs***',
+  passphrase: '1nves***',
+  isTestMode: true
+}
+
+=== PAYFAST OFFICIAL METHOD ===
+Processing all fields alphabetically: [
+  'amount',
+  'cancel_url',
+  'item_description',
+  'item_name',
+  'merchant_id',
+  'merchant_key',
+  'notify_url',
+  'return_url',
+  'subscription_type'
+]
+amount: "0.00" -> "0.00"
+cancel_url: "http://localhost:5000/payment-setup-cancel" -> "http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel"
+item_description: "Setup payment method for agency billing" -> "Setup+payment+method+for+agency+billing"
+item_name: "Card-on-file" -> "Card-on-file"
+merchant_id: "10036450" -> "10036450"
+merchant_key: "8dafsqrcr99g5" -> "8dafsqrcr99g5"
+notify_url: "http://localhost:5000/api/payfast/notify" -> "http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify"
+return_url: "http://localhost:5000/payment-setup-success" -> "http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success"
+subscription_type: "2" -> "2"
+Added passphrase (encoded): 1nvest1ng_1n_Pr0perty_1s_W1se
+Signature string: amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup+payment+method+for+agency+billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+Generated signature: 47c43f8ab5ec1434721ac2d1642a7794
+=== END ===
+
+Final PayFast tokenize URL: https://sandbox.payfast.co.za/eng/process?amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup+payment+method+for+agency+billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2&signature=47c43f8ab5ec1434721ac2d1642a7794
+7:43:49 PM [express] POST /api/payfast/create-tokenize-url 200 in 59ms :: {"success":true,"tokenizeU…
