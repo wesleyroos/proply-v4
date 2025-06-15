@@ -1,0 +1,208 @@
+Custom Payment Integration
+Build a checkout form and receive payments securely from our payment platform.
+This process can be used for both one-time and recurring payments.
+
+Live: https://www.payfast.co.za/eng/process
+Sandbox: https://sandbox.payfast.co.za​/eng/process
+
+Quick start: It is recommended that you create your own Sandbox account to test your integration.
+
+Simple Form Integration
+<form action="https://www.payfast.co.za/eng/process" method="post">
+   <input type="hidden" name="merchant_id" value="10000100">
+   <input type="hidden" name="merchant_key" value="46f0cd694581a">
+   <input type="hidden" name="amount" value="100.00">
+   <input type="hidden" name="item_name" value="Test Product">
+   <input type="submit">
+</form> 
+Step 1: Create your checkout form
+Create a checkout page with an HTML form, usually hidden, with a number of fields containing all the necessary information needed for Payfast to process the payment. Most shopping cart platforms will have the customer click on a ‘Confirm Order’ or ‘Pay Now’ button to submit the form and be redirected to the Payfast Payment page.
+Merchant details
+merchant_id
+integer, 8 charREQUIRED
+The Merchant ID as given by the Payfast system. Used to uniquely identify the receiving account. This can be found on the merchant’s settings page.
+merchant_key
+stringREQUIRED
+The Merchant Key as given by the Payfast system. Used to uniquely identify the receiving account. This provides an extra level of certainty concerning the correct account as both the ID and the Key must be correct in order for the transaction to proceed. This can be found on the merchant’s settings page.
+return_url
+string, no char limitOPTIONAL
+The URL where the user is returned to after payment has been successfully taken.
+cancel_url
+string, no char limitOPTIONAL
+The URL where the user should be redirected should they choose to cancel their payment while on the Payfast system.
+notify_url
+string, no char limitOPTIONAL
+The URL which is used by Payfast to post the Instant Transaction Notifications (ITNs) for this transaction.
+fica_idnumber
+integer, 13 charOPTIONAL
+The Fica ID Number provided of the buyer must be a valid South African ID Number.
+For the notify_url mentioned, a variable can be specified globally on the Merchant’s Payfast account or overridden on a per transaction basis. The value provided during a transaction overrides the global setting.
+Merchant Details
+<input type="hidden" name="merchant_id" value="10000100">
+<input type="hidden" name="merchant_key" value="46f0cd694581a">
+<input type="hidden" name="return_url" value="https://www.example.com/success">
+<input type="hidden" name="cancel_url" value="https://www.example.com/cancel">
+<input type="hidden" name="notify_url" value="https://www.example.com/notify">
+ 
+Customer details
+name_first
+string, 100 char OPTIONAL
+The customer’s first name.
+name_last
+string, 100 char OPTIONAL
+The customer’s last name.
+email_address
+string, 100 char OPTIONAL
+The customer’s email address.
+cell_number
+string, 100 char OPTIONAL
+The customer’s valid cell number. If the email_address field is empty, and cell_number provided, the system will use the cell_number as the username and auto login the user, if they do not have a registered account
+Customer Details
+<input type="hidden" name="name_first" value="John">
+<input type="hidden" name="name_last" value="Doe">
+<input type="hidden" name="email_address" value="john@doe.com">
+<input type="hidden" name="cell_number" value="0823456789"> 
+Transaction details
+m_payment_id
+string, 100 char OPTIONAL
+Unique payment ID on the merchant’s system.
+amount
+decimalREQUIRED
+The amount which the payer must pay in ZAR.
+item_name
+string, 100 char REQUIRED
+The name of the item being charged for, or in the case of multiple items the order number.
+item_description
+string, 255 char OPTIONAL
+The description of the item being charged for, or in the case of multiple items the order description.
+custom_int<1..5>
+integer, 255 charOPTIONAL
+A series of 5 custom integer variables (custom_int1, custom_int2…) which can be used by the merchant as pass-through variables. They will be posted back to the merchant at the completion of the transaction.
+custom_str<1..5>
+string, 255 char OPTIONAL
+A series of 5 custom string variables (custom_str1, custom_str2…) which can be used by the merchant as pass-through variables. They will be posted back to the merchant at the completion of the transaction.
+Transaction Details
+<input type="hidden" name="m_payment_id" value="01AB">
+<input type="hidden" name="amount" value="100.00">
+<input type="hidden" name="item_name" value="Test Item">
+<input type="hidden" name="item_description" value="A test product">
+<input type="hidden" name="custom_int1" value="2">
+<input type="hidden" name="custom_str1" value="Extra order information">
+ 
+Transaction options
+email_confirmation
+boolean, 1 charOPTIONAL
+Whether to send an email confirmation to the merchant of the transaction. The email confirmation is automatically sent to the payer. 1 = on, 0 = off
+confirmation_address
+string, 100 charOPTIONAL
+The email address to send the confirmation email to. This value can be set globally on your account. Using this field will override the value set in your account for this transaction.
+Transaction Options
+<input type="hidden" name="email_confirmation" value="1">
+<input type="hidden" name="confirmation_address" value="john@doe.com"> 
+Payment methods
+payment_method
+string, 3 char OPTIONAL
+When this field is set, only the SINGLE payment method specified can be used when the customer reaches Payfast. If this field is blank, or not included, then all available payment methods will be shown.
+
+The values are as follows:
+‘ef’ – EFT
+‘cc’ – Credit card
+‘dc’ – Debit card
+’mp’ – Masterpass Scan to Pay
+‘mc’ – Mobicred
+‘sc’ – SCode
+‘ss’ – SnapScan
+‘zp’ – Zapper
+‘mt’ – MoreTyme
+‘rc’ – Store card
+‘mu’ – Mukuru
+‘ap’ – Apple Pay
+‘sp’ – Samsung Pay
+‘cp’ – Capitec Pay
+Payment Methods
+<input type="hidden" name="payment_method" value="cc"> 
+Recurring Billing and Split Payment form options
+
+(See Recurring Billing subscriptions and Split Payments for additional fields)
+
+Step 2: Create security signature
+A generated MD5 signature must be passed as an additional hidden input and this hash is then used to ensure the integrity of the data transfer.
+Security Signature
+<input type="hidden" name="signature" value="f103e22c0418655fb03991538c51bfd5"> 
+To generate the signature:
+
+1. Concatenation of the name value pairs of all the non-blank variables with ‘&’ used as a separator
+
+Variable order: The pairs must be listed in the order in which they appear in the attributes description. eg. name_first=John&name_last=Doe​&email_address=…
+* Do not use the API signature format, which uses alphabetical ordering!
+2. Add your passphrase
+The passphrase is an extra security feature, used as a ‘salt’, and is set by the Merchant in the Settings section of their Payfast Dashboard.
+Add the passphrase to the end of the below string.
+E.g. name_first=John&name_last=Doe​&email_address=…&passphrase=...
+
+The resultant URL encoding must be in upper case (eg. http%3A%2F%2F), and spaces encoded as ‘+’.
+
+3. MD5 the parameter string and pass it as a hidden input named “signature”
+
+Troubleshooting: For troubleshooting signature mismatch issues check out our knowledge base Common causes of a failed integration / signature mismatch
+Signature generation
+Node.js
+const crypto = require("crypto");
+
+const generateSignature = (data, passPhrase = null) => {
+  // Create parameter string
+  let pfOutput = "";
+  for (let key in data) {
+    if(data.hasOwnProperty(key)){
+      if (data[key] !== "") {
+        pfOutput +=`${key}=${encodeURIComponent(data[key].trim()).replace(/%20/g, "+")}&`
+      }
+    }
+  }
+
+  // Remove last ampersand
+  let getString = pfOutput.slice(0, -1);
+  if (passPhrase !== null) {
+    getString +=`&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`;
+  }
+
+  return crypto.createHash("md5").update(getString).digest("hex");
+}; 
+Step 3: Send the customer to Payfast for payment
+On submission of your form, your customers will be redirected to the secure Payfast payments page.
+Your form should be setup to post to either Payfast's live URL or the Sandbox for testing.
+Full form implementation
+Node.js
+const myData = [];
+// Merchant details
+myData["merchant_id"] = "10000100";
+myData["merchant_key"] = "46f0cd694581a";
+myData["return_url"] = "http://www.yourdomain.co.za/return_url";
+myData["cancel_url"] = "http://www.yourdomain.co.za/cancel_url";
+myData["notify_url"] = "http://www.yourdomain.co.za/notify_url";
+// Buyer details
+myData["name_first"] = "First Name";
+myData["name_last"] = "Last Name";
+myData["email_address"] = "test@test.com";
+// Transaction details
+myData["m_payment_id"] = "1234";
+myData["amount"] = "10.00";
+myData["item_name"] = "Order#123";
+
+// Generate signature
+const myPassphrase = "jt7NOE43FZPn";
+myData["signature"] = generateSignature(myData, myPassphrase);
+
+let htmlForm = `<form action="https://${pfHost}/eng/process" method="post">`;
+for (let key in myData) {
+  if(myData.hasOwnProperty(key)){
+    value = myData[key];
+    if (value !== "") {
+      htmlForm +=`<input name="${key}" type="hidden" value="${value.trim()}" />`;
+    }
+  }
+}
+
+htmlForm += '<input type="submit" value="Pay Now" /></form>'; 
+Step 4: Confirm payment is successful
+Before the customer is returned to the URL you specified in the “return_url” parameter, Payfast will send a notification to your “notify_url” page.
