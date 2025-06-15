@@ -1116,7 +1116,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="text-xs text-muted-foreground mt-2">
-                    Your payment information is securely processed by Yoco. Card details are tokenized and never stored on our servers.
+                    Your payment information is securely processed by PayFast. Card details are tokenized and never stored on our servers.
                   </div>
                 </div>
               )}

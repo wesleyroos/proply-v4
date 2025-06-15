@@ -3813,6 +3813,28 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // PayFast Routes
+  app.get('/api/payfast/config', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      // For now, default to test mode - in production this would be a system setting
+      const isTestMode = true;
+      
+      res.json({ 
+        isTestMode,
+        message: 'PayFast tokenization requires server-side processing'
+      });
+
+    } catch (error) {
+      console.error('Error getting PayFast config:', error);
+      res.status(500).json({ error: 'Failed to get payment configuration' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
