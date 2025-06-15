@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   RefreshCcw,
   Database,
@@ -26,10 +27,14 @@ import {
   Phone,
   Mail,
   Globe,
+  FileText,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { AgencyLogoUpload } from "./AgencyLogoUpload";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface Agency {
   id: string;
@@ -64,6 +69,21 @@ interface PaymentMethod {
   addedBy?: string;
 }
 
+interface ReportStats {
+  currentMonth: number;
+  previousMonth: number;
+  totalReports: number;
+  monthlyStats: {
+    month: string;
+    monthName: string;
+    reports: number;
+  }[];
+  reportTypes: {
+    reportType: string;
+    count: number;
+  }[];
+}
+
 interface AgencyDetailModalProps {
   agency: Agency | null;
   isOpen: boolean;
@@ -86,6 +106,23 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
       if (!response.ok) {
         if (response.status === 404) return { paymentMethods: [] };
         throw new Error('Failed to fetch payment methods');
+      }
+      return response.json();
+    },
+    enabled: !!agency?.id && isOpen
+  });
+
+  // Fetch report statistics for this agency
+  const { data: reportStats } = useQuery({
+    queryKey: ['/api/report-stats', agency?.id],
+    queryFn: async () => {
+      if (!agency?.id) return null;
+      const response = await fetch(`/api/agencies/${agency.id}/report-stats`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch report statistics');
       }
       return response.json();
     },
@@ -181,62 +218,69 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6">
-          {/* Agency Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Agency Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Provider:</span>
-                  <span>{agency.provider}</span>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Agency Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Agency Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Provider:</span>
+                    <span>{agency.provider}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Building className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Properties:</span>
+                    <span>{agency.totalProperties.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Last Sync:</span>
+                    <span>{agency.lastSync ? format(new Date(agency.lastSync), 'MMM d, yyyy HH:mm') : 'Never'}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Properties:</span>
-                  <span>{agency.totalProperties.toLocaleString()}</span>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <RefreshCcw className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Auto-sync:</span>
+                    {agency.autoSyncEnabled ? (
+                      <span className="text-green-600">Every {agency.syncFrequency}</span>
+                    ) : (
+                      <span className="text-muted-foreground">Disabled</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Logo:</span>
+                    {agency.logoUrl ? (
+                      <span className="text-green-600">Uploaded</span>
+                    ) : (
+                      <span className="text-muted-foreground">Not uploaded</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Billing:</span>
+                    {agency.billingEnabled ? (
+                      <Badge variant="secondary">Enabled</Badge>
+                    ) : (
+                      <span className="text-muted-foreground">Disabled</span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Last Sync:</span>
-                  <span>{agency.lastSync ? format(new Date(agency.lastSync), 'MMM d, yyyy HH:mm') : 'Never'}</span>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <RefreshCcw className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Auto-sync:</span>
-                  {agency.autoSyncEnabled ? (
-                    <span className="text-green-600">Every {agency.syncFrequency}</span>
-                  ) : (
-                    <span className="text-muted-foreground">Disabled</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Upload className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Logo:</span>
-                  {agency.logoUrl ? (
-                    <span className="text-green-600">Uploaded</span>
-                  ) : (
-                    <span className="text-muted-foreground">Not uploaded</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Billing:</span>
-                  {agency.billingEnabled ? (
-                    <Badge variant="secondary">Enabled</Badge>
-                  ) : (
-                    <span className="text-muted-foreground">Disabled</span>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
           {/* Last Sync Results */}
           {agency.lastSyncResult && (

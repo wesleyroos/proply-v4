@@ -2366,6 +2366,92 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get report statistics for a specific agency (for admin control panel)
+  app.get('/api/agencies/:agencyId/report-stats', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'system_admin' && user.role !== 'admin')) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { agencyId } = req.params;
+      
+      // Find the agency branch by slug
+      const agencyBranch = await db.query.agencyBranches.findFirst({
+        where: eq(agencyBranches.slug, agencyId)
+      });
+
+      if (!agencyBranch) {
+        return res.status(404).json({ error: 'Agency not found' });
+      }
+
+      // Get the agency identifier used in report tracking
+      const agencyIdentifier = `${agencyBranch.franchiseName}-${agencyBranch.branchName}`;
+      const agencyName = agencyBranch.franchiseName;
+
+      // Get monthly report stats for the last 12 months
+      const monthlyStats = await db
+        .select({
+          month: sql`TO_CHAR(DATE_TRUNC('month', ${reportGenerations.timestamp}), 'YYYY-MM')`.as('month'),
+          monthName: sql`TO_CHAR(DATE_TRUNC('month', ${reportGenerations.timestamp}), 'Mon YYYY')`.as('month_name'),
+          reports: sql`COUNT(*)::int`.as('reports')
+        })
+        .from(reportGenerations)
+        .where(sql`(${reportGenerations.agencyId} = ${agencyIdentifier} OR ${reportGenerations.agencyName} = ${agencyName})`)
+        .groupBy(sql`DATE_TRUNC('month', ${reportGenerations.timestamp})`)
+        .orderBy(sql`DATE_TRUNC('month', ${reportGenerations.timestamp}) DESC`)
+        .limit(12);
+
+      // Get current month stats
+      const currentMonth = await db
+        .select({
+          reports: sql`COUNT(*)::int`.as('reports')
+        })
+        .from(reportGenerations)
+        .where(sql`(${reportGenerations.agencyId} = ${agencyIdentifier} OR ${reportGenerations.agencyName} = ${agencyName}) 
+                   AND DATE_TRUNC('month', ${reportGenerations.timestamp}) = DATE_TRUNC('month', CURRENT_DATE)`);
+
+      // Get previous month stats
+      const previousMonth = await db
+        .select({
+          reports: sql`COUNT(*)::int`.as('reports')
+        })
+        .from(reportGenerations)
+        .where(sql`(${reportGenerations.agencyId} = ${agencyIdentifier} OR ${reportGenerations.agencyName} = ${agencyName}) 
+                   AND DATE_TRUNC('month', ${reportGenerations.timestamp}) = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')`);
+
+      // Get total reports
+      const totalReports = await db
+        .select({
+          reports: sql`COUNT(*)::int`.as('reports')
+        })
+        .from(reportGenerations)
+        .where(sql`(${reportGenerations.agencyId} = ${agencyIdentifier} OR ${reportGenerations.agencyName} = ${agencyName})`);
+
+      // Get report type breakdown
+      const reportTypes = await db
+        .select({
+          reportType: reportGenerations.reportType,
+          count: sql`COUNT(*)::int`.as('count')
+        })
+        .from(reportGenerations)
+        .where(sql`(${reportGenerations.agencyId} = ${agencyIdentifier} OR ${reportGenerations.agencyName} = ${agencyName})`)
+        .groupBy(reportGenerations.reportType)
+        .orderBy(sql`COUNT(*) DESC`);
+
+      res.json({
+        currentMonth: currentMonth[0]?.reports || 0,
+        previousMonth: previousMonth[0]?.reports || 0,
+        totalReports: totalReports[0]?.reports || 0,
+        monthlyStats: monthlyStats.reverse(), // Reverse to show oldest to newest for charts
+        reportTypes
+      });
+    } catch (error) {
+      console.error('Error fetching agency report stats:', error);
+      res.status(500).json({ error: 'Failed to fetch report statistics' });
+    }
+  });
+
   // Get payment methods for a specific agency (for admin control panel)
   app.get('/api/agencies/:agencyId/payment-methods', async (req, res) => {
     try {
