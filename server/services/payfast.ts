@@ -126,16 +126,17 @@ export class PayFastService {
     // Based on PayFast documentation: "Do not use the custom payment signature format"
     // means API uses alphabetical, but forms use documentation order
     
+    // PayFast documentation order from their tokenization example
     const formOrder = [
       'merchant_id',
-      'merchant_key', 
+      'merchant_key',
+      'subscription_type', 
+      'amount',
+      'item_name',
       'return_url',
       'cancel_url',
       'notify_url',
-      'amount',
-      'item_name',
-      'item_description',
-      'subscription_type'
+      'item_description' // Optional field, include if present
     ];
     
     console.log('2. Using PayFast form documentation order (not alphabetical)');
