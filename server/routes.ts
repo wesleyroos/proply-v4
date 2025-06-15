@@ -2456,6 +2456,13 @@ export function registerRoutes(app: Express): Server {
 
   // Test payment for agency
   app.post('/api/admin/agencies/:agencyId/test-payment', async (req, res) => {
+    console.log('=== TEST PAYMENT ENDPOINT HIT ===', { 
+      agencyId: req.params.agencyId, 
+      body: req.body,
+      authenticated: req.isAuthenticated(),
+      user: req.user?.email 
+    });
+    
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: 'Authentication required' });
     }
