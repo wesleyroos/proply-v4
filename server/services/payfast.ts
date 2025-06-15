@@ -105,7 +105,7 @@ export class PayFastService {
       return_url: returnUrl,
       cancel_url: cancelUrl,
       notify_url: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payfast/notify`,
-      amount: '1.00', // Minimum R1.00 required for tokenization
+      amount: '5.00', // Minimum R5.00 for subscription limits
       item_name: 'Payment Method Setup',
       item_description: 'Setup card for recurring billing',
       subscription_type: '2', // Ad-hoc subscription for tokenization
