@@ -98,17 +98,19 @@ export class PayFastService {
   }
 
   async createTokenizeUrl(returnUrl: string, cancelUrl: string, amount: number = 0): Promise<string> {
-    // For tokenization, amount should be 0 as per PayFast docs
+    // For tokenization, use minimum R1.00 and subscription_type 2 (ad-hoc)
     const data = {
       merchant_id: this.config.merchantId,
       merchant_key: this.config.merchantKey,
       return_url: returnUrl,
       cancel_url: cancelUrl,
       notify_url: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payfast/notify`,
-      amount: '0.00', // Tokenization requires 0 amount
-      item_name: 'Card-on-file',
-      item_description: 'Setup payment method for agency billing',
-      subscription_type: '2' // Ad-hoc subscription for tokenization
+      amount: '1.00', // Minimum R1.00 required for tokenization
+      item_name: 'Payment Method Setup',
+      item_description: 'Setup card for recurring billing',
+      subscription_type: '2', // Ad-hoc subscription for tokenization
+      frequency: '3', // Monthly (required for subscriptions)
+      cycles: '0' // Unlimited cycles for ad-hoc billing
     };
 
     // Generate signature and URL parameters using identical encoding
@@ -120,7 +122,7 @@ export class PayFastService {
     // Use the exact same encoded parameters that were used for signature generation
     const tokenizeUrl = `${baseUrl}?${encodedParams}&signature=${signature}`;
     
-    console.log('Final PayFast tokenize URL:', tokenizeUrl);
+    console.log('Final PayFast LIVE tokenize URL (with R1.00):', tokenizeUrl);
     
     return tokenizeUrl;
   }
