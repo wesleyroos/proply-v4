@@ -1,0 +1,51 @@
+Where the docs spell out the exact rules
+Scenario	Doc location	What it says (≤ 40 words)	One short quote
+HTML form / sandbox.payfast.co.za/eng/process (tokenisation checkout)	Docs ▸ Custom Integration ▸ Create security signature → Step 2	Use the custom‑payment signature: list parameters in the order shown in the attributes list, URL‑encode every value with PHP urlencode() (spaces become +), append &passphrase=…, then MD5‑hash.	“The pairs must be listed in the order in which they appear in the attributes list.” link
+Server‑to‑server API calls (https://api.payfast.co.za/…)	API Ref ▸ Authentication ▸ Signature generation	Combine all header + body + query fields, sort alphabetically, URL‑encode each value (same encoding PayFast will see), append passphrase, MD5‑hash → signature header.	“Each value should also be URLencoded (eg. “merchant-id=10000100&passphrase=passphrase&version=v1”).” link
+Putting those rules against your tests
+Test you tried	Correct for form?	Correct for API?	Why
+URL‑encoded (+ for spaces)	✅ Yes (matches urlencode())	✅ Yes	Both signature methods expect urlencode (which turns spaces into +).
+URL‑encoded (%20 for spaces)	❌ No (rawurlencode)	❌ No	PayFast uses urlencode() / http_build_query() internally, which converts spaces to +, not %20.
+Raw, un‑encoded values	❌ No	❌ No	Docs explicitly state every value must be URL‑encoded before hashing.
+Common causes of “Generated signature does not match submitted signature”
+Wrong ordering method
+Form = original attribute order.
+API = alphabetical.
+Missing or extra parameter
+Every non‑empty field that is sent (including subscription_type, return_url, etc.) must be present in the string you hash.
+Passphrase omitted or different
+Append &passphrase=<exact‑case‑sensitive‑value> to the end of the concatenated string before hashing.
+URL‑encoding mismatch
+Use PHP urlencode() (or its exact equivalent) – this encodes spaces as +, not %20.
+Checklist for your tokenisation form (subscription_type = 2)
+Build the field list in the same order as they appear in the Custom Integration attributes table.
+For each non‑empty field:
+php
+$signatureString .= $key .'='. urlencode(trim($value)) .'&';
+Append the passphrase:
+php
+$signatureString .= 'passphrase='. urlencode($passphrase);
+md5() the final string → hidden <input name="signature" …>.
+Example (simplified):
+php
+$data = [
+  'merchant_id'      => '10036450',
+  'merchant_key'     => '8dafsqrcr99g5',
+  'amount'           => '0.00',
+  'item_name'        => 'Card‑on‑file',
+  'subscription_type'=> '2',
+  'return_url'       => 'https://yourapp.com/return',
+  'cancel_url'       => 'https://yourapp.com/cancel',
+  'notify_url'       => 'https://yourapp.com/itn'
+];
+
+$passphrase = '1nvest1ng_1n_Pr0perty_1s_W1se';
+
+foreach ($data as $k => $v) {
+    if ($v !== '') { $sig .= $k.'='.urlencode(trim($v)).'&'; }
+}
+$sig .= 'passphrase='.urlencode($passphrase);
+
+$signature = md5($sig);   // put this in the hidden signature field
+Follow the same alphabetised‑ordering rules (and the same urlencode) for any API request you make later, but place the resulting hash in the signature header instead of a hidden form field.
+That alignment with the two documented methods should eliminate the mismatch error.

@@ -1,0 +1,54 @@
+ rest-express@1.0.0 dev
+Auto-sync started: Quick sync will run every 5 minutes
+Starting automated billing scheduler
+Automated billing scheduler started - will run at 9:00 AM on the 1st of each month
+7:27:33 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+7:27:38 PM [express] GET /api/user 401 in 3ms
+7:27:48 PM [express] GET /api/user 401 in 2ms
+7:27:49 PM [express] GET /api/user 401 in 1ms
+7:28:28 PM [express] GET /api/user 401 in 2ms
+7:28:28 PM [express] GET /api/agency-profile 401 in 2ms
+7:28:28 PM [express] GET /api/user 401 in 1ms
+Login attempt with email: ben@proply.co.za
+Login successful for user: 142
+7:28:32 PM [express] POST /api/login 200 in 319ms :: {"id":142,"email":"ben@proply.co.za","firstName…
+7:28:33 PM [express] GET /api/user 304 in 47ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+7:28:33 PM [express] GET /api/agency-profile 304 in 92ms :: {"id":1,"franchiseName":"Sotheby's Inter…
+7:28:42 PM [express] GET /api/agency-billing/cycles 304 in 93ms :: {"billingCycles":[]}
+7:28:42 PM [express] GET /api/payment-methods 304 in 251ms :: {"paymentMethods":[]}
+7:28:48 PM [express] GET /api/user 401 in 1ms
+
+=== PAYFAST FORM SIGNATURE DEBUG ===
+1. Input data: {
+  "merchant_id": "10036450",
+  "merchant_key": "8dafsqrcr99g5",
+  "return_url": "http://localhost:5000/payment-setup-success",
+  "cancel_url": "http://localhost:5000/payment-setup-cancel",
+  "notify_url": "http://localhost:5000/api/payfast/notify",
+  "amount": "0.00",
+  "item_name": "Card-on-file",
+  "item_description": "Setup payment method for agency billing",
+  "subscription_type": "2"
+}
+2. Using PayFast form documentation order (not alphabetical)
+3. Processing parameters in documentation order:
+   merchant_id: "10036450" (raw for signature, "10036450" for URL)
+   merchant_key: "8dafsqrcr99g5" (raw for signature, "8dafsqrcr99g5" for URL)
+   return_url: "http://localhost:5000/payment-setup-success" (raw for signature, "http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success" for URL)
+   cancel_url: "http://localhost:5000/payment-setup-cancel" (raw for signature, "http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel" for URL)
+   notify_url: "http://localhost:5000/api/payfast/notify" (raw for signature, "http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify" for URL)
+   amount: "0.00" (raw for signature, "0.00" for URL)
+   item_name: "Card-on-file" (raw for signature, "Card-on-file" for URL)
+   item_description: "Setup payment method for agency billing" (raw for signature, "Setup+payment+method+for+agency+billing" for URL)
+   subscription_type: "2" (raw for signature, "2" for URL)
+4. Added passphrase to signature (raw): 1nvest1ng_1n_Pr0perty_1s_W1se
+5. Final signature string (raw values): merchant_id=10036450&merchant_key=8dafsqrcr99g5&return_url=http://localhost:5000/payment-setup-success&cancel_url=http://localhost:5000/payment-setup-cancel&notify_url=http://localhost:5000/api/payfast/notify&amount=0.00&item_name=Card-on-file&item_description=Setup payment method for agency billing&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+6. Final URL parameters (encoded): merchant_id=10036450&merchant_key=8dafsqrcr99g5&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&amount=0.00&item_name=Card-on-file&item_description=Setup+payment+method+for+agency+billing&subscription_type=2
+7. Generated form signature: 2193c3c492f41f1a9a63e264a7e7a60f
+=== END FORM DEBUG ===
+
+Final PayFast tokenize URL: https://sandbox.payfast.co.za/eng/process?merchant_id=10036450&merchant_key=8dafsqrcr99g5&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&amount=0.00&item_name=Card-on-file&item_description=Setup+payment+method+for+agency+billing&subscription_type=2&signature=2193c3c492f41f1a9a63e264a7e7a60f
+7:28:49 PM [express] POST /api/payfast/create-tokenize-url 200 in 48ms :: {"success":true,"tokenizeU…

@@ -149,14 +149,13 @@ export class PayFastService {
       if (data[key] !== undefined && data[key] !== '' && data[key] !== null) {
         const rawValue = data[key].toString().trim();
         
-        // For signature: use raw values
-        signatureString += `${key}=${rawValue}&`;
-        
-        // For URL: use proper encoding
+        // For BOTH signature and URL: use urlencode() equivalent (spaces become +)
         const encodedValue = encodeURIComponent(rawValue).replace(/%20/g, '+');
+        
+        signatureString += `${key}=${encodedValue}&`;
         encodedParams += `${key}=${encodedValue}&`;
         
-        console.log(`   ${key}: "${rawValue}" (raw for signature, "${encodedValue}" for URL)`);
+        console.log(`   ${key}: "${rawValue}" -> "${encodedValue}" (URL-encoded for both)`);
       }
     }
     
@@ -164,13 +163,14 @@ export class PayFastService {
     signatureString = signatureString.slice(0, -1);
     encodedParams = encodedParams.slice(0, -1);
     
-    // Add passphrase to signature only (not URL)
+    // Add passphrase to signature only (not URL) - also URL-encoded
     if (this.config.passphrase) {
-      signatureString += `&passphrase=${this.config.passphrase.trim()}`;
-      console.log('4. Added passphrase to signature (raw):', this.config.passphrase.trim());
+      const encodedPassphrase = encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, '+');
+      signatureString += `&passphrase=${encodedPassphrase}`;
+      console.log('4. Added passphrase to signature (URL-encoded):', encodedPassphrase);
     }
     
-    console.log('5. Final signature string (raw values):', signatureString);
+    console.log('5. Final signature string (URL-encoded values):', signatureString);
     console.log('6. Final URL parameters (encoded):', encodedParams);
     
     // Generate MD5 hash
