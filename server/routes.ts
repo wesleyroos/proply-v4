@@ -2503,99 +2503,62 @@ export function registerRoutes(app: Express): Server {
       
       console.log('Payment method details:', {
         id: primaryMethod.id,
-        tokenLength: primaryMethod.yocoToken?.length,
+        tokenLength: primaryMethod.payfastToken?.length,
         cardLast4: primaryMethod.cardLastFour,
         isActive: primaryMethod.isActive
       });
 
-      // Get Yoco mode setting from database
-      const yocoModeSetting = await db.query.systemSettings.findFirst({
-        where: eq(systemSettings.key, 'yoco_test_mode')
+      // Get PayFast mode setting from database
+      const payfastModeSetting = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, 'payfast_test_mode')
       });
       
-      const isTestMode = yocoModeSetting?.value === 'true';
-      const secretKey = isTestMode 
-        ? process.env.YOCO_TEST_SECRET_KEY 
-        : process.env.YOCO_SECRET_KEY;
+      const isTestMode = payfastModeSetting?.value === 'true';
+      
+      // Initialize PayFast service
+      const { PayFastService } = await import('./services/payfast');
+      const payfast = new PayFastService(isTestMode);
 
-      if (!secretKey) {
-        return res.status(500).json({ 
-          error: `Yoco ${isTestMode ? 'test' : 'live'} secret key not configured` 
-        });
-      }
-
-      console.log('Yoco payment request details:', {
+      console.log('PayFast payment request details:', {
         mode: isTestMode ? 'TEST' : 'LIVE',
         amount: amount,
-        amountInCents: Math.round(amount * 100),
-        hasToken: !!primaryMethod.yocoToken,
-        tokenPrefix: primaryMethod.yocoToken?.substring(0, 10) + '...'
+        hasToken: !!primaryMethod.payfastToken,
+        tokenPrefix: primaryMethod.payfastToken?.substring(0, 10) + '...'
       });
 
-      // Create Yoco payment (respects admin mode toggle)
-      const requestBody = {
-        token: primaryMethod.yocoToken,
-        amountInCents: Math.round(amount * 100),
-        currency: 'ZAR',
-        metadata: {
-          agencyId,
-          type: 'test_payment',
-          description: `Test payment for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`
-        }
+      // Create PayFast ad-hoc charge
+      const chargeRequest = {
+        amount: amount,
+        item_name: 'Test Payment',
+        item_description: `Test payment for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`,
+        m_payment_id: `test-${Date.now()}-${agencyId}`
       };
 
-      console.log('Yoco API request body:', JSON.stringify(requestBody, null, 2));
+      console.log('PayFast charge request:', JSON.stringify(chargeRequest, null, 2));
 
-      // Try the newer charges endpoint with different structure
-      const chargeRequestBody = {
-        source: primaryMethod.yocoToken,
-        amount: Math.round(amount * 100),
-        currency: 'ZAR',
-        metadata: {
-          agencyId,
-          type: 'test_payment',
-          description: `Test payment for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`
-        }
-      };
-
-      console.log('Yoco charge request body:', JSON.stringify(chargeRequestBody, null, 2));
-
-      const yocoResponse = await fetch('https://online.yoco.com/v1/charges', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${secretKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(chargeRequestBody)
-      });
-
-      const yocoData = await yocoResponse.json();
+      // Charge the PayFast token
+      const payfastResponse = await payfast.chargeToken(primaryMethod.payfastToken, chargeRequest);
       
-      console.log('Yoco API response:', {
-        status: yocoResponse.status,
-        ok: yocoResponse.ok,
-        headers: Object.fromEntries(yocoResponse.headers.entries()),
-        data: yocoData
-      });
+      console.log('PayFast API response:', payfastResponse);
 
-      if (!yocoResponse.ok) {
-        console.error('Yoco test payment error:', yocoData);
+      if (payfastResponse.code !== 200 || payfastResponse.status !== 'success') {
+        console.error('PayFast test payment error:', payfastResponse);
         return res.status(400).json({ 
-          error: yocoData.displayMessage || 'Test payment failed' 
+          error: payfastResponse.message || 'Test payment failed' 
         });
       }
 
       // Log the test payment as a simple record (using existing billing transactions table)
       const insertResult = await db.execute(sql`
         INSERT INTO billing_transactions (agency_id, amount, status, transaction_id, description, processed_at)
-        VALUES (${agencyId}, ${amount.toString()}, 'completed', ${yocoData.id}, ${'Test payment - R' + amount}, ${new Date()})
+        VALUES (${agencyId}, ${amount.toString()}, 'completed', ${payfastResponse.data!.pf_payment_id}, ${'Test payment - R' + amount}, ${new Date()})
       `);
 
-      console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${yocoData.id} - Mode: ${isTestMode ? 'TEST' : 'LIVE'}`);
+      console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${payfastResponse.data!.pf_payment_id} - Mode: ${isTestMode ? 'TEST' : 'LIVE'}`);
 
       res.json({
         success: true,
-        transactionId: yocoData.id,
+        transactionId: payfastResponse.data!.pf_payment_id,
         amount,
         mode: isTestMode ? 'test' : 'live',
         message: `Test payment completed successfully in ${isTestMode ? 'TEST' : 'LIVE'} mode`

@@ -1,8 +1,9 @@
 import cron from 'node-cron';
 import { db } from '@db/index';
-import { reportGenerations, agencyInvoices, transactionHistory, agencyBillingSettings, agencyBranches } from '@db/schema';
+import { reportGenerations, agencyInvoices, transactionHistory, agencyBillingSettings, agencyBranches, agencyPaymentMethods } from '@db/schema';
 import { sql, gte, lt, eq, and } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
+import { PayFastService } from '../services/payfast';
 
 interface BillingCalculation {
   agencyId: string;
@@ -12,13 +13,15 @@ interface BillingCalculation {
   billingEnabled: boolean;
 }
 
-interface YocoChargeResponse {
-  id: string;
-  status: 'successful' | 'failed' | 'pending';
-  amount: number;
-  currency: string;
-  failure_reason?: string;
-  created_date: string;
+interface PayFastChargeResponse {
+  code: number;
+  status: string;
+  data?: {
+    pf_payment_id: string;
+    payment_status: string;
+    amount_gross: string;
+  };
+  message?: string;
 }
 
 // Calculate tiered billing amount
@@ -95,20 +98,51 @@ async function getMonthlyUsageByAgency(year: number, month: number): Promise<Bil
   }));
 }
 
-// Charge agency using stored Yoco payment method (simplified version)
-async function chargeAgencyCard(agencyId: string, amount: number, invoiceId: string): Promise<YocoChargeResponse> {
+// Charge agency using stored PayFast payment method
+async function chargeAgencyCard(agencyId: string, amount: number, invoiceId: string): Promise<PayFastChargeResponse> {
   try {
-    // For now, simulate a successful charge - in production this would integrate with actual payment methods
-    console.log(`Simulating charge for agency ${agencyId}: R${amount}`);
+    console.log(`Processing PayFast charge for agency ${agencyId}: R${amount}`);
     
-    // Simulate API response
-    return {
-      id: `charge_${createId()}`,
-      status: 'successful',
-      amount: Math.round(amount * 100),
-      currency: 'ZAR',
-      created_date: new Date().toISOString()
+    // Find the agency branch to get payment method
+    const agencyBranch = await db.query.agencyBranches.findFirst({
+      where: eq(agencyBranches.slug, agencyId)
+    });
+
+    if (!agencyBranch) {
+      throw new Error(`Agency branch not found: ${agencyId}`);
+    }
+
+    // Get payment method for this agency
+    const paymentMethod = await db.query.agencyPaymentMethods.findFirst({
+      where: and(
+        eq(agencyPaymentMethods.agencyBranchId, agencyBranch.id),
+        eq(agencyPaymentMethods.isActive, true)
+      )
+    });
+
+    if (!paymentMethod) {
+      throw new Error(`No active payment method found for agency: ${agencyId}`);
+    }
+
+    // Initialize PayFast service (default to live mode for production billing)
+    const payfast = new PayFastService(false);
+    
+    // Create PayFast charge request
+    const chargeRequest = {
+      amount: amount,
+      item_name: 'Monthly Report Billing',
+      item_description: `Monthly billing for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`,
+      m_payment_id: invoiceId
     };
+
+    // Execute the charge
+    const response = await payfast.chargeToken(paymentMethod.payfastToken, chargeRequest);
+    
+    if (response.code !== 200 || response.status !== 'success') {
+      throw new Error(response.message || 'PayFast charge failed');
+    }
+
+    return response;
   } catch (error) {
     console.error(`Failed to charge agency ${agencyId}:`, error);
     throw error;
