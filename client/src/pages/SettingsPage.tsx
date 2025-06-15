@@ -938,7 +938,18 @@ export default function SettingsPage() {
           throw new Error('Failed to create PayFast tokenization URL');
         }
         
-        const { tokenizeUrl } = await tokenizeResponse.json();
+        const responseText = await tokenizeResponse.text();
+        let tokenizeUrl;
+        
+        try {
+          const jsonResponse = JSON.parse(responseText);
+          tokenizeUrl = jsonResponse.tokenizeUrl;
+        } catch (parseError) {
+          // If response is not JSON, it might be HTML from PayFast
+          // Extract URL from HTML or use the response directly
+          console.error('Failed to parse JSON response:', parseError);
+          throw new Error('Invalid response from payment gateway');
+        }
 
         // Validate cardholder name
         if (!cardForm.cardholderName) {

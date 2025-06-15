@@ -3501,6 +3501,55 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.post('/api/payfast/create-tokenize-url', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
+        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      }
+
+      // Get the user's agency branch
+      let branchId = user.branchId;
+      
+      if (user.role === 'franchise_admin' && user.franchiseId) {
+        const [firstBranch] = await db
+          .select()
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, user.franchiseId))
+          .limit(1);
+        
+        if (firstBranch) {
+          branchId = firstBranch.id;
+        }
+      }
+
+      if (!branchId) {
+        return res.status(400).json({ error: "No branch associated with user" });
+      }
+
+      // Import PayFast service
+      const { PayFastService } = await import('./services/payfast');
+      const payfast = new PayFastService(true);
+      
+      const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+      const returnUrl = `${baseUrl}/payment-setup-success`;
+      const cancelUrl = `${baseUrl}/payment-setup-cancel`;
+      
+      // Create tokenization URL
+      const tokenizeUrl = await payfast.createTokenizeUrl(returnUrl, cancelUrl, 5.00);
+      
+      res.json({ 
+        success: true,
+        tokenizeUrl,
+        message: 'Redirect user to this URL to setup payment method'
+      });
+
+    } catch (error) {
+      console.error('Error creating PayFast tokenize URL:', error);
+      res.status(500).json({ error: 'Failed to create tokenization URL' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
