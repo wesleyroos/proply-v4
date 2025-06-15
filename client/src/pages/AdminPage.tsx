@@ -162,7 +162,7 @@ export default function AdminPage() {
   const [isSandboxMode, setIsSandboxMode] = useState(() => {
     return localStorage.getItem('payfast_sandbox_mode') === 'true';
   });
-  const [isYocoTestMode, setIsYocoTestMode] = useState(false);
+
   const [isInvitationModalOpen, setIsInvitationModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("users");
 
@@ -187,43 +187,9 @@ export default function AdminPage() {
     enabled: !!user?.isAdmin,
   });
 
-  const {
-    data: yocoTestModeSetting,
-    isLoading: yocoSettingLoading,
-  } = useQuery<{key: string; value: string}>({
-    queryKey: ["/api/system-settings/yoco_test_mode"],
-    enabled: !!user?.isAdmin,
-  });
 
-  // Update local state when setting is loaded
-  React.useEffect(() => {
-    if (yocoTestModeSetting?.value) {
-      setIsYocoTestMode(yocoTestModeSetting.value === 'true');
-    }
-  }, [yocoTestModeSetting]);
 
-  const updateYocoTestMode = useMutation({
-    mutationFn: async (enabled: boolean) => {
-      const response = await fetch('/api/system-settings/yoco_test_mode', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ value: enabled.toString() })
-      });
-      if (!response.ok) throw new Error('Failed to update setting');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/system-settings/yoco_test_mode"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to update Yoco test mode setting",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   const userActionMutation = useMutation({
     mutationFn: async ({
@@ -323,23 +289,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleYocoTestToggle = (checked: boolean) => {
-    const message = checked 
-      ? "Enable Yoco test mode? This will use test payment processing for agency billing."
-      : "Disable Yoco test mode? This will use live payment processing for agency billing.";
-    
-    if (window.confirm(message)) {
-      setIsYocoTestMode(checked);
-      updateYocoTestMode.mutate(checked);
-      toast({
-        title: checked ? "Yoco Test Mode Enabled" : "Yoco Test Mode Disabled",
-        description: checked 
-          ? "Yoco is now in test mode - agency billing will use test credentials."
-          : "Yoco is now in live mode - agency billing will use live credentials.",
-        duration: 3000,
-      });
-    }
-  };
+
 
   if (!user?.isAdmin) {
     return (
@@ -390,23 +340,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Yoco Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-lg border border-blue-200 bg-blue-50">
-                <div className="flex-1">
-                  <h4 className="font-medium text-blue-800">Yoco</h4>
-                  <p className="text-sm text-blue-700">Agency billing</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="yoco-test-mode"
-                    checked={isYocoTestMode}
-                    onCheckedChange={handleYocoTestToggle}
-                  />
-                  <span className="text-sm font-medium text-blue-800 min-w-[80px]">
-                    {isYocoTestMode ? "Test" : "Live"}
-                  </span>
-                </div>
-              </div>
+
             </div>
           </CardContent>
         </Card>

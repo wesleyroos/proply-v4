@@ -196,7 +196,7 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/propdata-reports/") || // PropData PDF reports
       req.path === "/pdf-test" || // PDF test endpoint
       req.path.startsWith("/pdf-generate/") || // PDF generation endpoint
-      req.path === "/yoco/public-key" || // Yoco public key endpoint
+
       req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept") // Admin invitation acceptance
     ) {
       return next();
