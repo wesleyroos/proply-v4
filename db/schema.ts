@@ -246,8 +246,8 @@ export const transactionHistory = pgTable("transaction_history", {
   invoiceId: text("invoice_id").notNull().references(() => agencyInvoices.invoiceId),
   agencyId: varchar("agency_id", { length: 255 }).notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-  yocoTransactionId: text("yoco_transaction_id"),
-  yocoPaymentId: text("yoco_payment_id"),
+  payfastTransactionId: text("payfast_transaction_id"),
+  payfastPaymentId: text("payfast_payment_id"),
   paymentMethodId: text("payment_method_id"),
   status: text("status").notNull(), // pending, completed, failed, cancelled, refunded
   gatewayResponse: jsonb("gateway_response"),
@@ -763,7 +763,7 @@ export const agencyBillingSettings = pgTable("agency_billing_settings", {
 export const agencyPaymentMethods = pgTable("agency_payment_methods", {
   id: serial("id").primaryKey(),
   agencyBranchId: integer("agency_branch_id").notNull().references(() => agencyBranches.id),
-  yocoToken: text("yoco_token").notNull(),
+  payfastToken: text("payfast_token").notNull(),
   cardLastFour: text("card_last_four").notNull(),
   expiryMonth: integer("expiry_month").notNull(),
   expiryYear: integer("expiry_year").notNull(),
@@ -786,7 +786,7 @@ export const agencyBillingCycles = pgTable("agency_billing_cycles", {
   status: text("status").default("pending").notNull(), // pending, paid, failed, cancelled
   dueDate: timestamp("due_date").notNull(),
   paidAt: timestamp("paid_at"),
-  yocoPaymentId: text("yoco_payment_id"),
+  payfastPaymentId: text("payfast_payment_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

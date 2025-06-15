@@ -1,0 +1,65 @@
+PayFast documentation you need (tokenisation / variable recurring)
+Topic	Where it is in the docs	Key points (≤ 40 words)	1 short quote
+Creating the token (once‑off “tokenisation” checkout)	Docs ▸ Recurring Billing guide → Tokenisation section	Redirect the customer to PayFast with subscription_type=2 and normal payment variables. When the card is authorised PayFast sends an ITN containing the token you will use for future charges.	“Two types of recurring payments: Subscriptions and Tokenization.” link
+Charging that token for any amount, any time	API Ref ▸ Recurring Billing ▸ Charge a tokenization payment	Endpoint: POST https://api.payfast.co.za/subscriptions/{token}/adhoc Headers: merchant-id, version, timestamp, signature. Body: amount (cents), item_name, optional item_description, itn. Sandbox: add ?testing=true.	“POST /subscriptions/:token/adhoc” link
+Signature / authentication	API Ref ▸ Authentication	Build a query string of all header + body fields (alphabetical, URL‑encoded), append passphrase, then MD5‑hash. Put the hash in the signature header.	“The MD5 hash of the alphabetised submitted header and body variables.” link
+Step‑by‑step integration
+Initial tokenisation checkout (once per client)
+html
+<form action="https://www.payfast.co.za/eng/process" method="post">
+  <input type="hidden" name="merchant_id"      value="10000100">
+  <input type="hidden" name="merchant_key"     value="abc123">
+  <input type="hidden" name="subscription_type" value="2"><!-- tokenisation -->
+  <input type="hidden" name="amount"           value="0">
+  <input type="hidden" name="item_name"        value="Card‑on‑file">
+  <input type="hidden" name="return_url"       value="https://yourapp.com/paid">
+  <input type="hidden" name="cancel_url"       value="https://yourapp.com/cancel">
+  <input type="hidden" name="notify_url"       value="https://yourapp.com/itn">
+  <!-- include your signature field as usual -->
+</form>
+Customer authorises once → PayFast posts an ITN to notify_url that contains token=dc0521d3‑55f....
+Store that token against the customer.
+Variable monthly (usage‑based) charge
+http
+POST https://api.payfast.co.za/subscriptions/dc0521d3-55f.../adhoc
+Content-Type: application/json
+merchant-id: 10000100
+version: v1
+timestamp: 2025-06-15T14:23:45+02:00
+signature: <md5 hash>
+
+{
+  "amount":  8750,                       // R87.50  (ZAR cents)
+  "item_name": "May 2025 usage",
+  "item_description": "350 units @ R0.25",
+  "itn": true                            // send ITN when processed
+}
+Response (200 OK):
+json
+{
+  "code": 200,
+  "status": "success",
+  "data": {
+    "pf_payment_id": "123456789",
+    "amount_gross": 87.50,
+    "status_text": "COMPLETE"
+  }
+}
+Signature generation
+text
+amount=8750&item_description=350%20units%20%40%20R0.25&
+item_name=May%202025%20usage&merchant-id=10000100&
+timestamp=2025-06-15T14:23:45%2B02:00&version=v1&
+passphrase=YOUR_PASSPHRASE
+→ MD5 → put result in signature header.
+Webhooks / ITN
+If you set "itn": true PayFast will POST an Instant Transaction Notification (payment_type=adhoc) to the URL configured in your dashboard.
+Verify the ITN signature exactly as you do for one‑off payments, then mark the invoice as paid.
+Sandbox testing
+Use exactly the same calls but append ?testing=true to the endpoint:
+bash
+https://api.payfast.co.za/subscriptions/{token}/adhoc?testing=true
+and supply your sandbox merchant_id, merchant_key, and passphrase.
+Putting it all together
+One‑time customer action: run the tokenisation checkout to capture the card and obtain the token.
+Every billing cycle: your app calculates usage → calls the adhoc endpoint with that amount → listens for the ITN to confirm success.

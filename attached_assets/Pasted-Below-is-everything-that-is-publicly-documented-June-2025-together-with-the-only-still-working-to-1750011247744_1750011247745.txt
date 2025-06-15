@@ -1,0 +1,68 @@
+Below is everything that is publicly documented (June 2025) together with the only still‑working “token charge” path that Yoco keeps alive for merchants who were explicitly whitelisted for the old Recurring Payments programme.
+1. What the current public docs show
+Area	What the docs say	URL in the docs
+Checkout (new platform)	The only server‑to‑server flow that is documented is:<br>1. POST https://payments.yoco.com/api/checkouts to create a checkout object.<br>2. Redirect the shopper to the hosted page or open it in the Drop‑in.<br>3. Wait for the payment.created webhook or poll the checkout.<br>4. (Optional) POST …/api/refunds to refund.	Online Payments → API Reference → Checkout
+Tokens / Saved cards	Not present in the 2025 documentation. The new Checkout API returns single‑use tokens that expire as soon as they are used to create a payment.	
+Recurring / Subscriptions	No public section. The docs instruct merchants to “contact Yoco support” if they need recurring payments.	
+Take‑away: the new public API does not expose an endpoint that lets you re‑use a previously stored card token.
+If you want recurring payments on the new platform you must open a support ticket and be moved to a private beta.
+2. The legacy “/v1/charges” endpoint (still online but deprecated)
+Yoco is still running the old REST service for merchants that were migrated from the previous platform.
+If your account was never enrolled in the legacy Recurring Payments programme the call will return HTTP 5xx or 4xx with a deprecation banner (exactly what you are seeing).
+2.1 Endpoint & method
+bash
+POST  https://online.yoco.com/v1/charges
+2.2 Authentication
+Basic auth, not Bearer.
+Encode SECRET_KEY: (note the trailing colon) in base‑64:
+bash
+Authorization: Basic {base64( sk_test_… + ":" )}
+Content‑Type: application/json
+2.3 Request body
+json
+{
+  "token"          : "tok_j0xEvUMqOKbAlvCzGFX2cxjo",
+  "amountInCents"  : 500,          // R5.00  (rand × 100)
+  "currency"       : "ZAR",
+  "description"    : "Test charge",   // optional
+  "metadata"       : { "reference": "Order‑123" }   // optional
+}
+Field	Required	Notes
+token	✔	Card token you captured earlier
+amountInCents	✔	Integer, value in cents
+currency	✔	Always ZAR
+description	–	Shown on the customer’s statement
+metadata	–	Free‑form key/value pairs
+2.4 Typical successful response
+json
+{
+  "id"            : "ch_2u13kl4Xw6",
+  "status"        : "successful",
+  "amountInCents" : 500,
+  "currency"      : "ZAR",
+  "source"        : {
+      "brand"   : "Visa",
+      "last4"   : "4242",
+      "exp_month": 12,
+      "exp_year" : 2026
+  },
+  "created"       : 1718450020,
+  "metadata"      : { "reference": "Order‑123" }
+}
+If the charge requires 3‑D Secure the API returns
+status = "pending_3ds" plus a redirect_url.
+Send the shopper to that URL and then poll GET /v1/charges/{id} until the status becomes successful or failed.
+3. What to do next
+Ask Yoco support to confirm that “Recurring Payments / Tokenised Charges” is enabled on both your test and live keys.
+Without that flag the /v1/charges call will always fail.
+Once enabled, use the exact request shown in section 2 (POST /v1/charges, Basic auth, JSON body).
+If Yoco declines to enable the legacy feature you will need to create a fresh Checkout for every payment or wait until they release the new recurring‑payments API.
+Quick checklist for your current test call
+✅ Token: tok_j0xEvUMqOKbAlvCzGFX2cxjo
+✅ Amount: 500 (cents)
+✅ Currency: ZAR
+✅ Secret key works
+❌ Use Basic auth (not Bearer)
+❌ Endpoint must be https://online.yoco.com/v1/charges (no trailing slash is fine)
+❌ Make sure Recurring Payments is switched on for your account
+With those points corrected, the call will succeed provided your profile has been whitelisted for the legacy service.
