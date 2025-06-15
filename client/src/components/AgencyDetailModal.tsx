@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -29,8 +28,8 @@ import {
   TrendingDown,
   Activity,
 } from "lucide-react";
-import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 import { AgencyLogoUpload } from "./AgencyLogoUpload";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -691,7 +690,7 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                         <span className="text-sm font-medium">Upcoming</span>
                       </div>
                       <div className="text-2xl font-bold mt-1">
-                        {reportStats.invoices.filter(inv => inv.status === 'upcoming').length}
+                        {reportStats.invoices.filter((inv: any) => inv.status === 'upcoming').length}
                       </div>
                     </CardContent>
                   </Card>

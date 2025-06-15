@@ -221,7 +221,43 @@ export const dealScoreLeads = pgTable("deal_score_leads", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Add invoices table
+// Agency invoices table
+export const agencyInvoices = pgTable("agency_invoices", {
+  id: serial("id").primaryKey(),
+  invoiceId: text("invoice_id").unique().notNull(),
+  agencyId: varchar("agency_id", { length: 255 }).notNull(),
+  agencyName: varchar("agency_name", { length: 255 }).notNull(),
+  month: varchar("month", { length: 7 }).notNull(), // YYYY-MM format
+  year: integer("year").notNull(),
+  reportCount: integer("report_count").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  invoiceDate: date("invoice_date").notNull(),
+  dueDate: date("due_date").notNull(),
+  status: text("status").notNull().default('pending'), // pending, paid, overdue, cancelled
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+});
+
+// Transaction history table for payment tracking
+export const transactionHistory = pgTable("transaction_history", {
+  id: serial("id").primaryKey(),
+  transactionId: text("transaction_id").unique().notNull(),
+  invoiceId: text("invoice_id").notNull().references(() => agencyInvoices.invoiceId),
+  agencyId: varchar("agency_id", { length: 255 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  yocoTransactionId: text("yoco_transaction_id"),
+  yocoPaymentId: text("yoco_payment_id"),
+  paymentMethodId: text("payment_method_id"),
+  status: text("status").notNull(), // pending, completed, failed, cancelled, refunded
+  gatewayResponse: jsonb("gateway_response"),
+  errorMessage: text("error_message"),
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+});
+
+// Add invoices table (keeping for backward compatibility)
 export const invoices = pgTable("invoices", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -755,23 +791,7 @@ export const agencyBillingCycles = pgTable("agency_billing_cycles", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const agencyInvoices = pgTable("agency_invoices", {
-  id: serial("id").primaryKey(),
-  agencyBranchId: integer("agency_branch_id").notNull().references(() => agencyBranches.id),
-  billingCycleId: integer("billing_cycle_id").notNull().references(() => agencyBillingCycles.id),
-  invoiceNumber: text("invoice_number").unique().notNull(),
-  issueDate: timestamp("issue_date").notNull(),
-  dueDate: timestamp("due_date").notNull(),
-  subtotal: text("subtotal").notNull(),
-  vatAmount: text("vat_amount").notNull(),
-  totalAmount: text("total_amount").notNull(),
-  status: text("status").default("draft").notNull(), // draft, sent, paid, overdue
-  pdfPath: text("pdf_path"),
-  sentAt: timestamp("sent_at"),
-  paidAt: timestamp("paid_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+// Note: Using the agencyInvoices table defined earlier in the file for invoice management
 
 // Relations for billing tables
 export const agencyBillingSettingsRelations = relations(agencyBillingSettings, ({ one }) => ({
@@ -796,18 +816,6 @@ export const agencyBillingCyclesRelations = relations(agencyBillingCycles, ({ on
   agencyBranch: one(agencyBranches, {
     fields: [agencyBillingCycles.agencyBranchId],
     references: [agencyBranches.id],
-  }),
-  invoices: many(agencyInvoices),
-}));
-
-export const agencyInvoicesRelations = relations(agencyInvoices, ({ one }) => ({
-  agencyBranch: one(agencyBranches, {
-    fields: [agencyInvoices.agencyBranchId],
-    references: [agencyBranches.id],
-  }),
-  billingCycle: one(agencyBillingCycles, {
-    fields: [agencyInvoices.billingCycleId],
-    references: [agencyBillingCycles.id],
   }),
 }));
 
