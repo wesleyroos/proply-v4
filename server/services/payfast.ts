@@ -186,7 +186,15 @@ export class PayFastService {
     
     console.log('=== END DEBUG ===\n');
     
-    return { signature, encodedParams };
+    // TESTING: Try the raw values approach as it might be what PayFast expects for form submissions
+    const rawValuesString = Object.keys(ordered_data).sort().map(k => `${k}=${ordered_data[k]}`).join('&') + (this.config.passphrase ? `&passphrase=${this.config.passphrase}` : '');
+    const rawSignature = crypto.createHash("md5").update(rawValuesString).digest("hex");
+    
+    console.log('🧪 TESTING RAW VALUES SIGNATURE: Using raw values signature for form submission');
+    console.log('Raw signature string:', rawValuesString);
+    console.log('Raw signature hash:', rawSignature);
+    
+    return { signature: rawSignature, encodedParams };
   }
 
 
