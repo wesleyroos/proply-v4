@@ -184,6 +184,63 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
 
   if (!agency) return null;
 
+  // Billing calculation functions
+  const calculateBillingAmount = (reportCount: number) => {
+    let total = 0;
+    let remaining = reportCount;
+
+    // Tier 1: 1-50 reports at R200 each
+    if (remaining > 0) {
+      const tier1Count = Math.min(remaining, 50);
+      total += tier1Count * 200;
+      remaining -= tier1Count;
+    }
+
+    // Tier 2: 51-100 reports at R180 each
+    if (remaining > 0) {
+      const tier2Count = Math.min(remaining, 50);
+      total += tier2Count * 180;
+      remaining -= tier2Count;
+    }
+
+    // Tier 3: 101-150 reports at R160 each
+    if (remaining > 0) {
+      const tier3Count = Math.min(remaining, 50);
+      total += tier3Count * 160;
+      remaining -= tier3Count;
+    }
+
+    // Tier 4: 151-200 reports at R140 each
+    if (remaining > 0) {
+      const tier4Count = Math.min(remaining, 50);
+      total += tier4Count * 140;
+      remaining -= tier4Count;
+    }
+
+    // Tier 5: 200+ reports - custom pricing (for now, use R140)
+    if (remaining > 0) {
+      total += remaining * 140;
+    }
+
+    return total;
+  };
+
+  const getCurrentTier = (reportCount: number) => {
+    if (reportCount <= 50) return { tier: 1, price: 200, remaining: 50 - reportCount };
+    if (reportCount <= 100) return { tier: 2, price: 180, remaining: 100 - reportCount };
+    if (reportCount <= 150) return { tier: 3, price: 160, remaining: 150 - reportCount };
+    if (reportCount <= 200) return { tier: 4, price: 140, remaining: 200 - reportCount };
+    return { tier: 5, price: 140, remaining: 0 };
+  };
+
+  const getNextTierBenefit = (reportCount: number) => {
+    if (reportCount < 50) return { nextTier: 2, nextPrice: 180, reportsNeeded: 51 - reportCount };
+    if (reportCount < 100) return { nextTier: 3, nextPrice: 160, reportsNeeded: 101 - reportCount };
+    if (reportCount < 150) return { nextTier: 4, nextPrice: 140, reportsNeeded: 151 - reportCount };
+    if (reportCount < 200) return { nextTier: 5, nextPrice: 140, reportsNeeded: 201 - reportCount };
+    return null;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'text-green-600 bg-green-50';
@@ -244,9 +301,9 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
               <Building className="h-4 w-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Reports
+            <TabsTrigger value="usage" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Usage
             </TabsTrigger>
             <TabsTrigger value="billing" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
@@ -391,64 +448,142 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
             </Card>
           </TabsContent>
 
-          <TabsContent value="reports" className="mt-6 space-y-6">
+          <TabsContent value="usage" className="mt-6 space-y-6">
             {loadingReports ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                  Loading report statistics...
+                  Loading usage statistics...
                 </CardContent>
               </Card>
             ) : reportStats ? (
               <>
-                {/* Report Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Current Month</CardTitle>
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{reportStats.currentMonth}</div>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        {getTrendIcon(reportStats.currentMonth, reportStats.previousMonth)}
-                        {getTrendText(reportStats.currentMonth, reportStats.previousMonth)}
-                      </p>
-                    </CardContent>
-                  </Card>
+                {/* Current Month Billing - Most Prominent */}
+                <Card className="border-2 border-blue-200 bg-blue-50/50">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-blue-600" />
+                      Current Month Usage & Billing
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <div className="text-3xl font-bold text-blue-600">{reportStats.currentMonth}</div>
+                        <div className="text-sm text-muted-foreground">Property Reports Generated</div>
+                        <div className="flex items-center gap-1 mt-1 text-xs">
+                          {getTrendIcon(reportStats.currentMonth, reportStats.previousMonth)}
+                          {getTrendText(reportStats.currentMonth, reportStats.previousMonth)}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-3xl font-bold text-green-600">
+                          R{calculateBillingAmount(reportStats.currentMonth).toLocaleString()}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Current Month Charges</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Will be billed on 1st of next month
+                        </div>
+                      </div>
 
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Previous Month</CardTitle>
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{reportStats.previousMonth}</div>
-                      <p className="text-xs text-muted-foreground">
-                        Reports generated last month
-                      </p>
-                    </CardContent>
-                  </Card>
+                      <div>
+                        {(() => {
+                          const currentTier = getCurrentTier(reportStats.currentMonth);
+                          const nextTier = getNextTierBenefit(reportStats.currentMonth);
+                          return (
+                            <div>
+                              <div className="text-lg font-bold">
+                                Tier {currentTier.tier} - R{currentTier.price}/report
+                              </div>
+                              <div className="text-sm text-muted-foreground">Current pricing tier</div>
+                              {nextTier && (
+                                <div className="text-xs text-green-600 mt-1">
+                                  {nextTier.reportsNeeded} more reports for R{nextTier.nextPrice}/report
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
-                      <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{reportStats.totalReports}</div>
-                      <p className="text-xs text-muted-foreground">
-                        All time report generations
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
+                {/* Previous Month Billing */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Previous Month Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <div className="text-2xl font-bold">{reportStats.previousMonth}</div>
+                        <div className="text-sm text-muted-foreground">Property Reports Generated</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-green-600">
+                          R{calculateBillingAmount(reportStats.previousMonth).toLocaleString()}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Amount Billed</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-medium">
+                          Tier {getCurrentTier(reportStats.previousMonth).tier}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Final pricing tier</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                {/* Monthly Chart */}
+                {/* Pricing Structure */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Pricing Structure</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="p-4 border rounded-lg bg-gray-50">
+                          <div className="font-medium">Tier 1</div>
+                          <div className="text-sm text-muted-foreground">1-50 reports</div>
+                          <div className="text-lg font-bold text-blue-600">R200 each</div>
+                        </div>
+                        <div className="p-4 border rounded-lg bg-green-50">
+                          <div className="font-medium">Tier 2</div>
+                          <div className="text-sm text-muted-foreground">51-100 reports</div>
+                          <div className="text-lg font-bold text-green-600">R180 each</div>
+                          <div className="text-xs text-green-600">10% discount</div>
+                        </div>
+                        <div className="p-4 border rounded-lg bg-green-50">
+                          <div className="font-medium">Tier 3</div>
+                          <div className="text-sm text-muted-foreground">101-150 reports</div>
+                          <div className="text-lg font-bold text-green-600">R160 each</div>
+                          <div className="text-xs text-green-600">20% discount</div>
+                        </div>
+                        <div className="p-4 border rounded-lg bg-green-50">
+                          <div className="font-medium">Tier 4</div>
+                          <div className="text-sm text-muted-foreground">151-200 reports</div>
+                          <div className="text-lg font-bold text-green-600">R140 each</div>
+                          <div className="text-xs text-green-600">30% discount</div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-4">
+                        * Volume discounts applied automatically. Custom pricing available for 200+ reports per month.
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Usage Trends Chart */}
                 {reportStats.monthlyStats && reportStats.monthlyStats.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Monthly Report Generation Trends</CardTitle>
+                      <CardTitle>Monthly Usage Trends</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="h-80">
@@ -465,7 +600,10 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                             <YAxis />
                             <Tooltip 
                               labelFormatter={(label) => `Month: ${label}`}
-                              formatter={(value) => [`${value} reports`, 'Reports Generated']}
+                              formatter={(value, name) => [
+                                `${value} reports (R${calculateBillingAmount(Number(value)).toLocaleString()})`,
+                                'Usage & Billing'
+                              ]}
                             />
                             <Bar dataKey="reports" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                           </BarChart>
@@ -475,34 +613,34 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                   </Card>
                 )}
 
-                {/* Report Types */}
-                {reportStats.reportTypes && reportStats.reportTypes.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Report Types Breakdown</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {reportStats.reportTypes.map((type, index) => (
-                          <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                            <span className="font-medium">{type.reportType}</span>
-                            <Badge variant="secondary" className="text-sm">
-                              {type.count} reports
-                            </Badge>
-                          </div>
-                        ))}
+                {/* All-Time Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>All-Time Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="text-2xl font-bold">{reportStats.totalReports}</div>
+                        <div className="text-sm text-muted-foreground">Total Property Reports Generated</div>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                      <div>
+                        <div className="text-2xl font-bold text-green-600">
+                          R{calculateBillingAmount(reportStats.totalReports).toLocaleString()}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Total Value Generated</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </>
             ) : (
               <Card>
                 <CardContent className="text-center py-12">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <p className="text-lg font-medium text-muted-foreground">No Report Data Available</p>
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-lg font-medium text-muted-foreground">No Usage Data Available</p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Report statistics will appear here once the agency starts generating reports
+                    Usage statistics and billing information will appear here once the agency starts generating property reports
                   </p>
                 </CardContent>
               </Card>
