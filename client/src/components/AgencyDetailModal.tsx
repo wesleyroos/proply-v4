@@ -728,7 +728,7 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                           </tr>
                         </thead>
                         <tbody>
-                          {reportStats.invoices.map((invoice) => (
+                          {reportStats.invoices.map((invoice: any) => (
                             <tr key={invoice.id} className="border-b hover:bg-gray-50">
                               <td className="py-3 px-2 font-mono text-sm">{invoice.id}</td>
                               <td className="py-3 px-2">{invoice.monthName}</td>
