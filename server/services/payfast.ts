@@ -121,31 +121,47 @@ export class PayFastService {
     console.log('\n=== PAYFAST FORM SIGNATURE DEBUG ===');
     console.log('1. Input data:', JSON.stringify(data, null, 2));
     
-    // PayFast FORM signature generation (different from API signature)
-    // Using PayFast's own Node.js signature generation approach (alphabetical order)
-    // Based on their official documentation Node.js example
+    // For tokenization (subscription_type=2), use only core fields for signature
+    // URLs and descriptions might not be needed in signature generation
+    const coreFields: Record<string, any> = {
+      merchant_id: data.merchant_id,
+      merchant_key: data.merchant_key,
+      amount: data.amount,
+      item_name: data.item_name,
+      subscription_type: data.subscription_type
+    };
     
-    console.log('2. Using PayFast alphabetical order (matching their Node.js example)');
+    console.log('2. Using core tokenization fields only for signature:');
+    console.log(JSON.stringify(coreFields, null, 2));
     
     // Sort keys alphabetically like PayFast's official Node.js code
-    const sortedKeys = Object.keys(data).sort();
+    const sortedKeys = Object.keys(coreFields).sort();
     
     // Build signature string using PayFast's exact approach
     let signatureString = '';
     let encodedParams = '';
     
-    console.log('3. Processing parameters in alphabetical order:');
+    console.log('3. Processing core parameters in alphabetical order:');
     for (const key of sortedKeys) {
+      if (coreFields[key] !== undefined && coreFields[key] !== '' && coreFields[key] !== null) {
+        const rawValue = coreFields[key].toString().trim();
+        
+        // For signature: use raw values (no encoding needed for core fields)
+        signatureString += `${key}=${rawValue}&`;
+        
+        console.log(`   ${key}: "${rawValue}" (raw for signature)`);
+      }
+    }
+    
+    // Build full URL parameters (all fields, encoded)
+    console.log('4. Building full URL parameters (all fields):');
+    const allSortedKeys = Object.keys(data).sort();
+    for (const key of allSortedKeys) {
       if (data[key] !== undefined && data[key] !== '' && data[key] !== null) {
         const rawValue = data[key].toString().trim();
-        
-        // Use PayFast's exact encoding: encodeURIComponent + replace %20 with +
         const encodedValue = encodeURIComponent(rawValue).replace(/%20/g, '+');
-        
-        signatureString += `${key}=${encodedValue}&`;
         encodedParams += `${key}=${encodedValue}&`;
-        
-        console.log(`   ${key}: "${rawValue}" -> "${encodedValue}" (PayFast encoding)`);
+        console.log(`   ${key}: "${rawValue}" -> "${encodedValue}" (URL-encoded)`);
       }
     }
     
@@ -153,15 +169,14 @@ export class PayFastService {
     signatureString = signatureString.slice(0, -1);
     encodedParams = encodedParams.slice(0, -1);
     
-    // Add passphrase exactly like PayFast's Node.js example
+    // Add passphrase to signature (raw value for core fields approach)
     if (this.config.passphrase) {
-      const encodedPassphrase = encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, '+');
-      signatureString += `&passphrase=${encodedPassphrase}`;
-      console.log('4. Added passphrase (PayFast style):', encodedPassphrase);
+      signatureString += `&passphrase=${this.config.passphrase.trim()}`;
+      console.log('5. Added passphrase (raw):', this.config.passphrase.trim());
     }
     
-    console.log('5. Final signature string (URL-encoded values):', signatureString);
-    console.log('6. Final URL parameters (encoded):', encodedParams);
+    console.log('6. Final signature string (core fields + raw passphrase):', signatureString);
+    console.log('7. Final URL parameters (all fields encoded):', encodedParams);
     
     // Generate MD5 hash
     const signature = crypto.createHash("md5").update(signatureString).digest("hex");
