@@ -1,0 +1,54 @@
+=== PAYFAST SIGNATURE DEBUG ===
+1. Input data: {
+  "merchant_id": "10036450",
+  "merchant_key": "8dafsqrcr99g5",
+  "return_url": "http://localhost:5000/payment-setup-success",
+  "cancel_url": "http://localhost:5000/payment-setup-cancel",
+  "notify_url": "http://localhost:5000/api/payfast/notify",
+  "amount": "0.00",
+  "item_name": "Card-on-file",
+  "item_description": "Setup payment method for agency billing",
+  "subscription_type": "2"
+}
+2. Ordered data keys: [
+  'amount',
+  'cancel_url',
+  'item_description',
+  'item_name',
+  'merchant_id',
+  'merchant_key',
+  'notify_url',
+  'return_url',
+  'subscription_type'
+]
+3. Processing each parameter:
+   amount: "0.00" -> "0.00" -> "0.00"
+   cancel_url: "http://localhost:5000/payment-setup-cancel" -> "http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel" -> "http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel"
+   item_description: "Setup payment method for agency billing" -> "Setup%20payment%20method%20for%20agency%20billing" -> "Setup+payment+method+for+agency+billing"
+   item_name: "Card-on-file" -> "Card-on-file" -> "Card-on-file"
+   merchant_id: "10036450" -> "10036450" -> "10036450"
+   merchant_key: "8dafsqrcr99g5" -> "8dafsqrcr99g5" -> "8dafsqrcr99g5"
+   notify_url: "http://localhost:5000/api/payfast/notify" -> "http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify" -> "http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify"
+   return_url: "http://localhost:5000/payment-setup-success" -> "http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success" -> "http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success"
+   subscription_type: "2" -> "2" -> "2"
+4. URL parameters (before passphrase): amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup+payment+method+for+agency+billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2
+5. Signature string (before passphrase): amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup+payment+method+for+agency+billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2
+6. Passphrase added to signature: 1nvest1ng_1n_Pr0perty_1s_W1se
+7. Final signature string: amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup+payment+method+for+agency+billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+8. Final URL parameters: amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup+payment+method+for+agency+billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2
+9. Generated MD5 signature: 47c43f8ab5ec1434721ac2d1642a7794
+
+=== SIGNATURE VERIFICATION TEST ===
+Current approach: 47c43f8ab5ec1434721ac2d1642a7794
+  String: amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup+payment+method+for+agency+billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+Without + replacement: cc06b4b42ba88eb6813dc7cf6048132a
+  String: amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup%20payment%20method%20for%20agency%20billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+Raw values: 4a8e8ce9985da5f7d9d9c457981e4ed3
+  String: amount=0.00&cancel_url=http://localhost:5000/payment-setup-cancel&item_description=Setup payment method for agency billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http://localhost:5000/api/payfast/notify&return_url=http://localhost:5000/payment-setup-success&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+=== END DEBUG ===
+
+🧪 TESTING RAW VALUES SIGNATURE: Using raw values signature for form submission
+Raw signature string: amount=0.00&cancel_url=http://localhost:5000/payment-setup-cancel&item_description=Setup payment method for agency billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http://localhost:5000/api/payfast/notify&return_url=http://localhost:5000/payment-setup-success&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+Raw signature hash: 4a8e8ce9985da5f7d9d9c457981e4ed3
+Final PayFast tokenize URL: https://sandbox.payfast.co.za/eng/process?amount=0.00&cancel_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-cancel&item_description=Setup+payment+method+for+agency+billing&item_name=Card-on-file&merchant_id=10036450&merchant_key=8dafsqrcr99g5&notify_url=http%3A%2F%2Flocalhost%3A5000%2Fapi%2Fpayfast%2Fnotify&return_url=http%3A%2F%2Flocalhost%3A5000%2Fpayment-setup-success&subscription_type=2&signature=4a8e8ce9985da5f7d9d9c457981e4ed3
+7:23:55 PM [express] POST /api/payfast/create-tokenize-url 200 in 52ms :: {"success":true,"tokenizeU…
