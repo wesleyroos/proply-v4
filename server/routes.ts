@@ -2498,7 +2498,7 @@ export function registerRoutes(app: Express): Server {
       const yocoResponse = await fetch('https://online.yoco.com/v1/charges/', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.YOCO_SECRET_KEY}`,
+          'Authorization': `Bearer ${import.meta.env.YOCO_TEST_SECRET_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
