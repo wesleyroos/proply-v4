@@ -68,13 +68,14 @@ export class PayFastService {
 
   private generateSignature(data: Record<string, any>): string {
     // Create parameter string for signature - PayFast specific format
-    // Important: Do NOT URL encode values in signature string, only in final URL
+    // IMPORTANT: Use raw values (not URL encoded) for signature generation
     const sortedKeys = Object.keys(data).sort();
     let paramString = '';
     
     for (const key of sortedKeys) {
       const value = data[key];
       if (value !== '' && value !== null && value !== undefined) {
+        // Use raw values for signature generation
         paramString += `${key}=${value.toString().trim()}&`;
       }
     }
@@ -82,12 +83,12 @@ export class PayFastService {
     // Remove trailing &
     paramString = paramString.slice(0, -1);
     
-    // Add passphrase if provided (without URL encoding for signature)
+    // Add passphrase if provided (raw value for signature)
     if (this.config.passphrase && this.config.passphrase.trim()) {
       paramString += `&passphrase=${this.config.passphrase.trim()}`;
     }
     
-    console.log('PayFast signature string:', paramString);
+    console.log('PayFast signature string (raw values):', paramString);
     
     // Generate MD5 hash
     const signature = crypto.createHash('md5').update(paramString).digest('hex');
@@ -139,7 +140,7 @@ export class PayFastService {
     let queryString = '';
     
     for (const key of sortedKeys) {
-      const value = data[key];
+      const value = data[key as keyof typeof data];
       if (value !== '' && value !== null && value !== undefined) {
         queryString += `${key}=${encodeURIComponent(value.toString().trim())}&`;
       }
