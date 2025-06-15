@@ -57,7 +57,7 @@ function TestPaymentForm({ agencyId }: { agencyId: string }) {
     onSuccess: (data) => {
       toast({
         title: "Test Payment Successful",
-        description: `R${testAmount} test charge completed successfully. Transaction ID: ${data.transactionId}`,
+        description: `R${testAmount} charged in ${data.mode?.toUpperCase() || 'UNKNOWN'} mode. Transaction ID: ${data.transactionId}`,
       });
     },
     onError: (error: any) => {

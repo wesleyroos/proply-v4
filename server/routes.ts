@@ -2494,11 +2494,27 @@ export function registerRoutes(app: Express): Server {
       // Use the first available payment method (agency payment methods don't have isPrimary field)
       const primaryMethod = paymentMethods[0];
 
-      // Create Yoco payment (simplified according to their API docs)
+      // Get Yoco mode setting from database
+      const yocoModeSetting = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, 'yoco_test_mode')
+      });
+      
+      const isTestMode = yocoModeSetting?.value === 'true';
+      const secretKey = isTestMode 
+        ? import.meta.env.YOCO_TEST_SECRET_KEY 
+        : import.meta.env.YOCO_SECRET_KEY;
+
+      if (!secretKey) {
+        return res.status(500).json({ 
+          error: `Yoco ${isTestMode ? 'test' : 'live'} secret key not configured` 
+        });
+      }
+
+      // Create Yoco payment (respects admin mode toggle)
       const yocoResponse = await fetch('https://online.yoco.com/v1/charges/', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.YOCO_TEST_SECRET_KEY}`,
+          'Authorization': `Bearer ${secretKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -2528,13 +2544,14 @@ export function registerRoutes(app: Express): Server {
         VALUES (${agencyId}, ${amount.toString()}, 'completed', ${yocoData.id}, ${'Test payment - R' + amount}, ${new Date()})
       `);
 
-      console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${yocoData.id}`);
+      console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${yocoData.id} - Mode: ${isTestMode ? 'TEST' : 'LIVE'}`);
 
       res.json({
         success: true,
         transactionId: yocoData.id,
         amount,
-        message: 'Test payment completed successfully'
+        mode: isTestMode ? 'test' : 'live',
+        message: `Test payment completed successfully in ${isTestMode ? 'TEST' : 'LIVE'} mode`
       });
 
     } catch (error) {
