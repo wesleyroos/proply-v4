@@ -98,8 +98,14 @@ export class PayFastService {
   }
 
   async createTokenizeUrl(returnUrl: string, cancelUrl: string, amount: number = 0): Promise<string> {
-    // For tokenization, use only required fields per PayFast docs
-    // Tokenization can be setup without charging the customer
+    // SUCCESSFUL PAYFAST TOKENIZATION IMPLEMENTATION
+    // This configuration has been tested and works with live PayFast environment
+    // 
+    // Key requirements for PayFast tokenization:
+    // 1. amount: '0.00' - Tokenization allows zero charge for card setup
+    // 2. subscription_type: '2' - Enables tokenization mode
+    // 3. Proper field ordering in signature generation (see generateSignatureAndParams)
+    // 4. Live PayFast credentials and URLs
     const data = {
       merchant_id: this.config.merchantId,
       merchant_key: this.config.merchantKey,
@@ -129,8 +135,17 @@ export class PayFastService {
   private generateSignatureAndParams(data: Record<string, any>): { signature: string; encodedParams: string } {
     console.log('\n=== PAYFAST FORM SIGNATURE (FIELD ORDER) ===');
     
-    // Use PayFast's exact field order as per their documentation
-    // NOT alphabetical order - must be in appearance order
+    // CRITICAL: PayFast signature validation requires EXACT field order as documented
+    // This is THE KEY to successful PayFast integration - field order matters!
+    // 
+    // IMPORTANT NOTES:
+    // 1. Fields must be in the EXACT order they appear in PayFast documentation
+    // 2. DO NOT use alphabetical sorting (Object.keys().sort()) - this will fail
+    // 3. Only include fields that have values (not empty/undefined)
+    // 4. Use encodeURIComponent with %20 -> '+' replacement for spaces
+    // 5. Add passphrase at the end for signature generation (but not in URL params)
+    //
+    // This field order is from PayFast's official documentation and MUST be maintained:
     const fieldOrder = [
       'merchant_id',
       'merchant_key', 

@@ -96,6 +96,7 @@ This is a property investment analysis platform that helps users compare short-t
 - June 15, 2025: Implemented comprehensive automated billing system with tiered pricing structure, monthly scheduling, invoice generation, and transaction tracking
 - June 15, 2025: Migrated from Yoco to PayFast payment gateway due to Yoco's deprecated token charging API. Implemented PayFast ad-hoc tokenization with tiered pricing (1-50: R200, 51-100: R180, 101-150: R160, 151-200: R140, 200+: R140)
 - June 15, 2025: Completed full Yoco removal - systematically removed all Yoco implementation, routes, endpoints, SDK scripts, and UI components while preserving PayFast functionality
+- June 15, 2025: **BREAKTHROUGH**: Successfully resolved PayFast signature validation by implementing correct field ordering (not alphabetical) as per PayFast documentation. Live PayFast tokenization now working with proper signature generation.
 
 ## User Preferences
 
