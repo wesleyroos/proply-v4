@@ -125,47 +125,55 @@ export class PayFastService {
   }
 
   private generateSignatureAndParams(data: Record<string, any>): { signature: string; encodedParams: string } {
-    console.log('\n=== PAYFAST SIGNATURE GENERATION ===');
+    console.log('\n=== PAYFAST TOKENIZATION SIGNATURE ===');
     
-    // Sort ALL keys alphabetically 
-    const sortedKeys = Object.keys(data).sort();
-    console.log('Processing fields:', sortedKeys);
+    // For tokenization (subscription_type=2), use CORE fields only in signature
+    // This is different from regular payments which include all fields
+    const coreFields = {
+      merchant_id: data.merchant_id,
+      merchant_key: data.merchant_key,
+      amount: data.amount,
+      item_name: data.item_name,
+      subscription_type: data.subscription_type
+    };
     
+    console.log('Using core tokenization fields for signature:', Object.keys(coreFields));
+    
+    // Build signature using CORE fields only (alphabetically sorted)
     let signatureString = '';
-    let encodedParams = '';
+    const coreSortedKeys = Object.keys(coreFields).sort();
     
-    // For signature: use RAW values (no encoding)
-    // For URL params: use encoded values
-    for (const key of sortedKeys) {
+    for (const key of coreSortedKeys) {
+      const value = coreFields[key].toString().trim();
+      signatureString += `${key}=${value}&`;
+      console.log(`${key}: "${value}"`);
+    }
+    
+    // Remove trailing & and add passphrase
+    signatureString = signatureString.slice(0, -1);
+    if (this.config.passphrase) {
+      signatureString += `&passphrase=${this.config.passphrase.trim()}`;
+    }
+    
+    console.log('Core signature string:', signatureString);
+    
+    // Generate signature from core fields
+    const signature = crypto.createHash("md5").update(signatureString).digest("hex");
+    console.log('Generated signature:', signature);
+    
+    // Build URL parameters with ALL fields (encoded)
+    let encodedParams = '';
+    const allSortedKeys = Object.keys(data).sort();
+    
+    for (const key of allSortedKeys) {
       if (data[key] !== undefined && data[key] !== '' && data[key] !== null) {
         const rawValue = data[key].toString().trim();
         const encodedValue = encodeURIComponent(rawValue).replace(/%20/g, '+');
-        
-        // Signature uses raw values
-        signatureString += `${key}=${rawValue}&`;
-        
-        // URL params use encoded values
         encodedParams += `${key}=${encodedValue}&`;
-        
-        console.log(`${key}: raw="${rawValue}" encoded="${encodedValue}"`);
       }
     }
-    
-    // Remove trailing &
-    signatureString = signatureString.slice(0, -1);
     encodedParams = encodedParams.slice(0, -1);
     
-    // Add passphrase to signature (raw value)
-    if (this.config.passphrase) {
-      signatureString += `&passphrase=${this.config.passphrase.trim()}`;
-      console.log('Added passphrase (raw):', this.config.passphrase.trim());
-    }
-    
-    console.log('Signature string (raw values):', signatureString);
-    
-    // Generate MD5 hash
-    const signature = crypto.createHash("md5").update(signatureString).digest("hex");
-    console.log('Generated signature:', signature);
     console.log('=== END ===\n');
     
     return { signature, encodedParams };
