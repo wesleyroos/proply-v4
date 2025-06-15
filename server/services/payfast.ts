@@ -127,22 +127,45 @@ export class PayFastService {
   }
 
   private generateSignatureAndParams(data: Record<string, any>): { signature: string; encodedParams: string } {
-    console.log('\n=== PAYFAST OFFICIAL SIGNATURE METHOD ===');
+    console.log('\n=== PAYFAST FORM SIGNATURE (FIELD ORDER) ===');
     
-    // Use PayFast's exact official method from their documentation
-    let ordered_data: Record<string, any> = {};
-    Object.keys(data).sort().forEach(key => {
-      ordered_data[key] = data[key];
-    });
+    // Use PayFast's exact field order as per their documentation
+    // NOT alphabetical order - must be in appearance order
+    const fieldOrder = [
+      'merchant_id',
+      'merchant_key', 
+      'return_url',
+      'cancel_url',
+      'notify_url',
+      'name_first',
+      'name_last', 
+      'email_address',
+      'cell_number',
+      'm_payment_id',
+      'amount',
+      'item_name',
+      'item_description',
+      'subscription_type',
+      'frequency',
+      'cycles'
+    ];
 
     let getString = '';
-    for (let key in ordered_data) {
-      const encodedValue = encodeURIComponent(ordered_data[key]).replace(/%20/g, '+');
-      getString += key + '=' + encodedValue + '&';
-      console.log(`${key}: "${ordered_data[key]}" -> "${encodedValue}"`);
+    let encodedParams = '';
+    
+    // Process fields in PayFast's documented order
+    for (const field of fieldOrder) {
+      if (data[field] !== undefined && data[field] !== '') {
+        const encodedValue = encodeURIComponent(data[field]).replace(/%20/g, '+');
+        getString += field + '=' + encodedValue + '&';
+        encodedParams += field + '=' + encodedValue + '&';
+        console.log(`${field}: "${data[field]}" -> "${encodedValue}"`);
+      }
     }
 
-    getString = getString.slice(0, -1); // Remove trailing &
+    // Remove trailing &
+    getString = getString.slice(0, -1);
+    encodedParams = encodedParams.slice(0, -1);
     
     if (this.config.passphrase) {
       const encodedPassphrase = encodeURIComponent(this.config.passphrase.trim()).replace(/%20/g, '+');
@@ -156,14 +179,6 @@ export class PayFastService {
     const signature = crypto.createHash("md5").update(getString).digest("hex");
     console.log('Generated signature:', signature);
     console.log('=== END ===\n');
-    
-    // For URL params, use the same encoded string (without passphrase)
-    let encodedParams = '';
-    for (let key in ordered_data) {
-      const encodedValue = encodeURIComponent(ordered_data[key]).replace(/%20/g, '+');
-      encodedParams += key + '=' + encodedValue + '&';
-    }
-    encodedParams = encodedParams.slice(0, -1);
     
     return { signature, encodedParams };
   }
