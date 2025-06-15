@@ -2491,11 +2491,12 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: 'No payment methods found for this agency' });
       }
 
-      // Use the primary payment method or first available
-      const primaryMethod = paymentMethods.find(pm => pm.isPrimary) || paymentMethods[0];
+      // Use the first available payment method (agency payment methods don't have isPrimary field)
+      const primaryMethod = paymentMethods[0];
 
       // Create Yoco payment
       const timestamp = Date.now().toString();
+      const crypto = await import('crypto');
       const signature = crypto
         .createHmac('sha256', import.meta.env.YOCO_WEBHOOK_SECRET!)
         .update(timestamp)
@@ -2506,11 +2507,11 @@ export function registerRoutes(app: Express): Server {
         headers: {
           'Authorization': `Bearer ${import.meta.env.YOCO_SECRET_KEY}`,
           'Content-Type': 'application/json',
-          'merchant-id': import.meta.env.YOCO_MERCHANT_ID,
+          'merchant-id': import.meta.env.YOCO_MERCHANT_ID!,
           'version': '2022-09-01',
           'timestamp': timestamp,
           'signature': signature,
-        } as HeadersInit,
+        },
         body: JSON.stringify({
           token: primaryMethod.yocoToken,
           amountInCents: Math.round(amount * 100),
@@ -2532,16 +2533,11 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
-      // Log the test payment transaction
-      const { agencyBillingTransactions } = await import("@db/schema");
-      await db.insert(agencyBillingTransactions).values({
-        agencyBranchId: agencyBranch.id,
-        amount: amount.toString(),
-        status: 'completed',
-        transactionId: yocoData.id,
-        description: `Test payment - R${amount}`,
-        processedAt: new Date(),
-      });
+      // Log the test payment as a simple record (using existing billing transactions table)
+      const insertResult = await db.execute(sql`
+        INSERT INTO billing_transactions (agency_id, amount, status, transaction_id, description, processed_at)
+        VALUES (${agencyId}, ${amount.toString()}, 'completed', ${yocoData.id}, ${'Test payment - R' + amount}, ${new Date()})
+      `);
 
       console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${yocoData.id}`);
 
