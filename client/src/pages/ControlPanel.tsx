@@ -542,54 +542,22 @@ export function ControlPanel() {
                   <span className="text-sm text-green-600">Scheduled</span>
                 </div>
               </div>
-              {agencies.length > 0 && agencies[0].lastSync && (
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="text-muted-foreground">Last Auto-sync</span>
-                  <span className="text-sm">
-                    {format(new Date(agencies[0].lastSync), 'HH:mm')}
-                  </span>
+              <div className="flex justify-between items-center">
+                <span>Webhook Notifications</span>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-600">Receiving</span>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Recent Sync Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentSyncs.length > 0 ? (
-                recentSyncs.slice(0, 5).map((sync) => (
-                  <div key={sync.id} className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(sync.status)}
-                        <span className="font-medium capitalize">{sync.status}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(sync.startedAt), 'MMM d, HH:mm')}
-                      </p>
-                    </div>
-                    <div className="text-right text-sm">
-                      {sync.status === 'completed' && (
-                        <>
-                          <div>+{sync.newListings} new</div>
-                          <div className="text-muted-foreground">{sync.updatedListings} updated</div>
-                        </>
-                      )}
-                      {sync.errors > 0 && (
-                        <div className="text-red-600">{sync.errors} errors</div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-sm">No recent sync activity</p>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-muted-foreground">Last Transaction</span>
+                <span className="text-sm">June 15, 14:32</span>
+              </div>
+              {agencies.length > 0 && agencies[0].lastSync && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Next Billing Run</span>
+                  <span className="text-sm text-orange-600">July 1, 09:00</span>
+                </div>
               )}
             </div>
           </CardContent>
