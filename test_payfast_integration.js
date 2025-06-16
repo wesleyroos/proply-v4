@@ -138,15 +138,5 @@ function runAllTests() {
   }
 }
 
-// Export for use in other files
-module.exports = {
-  testPayFastWebhook,
-  testTokenizationSignature,
-  testBillingCalculations,
-  runAllTests
-};
-
-// Run tests if this file is executed directly
-if (require.main === module) {
-  runAllTests();
-}
+// Run tests
+runAllTests();

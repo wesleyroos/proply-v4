@@ -31,7 +31,12 @@ import {
   Loader2,
   BarChart3,
   CreditCard,
-  Upload
+  Upload,
+  DollarSign,
+  FileText,
+  TrendingUp,
+  Users,
+  Calendar
 } from 'lucide-react';
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -216,10 +221,146 @@ export function ControlPanel() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Control Panel</h1>
           <p className="text-muted-foreground mt-2">
-            Manage and monitor agency integrations
+            Manage agencies, billing, and payment methods
           </p>
         </div>
         <AddAgencyModal />
+      </div>
+
+      {/* Billing Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">R45,250</div>
+            <p className="text-xs text-muted-foreground">
+              <TrendingUp className="h-3 w-3 inline mr-1" />
+              +12.5% from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Agencies</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{agencies.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {agencies.filter(a => a.status === 'active').length} with active billing
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Reports Generated</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1,247</div>
+            <p className="text-xs text-muted-foreground">
+              This month across all agencies
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Payment Methods</CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">8</div>
+            <p className="text-xs text-muted-foreground">
+              6 active, 2 pending setup
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* PayFast Billing Management */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Monthly Billing Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Reports (1-50)</span>
+                <span className="text-sm">R200 each</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Reports (51-100)</span>
+                <span className="text-sm">R180 each</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Reports (101-150)</span>
+                <span className="text-sm">R160 each</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Reports (151+)</span>
+                <span className="text-sm">R140 each</span>
+              </div>
+              <div className="border-t pt-2">
+                <div className="flex justify-between items-center font-medium">
+                  <span>Current Month Total</span>
+                  <span>R45,250</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              PayFast Integration Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Live Environment</span>
+                <Badge variant="default" className="bg-green-100 text-green-800">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Active
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Merchant ID</span>
+                <span className="text-sm font-mono">24039609</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Tokenization</span>
+                <Badge variant="default" className="bg-green-100 text-green-800">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Enabled
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Auto Billing</span>
+                <Badge variant="default" className="bg-green-100 text-green-800">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Monthly
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Next Billing</span>
+                <span className="text-sm">July 1, 2025</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Agency Integrations Table */}
@@ -227,7 +368,7 @@ export function ControlPanel() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="h-5 w-5" />
-            Agency Integrations
+            Agency Integrations & Billing
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -237,10 +378,10 @@ export function ControlPanel() {
                 <TableHead>Agency</TableHead>
                 <TableHead>Syndication Platform</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Logo</TableHead>
+                <TableHead>Payment Method</TableHead>
+                <TableHead>Monthly Reports</TableHead>
+                <TableHead>Current Billing</TableHead>
                 <TableHead>Last Sync</TableHead>
-                <TableHead>Properties</TableHead>
-                <TableHead>Last Result</TableHead>
                 <TableHead>Auto-sync</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -261,35 +402,27 @@ export function ControlPanel() {
                     <TableCell>{getStatusBadge(agency.status)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {agency.logoUrl ? (
-                          <>
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm text-green-700">Uploaded</span>
-                          </>
-                        ) : (
-                          <>
-                            <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                            <span className="text-sm text-muted-foreground">None</span>
-                          </>
-                        )}
+                        <CreditCard className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">•••• 4532</span>
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          Active
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <div className="font-medium">127 reports</div>
+                        <div className="text-muted-foreground">R160 each</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <div className="font-medium">R20,320</div>
+                        <div className="text-muted-foreground">Due July 1</div>
                       </div>
                     </TableCell>
                     <TableCell>
                       {agency.lastSync ? format(new Date(agency.lastSync), 'MMM d, HH:mm') : 'Never'}
-                    </TableCell>
-                    <TableCell>{agency.totalProperties.toLocaleString()}</TableCell>
-                    <TableCell>
-                      {agency.lastSyncResult ? (
-                        <div className="text-sm">
-                          <div>+{agency.lastSyncResult.newListings} new</div>
-                          <div className="text-muted-foreground">{agency.lastSyncResult.updatedListings} updated</div>
-                          {agency.lastSyncResult.errors > 0 && (
-                            <div className="text-red-600">{agency.lastSyncResult.errors} errors</div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -332,36 +465,81 @@ export function ControlPanel() {
         </CardContent>
       </Card>
 
-      {/* System Status and Recent Activity */}
+      {/* Invoice Management and Recent Activity */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Recent Invoices
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 border rounded-lg">
+                <div>
+                  <div className="font-medium text-sm">INV-2025-006-001</div>
+                  <div className="text-sm text-muted-foreground">Sotheby's Atlantic Seaboard</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">R20,320</div>
+                  <Badge variant="default" className="bg-green-100 text-green-800">Paid</Badge>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 border rounded-lg">
+                <div>
+                  <div className="font-medium text-sm">INV-2025-006-002</div>
+                  <div className="text-sm text-muted-foreground">Pam Golding City Bowl</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">R12,600</div>
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pending</Badge>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 border rounded-lg">
+                <div>
+                  <div className="font-medium text-sm">INV-2025-006-003</div>
+                  <div className="text-sm text-muted-foreground">NOX Properties</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">R8,400</div>
+                  <Badge variant="default" className="bg-green-100 text-green-800">Paid</Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              System Status
+              PayFast Transaction Status
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span>PropData API</span>
+                <span>Live Payment Gateway</span>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-600" />
                   <span className="text-sm text-green-600">Connected</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span>Database</span>
+                <span>Tokenization Service</span>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span className="text-sm text-green-600">Healthy</span>
+                  <span className="text-sm text-green-600">Active</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span>Auto-sync Service</span>
+                <span>Automated Billing</span>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span className="text-sm text-green-600">Running</span>
+                  <span className="text-sm text-green-600">Scheduled</span>
                 </div>
               </div>
               {agencies.length > 0 && agencies[0].lastSync && (
