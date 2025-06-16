@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AddAgencyData {
   propdataKey: string;
   franchiseName: string;
-  branchName: string;
+  branchName: string | null;
 }
 
 interface AddAgencyModalProps {
@@ -62,10 +62,10 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
   });
 
   const handleSubmit = () => {
-    if (!propdataKey.trim() || !franchiseName.trim() || !branchName.trim()) {
+    if (!propdataKey.trim() || !franchiseName.trim()) {
       toast({
-        title: "Please fill all fields",
-        description: "PropData key, franchise name, and branch name are required.",
+        title: "Please fill required fields",
+        description: "PropData key and franchise name are required.",
         variant: "destructive",
       });
       return;
@@ -74,7 +74,7 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
     addAgencyMutation.mutate({
       propdataKey: propdataKey.trim(),
       franchiseName: franchiseName.trim(),
-      branchName: branchName.trim(),
+      branchName: branchName.trim() || franchiseName.trim(), // Use franchise name as branch name for single-office agencies
     });
   };
 
@@ -133,13 +133,16 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
 
           {/* Branch Name */}
           <div className="space-y-2">
-            <Label htmlFor="branchName">Branch Name</Label>
+            <Label htmlFor="branchName">Branch Name (Optional)</Label>
             <Input
               id="branchName"
-              placeholder="e.g., Atlantic Seaboard"
+              placeholder="e.g., Atlantic Seaboard (leave empty for single office agencies)"
               value={branchName}
               onChange={(e) => setBranchName(e.target.value)}
             />
+            <p className="text-sm text-muted-foreground">
+              Only needed for franchise agencies with multiple branches. Leave empty for single-office agencies.
+            </p>
           </div>
 
           {/* Actions */}
