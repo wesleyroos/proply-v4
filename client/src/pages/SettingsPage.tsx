@@ -45,7 +45,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser, SelectInvoice } from "@db/schema";
@@ -66,8 +65,7 @@ import {
   Trash2,
   CheckCircle,
   Clock,
-  BarChart3,
-  Info
+  BarChart3
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -1414,171 +1412,141 @@ export default function SettingsPage() {
     }
 
     return (
-      <TooltipProvider>
-        <div className="space-y-6">
-          {/* Invoice Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium">Total Invoices</span>
-                </div>
-                <div className="text-2xl font-bold mt-1">{reportStats.invoices.length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-orange-600" />
-                  <span className="text-sm font-medium">Upcoming</span>
-                </div>
-                <div className="text-2xl font-bold mt-1">
-                  {reportStats.invoices.filter((inv: any) => inv.status === 'upcoming').length}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium">Paid</span>
-                </div>
-                <div className="text-2xl font-bold mt-1">
-                  {reportStats.invoices.filter((inv: any) => inv.status === 'paid').length}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Invoices Table */}
+      <div className="space-y-6">
+        {/* Invoice Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium">Total Invoices</span>
+              </div>
+              <div className="text-2xl font-bold mt-1">{reportStats.invoices.length}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium">Upcoming</span>
+              </div>
+              <div className="text-2xl font-bold mt-1">
+                {reportStats.invoices.filter((inv: any) => inv.status === 'upcoming').length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium">Paid</span>
+              </div>
+              <div className="text-2xl font-bold mt-1">
+                {reportStats.invoices.filter((inv: any) => inv.status === 'paid').length}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Invoices Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Invoice History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 font-medium">Invoice ID</th>
+                    <th className="text-left py-3 px-2 font-medium">Period</th>
+                    <th className="text-right py-3 px-2 font-medium">Reports</th>
+                    <th className="text-right py-3 px-2 font-medium">Amount</th>
+                    <th className="text-left py-3 px-2 font-medium">Invoice Date</th>
+                    <th className="text-left py-3 px-2 font-medium">Due Date</th>
+                    <th className="text-left py-3 px-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportStats.invoices.map((invoice: any) => (
+                    <tr key={invoice.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-2 font-mono text-sm">{invoice.id}</td>
+                      <td className="py-3 px-2">{invoice.monthName}</td>
+                      <td className="py-3 px-2 text-right">{invoice.reportCount}</td>
+                      <td className="py-3 px-2 text-right font-medium">
+                        R{invoice.amount.toLocaleString()}
+                      </td>
+                      <td className="py-3 px-2">
+                        {format(new Date(invoice.invoiceDate), 'MMM d, yyyy')}
+                      </td>
+                      <td className="py-3 px-2">
+                        {format(new Date(invoice.dueDate), 'MMM d, yyyy')}
+                      </td>
+                      <td className="py-3 px-2">
+                        <Badge 
+                          variant={
+                            invoice.status === 'paid' ? 'default' :
+                            invoice.status === 'upcoming' ? 'secondary' :
+                            'destructive'
+                          }
+                          className={
+                            invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                            invoice.status === 'upcoming' ? 'bg-orange-100 text-orange-800' :
+                            'bg-red-100 text-red-800'
+                          }
+                        >
+                          {invoice.status === 'upcoming' ? 'Upcoming' : 
+                           invoice.status === 'paid' ? 'Paid' : 'Overdue'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Next Invoice Preview */}
+        {reportStats.currentMonth > 0 && (
+          <Card className="border-orange-200 bg-orange-50/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Invoice History
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-md p-4">
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-sm">Pricing Matrix</h4>
-                      <div className="space-y-2 text-xs">
-                        <div className="flex justify-between">
-                          <span>1-50 reports:</span>
-                          <span className="font-medium">R200 each</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>51-100 reports:</span>
-                          <span className="font-medium">R180 each</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>101-150 reports:</span>
-                          <span className="font-medium">R160 each</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>151-200 reports:</span>
-                          <span className="font-medium">R140 each</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>200+ reports:</span>
-                          <span className="font-medium">R140 each</span>
-                        </div>
-                      </div>
-                      <div className="pt-2 border-t text-xs text-muted-foreground">
-                        Prices are VAT-free. Monthly billing based on report generation.
-                      </div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
+              <CardTitle className="flex items-center gap-2 text-orange-800">
+                <Calendar className="h-5 w-5" />
+                Next Invoice Preview
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2">Invoice #</th>
-                      <th className="text-left p-2">Date</th>
-                      <th className="text-left p-2">Description</th>
-                      <th className="text-right p-2">Amount</th>
-                      <th className="text-center p-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reportStats.invoices.map((invoice: SelectInvoice) => (
-                      <tr key={invoice.id} className="border-b hover:bg-muted/50">
-                        <td className="p-2 font-mono text-sm">{invoice.invoiceNumber}</td>
-                        <td className="p-2">
-                          {invoice.createdAt ? format(new Date(invoice.createdAt), 'MMM d, yyyy') : 'N/A'}
-                        </td>
-                        <td className="p-2">{invoice.description}</td>
-                        <td className="p-2 text-right font-medium">R{parseFloat(invoice.amount).toFixed(2)}</td>
-                        <td className="p-2 text-center">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                            invoice.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Usage Summary - Show current month usage */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Current Month Usage</CardTitle>
-              <CardDescription>
-                Reports generated this billing period
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between items-center">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground">Reports Generated</div>
-                  <div className="text-2xl font-bold">{reportStats.currentMonthReports}</div>
+                  <div className="text-sm text-muted-foreground">Current Month Usage</div>
+                  <div className="text-lg font-bold">{reportStats.currentMonth} reports</div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm text-muted-foreground">Estimated Cost</div>
-                  <div className="text-2xl font-bold">R{calculateBillingAmount(reportStats.currentMonthReports).toFixed(2)}</div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Estimated Amount</div>
+                  <div className="text-lg font-bold text-orange-600">
+                    R{calculateBillingAmount(reportStats.currentMonth).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Invoice Date</div>
+                  <div className="text-lg font-medium">
+                    {format(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1), 'MMM d, yyyy')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Due Date</div>
+                  <div className="text-lg font-medium">
+                    {format(new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1), 'MMM d, yyyy')}
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Next Billing Info */}
-          {reportStats.nextBillingDate && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Next Billing</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-muted-foreground">Billing Date</div>
-                    <div className="text-lg font-medium">{format(new Date(reportStats.nextBillingDate), 'MMM d, yyyy')}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Due Date</div>
-                    <div className="text-lg font-medium">
-                      {format(new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1), 'MMM d, yyyy')}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </TooltipProvider>
+        )}
+      </div>
     );
   };
 
