@@ -15,8 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AddAgencyData {
   propdataKey: string;
-  franchiseName: string;
-  branchName: string | null;
+  branchName: string;
+  franchiseName: string | null;
 }
 
 interface AddAgencyModalProps {
@@ -26,8 +26,8 @@ interface AddAgencyModalProps {
 export function AddAgencyModal({ children }: AddAgencyModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [propdataKey, setPropdataKey] = useState("");
-  const [franchiseName, setFranchiseName] = useState("");
   const [branchName, setBranchName] = useState("");
+  const [franchiseName, setFranchiseName] = useState("");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -62,10 +62,10 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
   });
 
   const handleSubmit = () => {
-    if (!propdataKey.trim() || !franchiseName.trim()) {
+    if (!propdataKey.trim() || !branchName.trim()) {
       toast({
         title: "Please fill required fields",
-        description: "PropData key and franchise name are required.",
+        description: "PropData key and branch name are required.",
         variant: "destructive",
       });
       return;
@@ -73,15 +73,15 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
 
     addAgencyMutation.mutate({
       propdataKey: propdataKey.trim(),
-      franchiseName: franchiseName.trim(),
-      branchName: branchName.trim() || franchiseName.trim(), // Use franchise name as branch name for single-office agencies
+      branchName: branchName.trim(),
+      franchiseName: franchiseName.trim() || branchName.trim(), // Use branch name as franchise name for standalone agencies
     });
   };
 
   const handleReset = () => {
     setPropdataKey("");
-    setFranchiseName("");
     setBranchName("");
+    setFranchiseName("");
   };
 
   return (
@@ -120,28 +120,31 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
             </p>
           </div>
 
-          {/* Franchise Name */}
-          <div className="space-y-2">
-            <Label htmlFor="franchiseName">Franchise Name</Label>
-            <Input
-              id="franchiseName"
-              placeholder="e.g., Pam Golding Properties"
-              value={franchiseName}
-              onChange={(e) => setFranchiseName(e.target.value)}
-            />
-          </div>
-
           {/* Branch Name */}
           <div className="space-y-2">
-            <Label htmlFor="branchName">Branch Name (Optional)</Label>
+            <Label htmlFor="branchName">Branch/Agency Name</Label>
             <Input
               id="branchName"
-              placeholder="e.g., Atlantic Seaboard (leave empty for single office agencies)"
+              placeholder="e.g., Atlantic Seaboard or NOX Properties"
               value={branchName}
               onChange={(e) => setBranchName(e.target.value)}
             />
             <p className="text-sm text-muted-foreground">
-              Only needed for franchise agencies with multiple branches. Leave empty for single-office agencies.
+              The specific branch or agency name that PropData will use to identify this office.
+            </p>
+          </div>
+
+          {/* Franchise Name */}
+          <div className="space-y-2">
+            <Label htmlFor="franchiseName">Franchise Name (Optional)</Label>
+            <Input
+              id="franchiseName"
+              placeholder="e.g., Pam Golding Properties (leave empty for independent agencies)"
+              value={franchiseName}
+              onChange={(e) => setFranchiseName(e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              Only needed if this branch belongs to a larger franchise group.
             </p>
           </div>
 

@@ -101,6 +101,7 @@ This is a property investment analysis platform that helps users compare short-t
 - June 16, 2025: Removed VAT from all billing calculations across the system (invoices, UI displays, automated billing) since company is not VAT registered yet
 - June 16, 2025: Fixed final VAT calculation in branch admin settings usage display - removed 1.15 multiplier that was showing R6440 instead of correct VAT-free amount
 - June 16, 2025: Simplified add agency flow to request PropData unique key instead of searching - now requires manual entry of PropData access key, franchise name, and branch name for better integration control
+- June 16, 2025: Restructured add agency form to prioritize branch name as primary identifier (required) and franchise name as optional, aligning with data architecture where branch IDs are the true source of identity
 
 ## User Preferences
 
