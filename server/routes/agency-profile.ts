@@ -83,6 +83,7 @@ router.get("/agency-profile", async (req, res) => {
 
     return res.json({
       id: agency.id,
+      agencySlug: agency.slug,
       franchiseName: agency.franchiseName,
       branchName: agency.branchName,
       logoUrl: agency.logoUrl,
