@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { downloadInvoice } from "@/services/invoiceService";
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ import {
   CheckCircle2, 
   Download, 
   CalendarDays, 
+  Calendar,
   CreditCard, 
   Building2, 
   MapPin, 
