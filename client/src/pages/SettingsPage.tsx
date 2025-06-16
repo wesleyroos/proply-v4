@@ -4,7 +4,13 @@ import { downloadInvoice } from "@/services/invoiceService";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -55,27 +61,26 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser, SelectInvoice } from "@db/schema";
 import { useQueryClient } from "@tanstack/react-query";
-import { 
-  Pencil, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Download, 
-  CalendarDays, 
+import {
+  Pencil,
+  AlertTriangle,
+  CheckCircle2,
+  Download,
+  CalendarDays,
   Calendar,
-  CreditCard, 
-  Building2, 
-  MapPin, 
+  CreditCard,
+  Building2,
+  MapPin,
   FileText,
   Shield,
   Plus,
   Trash2,
   CheckCircle,
   Clock,
-  BarChart3
+  BarChart3,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-
 
 // Profile form data interface
 interface ProfileFormData {
@@ -125,29 +130,32 @@ function ProfileSection() {
 
   // Fetch agency profile data for admin users
   const { data: agencyProfile } = useQuery<AgencyProfile>({
-    queryKey: ['/api/agency-profile'],
+    queryKey: ["/api/agency-profile"],
     queryFn: async () => {
-      const response = await fetch('/api/agency-profile', {
-        credentials: 'include'
+      const response = await fetch("/api/agency-profile", {
+        credentials: "include",
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch agency profile');
+        throw new Error("Failed to fetch agency profile");
       }
       return response.json();
     },
-    enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
+    enabled: user?.role === "branch_admin" || user?.role === "franchise_admin",
   });
 
   const form = useForm<ProfileFormData>({
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      companyName: (user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
-        ? (agencyProfile?.companyName || "") 
-        : (user?.company || ""),
+      companyName:
+        user?.role === "branch_admin" || user?.role === "franchise_admin"
+          ? agencyProfile?.companyName || ""
+          : user?.company || "",
       vatNumber: agencyProfile?.vatNumber || user?.vatNumber || "",
-      registrationNumber: agencyProfile?.registrationNumber || user?.registrationNumber || "",
-      businessAddress: agencyProfile?.businessAddress || user?.businessAddress || "",
+      registrationNumber:
+        agencyProfile?.registrationNumber || user?.registrationNumber || "",
+      businessAddress:
+        agencyProfile?.businessAddress || user?.businessAddress || "",
       companyLogo: agencyProfile?.logoUrl || user?.companyLogo || "",
     },
   });
@@ -158,12 +166,15 @@ function ProfileSection() {
       form.reset({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
-        companyName: (user.role === 'branch_admin' || user.role === 'franchise_admin') 
-          ? (agencyProfile?.companyName || "") 
-          : (user.company || ""),
+        companyName:
+          user.role === "branch_admin" || user.role === "franchise_admin"
+            ? agencyProfile?.companyName || ""
+            : user.company || "",
         vatNumber: agencyProfile?.vatNumber || user.vatNumber || "",
-        registrationNumber: agencyProfile?.registrationNumber || user.registrationNumber || "",
-        businessAddress: agencyProfile?.businessAddress || user.businessAddress || "",
+        registrationNumber:
+          agencyProfile?.registrationNumber || user.registrationNumber || "",
+        businessAddress:
+          agencyProfile?.businessAddress || user.businessAddress || "",
         companyLogo: agencyProfile?.logoUrl || user.companyLogo || "",
       });
     }
@@ -172,8 +183,8 @@ function ProfileSection() {
   // Format SA business registration number (YYYY/NNNNNN/NN)
   const formatRegistrationNumber = (value: string) => {
     // Remove all non-numeric characters
-    const numbers = value.replace(/\D/g, '');
-    
+    const numbers = value.replace(/\D/g, "");
+
     // Apply SA business registration number format
     if (numbers.length <= 4) {
       return numbers;
@@ -184,23 +195,31 @@ function ProfileSection() {
     }
   };
 
-  const handleRegistrationNumberChange = (event: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
+  const handleRegistrationNumberChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    onChange: (value: string) => void,
+  ) => {
     const formatted = formatRegistrationNumber(event.target.value);
     onChange(formatted);
   };
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
-    if (file && (user?.role === 'branch_admin' || user?.role === 'franchise_admin')) {
+    if (
+      file &&
+      (user?.role === "branch_admin" || user?.role === "franchise_admin")
+    ) {
       setIsUploadingLogo(true);
       try {
         // For admin users, upload directly to agency profile
         const formData = new FormData();
-        formData.append('logo', file);
+        formData.append("logo", file);
 
-        const response = await fetch('/api/agency-profile/logo', {
-          method: 'POST',
-          credentials: 'include',
+        const response = await fetch("/api/agency-profile/logo", {
+          method: "POST",
+          credentials: "include",
           body: formData,
         });
 
@@ -209,26 +228,26 @@ function ProfileSection() {
         }
 
         const result = await response.json();
-        
+
         // Update the preview and form
         setPreviewLogo(result.logoUrl);
-        form.setValue('companyLogo', result.logoUrl);
-        
+        form.setValue("companyLogo", result.logoUrl);
+
         // Refresh agency profile data
         queryClient.invalidateQueries({ queryKey: ["/api/agency-profile"] });
-        
+
         toast({
           title: "Success",
           description: "Logo uploaded successfully",
           duration: 3000,
         });
-
       } catch (error) {
         console.error("Error uploading logo:", error);
         toast({
           variant: "destructive",
           title: "Error",
-          description: error instanceof Error ? error.message : "Failed to upload logo",
+          description:
+            error instanceof Error ? error.message : "Failed to upload logo",
           duration: 5000,
         });
       } finally {
@@ -250,7 +269,7 @@ function ProfileSection() {
     setIsProfileUpdating(true);
     try {
       // For admin users, update agency profile data
-      if (user?.role === 'branch_admin' || user?.role === 'franchise_admin') {
+      if (user?.role === "branch_admin" || user?.role === "franchise_admin") {
         // Update personal information (user table)
         const userResponse = await fetch("/api/update-profile", {
           method: "POST",
@@ -323,13 +342,13 @@ function ProfileSection() {
         description: "Profile updated successfully",
         duration: 3000,
       });
-
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update profile",
+        description:
+          error instanceof Error ? error.message : "Failed to update profile",
         duration: 5000,
       });
     } finally {
@@ -342,7 +361,9 @@ function ProfileSection() {
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Your personal and company information</CardDescription>
+          <CardDescription>
+            Your personal and company information
+          </CardDescription>
         </div>
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
           <DialogTrigger asChild>
@@ -358,7 +379,10 @@ function ProfileSection() {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleProfileUpdate)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(handleProfileUpdate)}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -390,19 +414,31 @@ function ProfileSection() {
 
                 <FormItem>
                   <FormLabel>
-                    {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') ? 'Agency Logo' : 'Company Logo'}
+                    {user?.role === "branch_admin" ||
+                    user?.role === "franchise_admin"
+                      ? "Agency Logo"
+                      : "Company Logo"}
                   </FormLabel>
                   <div className="flex items-start space-x-4">
                     <div>
-                      {(previewLogo || agencyProfile?.logoUrl || user?.companyLogo) ? (
+                      {previewLogo ||
+                      agencyProfile?.logoUrl ||
+                      user?.companyLogo ? (
                         <img
-                          src={previewLogo || agencyProfile?.logoUrl || user?.companyLogo || ''}
+                          src={
+                            previewLogo ||
+                            agencyProfile?.logoUrl ||
+                            user?.companyLogo ||
+                            ""
+                          }
                           alt="Logo Preview"
                           className="w-32 h-32 object-contain border rounded-lg"
                         />
                       ) : (
                         <div className="w-32 h-32 border rounded-lg flex items-center justify-center bg-gray-50">
-                          <p className="text-sm text-gray-500">No logo uploaded</p>
+                          <p className="text-sm text-gray-500">
+                            No logo uploaded
+                          </p>
                         </div>
                       )}
                     </div>
@@ -415,13 +451,15 @@ function ProfileSection() {
                         disabled={isUploadingLogo}
                       />
                       {isUploadingLogo && (
-                        <p className="text-sm text-blue-600">Uploading logo...</p>
+                        <p className="text-sm text-blue-600">
+                          Uploading logo...
+                        </p>
                       )}
                       <p className="text-sm text-gray-500">
-                        {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
-                          ? 'Upload your agency logo. This will be shared across your branch/franchise.'
-                          : 'Upload your company logo. Recommended size: 400x400px.'
-                        }
+                        {user?.role === "branch_admin" ||
+                        user?.role === "franchise_admin"
+                          ? "Upload your agency logo. This will be shared across your branch/franchise."
+                          : "Upload your company logo. Recommended size: 400x400px."}
                       </p>
                     </div>
                   </div>
@@ -461,10 +499,12 @@ function ProfileSection() {
                       <FormItem>
                         <FormLabel>Business Registration Number</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             {...field}
                             maxLength={14}
-                            onChange={(e) => handleRegistrationNumberChange(e, field.onChange)}
+                            onChange={(e) =>
+                              handleRegistrationNumberChange(e, field.onChange)
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -478,7 +518,10 @@ function ProfileSection() {
                       <FormItem>
                         <FormLabel>Business Address</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="123 Business Street, City" />
+                          <Input
+                            {...field}
+                            placeholder="123 Business Street, City"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -512,7 +555,9 @@ function ProfileSection() {
         <div className="space-y-6">
           {/* Personal Information */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Personal Information</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Personal Information
+            </h3>
             <div className="mt-2 space-y-2">
               <div>
                 <span className="font-medium">Email: </span>
@@ -520,87 +565,109 @@ function ProfileSection() {
               </div>
               <div>
                 <span className="font-medium">Name: </span>
-                <span>{user?.firstName} {user?.lastName}</span>
+                <span>
+                  {user?.firstName} {user?.lastName}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Agency Information for Admin Users */}
-          {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && agencyProfile && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                Agency Information
-              </h3>
-              <div className="mt-2 space-y-2">
-                <div>
-                  <span className="font-medium">Franchise: </span>
-                  <span>{agencyProfile.franchiseName}</span>
-                </div>
-                {user.role === 'branch_admin' && agencyProfile.branchName && (
+          {(user?.role === "branch_admin" ||
+            user?.role === "franchise_admin") &&
+            agencyProfile && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Agency Information
+                </h3>
+                <div className="mt-2 space-y-2">
                   <div>
-                    <span className="font-medium">Branch: </span>
-                    <span>{agencyProfile.branchName}</span>
+                    <span className="font-medium">Franchise: </span>
+                    <span>{agencyProfile.franchiseName}</span>
                   </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Role: </span>
-                  <Badge variant={user.role === 'franchise_admin' ? 'default' : 'secondary'}>
-                    {user.role === 'franchise_admin' ? 'Franchise Administrator' : 'Branch Administrator'}
-                  </Badge>
+                  {user.role === "branch_admin" && agencyProfile.branchName && (
+                    <div>
+                      <span className="font-medium">Branch: </span>
+                      <span>{agencyProfile.branchName}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Role: </span>
+                    <Badge
+                      variant={
+                        user.role === "franchise_admin"
+                          ? "default"
+                          : "secondary"
+                      }
+                    >
+                      {user.role === "franchise_admin"
+                        ? "Franchise Administrator"
+                        : "Branch Administrator"}
+                    </Badge>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Company Information */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Company Information</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Company Information
+            </h3>
             <div className="mt-2 space-y-2">
               {/* Show agency logo for admin users, user logo for regular users */}
-              {((user?.role === 'branch_admin' || user?.role === 'franchise_admin') ? agencyProfile?.logoUrl : user?.companyLogo) && (
+              {(user?.role === "branch_admin" ||
+              user?.role === "franchise_admin"
+                ? agencyProfile?.logoUrl
+                : user?.companyLogo) && (
                 <div className="w-24 h-24 rounded overflow-hidden mb-4">
-                  <img 
-                    src={((user?.role === 'branch_admin' || user?.role === 'franchise_admin') ? agencyProfile?.logoUrl : user?.companyLogo) || ''} 
-                    alt="Company Logo" 
-                    className="w-full h-full object-contain" 
+                  <img
+                    src={
+                      (user?.role === "branch_admin" ||
+                      user?.role === "franchise_admin"
+                        ? agencyProfile?.logoUrl
+                        : user?.companyLogo) || ""
+                    }
+                    alt="Company Logo"
+                    className="w-full h-full object-contain"
                   />
                 </div>
               )}
               <div>
                 <span className="font-medium">Company Name: </span>
                 <span>
-                  {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
-                    ? (agencyProfile?.companyName || "Not provided")
-                    : (user?.company || "Not provided")
-                  }
+                  {user?.role === "branch_admin" ||
+                  user?.role === "franchise_admin"
+                    ? agencyProfile?.companyName || "Not provided"
+                    : user?.company || "Not provided"}
                 </span>
               </div>
               <div>
                 <span className="font-medium">VAT Number: </span>
                 <span>
-                  {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
-                    ? (agencyProfile?.vatNumber || "Not provided")
-                    : (user?.vatNumber || "Not provided")
-                  }
+                  {user?.role === "branch_admin" ||
+                  user?.role === "franchise_admin"
+                    ? agencyProfile?.vatNumber || "Not provided"
+                    : user?.vatNumber || "Not provided"}
                 </span>
               </div>
               <div>
                 <span className="font-medium">Registration Number: </span>
                 <span>
-                  {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
-                    ? (agencyProfile?.registrationNumber || "Not provided")
-                    : (user?.registrationNumber || "Not provided")
-                  }
+                  {user?.role === "branch_admin" ||
+                  user?.role === "franchise_admin"
+                    ? agencyProfile?.registrationNumber || "Not provided"
+                    : user?.registrationNumber || "Not provided"}
                 </span>
               </div>
               <div>
                 <span className="font-medium">Business Address: </span>
                 <span>
-                  {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') 
-                    ? (agencyProfile?.businessAddress || "Not provided")
-                    : (user?.businessAddress || "Not provided")
-                  }
+                  {user?.role === "branch_admin" ||
+                  user?.role === "franchise_admin"
+                    ? agencyProfile?.businessAddress || "Not provided"
+                    : user?.businessAddress || "Not provided"}
                 </span>
               </div>
             </div>
@@ -627,47 +694,54 @@ export default function SettingsPage() {
   // Handle PayFast redirect messages
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const paymentStatus = urlParams.get('payment');
-    const tokenStatus = urlParams.get('token');
+    const paymentStatus = urlParams.get("payment");
+    const tokenStatus = urlParams.get("token");
 
-    if (paymentStatus === 'success' || tokenStatus === 'success') {
+    if (paymentStatus === "success" || tokenStatus === "success") {
       // Show success message for payment method addition
       toast({
         title: "Payment Method Added Successfully",
-        description: "Your card has been securely saved for future billing. You can now manage automatic payments.",
+        description:
+          "Your card has been securely saved for future billing. You can now manage automatic payments.",
         duration: 5000,
       });
 
       // Clear URL parameters by replacing the current URL
       const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-      
+      window.history.replaceState({}, "", newUrl);
+
       // Refresh payment methods list
-      queryClient.invalidateQueries({ queryKey: ['/api/payment-methods'] });
-    } else if (paymentStatus === 'cancelled' || paymentStatus === 'cancel' || tokenStatus === 'cancelled') {
+      queryClient.invalidateQueries({ queryKey: ["/api/payment-methods"] });
+    } else if (
+      paymentStatus === "cancelled" ||
+      paymentStatus === "cancel" ||
+      tokenStatus === "cancelled"
+    ) {
       // Show cancel message for payment method addition
       toast({
         variant: "destructive",
         title: "Payment Method Setup Cancelled",
-        description: "Card setup was cancelled. You can try again anytime from your settings.",
+        description:
+          "Card setup was cancelled. You can try again anytime from your settings.",
         duration: 5000,
       });
 
       // Clear URL parameters
       const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-    } else if (paymentStatus === 'failed' || tokenStatus === 'failed') {
+      window.history.replaceState({}, "", newUrl);
+    } else if (paymentStatus === "failed" || tokenStatus === "failed") {
       // Show failure message for payment method addition
       toast({
         variant: "destructive",
         title: "Payment Method Setup Failed",
-        description: "Unable to save your card details. Please check your information and try again.",
+        description:
+          "Unable to save your card details. Please check your information and try again.",
         duration: 5000,
       });
 
       // Clear URL parameters
       const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
+      window.history.replaceState({}, "", newUrl);
     }
   }, [toast, queryClient]);
 
@@ -686,21 +760,21 @@ export default function SettingsPage() {
         title: "Error",
         description: "New passwords do not match",
         variant: "destructive",
-        duration: 3000
-      })
+        duration: 3000,
+      });
       return;
     }
 
     setIsSecurityUpdating(true);
     try {
-      const response = await fetch('/api/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           currentPassword: data.currentPassword,
-          newPassword: data.newPassword
+          newPassword: data.newPassword,
         }),
-        credentials: 'include'
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -712,7 +786,7 @@ export default function SettingsPage() {
       securityForm.reset({
         currentPassword: "",
         newPassword: "",
-        confirmPassword: ""
+        confirmPassword: "",
       });
 
       toast({
@@ -725,7 +799,8 @@ export default function SettingsPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update password",
+        description:
+          error instanceof Error ? error.message : "Failed to update password",
         duration: 5000,
       });
     } finally {
@@ -734,7 +809,7 @@ export default function SettingsPage() {
   };
 
   const initiateProUpgrade = () => {
-    console.log('Initiating Pro upgrade payment flow (Sandbox Mode)');
+    console.log("Initiating Pro upgrade payment flow (Sandbox Mode)");
 
     const merchantId = import.meta.env.DEV
       ? import.meta.env.VITE_PAYFAST_SANDBOX_MERCHANT_ID
@@ -744,11 +819,15 @@ export default function SettingsPage() {
       : import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
 
     if (!merchantId || !merchantKey) {
-      console.error('PayFast merchant credentials missing:', { hasMerchantId: !!merchantId, hasMerchantKey: !!merchantKey });
+      console.error("PayFast merchant credentials missing:", {
+        hasMerchantId: !!merchantId,
+        hasMerchantKey: !!merchantKey,
+      });
       toast({
         variant: "destructive",
         title: "Payment Setup Error",
-        description: "Unable to process payment at this time. Please try again later or contact support.",
+        description:
+          "Unable to process payment at this time. Please try again later or contact support.",
         duration: 5000,
       });
       return;
@@ -768,16 +847,16 @@ export default function SettingsPage() {
     const upgradeData = {
       uid: user.id,
       e: user.email,
-      f: user.firstName || '',
-      l: user.lastName || '',
-      t: user.userType || 'individual',
-      s: 'pro'
+      f: user.firstName || "",
+      l: user.lastName || "",
+      t: user.userType || "individual",
+      s: "pro",
     };
 
-    console.log('Processing upgrade for user:', {
+    console.log("Processing upgrade for user:", {
       ...upgradeData,
       email: user.email,
-      currentPlan: user.subscriptionStatus
+      currentPlan: user.subscriptionStatus,
     });
 
     const encodedData = encodeURIComponent(JSON.stringify(upgradeData));
@@ -793,10 +872,10 @@ export default function SettingsPage() {
       amount: "2000.00",
       item_name: "Proply Pro Subscription Upgrade",
       subscription_type: "1",
-      billing_date: new Date().toISOString().split('T')[0],
+      billing_date: new Date().toISOString().split("T")[0],
       recurring_amount: "2000.00",
       frequency: "3",
-      cycles: "0"
+      cycles: "0",
     };
 
     try {
@@ -817,10 +896,10 @@ export default function SettingsPage() {
       });
 
       document.body.appendChild(form);
-      console.log('Submitting upgrade payment form to PayFast sandbox...');
+      console.log("Submitting upgrade payment form to PayFast sandbox...");
       form.submit();
     } catch (error) {
-      console.error('Error submitting payment form:', error);
+      console.error("Error submitting payment form:", error);
       toast({
         variant: "destructive",
         title: "Payment Error",
@@ -831,50 +910,56 @@ export default function SettingsPage() {
   };
 
   const { data: invoices, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['/api/invoices'],
+    queryKey: ["/api/invoices"],
     queryFn: async () => {
-      const response = await fetch('/api/invoices', {
-        credentials: 'include'
+      const response = await fetch("/api/invoices", {
+        credentials: "include",
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch invoices');
+        throw new Error("Failed to fetch invoices");
       }
       return response.json();
     },
-    enabled: user?.subscriptionStatus === "pro"
+    enabled: user?.subscriptionStatus === "pro",
   });
 
   // Billing Usage Overview Component
   const BillingUsageOverview = () => {
     // Get agency information first to determine agency name/ID
     const { data: agencyData } = useQuery({
-      queryKey: ['/api/agency-profile'],
+      queryKey: ["/api/agency-profile"],
       queryFn: async () => {
-        const response = await fetch('/api/agency-profile', {
-          credentials: 'include'
+        const response = await fetch("/api/agency-profile", {
+          credentials: "include",
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch agency profile');
+          throw new Error("Failed to fetch agency profile");
         }
         return response.json();
       },
-      enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
+      enabled:
+        user?.role === "branch_admin" || user?.role === "franchise_admin",
     });
 
     // Fetch report statistics using the same endpoint as the working agency details modal
     const { data: reportStats, isLoading } = useQuery({
-      queryKey: ['/api/agencies/report-stats', agencyData?.agencySlug],
+      queryKey: ["/api/agencies/report-stats", agencyData?.agencySlug],
       queryFn: async () => {
         if (!agencyData?.agencySlug) return null;
-        const response = await fetch(`/api/agencies/${agencyData.agencySlug}/report-stats`, {
-          credentials: 'include'
-        });
+        const response = await fetch(
+          `/api/agencies/${agencyData.agencySlug}/report-stats`,
+          {
+            credentials: "include",
+          },
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch report statistics');
+          throw new Error("Failed to fetch report statistics");
         }
         return response.json();
       },
-      enabled: !!(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && !!agencyData?.agencySlug
+      enabled:
+        !!(user?.role === "branch_admin" || user?.role === "franchise_admin") &&
+        !!agencyData?.agencySlug,
     });
 
     // Billing calculation function (same as in AgencyDetailModal)
@@ -950,7 +1035,9 @@ export default function SettingsPage() {
             <div className="text-center py-8 text-muted-foreground">
               <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <div className="font-medium">No billing cycles yet</div>
-              <div className="text-sm">Generate reports to start tracking usage</div>
+              <div className="text-sm">
+                Generate reports to start tracking usage
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -978,13 +1065,17 @@ export default function SettingsPage() {
               <div className="text-2xl font-bold text-[#007B8A]">
                 {currentMonthReports}
               </div>
-              <div className="text-sm text-muted-foreground">Reports This Month</div>
+              <div className="text-sm text-muted-foreground">
+                Reports This Month
+              </div>
             </div>
             <div className="p-4 border rounded-lg">
               <div className="text-2xl font-bold text-green-600">
                 R{totalAmount.toFixed(2)}
               </div>
-              <div className="text-sm text-muted-foreground">Monthly Billing Amount</div>
+              <div className="text-sm text-muted-foreground">
+                Monthly Billing Amount
+              </div>
             </div>
           </div>
 
@@ -996,7 +1087,10 @@ export default function SettingsPage() {
                 {reportStats.monthlyStats.slice(0, 3).map((stat: any) => {
                   const monthlyBilling = calculateBillingAmount(stat.reports);
                   return (
-                    <div key={stat.month} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={stat.month}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div>
                         <div className="font-medium">{stat.monthName}</div>
                         <div className="text-sm text-muted-foreground">
@@ -1004,7 +1098,9 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">R{monthlyBilling.toFixed(2)}</div>
+                        <div className="font-medium">
+                          R{monthlyBilling.toFixed(2)}
+                        </div>
                         <div className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
                           generated
                         </div>
@@ -1021,14 +1117,23 @@ export default function SettingsPage() {
             <div className="border-t pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
                 <div>
-                  <div className="text-xl font-bold text-blue-600">{reportStats.totalReports}</div>
-                  <div className="text-sm text-muted-foreground">Total Reports Generated</div>
+                  <div className="text-xl font-bold text-blue-600">
+                    {reportStats.totalReports}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Reports Generated
+                  </div>
                 </div>
                 <div>
                   <div className="text-xl font-bold text-green-600">
-                    R{calculateBillingAmount(reportStats.totalReports).toLocaleString()}
+                    R
+                    {calculateBillingAmount(
+                      reportStats.totalReports,
+                    ).toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">Total Value Generated</div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Value Generated
+                  </div>
                 </div>
               </div>
             </div>
@@ -1043,30 +1148,37 @@ export default function SettingsPage() {
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [isProcessingCard, setIsProcessingCard] = useState(false);
-    const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true);
+    const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] =
+      useState(true);
     const [isTestingPayment, setIsTestingPayment] = useState(false);
-    const [isProcessingTestPayment, setIsProcessingTestPayment] = useState(false);
-    const [testPaymentAmount, setTestPaymentAmount] = useState('10.00');
-    const [deleteConfirmModal, setDeleteConfirmModal] = useState<{open: boolean, methodId: number | null}>({ open: false, methodId: null });
+    const [isProcessingTestPayment, setIsProcessingTestPayment] =
+      useState(false);
+    const [testPaymentAmount, setTestPaymentAmount] = useState("10.00");
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+      open: boolean;
+      methodId: number | null;
+    }>({ open: false, methodId: null });
 
     // Fetch existing payment methods
-    const { data: paymentMethodsData, refetch: refetchPaymentMethods } = useQuery({
-      queryKey: ['/api/payment-methods'],
-      queryFn: async () => {
-        const response = await fetch('/api/payment-methods', {
-          credentials: 'include'
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch payment methods');
-        }
-        return response.json();
-      },
-      enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
-    });
+    const { data: paymentMethodsData, refetch: refetchPaymentMethods } =
+      useQuery({
+        queryKey: ["/api/payment-methods"],
+        queryFn: async () => {
+          const response = await fetch("/api/payment-methods", {
+            credentials: "include",
+          });
+          if (!response.ok) {
+            throw new Error("Failed to fetch payment methods");
+          }
+          return response.json();
+        },
+        enabled:
+          user?.role === "branch_admin" || user?.role === "franchise_admin",
+      });
 
     // Simplified card form state - only cardholder name needed
     const [cardForm, setCardForm] = useState({
-      cardholderName: ''
+      cardholderName: "",
     });
 
     const handleAddCard = async (e: React.FormEvent) => {
@@ -1075,58 +1187,60 @@ export default function SettingsPage() {
 
       try {
         // Get PayFast tokenization URL
-        const tokenizeResponse = await fetch('/api/payfast/create-tokenize-url', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
+        const tokenizeResponse = await fetch(
+          "/api/payfast/create-tokenize-url",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
         if (!tokenizeResponse.ok) {
-          throw new Error('Failed to create PayFast tokenization URL');
+          throw new Error("Failed to create PayFast tokenization URL");
         }
-        
+
         const responseText = await tokenizeResponse.text();
         let tokenizeUrl;
-        
+
         try {
           const jsonResponse = JSON.parse(responseText);
           tokenizeUrl = jsonResponse.tokenizeUrl;
         } catch (parseError) {
           // If response is not JSON, it might be HTML from PayFast
           // Extract URL from HTML or use the response directly
-          console.error('Failed to parse JSON response:', parseError);
-          throw new Error('Invalid response from payment gateway');
+          console.error("Failed to parse JSON response:", parseError);
+          throw new Error("Invalid response from payment gateway");
         }
 
         // Validate cardholder name
         if (!cardForm.cardholderName) {
-          throw new Error('Please enter the cardholder name');
+          throw new Error("Please enter the cardholder name");
         }
 
-        console.log('Redirecting to PayFast tokenization URL:', tokenizeUrl);
-        
+        console.log("Redirecting to PayFast tokenization URL:", tokenizeUrl);
+
         // Store cardholder name for when user returns from PayFast
-        localStorage.setItem('pending_cardholder_name', cardForm.cardholderName);
-        
+        localStorage.setItem(
+          "pending_cardholder_name",
+          cardForm.cardholderName,
+        );
+
         // Redirect to PayFast tokenization page
         window.location.href = tokenizeUrl;
-
       } catch (error) {
-        console.error('Error creating PayFast tokenization URL:', error);
+        console.error("Error creating PayFast tokenization URL:", error);
         toast({
           variant: "destructive",
           title: "Failed to initialize payment",
-          description: error instanceof Error ? error.message : "Please try again"
+          description:
+            error instanceof Error ? error.message : "Please try again",
         });
         setIsProcessingCard(false);
       }
     };
-
-
-
-
 
     const confirmDeletePaymentMethod = (methodId: number) => {
       setDeleteConfirmModal({ open: true, methodId });
@@ -1134,20 +1248,23 @@ export default function SettingsPage() {
 
     const removePaymentMethod = async () => {
       if (!deleteConfirmModal.methodId) return;
-      
+
       try {
-        const response = await fetch(`/api/payment-methods/${deleteConfirmModal.methodId}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
+        const response = await fetch(
+          `/api/payment-methods/${deleteConfirmModal.methodId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          },
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to remove payment method');
+          throw new Error("Failed to remove payment method");
         }
 
         toast({
           title: "Payment method removed",
-          description: "Card has been removed from your account."
+          description: "Card has been removed from your account.",
         });
 
         setDeleteConfirmModal({ open: false, methodId: null });
@@ -1156,7 +1273,8 @@ export default function SettingsPage() {
         toast({
           variant: "destructive",
           title: "Failed to remove payment method",
-          description: error instanceof Error ? error.message : "Please try again"
+          description:
+            error instanceof Error ? error.message : "Please try again",
         });
       }
     };
@@ -1170,7 +1288,8 @@ export default function SettingsPage() {
               Payment Methods
             </CardTitle>
             <CardDescription>
-              Manage payment methods for agency billing. Reports will be charged to your active payment method.
+              Manage payment methods for agency billing. Reports will be charged
+              to your active payment method.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -1179,7 +1298,10 @@ export default function SettingsPage() {
               <div className="space-y-3">
                 <h3 className="font-medium text-sm">Saved Payment Methods</h3>
                 {paymentMethodsData.paymentMethods.map((method: any) => (
-                  <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div
+                    key={method.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <CreditCard className="w-5 h-5 text-muted-foreground" />
                       <div>
@@ -1199,7 +1321,12 @@ export default function SettingsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setDeleteConfirmModal({ open: true, methodId: method.id })}
+                      onClick={() =>
+                        setDeleteConfirmModal({
+                          open: true,
+                          methodId: method.id,
+                        })
+                      }
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1208,8 +1335,6 @@ export default function SettingsPage() {
                 ))}
               </div>
             )}
-
-
 
             {/* Add New Payment Method */}
             <div className="border-t pt-6">
@@ -1228,47 +1353,68 @@ export default function SettingsPage() {
               {isAddingCard && (
                 <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
                   <div className="text-sm text-gray-600 mb-4">
-                    Click "Add Payment Method" to securely add your card via PayFast's secure payment form. 
-                    A R5.00 authorization will be processed for tokenization.
+                    Click "Add Payment Method" to securely add your card via
+                    PayFast's secure payment form. A R5.00 authorization will be
+                    processed for tokenization.
                   </div>
 
                   {/* Test Card Information */}
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-                    <h4 className="text-sm font-medium text-blue-800 mb-2">Test Mode Active - Use These Test Cards:</h4>
+                    <h4 className="text-sm font-medium text-blue-800 mb-2">
+                      Test Mode Active - Use These Test Cards:
+                    </h4>
                     <div className="text-xs text-blue-700 space-y-1">
-                      <div><strong>Successful Payment:</strong> 4111 1111 1111 1111 (Visa)</div>
-                      <div><strong>Successful Payment:</strong> 5555 5555 5555 4444 (Mastercard)</div>
-                      <div><strong>Expiry:</strong> Any future date (e.g., 12/25)</div>
-                      <div><strong>CVV:</strong> Any 3-digit number (e.g., 123)</div>
+                      <div>
+                        <strong>Successful Payment:</strong> 4111 1111 1111 1111
+                        (Visa)
+                      </div>
+                      <div>
+                        <strong>Successful Payment:</strong> 5555 5555 5555 4444
+                        (Mastercard)
+                      </div>
+                      <div>
+                        <strong>Expiry:</strong> Any future date (e.g., 12/25)
+                      </div>
+                      <div>
+                        <strong>CVV:</strong> Any 3-digit number (e.g., 123)
+                      </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Cardholder Name</label>
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Cardholder Name
+                      </label>
                       <Input
                         value={cardForm.cardholderName}
-                        onChange={(e) => setCardForm(prev => ({ ...prev, cardholderName: e.target.value }))}
+                        onChange={(e) =>
+                          setCardForm((prev) => ({
+                            ...prev,
+                            cardholderName: e.target.value,
+                          }))
+                        }
                         placeholder="John Doe"
                         required
                         className="mt-1"
                       />
                     </div>
 
-
-
                     <p className="text-xs text-muted-foreground mt-2">
-                      Card details will be entered securely in PayFast's payment form
+                      Card details will be entered securely in PayFast's payment
+                      form
                     </p>
                   </div>
 
                   <div className="flex gap-2 pt-4">
                     <Button onClick={handleAddCard} disabled={isProcessingCard}>
-                      {isProcessingCard ? "Processing..." : "Add Payment Method"}
+                      {isProcessingCard
+                        ? "Processing..."
+                        : "Add Payment Method"}
                     </Button>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
+                    <Button
+                      type="button"
+                      variant="ghost"
                       onClick={() => setIsAddingCard(false)}
                     >
                       Cancel
@@ -1276,7 +1422,8 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="text-xs text-muted-foreground mt-2">
-                    Your payment information is securely processed by PayFast. Card details are tokenized and never stored on our servers.
+                    Your payment information is securely processed by PayFast.
+                    Card details are tokenized and never stored on our servers.
                   </div>
                 </div>
               )}
@@ -1285,19 +1432,33 @@ export default function SettingsPage() {
         </Card>
 
         {/* Delete Confirmation Modal */}
-        <Dialog open={deleteConfirmModal.open} onOpenChange={(open) => setDeleteConfirmModal({ open, methodId: null })}>
+        <Dialog
+          open={deleteConfirmModal.open}
+          onOpenChange={(open) =>
+            setDeleteConfirmModal({ open, methodId: null })
+          }
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Remove Payment Method</DialogTitle>
               <DialogDescription>
-                Are you sure you want to remove this payment method? This action cannot be undone.
+                Are you sure you want to remove this payment method? This action
+                cannot be undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDeleteConfirmModal({ open: false, methodId: null })}>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setDeleteConfirmModal({ open: false, methodId: null })
+                }
+              >
                 Cancel
               </Button>
-              <Button onClick={removePaymentMethod} className="bg-red-600 hover:bg-red-700">
+              <Button
+                onClick={removePaymentMethod}
+                className="bg-red-600 hover:bg-red-700"
+              >
                 Remove
               </Button>
             </DialogFooter>
@@ -1311,33 +1472,39 @@ export default function SettingsPage() {
   const AgencyInvoicesSection = () => {
     // Get agency information first
     const { data: agencyData } = useQuery({
-      queryKey: ['/api/agency-profile'],
+      queryKey: ["/api/agency-profile"],
       queryFn: async () => {
-        const response = await fetch('/api/agency-profile', {
-          credentials: 'include'
+        const response = await fetch("/api/agency-profile", {
+          credentials: "include",
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch agency profile');
+          throw new Error("Failed to fetch agency profile");
         }
         return response.json();
       },
-      enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
+      enabled:
+        user?.role === "branch_admin" || user?.role === "franchise_admin",
     });
 
     // Fetch report statistics using the same endpoint as the agency details modal
     const { data: reportStats, isLoading } = useQuery({
-      queryKey: ['/api/agencies/report-stats', agencyData?.agencySlug],
+      queryKey: ["/api/agencies/report-stats", agencyData?.agencySlug],
       queryFn: async () => {
         if (!agencyData?.agencySlug) return null;
-        const response = await fetch(`/api/agencies/${agencyData.agencySlug}/report-stats`, {
-          credentials: 'include'
-        });
+        const response = await fetch(
+          `/api/agencies/${agencyData.agencySlug}/report-stats`,
+          {
+            credentials: "include",
+          },
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch report statistics');
+          throw new Error("Failed to fetch report statistics");
         }
         return response.json();
       },
-      enabled: !!(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && !!agencyData?.agencySlug
+      enabled:
+        !!(user?.role === "branch_admin" || user?.role === "franchise_admin") &&
+        !!agencyData?.agencySlug,
     });
 
     // Billing calculation function (same as AgencyDetailModal)
@@ -1408,9 +1575,12 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="text-center py-12">
             <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-lg font-medium text-muted-foreground">No Invoices Available</p>
+            <p className="text-lg font-medium text-muted-foreground">
+              No Invoices Available
+            </p>
             <p className="text-sm text-muted-foreground mt-2">
-              Invoice history will appear here once your agency starts generating property reports
+              Invoice history will appear here once your agency starts
+              generating property reports
             </p>
           </CardContent>
         </Card>
@@ -1427,10 +1597,12 @@ export default function SettingsPage() {
                 <FileText className="h-4 w-4 text-blue-600" />
                 <span className="text-sm font-medium">Total Invoices</span>
               </div>
-              <div className="text-2xl font-bold mt-1">{reportStats.invoices.length}</div>
+              <div className="text-2xl font-bold mt-1">
+                {reportStats.invoices.length}
+              </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
@@ -1438,7 +1610,11 @@ export default function SettingsPage() {
                 <span className="text-sm font-medium">Upcoming</span>
               </div>
               <div className="text-2xl font-bold mt-1">
-                {reportStats.invoices.filter((inv: any) => inv.status === 'upcoming').length}
+                {
+                  reportStats.invoices.filter(
+                    (inv: any) => inv.status === "upcoming",
+                  ).length
+                }
               </div>
             </CardContent>
           </Card>
@@ -1450,72 +1626,15 @@ export default function SettingsPage() {
                 <span className="text-sm font-medium">Paid</span>
               </div>
               <div className="text-2xl font-bold mt-1">
-                {reportStats.invoices.filter((inv: any) => inv.status === 'paid').length}
+                {
+                  reportStats.invoices.filter(
+                    (inv: any) => inv.status === "paid",
+                  ).length
+                }
               </div>
             </CardContent>
           </Card>
         </div>
-
-
-
-        {/* Invoices Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Invoice History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-2 font-medium">Invoice ID</th>
-                    <th className="text-left py-3 px-2 font-medium">Period</th>
-                    <th className="text-right py-3 px-2 font-medium">Reports</th>
-                    <th className="text-right py-3 px-2 font-medium">Amount</th>
-                    <th className="text-left py-3 px-2 font-medium">Invoice Date</th>
-                    <th className="text-left py-3 px-2 font-medium">Due Date</th>
-                    <th className="text-left py-3 px-2 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reportStats.invoices.map((invoice: any) => (
-                    <tr key={invoice.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-2 font-mono text-sm">{invoice.id}</td>
-                      <td className="py-3 px-2">{invoice.monthName}</td>
-                      <td className="py-3 px-2 text-right">{invoice.reportCount}</td>
-                      <td className="py-3 px-2 text-right font-medium">
-                        R{invoice.amount.toLocaleString()}
-                      </td>
-                      <td className="py-3 px-2">
-                        {format(new Date(invoice.invoiceDate), 'MMM d, yyyy')}
-                      </td>
-                      <td className="py-3 px-2">
-                        {format(new Date(invoice.dueDate), 'MMM d, yyyy')}
-                      </td>
-                      <td className="py-3 px-2">
-                        <Badge 
-                          variant={
-                            invoice.status === 'paid' ? 'default' :
-                            invoice.status === 'upcoming' ? 'secondary' :
-                            'destructive'
-                          }
-                          className={
-                            invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                            invoice.status === 'upcoming' ? 'bg-orange-100 text-orange-800' :
-                            'bg-red-100 text-red-800'
-                          }
-                        >
-                          {invoice.status === 'upcoming' ? 'Upcoming' : 
-                           invoice.status === 'paid' ? 'Paid' : 'Overdue'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Next Invoice Preview */}
         {reportStats.currentMonth > 0 && (
@@ -1529,31 +1648,134 @@ export default function SettingsPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground">Current Month Usage</div>
-                  <div className="text-lg font-bold">{reportStats.currentMonth} reports</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Estimated Amount</div>
-                  <div className="text-lg font-bold text-orange-600">
-                    R{calculateBillingAmount(reportStats.currentMonth).toLocaleString()}
+                  <div className="text-sm text-muted-foreground">
+                    Current Month Usage
+                  </div>
+                  <div className="text-lg font-bold">
+                    {reportStats.currentMonth} reports
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">Invoice Date</div>
+                  <div className="text-sm text-muted-foreground">
+                    Estimated Amount
+                  </div>
+                  <div className="text-lg font-bold text-orange-600">
+                    R
+                    {calculateBillingAmount(
+                      reportStats.currentMonth,
+                    ).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">
+                    Invoice Date
+                  </div>
                   <div className="text-lg font-medium">
-                    {format(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1), 'MMM d, yyyy')}
+                    {format(
+                      new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth() + 1,
+                        1,
+                      ),
+                      "MMM d, yyyy",
+                    )}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Due Date</div>
                   <div className="text-lg font-medium">
-                    {format(new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1), 'MMM d, yyyy')}
+                    {format(
+                      new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth() + 2,
+                        1,
+                      ),
+                      "MMM d, yyyy",
+                    )}
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
+
+        {/* Invoices Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Invoice History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 font-medium">
+                      Invoice ID
+                    </th>
+                    <th className="text-left py-3 px-2 font-medium">Period</th>
+                    <th className="text-right py-3 px-2 font-medium">
+                      Reports
+                    </th>
+                    <th className="text-right py-3 px-2 font-medium">Amount</th>
+                    <th className="text-left py-3 px-2 font-medium">
+                      Invoice Date
+                    </th>
+                    <th className="text-left py-3 px-2 font-medium">
+                      Due Date
+                    </th>
+                    <th className="text-left py-3 px-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportStats.invoices.map((invoice: any) => (
+                    <tr key={invoice.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-2 font-mono text-sm">
+                        {invoice.id}
+                      </td>
+                      <td className="py-3 px-2">{invoice.monthName}</td>
+                      <td className="py-3 px-2 text-right">
+                        {invoice.reportCount}
+                      </td>
+                      <td className="py-3 px-2 text-right font-medium">
+                        R{invoice.amount.toLocaleString()}
+                      </td>
+                      <td className="py-3 px-2">
+                        {format(new Date(invoice.invoiceDate), "MMM d, yyyy")}
+                      </td>
+                      <td className="py-3 px-2">
+                        {format(new Date(invoice.dueDate), "MMM d, yyyy")}
+                      </td>
+                      <td className="py-3 px-2">
+                        <Badge
+                          variant={
+                            invoice.status === "paid"
+                              ? "default"
+                              : invoice.status === "upcoming"
+                                ? "secondary"
+                                : "destructive"
+                          }
+                          className={
+                            invoice.status === "paid"
+                              ? "bg-green-100 text-green-800"
+                              : invoice.status === "upcoming"
+                                ? "bg-orange-100 text-orange-800"
+                                : "bg-red-100 text-red-800"
+                          }
+                        >
+                          {invoice.status === "upcoming"
+                            ? "Upcoming"
+                            : invoice.status === "paid"
+                              ? "Paid"
+                              : "Overdue"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Pricing Tiers Accordion */}
         <Accordion type="single" collapsible className="w-full">
@@ -1568,56 +1790,98 @@ export default function SettingsPage() {
                     <tr className="border-b">
                       <th className="text-left py-2 px-2 font-medium">Tier</th>
                       <th className="text-left py-2 px-2 font-medium">Range</th>
-                      <th className="text-right py-2 px-2 font-medium">Price</th>
-                      <th className="text-left py-2 px-2 font-medium">Discount</th>
+                      <th className="text-right py-2 px-2 font-medium">
+                        Price
+                      </th>
+                      <th className="text-left py-2 px-2 font-medium">
+                        Discount
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b">
                       <td className="py-2 px-2">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-800 text-xs">1</Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-blue-50 text-blue-800 text-xs"
+                        >
+                          1
+                        </Badge>
                       </td>
                       <td className="py-2 px-2">1-50</td>
                       <td className="py-2 px-2 text-right font-medium">R200</td>
-                      <td className="py-2 px-2 text-xs text-muted-foreground">Standard</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">
+                        Standard
+                      </td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-2 px-2">
-                        <Badge variant="outline" className="bg-green-50 text-green-800 text-xs">2</Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-green-50 text-green-800 text-xs"
+                        >
+                          2
+                        </Badge>
                       </td>
                       <td className="py-2 px-2">51-100</td>
                       <td className="py-2 px-2 text-right font-medium">R180</td>
-                      <td className="py-2 px-2 text-xs text-muted-foreground">10%</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">
+                        10%
+                      </td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-2 px-2">
-                        <Badge variant="outline" className="bg-orange-50 text-orange-800 text-xs">3</Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-orange-50 text-orange-800 text-xs"
+                        >
+                          3
+                        </Badge>
                       </td>
                       <td className="py-2 px-2">101-150</td>
                       <td className="py-2 px-2 text-right font-medium">R160</td>
-                      <td className="py-2 px-2 text-xs text-muted-foreground">20%</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">
+                        20%
+                      </td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-2 px-2">
-                        <Badge variant="outline" className="bg-purple-50 text-purple-800 text-xs">4</Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-purple-50 text-purple-800 text-xs"
+                        >
+                          4
+                        </Badge>
                       </td>
                       <td className="py-2 px-2">151-200</td>
                       <td className="py-2 px-2 text-right font-medium">R140</td>
-                      <td className="py-2 px-2 text-xs text-muted-foreground">30%</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">
+                        30%
+                      </td>
                     </tr>
                     <tr>
                       <td className="py-2 px-2">
-                        <Badge variant="outline" className="bg-yellow-50 text-yellow-800 text-xs">5</Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-yellow-50 text-yellow-800 text-xs"
+                        >
+                          5
+                        </Badge>
                       </td>
                       <td className="py-2 px-2">200+</td>
-                      <td className="py-2 px-2 text-right font-medium">R140</td>
-                      <td className="py-2 px-2 text-xs text-muted-foreground">30%</td>
+                      <td className="py-2 px-2 text-right font-medium">
+                        Custom
+                      </td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">
+                        Custom
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
-                Monthly billing based on total reports. Higher volumes get better rates automatically.
+                Monthly billing based on total reports. Higher volumes get
+                better rates automatically.
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -1635,25 +1899,30 @@ export default function SettingsPage() {
             <TabsList>
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
-              {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
+              {(user?.role === "branch_admin" ||
+                user?.role === "franchise_admin") && (
                 <>
-                  <TabsTrigger value="payment-methods">Agency Billing</TabsTrigger>
+                  <TabsTrigger value="payment-methods">
+                    Agency Billing
+                  </TabsTrigger>
                   <TabsTrigger value="agency-invoices">Invoices</TabsTrigger>
                 </>
               )}
-              {(user?.role !== 'branch_admin' && user?.role !== 'franchise_admin') && (
-                <>
-                  <TabsTrigger value="billing">Billing</TabsTrigger>
-                  <TabsTrigger value="invoices">Invoices</TabsTrigger>
-                </>
-              )}
+              {user?.role !== "branch_admin" &&
+                user?.role !== "franchise_admin" && (
+                  <>
+                    <TabsTrigger value="billing">Billing</TabsTrigger>
+                    <TabsTrigger value="invoices">Invoices</TabsTrigger>
+                  </>
+                )}
             </TabsList>
 
             <TabsContent value="profile">
               <ProfileSection />
             </TabsContent>
 
-            {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
+            {(user?.role === "branch_admin" ||
+              user?.role === "franchise_admin") && (
               <>
                 <TabsContent value="payment-methods">
                   <div className="space-y-6">
@@ -1676,7 +1945,10 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <Form {...securityForm}>
-                    <form onSubmit={securityForm.handleSubmit(handlePasswordChange)} className="space-y-4">
+                    <form
+                      onSubmit={securityForm.handleSubmit(handlePasswordChange)}
+                      className="space-y-4"
+                    >
                       <FormField
                         control={securityForm.control}
                         name="currentPassword"
@@ -1741,7 +2013,9 @@ export default function SettingsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Subscription Management</CardTitle>
-                  <CardDescription>Manage your subscription and billing preferences</CardDescription>
+                  <CardDescription>
+                    Manage your subscription and billing preferences
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <BillingDetails user={user} onUpgrade={initiateProUpgrade} />
@@ -1753,23 +2027,31 @@ export default function SettingsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Invoices</CardTitle>
-                  <CardDescription>View and download your billing history</CardDescription>
+                  <CardDescription>
+                    View and download your billing history
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {/* Show different content based on user type */}
-                  {user?.role === 'branch_admin' || user?.role === 'franchise_admin' ? (
+                  {user?.role === "branch_admin" ||
+                  user?.role === "franchise_admin" ? (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground mb-2">Agency Invoice History</p>
+                      <p className="text-muted-foreground mb-2">
+                        Agency Invoice History
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        Agency invoices will appear here once billing cycle is activated
+                        Agency invoices will appear here once billing cycle is
+                        activated
                       </p>
                     </div>
                   ) : user?.subscriptionStatus === "pro" ? (
                     invoicesLoading ? (
                       <div className="text-center py-4">
                         <span className="loading loading-spinner loading-md"></span>
-                        <p className="text-sm text-muted-foreground mt-2">Loading invoices...</p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Loading invoices...
+                        </p>
                       </div>
                     ) : (
                       <Table>
@@ -1780,21 +2062,32 @@ export default function SettingsPage() {
                             <TableHead>Description</TableHead>
                             <TableHead className="text-right">Amount</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-right">
+                              Actions
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {invoices?.map((invoice: SelectInvoice) => (
                             <TableRow key={invoice.id}>
-                              <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-                              <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell className="font-medium">
+                                {invoice.invoiceNumber}
+                              </TableCell>
+                              <TableCell>
+                                {new Date(
+                                  invoice.createdAt,
+                                ).toLocaleDateString()}
+                              </TableCell>
                               <TableCell>{invoice.description}</TableCell>
                               <TableCell className="text-right">
-                                R{typeof invoice.amount === 'string' ?
-                                  parseFloat(invoice.amount).toFixed(2) :
-                                  0}
+                                R
+                                {typeof invoice.amount === "string"
+                                  ? parseFloat(invoice.amount).toFixed(2)
+                                  : 0}
                               </TableCell>
-                              <TableCell className="capitalize">{invoice.status}</TableCell>
+                              <TableCell className="capitalize">
+                                {invoice.status}
+                              </TableCell>
                               <TableCell className="text-right">
                                 <Button
                                   variant="ghost"
@@ -1809,7 +2102,10 @@ export default function SettingsPage() {
                           ))}
                           {(!invoices || invoices.length === 0) && (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                              <TableCell
+                                colSpan={6}
+                                className="text-center text-muted-foreground"
+                              >
                                 No invoices found
                               </TableCell>
                             </TableRow>
@@ -1833,7 +2129,6 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-
           </Tabs>
         </div>
       </div>
@@ -1844,7 +2139,7 @@ export default function SettingsPage() {
 // Agency Billing Components for Admin Users
 function AgencyBillingCycleStatus({ user }: { user: SelectUser | null }) {
   const isActivated = false; // Mock data - will be replaced with real API
-  
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -1888,7 +2183,7 @@ function AgencyBillingCycleStatus({ user }: { user: SelectUser | null }) {
 function AgencyPaymentMethod({ user }: { user: SelectUser | null }) {
   const [showAddCard, setShowAddCard] = useState(false);
   const hasPaymentMethod = false; // Mock data - will be replaced with real API
-  
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -1922,7 +2217,9 @@ function AgencyPaymentMethod({ user }: { user: SelectUser | null }) {
         ) : (
           <div className="text-center py-8">
             <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">No payment method on file</p>
+            <p className="text-muted-foreground mb-4">
+              No payment method on file
+            </p>
             <Dialog open={showAddCard} onOpenChange={setShowAddCard}>
               <DialogTrigger asChild>
                 <Button>
@@ -1944,7 +2241,9 @@ function AgencyPaymentMethod({ user }: { user: SelectUser | null }) {
                       <Input placeholder="1234 5678 9012 3456" />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">Cardholder Name</label>
+                      <label className="text-sm font-medium">
+                        Cardholder Name
+                      </label>
                       <Input placeholder="John Doe" />
                     </div>
                   </div>
@@ -1961,12 +2260,16 @@ function AgencyPaymentMethod({ user }: { user: SelectUser | null }) {
                   <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
                     <p className="text-sm text-amber-800">
-                      Card details are securely encrypted and processed by our payment provider
+                      Card details are securely encrypted and processed by our
+                      payment provider
                     </p>
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowAddCard(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddCard(false)}
+                  >
                     Cancel
                   </Button>
                   <Button className="bg-[#1BA3FF] hover:bg-[#114D9D]">
@@ -1982,7 +2285,13 @@ function AgencyPaymentMethod({ user }: { user: SelectUser | null }) {
   );
 }
 
-function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrade: () => void }) {
+function BillingDetails({
+  user,
+  onUpgrade,
+}: {
+  user: SelectUser | null;
+  onUpgrade: () => void;
+}) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -1991,7 +2300,7 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
   const [showPauseDialog, setShowPauseDialog] = useState(false);
 
   // Show different content for admin users
-  if (user?.role === 'branch_admin' || user?.role === 'franchise_admin') {
+  if (user?.role === "branch_admin" || user?.role === "franchise_admin") {
     return (
       <div>
         <AgencyBillingCycleStatus user={user} />
@@ -2001,48 +2310,53 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
   }
 
   const formatDate = (date: string | Date | null | undefined) => {
-    if (!date) return 'Not available';
+    if (!date) return "Not available";
     try {
       if (date instanceof Date) {
         return date.toLocaleDateString();
       }
       return new Date(date).toLocaleDateString();
     } catch (e) {
-      console.error('Error formatting date:', e);
-      return 'Invalid date';
+      console.error("Error formatting date:", e);
+      return "Invalid date";
     }
   };
 
-  const subscriptionDates = user ? {
-    nextBilling: user.subscriptionNextBillingDate ? formatDate(new Date(user.subscriptionNextBillingDate)) : 'Not available',
-    activationDate: user.subscriptionStartDate ? formatDate(new Date(user.subscriptionStartDate)) : 'Not available'
-  } : {
-    nextBilling: 'Not available',
-    activationDate: 'Not available'
-  };
+  const subscriptionDates = user
+    ? {
+        nextBilling: user.subscriptionNextBillingDate
+          ? formatDate(new Date(user.subscriptionNextBillingDate))
+          : "Not available",
+        activationDate: user.subscriptionStartDate
+          ? formatDate(new Date(user.subscriptionStartDate))
+          : "Not available",
+      }
+    : {
+        nextBilling: "Not available",
+        activationDate: "Not available",
+      };
 
-  console.log('User subscription data:', {
+  console.log("User subscription data:", {
     startDate: user?.subscriptionStartDate,
     nextBilling: user?.subscriptionNextBillingDate,
     formatted: subscriptionDates,
-    rawUser: user
+    rawUser: user,
   });
 
   const planFeatures = {
     free: [
-      'Basic property analysis',
-      '3 analyses per month',
-      'Standard support',
+      "Basic property analysis",
+      "3 analyses per month",
+      "Standard support",
     ],
     pro: [
-      'Advanced property analysis',
-      'Unlimited analyses',
-      'Priority support',
-      'Custom reports',
-      'Market insights',
-    ]
+      "Advanced property analysis",
+      "Unlimited analyses",
+      "Priority support",
+      "Custom reports",
+      "Market insights",
+    ],
   };
-
 
   const handleDowngrade = async () => {
     if (!downgradePauseReason.trim()) {
@@ -2056,20 +2370,20 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
     }
 
     try {
-      const response = await fetch('/api/subscription/cancel', {
-        method: 'POST',
+      const response = await fetch("/api/subscription/cancel", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
-        body: JSON.stringify({ reason: downgradePauseReason })
+        credentials: "include",
+        body: JSON.stringify({ reason: downgradePauseReason }),
       });
 
       if (!response.ok) {
         throw new Error(await response.text());
       }
 
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
       setShowDowngradeDialog(false);
       setDowngradePauseReason("");
 
@@ -2078,13 +2392,15 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
         description: "Your subscription downgrade has been scheduled",
         duration: 5000,
       });
-
     } catch (error) {
-      console.error('Error downgrading subscription:', error);
+      console.error("Error downgrading subscription:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to downgrade subscription",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to downgrade subscription",
         duration: 5000,
       });
     }
@@ -2102,23 +2418,23 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
     }
 
     try {
-      const response = await fetch('/api/subscription/pause', {
-        method: 'POST',
+      const response = await fetch("/api/subscription/pause", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           cycles: 1,
-          reason: downgradePauseReason
-        })
+          reason: downgradePauseReason,
+        }),
       });
 
       if (!response.ok) {
         throw new Error(await response.text());
       }
 
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
       setShowPauseDialog(false);
       setDowngradePauseReason("");
 
@@ -2127,13 +2443,15 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
         description: "Your subscription has been paused",
         duration: 5000,
       });
-
     } catch (error) {
-      console.error('Error pausing subscription:', error);
+      console.error("Error pausing subscription:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to pause subscription",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to pause subscription",
         duration: 5000,
       });
     }
@@ -2146,7 +2464,8 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
           <div className="flex items-center">
             <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
             <p className="text-sm font-medium text-red-800">
-              Your account will downgrade to Free on {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
+              Your account will downgrade to Free on{" "}
+              {new Date(user.subscriptionExpiryDate).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -2157,20 +2476,26 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
           <div>
             <label className="text-sm font-medium">Plan</label>
             <p className="text-muted-foreground capitalize">
-              {user?.subscriptionStatus || 'Free'}
+              {user?.subscriptionStatus || "Free"}
             </p>
           </div>
 
-          {user?.subscriptionStatus === 'pro' && (
+          {user?.subscriptionStatus === "pro" && (
             <>
               <div>
-                <label className="text-sm font-medium">Plan Activation Date</label>
-                <p className="text-muted-foreground">{subscriptionDates.activationDate}</p>
+                <label className="text-sm font-medium">
+                  Plan Activation Date
+                </label>
+                <p className="text-muted-foreground">
+                  {subscriptionDates.activationDate}
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium">Next Billing Date</label>
                 <p className="text-muted-foreground">
-                  {user?.pendingDowngrade ? 'No next billing date' : subscriptionDates.nextBilling}
+                  {user?.pendingDowngrade
+                    ? "No next billing date"
+                    : subscriptionDates.nextBilling}
                 </p>
               </div>
               <div>
@@ -2182,8 +2507,13 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
           <div>
             <label className="text-sm font-medium">Current Features</label>
             <ul className="mt-2 space-y-1">
-              {planFeatures[user?.subscriptionStatus === 'pro' ? 'pro' : 'free'].map((feature, index) => (
-                <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
+              {planFeatures[
+                user?.subscriptionStatus === "pro" ? "pro" : "free"
+              ].map((feature, index) => (
+                <li
+                  key={index}
+                  className="text-sm text-muted-foreground flex items-center gap-2"
+                >
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                   {feature}
                 </li>
@@ -2192,11 +2522,14 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
           </div>
         </div>
 
-        {user?.subscriptionStatus === 'pro' && (
+        {user?.subscriptionStatus === "pro" && (
           <div className="mt-6 space-y-4">
             {user?.payfastSubscriptionStatus !== "paused" ? (
               <>
-                <Dialog open={showPauseDialog} onOpenChange={setShowPauseDialog}>
+                <Dialog
+                  open={showPauseDialog}
+                  onOpenChange={setShowPauseDialog}
+                >
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full">
                       Pause Subscription
@@ -2206,24 +2539,28 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                     <DialogHeader>
                       <DialogTitle>Pause Subscription</DialogTitle>
                       <DialogDescription>
-                        Your subscription will be paused for one billing cycle. Please let us know why you're pausing:
+                        Your subscription will be paused for one billing cycle.
+                        Please let us know why you're pausing:
                       </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
                       <Textarea
                         value={downgradePauseReason}
-                        onChange={(e) => setDowngradePauseReason(e.target.value)}
+                        onChange={(e) =>
+                          setDowngradePauseReason(e.target.value)
+                        }
                         placeholder="Please tell us why you're pausing your subscription..."
                         className="min-h-[100px]"
                       />
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowPauseDialog(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowPauseDialog(false)}
+                      >
                         Cancel
                       </Button>
-                      <Button onClick={handlePause}>
-                        Confirm Pause
-                      </Button>
+                      <Button onClick={handlePause}>Confirm Pause</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
@@ -2234,29 +2571,35 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                     className="w-full"
                     onClick={async () => {
                       try {
-                        const response = await fetch('/api/subscription/cancel-downgrade', {
-                          method: 'POST',
-                          credentials: 'include'
-                        });
+                        const response = await fetch(
+                          "/api/subscription/cancel-downgrade",
+                          {
+                            method: "POST",
+                            credentials: "include",
+                          },
+                        );
 
                         if (!response.ok) {
                           throw new Error(await response.text());
                         }
 
-                        queryClient.invalidateQueries({ queryKey: ['user'] });
+                        queryClient.invalidateQueries({ queryKey: ["user"] });
 
                         toast({
                           title: "Success",
-                          description: "Your Pro subscription will continue without interruption.",
+                          description:
+                            "Your Pro subscription will continue without interruption.",
                           duration: 5000,
                         });
-
                       } catch (error) {
-                        console.error('Error cancelling downgrade:', error);
+                        console.error("Error cancelling downgrade:", error);
                         toast({
                           variant: "destructive",
                           title: "Error",
-                          description: error instanceof Error ? error.message : "Failed to cancel plan downgrade",
+                          description:
+                            error instanceof Error
+                              ? error.message
+                              : "Failed to cancel plan downgrade",
                           duration: 5000,
                         });
                       }
@@ -2265,9 +2608,15 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                     Cancel Downgrade
                   </Button>
                 ) : (
-                  <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
+                  <Dialog
+                    open={showDowngradeDialog}
+                    onOpenChange={setShowDowngradeDialog}
+                  >
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full text-red-500 hover:text-red-600">
+                      <Button
+                        variant="outline"
+                        className="w-full text-red-500 hover:text-red-600"
+                      >
                         Cancel Subscription
                       </Button>
                     </DialogTrigger>
@@ -2275,19 +2624,26 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                       <DialogHeader>
                         <DialogTitle>Cancel Subscription</DialogTitle>
                         <DialogDescription>
-                          Your subscription will be downgraded to the free plan at the end of your current billing period. Please let us know why you're cancelling:
+                          Your subscription will be downgraded to the free plan
+                          at the end of your current billing period. Please let
+                          us know why you're cancelling:
                         </DialogDescription>
                       </DialogHeader>
                       <div className="py-4">
                         <Textarea
                           value={downgradePauseReason}
-                          onChange={(e) => setDowngradePauseReason(e.target.value)}
+                          onChange={(e) =>
+                            setDowngradePauseReason(e.target.value)
+                          }
                           placeholder="Please tell us why you're cancelling your subscription..."
                           className="min-h-[100px]"
                         />
                       </div>
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowDowngradeDialog(false)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowDowngradeDialog(false)}
+                        >
                           Keep Subscription
                         </Button>
                         <Button variant="destructive" onClick={handleDowngrade}>
@@ -2309,7 +2665,8 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                   <AlertDialogHeader>
                     <AlertDialogTitle>Resume Subscription</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Your subscription will be resumed immediately. Billing will continue according to your regular schedule.
+                      Your subscription will be resumed immediately. Billing
+                      will continue according to your regular schedule.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -2317,29 +2674,34 @@ function BillingDetails({ user, onUpgrade }: { user: SelectUser | null; onUpgrad
                     <AlertDialogAction
                       onClick={async () => {
                         try {
-                          const response = await fetch('/api/subscription/resume', {
-                            method: 'POST',
-                            credentials: 'include'
-                          });
+                          const response = await fetch(
+                            "/api/subscription/resume",
+                            {
+                              method: "POST",
+                              credentials: "include",
+                            },
+                          );
 
                           if (!response.ok) {
                             throw new Error(await response.text());
                           }
 
-                          queryClient.invalidateQueries({ queryKey: ['user'] });
+                          queryClient.invalidateQueries({ queryKey: ["user"] });
 
                           toast({
                             title: "Success",
                             description: "Your subscription has been resumed",
                             duration: 5000,
                           });
-
                         } catch (error) {
-                          console.error('Error resuming subscription:', error);
+                          console.error("Error resuming subscription:", error);
                           toast({
                             variant: "destructive",
                             title: "Error",
-                            description: error instanceof Error ? error.message : "Failed to resume subscription",
+                            description:
+                              error instanceof Error
+                                ? error.message
+                                : "Failed to resume subscription",
                             duration: 5000,
                           });
                         }
