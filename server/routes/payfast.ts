@@ -60,8 +60,8 @@ router.post('/create-tokenize-url', async (req, res) => {
     const payfast = new PayFastService(true);
     
     const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
-    const returnUrl = `${baseUrl}/payment-setup-success`;
-    const cancelUrl = `${baseUrl}/payment-setup-cancel`;
+    const returnUrl = `${baseUrl}/settings?token=success`;
+    const cancelUrl = `${baseUrl}/settings?token=cancelled`;
     
     // Create tokenization URL
     const tokenizeUrl = await payfast.createTokenizeUrl(returnUrl, cancelUrl, 5.00);

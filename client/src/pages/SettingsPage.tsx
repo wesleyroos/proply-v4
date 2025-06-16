@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { downloadInvoice } from "@/services/invoiceService";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -834,7 +835,6 @@ export default function SettingsPage() {
     },
     enabled: user?.subscriptionStatus === "pro"
   });
-  const [, setLocation] = useLocation();
 
   // Billing Usage Overview Component
   const BillingUsageOverview = () => {
