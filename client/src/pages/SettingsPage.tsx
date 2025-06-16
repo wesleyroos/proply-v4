@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
 import { downloadInvoice } from "@/services/invoiceService";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -23,6 +22,17 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -604,6 +614,53 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isSecurityUpdating, setIsSecurityUpdating] = useState(false);
+
+  // Handle PayFast redirect messages
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    const tokenStatus = urlParams.get('token');
+
+    if (paymentStatus === 'success' || tokenStatus === 'success') {
+      // Show success message for payment method addition
+      toast({
+        title: "Payment Method Added Successfully",
+        description: "Your card has been securely saved for future billing. You can now manage automatic payments.",
+        duration: 5000,
+      });
+
+      // Clear URL parameters by replacing the current URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      
+      // Refresh payment methods list
+      queryClient.invalidateQueries({ queryKey: ['/api/payment-methods'] });
+    } else if (paymentStatus === 'cancelled' || paymentStatus === 'cancel' || tokenStatus === 'cancelled') {
+      // Show cancel message for payment method addition
+      toast({
+        variant: "destructive",
+        title: "Payment Method Setup Cancelled",
+        description: "Card setup was cancelled. You can try again anytime from your settings.",
+        duration: 5000,
+      });
+
+      // Clear URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    } else if (paymentStatus === 'failed' || tokenStatus === 'failed') {
+      // Show failure message for payment method addition
+      toast({
+        variant: "destructive",
+        title: "Payment Method Setup Failed",
+        description: "Unable to save your card details. Please check your information and try again.",
+        duration: 5000,
+      });
+
+      // Clear URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [toast, queryClient]);
 
   const securityForm = useForm<SecurityFormData>({
     defaultValues: {
