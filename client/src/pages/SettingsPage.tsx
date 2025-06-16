@@ -45,6 +45,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser, SelectInvoice } from "@db/schema";
@@ -1450,77 +1456,7 @@ export default function SettingsPage() {
           </Card>
         </div>
 
-        {/* Pricing Matrix */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Pricing Tiers</CardTitle>
-            <CardDescription>
-              Our tiered pricing structure for property report generation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-2 font-medium">Tier</th>
-                    <th className="text-left py-3 px-2 font-medium">Report Range</th>
-                    <th className="text-right py-3 px-2 font-medium">Price per Report</th>
-                    <th className="text-left py-3 px-2 font-medium">Benefits</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-2">
-                      <Badge variant="outline" className="bg-blue-50 text-blue-800">Tier 1</Badge>
-                    </td>
-                    <td className="py-3 px-2">1 - 50 reports</td>
-                    <td className="py-3 px-2 text-right font-medium">R200</td>
-                    <td className="py-3 px-2 text-sm text-muted-foreground">Standard rate</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-2">
-                      <Badge variant="outline" className="bg-green-50 text-green-800">Tier 2</Badge>
-                    </td>
-                    <td className="py-3 px-2">51 - 100 reports</td>
-                    <td className="py-3 px-2 text-right font-medium">R180</td>
-                    <td className="py-3 px-2 text-sm text-muted-foreground">10% discount</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-2">
-                      <Badge variant="outline" className="bg-orange-50 text-orange-800">Tier 3</Badge>
-                    </td>
-                    <td className="py-3 px-2">101 - 150 reports</td>
-                    <td className="py-3 px-2 text-right font-medium">R160</td>
-                    <td className="py-3 px-2 text-sm text-muted-foreground">20% discount</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-2">
-                      <Badge variant="outline" className="bg-purple-50 text-purple-800">Tier 4</Badge>
-                    </td>
-                    <td className="py-3 px-2">151 - 200 reports</td>
-                    <td className="py-3 px-2 text-right font-medium">R140</td>
-                    <td className="py-3 px-2 text-sm text-muted-foreground">30% discount</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-2">
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-800">Tier 5</Badge>
-                    </td>
-                    <td className="py-3 px-2">200+ reports</td>
-                    <td className="py-3 px-2 text-right font-medium">R140</td>
-                    <td className="py-3 px-2 text-sm text-muted-foreground">Maximum discount</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> Pricing is calculated monthly based on total reports generated. 
-                Higher volume users automatically receive better rates on additional reports.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+
 
         {/* Invoices Table */}
         <Card>
@@ -1618,6 +1554,74 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Pricing Tiers Accordion */}
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="pricing-tiers">
+            <AccordionTrigger className="text-sm font-medium">
+              View Pricing Tiers
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-2 font-medium">Tier</th>
+                      <th className="text-left py-2 px-2 font-medium">Range</th>
+                      <th className="text-right py-2 px-2 font-medium">Price</th>
+                      <th className="text-left py-2 px-2 font-medium">Discount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="py-2 px-2">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-800 text-xs">1</Badge>
+                      </td>
+                      <td className="py-2 px-2">1-50</td>
+                      <td className="py-2 px-2 text-right font-medium">R200</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">Standard</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-2 px-2">
+                        <Badge variant="outline" className="bg-green-50 text-green-800 text-xs">2</Badge>
+                      </td>
+                      <td className="py-2 px-2">51-100</td>
+                      <td className="py-2 px-2 text-right font-medium">R180</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">10%</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-2 px-2">
+                        <Badge variant="outline" className="bg-orange-50 text-orange-800 text-xs">3</Badge>
+                      </td>
+                      <td className="py-2 px-2">101-150</td>
+                      <td className="py-2 px-2 text-right font-medium">R160</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">20%</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-2 px-2">
+                        <Badge variant="outline" className="bg-purple-50 text-purple-800 text-xs">4</Badge>
+                      </td>
+                      <td className="py-2 px-2">151-200</td>
+                      <td className="py-2 px-2 text-right font-medium">R140</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">30%</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-2">
+                        <Badge variant="outline" className="bg-yellow-50 text-yellow-800 text-xs">5</Badge>
+                      </td>
+                      <td className="py-2 px-2">200+</td>
+                      <td className="py-2 px-2 text-right font-medium">R140</td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">30%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                Monthly billing based on total reports. Higher volumes get better rates automatically.
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     );
   };
