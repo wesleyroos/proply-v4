@@ -45,6 +45,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import type { SelectUser, SelectInvoice } from "@db/schema";
@@ -65,7 +66,8 @@ import {
   Trash2,
   CheckCircle,
   Clock,
-  BarChart3
+  BarChart3,
+  Info
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -1453,7 +1455,46 @@ export default function SettingsPage() {
         {/* Invoices Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Invoice History</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Invoice History
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-md p-4">
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm">Pricing Matrix</h4>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between">
+                          <span>1-50 reports:</span>
+                          <span className="font-medium">R200 each</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>51-100 reports:</span>
+                          <span className="font-medium">R180 each</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>101-150 reports:</span>
+                          <span className="font-medium">R160 each</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>151-200 reports:</span>
+                          <span className="font-medium">R140 each</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>200+ reports:</span>
+                          <span className="font-medium">R140 each</span>
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t text-xs text-muted-foreground">
+                        Prices are VAT-free. Monthly billing based on report generation.
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
