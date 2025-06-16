@@ -1,6 +1,7 @@
 import express from 'express';
-import { db } from '../../db/index.js';
-import { paymentMethods } from '../../db/schema.js';
+import { db } from '@db';
+import { agencyPaymentMethods } from '@db/schema';
+import { eq } from 'drizzle-orm';
 
 const router = express.Router();
 
@@ -16,9 +17,9 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
     const params = new URLSearchParams(bodyStr);
     const data: Record<string, string> = {};
     
-    for (const [key, value] of params.entries()) {
+    params.forEach((value, key) => {
       data[key] = value;
-    }
+    });
     
     console.log('Parsed webhook data:', data);
     
@@ -35,13 +36,40 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
         // You would store this token associated with the user/agency
         console.log('Tokenization successful, token received:', data.token);
         
-        // TODO: Store token in database associated with agency
-        // await db.insert(paymentMethods).values({
-        //   agencyId: /* get from context */,
-        //   token: data.token,
-        //   type: 'payfast_token',
-        //   isActive: true
-        // });
+        // Store token in database - we'll need to implement user session tracking
+        try {
+          // For now, we'll store with a placeholder until we implement proper session tracking
+          const existingMethod = await db.query.agencyPaymentMethods.findFirst({
+            where: eq(agencyPaymentMethods.agencyBranchId, 1) // Placeholder agency
+          });
+
+          if (existingMethod) {
+            // Update existing token
+            await db.update(agencyPaymentMethods)
+              .set({ 
+                payfastToken: data.token, 
+                isActive: true,
+                updatedAt: new Date()
+              })
+              .where(eq(agencyPaymentMethods.id, existingMethod.id));
+          } else {
+            // Create new payment method record
+            await db.insert(agencyPaymentMethods).values({
+              agencyBranchId: 1, // Placeholder - will need proper session tracking
+              payfastToken: data.token,
+              cardLastFour: '0000', // Will be updated via separate webhook
+              expiryMonth: 12,
+              expiryYear: 2025,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
+          }
+          
+          console.log('✅ Token stored successfully in database');
+        } catch (dbError) {
+          console.error('❌ Error storing token in database:', dbError);
+        }
       }
     }
     

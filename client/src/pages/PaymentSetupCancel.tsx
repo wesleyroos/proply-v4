@@ -1,68 +1,74 @@
-import { Link, useLocation } from 'wouter';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { XCircle, AlertTriangle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from "react";
+import { useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { XCircle, ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PaymentSetupCancel() {
   const [, setLocation] = useLocation();
-  const [errorDetails, setErrorDetails] = useState<string>('');
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Capture URL parameters that might contain error details
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    const errorDesc = urlParams.get('error_description');
-    
-    if (error) {
-      setErrorDetails(`Error: ${error}${errorDesc ? ` - ${errorDesc}` : ''}`);
-    }
-    
-    // Log the cancel event for debugging
-    console.log('PayFast cancel page accessed:', {
-      url: window.location.href,
-      params: Object.fromEntries(urlParams.entries()),
-      timestamp: new Date().toISOString()
+    toast({
+      title: "Payment Setup Cancelled",
+      description: "Your payment method was not added. You can try again anytime.",
+      variant: "destructive",
     });
-  }, []);
+  }, [toast]);
+
+  const handleReturnToSettings = () => {
+    setLocation("/settings");
+  };
+
+  const handleTryAgain = () => {
+    setLocation("/settings");
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md mx-4">
         <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2 text-orange-600">
-            <XCircle className="h-6 w-6" />
+          <div className="flex justify-center mb-4">
+            <XCircle className="h-16 w-16 text-red-500" />
+          </div>
+          <CardTitle className="text-2xl text-red-600">
             Payment Setup Cancelled
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-gray-600">
-            Payment method setup was cancelled or failed. This could be due to:
-          </p>
-          <div className="text-left bg-yellow-50 p-3 rounded-lg">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-yellow-800">
-                <p>• Card declined by bank</p>
-                <p>• 3D Secure authentication failed</p>
-                <p>• Merchant account configuration issue</p>
-                <p>• Network connectivity problem</p>
-              </div>
-            </div>
+        <CardContent className="space-y-4">
+          <div className="text-center space-y-2">
+            <p className="text-gray-600">
+              The payment method setup was cancelled. No payment information was stored.
+            </p>
+            <p className="text-sm text-gray-500">
+              You can try adding a payment method again anytime from your settings.
+            </p>
           </div>
           
-          {errorDetails && (
-            <div className="text-left bg-red-50 p-3 rounded-lg">
-              <p className="text-sm text-red-800">{errorDetails}</p>
-            </div>
-          )}
-          
-          <div className="space-y-2">
-            <Button asChild className="w-full">
-              <Link href="/settings">Try Again</Link>
+          <div className="bg-yellow-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-yellow-800 mb-2">Need help?</h3>
+            <ul className="text-sm text-yellow-700 space-y-1">
+              <li>• Check your card details are correct</li>
+              <li>• Ensure your bank allows online transactions</li>
+              <li>• Contact support if issues persist</li>
+            </ul>
+          </div>
+
+          <div className="flex space-x-3">
+            <Button 
+              variant="outline"
+              onClick={handleReturnToSettings}
+              className="flex-1"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Settings
             </Button>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/control-panel">Return to Control Panel</Link>
+            <Button 
+              onClick={handleTryAgain}
+              className="flex-1"
+            >
+              Try Again
             </Button>
           </div>
         </CardContent>

@@ -3531,10 +3531,7 @@ export function registerRoutes(app: Express): Server {
       const { PayFastService } = await import('./services/payfast');
       const payfast = new PayFastService(true);
       
-      // Use Replit dev URL for development, production domain for live
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://app.proply.co.za' 
-        : `https://${process.env.REPLIT_DEV_DOMAIN}`;
+      const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
       const returnUrl = `${baseUrl}/payment-setup-success`;
       const cancelUrl = `${baseUrl}/payment-setup-cancel`;
       
@@ -3593,18 +3590,6 @@ export function registerRoutes(app: Express): Server {
       console.error('Error processing PayFast webhook:', error);
       res.status(500).json({ error: 'Failed to process webhook' });
     }
-  });
-
-  // PayFast return URL handlers - these must be accessible without authentication
-  // since users are redirected from PayFast's external domain
-  app.get("/payment-setup-success", (req, res) => {
-    // Serve the frontend app and let React router handle the route
-    res.sendFile(path.join(process.cwd(), 'client/index.html'));
-  });
-
-  app.get("/payment-setup-cancel", (req, res) => {
-    // Serve the frontend app and let React router handle the route  
-    res.sendFile(path.join(process.cwd(), 'client/index.html'));
   });
 
   const httpServer = createServer(app);
