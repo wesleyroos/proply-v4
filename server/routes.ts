@@ -3531,7 +3531,7 @@ export function registerRoutes(app: Express): Server {
       const { PayFastService } = await import('./services/payfast');
       const payfast = new PayFastService(true);
       
-      const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+      const baseUrl = 'https://app.proply.co.za';
       const returnUrl = `${baseUrl}/payment-setup-success`;
       const cancelUrl = `${baseUrl}/payment-setup-cancel`;
       
