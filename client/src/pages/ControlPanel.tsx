@@ -27,9 +27,9 @@ import {
   BarChart3,
   CreditCard,
 } from "lucide-react";
-import AddAgencyModal from "@/components/AddAgencyModal";
-import AgencyDetailModal from "@/components/AgencyDetailModal";
-import AgencyStatsModal from "@/components/AgencyStatsModal";
+import { AddAgencyModal } from "@/components/AddAgencyModal";
+import { AgencyDetailModal } from "@/components/AgencyDetailModal";
+import { AgencyStatsModal } from "@/components/AgencyStatsModal";
 
 interface Agency {
   id: string;
@@ -409,7 +409,7 @@ export function ControlPanel() {
           setDetailModalOpen(false);
           setSelectedAgency(null);
         }}
-        onStatsClick={(agencyName) => {
+        onStatsClick={(agencyName: string) => {
           setSelectedAgencyName(agencyName);
           setStatsModalOpen(true);
         }}
