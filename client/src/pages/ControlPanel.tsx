@@ -264,13 +264,20 @@ export function ControlPanel() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
-                        <span className="text-sm">PayFast</span>
-                        {agency.billingEnabled ? (
-                          <Badge variant="default" className="bg-green-100 text-green-800">
-                            Active
-                          </Badge>
+                        {agency.hasPaymentMethod ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">
+                              {agency.paymentMethodInfo?.cardBrand || 'Card'} ••••{agency.paymentMethodInfo?.lastFour}
+                            </span>
+                            <Badge variant="default" className="bg-green-100 text-green-800">
+                              Active
+                            </Badge>
+                          </div>
                         ) : (
-                          <Badge variant="outline">Setup Required</Badge>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">No payment method</span>
+                            <Badge variant="outline">Setup Required</Badge>
+                          </div>
                         )}
                       </div>
                     </TableCell>

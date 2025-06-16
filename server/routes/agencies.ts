@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@db";
-import { propdataListings, syncTracking, agencyBranches, agencyBillingSettings } from "@db/schema";
-import { desc, count, eq, inArray, sql } from "drizzle-orm";
+import { propdataListings, syncTracking, agencyBranches, agencyBillingSettings, agencyPaymentMethods } from "@db/schema";
+import { desc, count, eq, inArray, sql, and } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -104,10 +104,20 @@ router.get("/agencies", async (req, res) => {
         
         // Get billing settings for the main branch
         let billingSettings = null;
+        let paymentMethods: any[] = [];
         if (mainBranch) {
           billingSettings = await db.query.agencyBillingSettings.findFirst({
             where: eq(agencyBillingSettings.agencyBranchId, mainBranch.id)
           });
+          
+          // Get active payment methods for this branch
+          paymentMethods = await db
+            .select()
+            .from(agencyPaymentMethods)
+            .where(and(
+              eq(agencyPaymentMethods.agencyBranchId, mainBranch.id),
+              eq(agencyPaymentMethods.isActive, true)
+            ));
         }
         
         return {
@@ -127,6 +137,14 @@ router.get("/agencies", async (req, res) => {
           billingEnabled: billingSettings?.billingEnabled || false,
           syncFrequency: mainBranch?.syncFrequency || franchise.syncFrequency || "5 minutes",
           autoSyncEnabled: mainBranch?.autoSyncEnabled ?? franchise.autoSyncEnabled ?? true,
+          hasPaymentMethod: paymentMethods.length > 0,
+          paymentMethodCount: paymentMethods.length,
+          paymentMethodInfo: paymentMethods.length > 0 ? {
+            cardBrand: paymentMethods[0].cardBrand,
+            lastFour: paymentMethods[0].cardLastFour,
+            expiryMonth: paymentMethods[0].expiryMonth,
+            expiryYear: paymentMethods[0].expiryYear
+          } : null,
         };
       })
     );
