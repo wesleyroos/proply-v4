@@ -1,48 +1,68 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CheckCircle, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'wouter';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, Loader2 } from 'lucide-react';
 
 export default function PaymentSetupSuccess() {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(true);
+  const [location] = useLocation();
+  const [processing, setProcessing] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Show success message
-    toast({
-      title: "Payment Method Added Successfully",
-      description: "Your payment method has been securely stored for future billing.",
+    // Extract query parameters from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const paymentStatus = urlParams.get('payment_status');
+    
+    console.log('PayFast return parameters:', {
+      token,
+      paymentStatus,
+      allParams: Object.fromEntries(urlParams.entries())
     });
 
-    // Simulate processing the tokenization response
-    const timer = setTimeout(() => {
-      setIsProcessing(false);
-    }, 2000);
+    // Check if tokenization was successful
+    if (paymentStatus === 'COMPLETE' && token) {
+      // Tokenization successful - PayFast will also send webhook
+      setProcessing(false);
+    } else {
+      setError('Payment setup was not completed successfully');
+      setProcessing(false);
+    }
+  }, []);
 
-    return () => clearTimeout(timer);
-  }, [toast]);
-
-  const handleReturnToSettings = () => {
-    setLocation("/settings");
-  };
-
-  if (isProcessing) {
+  if (processing) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md mx-4">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <h1 className="text-xl font-semibold text-center">
-                Processing Payment Method
-              </h1>
-              <p className="text-sm text-gray-600 text-center">
-                Please wait while we securely store your payment method...
-              </p>
-            </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center justify-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Processing Payment Setup
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-600">
+              Please wait while we confirm your payment method setup...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-red-600">Setup Failed</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-gray-600">{error}</p>
+            <Button asChild>
+              <Link href="/settings">Return to Settings</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -50,40 +70,20 @@ export default function PaymentSetupSuccess() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <CheckCircle className="h-16 w-16 text-green-500" />
-          </div>
-          <CardTitle className="text-2xl text-green-600">
+          <CardTitle className="flex items-center justify-center gap-2 text-green-600">
+            <CheckCircle className="h-6 w-6" />
             Payment Method Added Successfully
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center space-y-2">
-            <p className="text-gray-600">
-              Your payment method has been securely stored and verified.
-            </p>
-            <p className="text-sm text-gray-500">
-              You can now generate reports and they will be automatically billed according to our pricing tiers.
-            </p>
-          </div>
-          
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-blue-800 mb-2">What happens next?</h3>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Your reports will be tracked monthly</li>
-              <li>• Billing occurs automatically on the 1st of each month</li>
-              <li>• You'll receive detailed invoices via email</li>
-            </ul>
-          </div>
-
-          <Button 
-            onClick={handleReturnToSettings} 
-            className="w-full"
-          >
-            Return to Settings
+        <CardContent className="text-center space-y-4">
+          <p className="text-gray-600">
+            Your payment method has been securely saved and can now be used for automated billing.
+          </p>
+          <Button asChild className="w-full">
+            <Link href="/settings">Return to Settings</Link>
           </Button>
         </CardContent>
       </Card>
