@@ -35,13 +35,38 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
         // You would store this token associated with the user/agency
         console.log('Tokenization successful, token received:', data.token);
         
-        // TODO: Store token in database associated with agency
-        // await db.insert(paymentMethods).values({
-        //   agencyId: /* get from context */,
-        //   token: data.token,
-        //   type: 'payfast_token',
-        //   isActive: true
-        // });
+        // Store token in database - we'll need to implement user session tracking
+        try {
+          // For now, we'll store with a placeholder until we implement proper session tracking
+          const existingMethod = await db.query.paymentMethods.findFirst({
+            where: (methods, { eq }) => eq(methods.type, 'payfast_token')
+          });
+
+          if (existingMethod) {
+            // Update existing token
+            await db.update(paymentMethods)
+              .set({ 
+                token: data.token, 
+                isActive: true,
+                updatedAt: new Date()
+              })
+              .where(eq(paymentMethods.id, existingMethod.id));
+          } else {
+            // Create new payment method record
+            await db.insert(paymentMethods).values({
+              agencyId: 1, // Placeholder - will need proper session tracking
+              token: data.token,
+              type: 'payfast_token',
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
+          }
+          
+          console.log('✅ Token stored successfully in database');
+        } catch (dbError) {
+          console.error('❌ Error storing token in database:', dbError);
+        }
       }
     }
     
