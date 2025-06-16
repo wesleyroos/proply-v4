@@ -987,7 +987,6 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 {reportStats.monthlyStats.slice(0, 3).map((stat: any) => {
                   const monthlyBilling = calculateBillingAmount(stat.reports);
-                  const monthlyTotal = monthlyBilling * 1.15; // Including VAT
                   return (
                     <div key={stat.month} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
@@ -997,7 +996,7 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">R{monthlyTotal.toFixed(2)}</div>
+                        <div className="font-medium">R{monthlyBilling.toFixed(2)}</div>
                         <div className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
                           generated
                         </div>

@@ -99,6 +99,7 @@ This is a property investment analysis platform that helps users compare short-t
 - June 15, 2025: **BREAKTHROUGH**: Successfully resolved PayFast signature validation by implementing correct field ordering (not alphabetical) as per PayFast documentation. Live PayFast tokenization now working with proper signature generation.
 - June 16, 2025: Fixed branch admin permissions to access agency report statistics by updating `/api/agencies/:agencyId/report-stats` endpoint to allow branch_admin and franchise_admin roles
 - June 16, 2025: Removed VAT from all billing calculations across the system (invoices, UI displays, automated billing) since company is not VAT registered yet
+- June 16, 2025: Fixed final VAT calculation in branch admin settings usage display - removed 1.15 multiplier that was showing R6440 instead of correct VAT-free amount
 
 ## User Preferences
 
