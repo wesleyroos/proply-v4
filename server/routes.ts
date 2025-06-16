@@ -3599,13 +3599,13 @@ export function registerRoutes(app: Express): Server {
   // since users are redirected from PayFast's external domain
   app.get("/payment-setup-success", (req, res) => {
     // Serve the frontend app for success page
-    const indexPath = path.resolve(__dirname, "..", "client", "index.html");
+    const indexPath = path.resolve(process.cwd(), "client", "index.html");
     res.sendFile(indexPath);
   });
 
   app.get("/payment-setup-cancel", (req, res) => {
     // Serve the frontend app for cancel page  
-    const indexPath = path.resolve(__dirname, "..", "client", "index.html");
+    const indexPath = path.resolve(process.cwd(), "client", "index.html");
     res.sendFile(indexPath);
   });
 
