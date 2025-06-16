@@ -1309,7 +1309,10 @@ export default function SettingsPage() {
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
               {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
-                <TabsTrigger value="payment-methods">Agency Billing</TabsTrigger>
+                <>
+                  <TabsTrigger value="payment-methods">Agency Billing</TabsTrigger>
+                  <TabsTrigger value="agency-invoices">Invoices</TabsTrigger>
+                </>
               )}
               {(user?.role !== 'branch_admin' && user?.role !== 'franchise_admin') && (
                 <>
@@ -1324,12 +1327,18 @@ export default function SettingsPage() {
             </TabsContent>
 
             {(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && (
-              <TabsContent value="payment-methods">
-                <div className="space-y-6">
-                  <BillingUsageOverview />
-                  <PaymentMethodsSection />
-                </div>
-              </TabsContent>
+              <>
+                <TabsContent value="payment-methods">
+                  <div className="space-y-6">
+                    <BillingUsageOverview />
+                    <PaymentMethodsSection />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="agency-invoices">
+                  <AgencyInvoicesSection />
+                </TabsContent>
+              </>
             )}
 
             <TabsContent value="security">
