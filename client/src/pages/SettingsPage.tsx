@@ -1511,7 +1511,9 @@ export default function SettingsPage() {
                     {reportStats.invoices.map((invoice: SelectInvoice) => (
                       <tr key={invoice.id} className="border-b hover:bg-muted/50">
                         <td className="p-2 font-mono text-sm">{invoice.invoiceNumber}</td>
-                        <td className="p-2">{format(new Date(invoice.createdAt), 'MMM d, yyyy')}</td>
+                        <td className="p-2">
+                          {invoice.createdAt ? format(new Date(invoice.createdAt), 'MMM d, yyyy') : 'N/A'}
+                        </td>
                         <td className="p-2">{invoice.description}</td>
                         <td className="p-2 text-right font-medium">R{parseFloat(invoice.amount).toFixed(2)}</td>
                         <td className="p-2 text-center">
