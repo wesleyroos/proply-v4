@@ -3599,12 +3599,12 @@ export function registerRoutes(app: Express): Server {
   // since users are redirected from PayFast's external domain
   app.get("/payment-setup-success", (req, res) => {
     // Serve the frontend app and let React router handle the route
-    res.sendFile(path.join(process.cwd(), 'dist/public/index.html'));
+    res.sendFile(path.join(process.cwd(), 'client/index.html'));
   });
 
   app.get("/payment-setup-cancel", (req, res) => {
     // Serve the frontend app and let React router handle the route  
-    res.sendFile(path.join(process.cwd(), 'dist/public/index.html'));
+    res.sendFile(path.join(process.cwd(), 'client/index.html'));
   });
 
   const httpServer = createServer(app);
