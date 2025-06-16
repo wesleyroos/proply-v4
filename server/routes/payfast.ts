@@ -59,7 +59,10 @@ router.post('/create-tokenize-url', async (req, res) => {
     // Initialize PayFast service (test mode for setup)
     const payfast = new PayFastService(true);
     
-    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    // Use the Replit domain or fallback to environment variable
+    const baseUrl = process.env.REPLIT_DOMAINS 
+      ? `https://${process.env.REPLIT_DOMAINS}` 
+      : (process.env.BASE_URL || 'http://localhost:5000');
     const returnUrl = `${baseUrl}/settings?token=success`;
     const cancelUrl = `${baseUrl}/settings?token=cancelled`;
     

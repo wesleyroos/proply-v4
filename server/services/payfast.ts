@@ -111,7 +111,7 @@ export class PayFastService {
       merchant_key: this.config.merchantKey,
       return_url: returnUrl,
       cancel_url: cancelUrl,
-      notify_url: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payfast/notify`,
+      notify_url: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : (process.env.BASE_URL || 'http://localhost:5000')}/api/payfast/notify`,
       amount: '0.00', // Tokenization allows 0.00 amount
       item_name: 'Payment Method Setup',
       item_description: 'Setup payment method for recurring billing',
