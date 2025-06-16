@@ -1049,95 +1049,31 @@ export default function SettingsPage() {
 
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
-            Report Usage Overview
-          </CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Report Usage Overview</CardTitle>
           <CardDescription>
-            Monthly report generation usage and billing information
+            Current month report generation and billing
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Current Month Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-[#007B8A]">
-                {currentMonthReports}
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 className="h-4 w-4 text-blue-600" />
+                <span className="text-sm text-muted-foreground">Reports This Month</span>
               </div>
-              <div className="text-sm text-muted-foreground">
-                Reports This Month
-              </div>
+              <div className="text-2xl font-bold">{currentMonthReports}</div>
             </div>
-            <div className="p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                R{totalAmount.toFixed(2)}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="h-4 w-4 text-green-600" />
+                <span className="text-sm text-muted-foreground">Current Bill</span>
               </div>
-              <div className="text-sm text-muted-foreground">
-                Monthly Billing Amount
+              <div className="text-2xl font-bold text-green-600">
+                R{totalAmount.toLocaleString()}
               </div>
             </div>
           </div>
-
-          {/* Recent Monthly Stats */}
-          {reportStats.monthlyStats && reportStats.monthlyStats.length > 0 && (
-            <div>
-              <h3 className="font-medium text-sm mb-3">Recent Monthly Usage</h3>
-              <div className="space-y-2">
-                {reportStats.monthlyStats.slice(0, 3).map((stat: any) => {
-                  const monthlyBilling = calculateBillingAmount(stat.reports);
-                  return (
-                    <div
-                      key={stat.month}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
-                      <div>
-                        <div className="font-medium">{stat.monthName}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {stat.reports} reports • Tiered pricing
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium">
-                          R{monthlyBilling.toFixed(2)}
-                        </div>
-                        <div className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                          generated
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* All-time summary */}
-          {reportStats.totalReports > 0 && (
-            <div className="border-t pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
-                <div>
-                  <div className="text-xl font-bold text-blue-600">
-                    {reportStats.totalReports}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Total Reports Generated
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-green-600">
-                    R
-                    {calculateBillingAmount(
-                      reportStats.totalReports,
-                    ).toLocaleString()}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Total Value Generated
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     );
