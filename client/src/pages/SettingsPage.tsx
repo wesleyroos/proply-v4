@@ -950,9 +950,7 @@ export default function SettingsPage() {
     }
 
     const currentMonthReports = reportStats.currentMonth || 0;
-    const subtotalAmount = calculateBillingAmount(currentMonthReports);
-    const vatAmount = subtotalAmount * 0.15;
-    const totalAmount = subtotalAmount + vatAmount;
+    const totalAmount = calculateBillingAmount(currentMonthReports);
 
     return (
       <Card>
@@ -976,15 +974,9 @@ export default function SettingsPage() {
             </div>
             <div className="p-4 border rounded-lg">
               <div className="text-2xl font-bold text-green-600">
-                R{subtotalAmount.toFixed(2)}
-              </div>
-              <div className="text-sm text-muted-foreground">Subtotal (Excl. VAT)</div>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
                 R{totalAmount.toFixed(2)}
               </div>
-              <div className="text-sm text-muted-foreground">Total (Incl. VAT)</div>
+              <div className="text-sm text-muted-foreground">Monthly Billing Amount</div>
             </div>
           </div>
 

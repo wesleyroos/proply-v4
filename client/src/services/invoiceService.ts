@@ -92,7 +92,7 @@ export async function downloadInvoice(invoice: {
   const amount = Number(invoice.amount);
 
   // Add invoice table
-  const tableHeaders = [['Description', 'Quantity', 'Unit Price', 'VAT', 'Amount ZAR']];
+  const tableHeaders = [['Description', 'Quantity', 'Unit Price', 'Amount ZAR']];
   autoTable(doc, {
     startY: 120,
     head: tableHeaders,
@@ -100,15 +100,12 @@ export async function downloadInvoice(invoice: {
       [
         invoice.description,
         '1.00',
-        unitPrice.toFixed(2),
-        '15%',
+        amount.toFixed(2),
         amount.toFixed(2)
       ],
-      ['', '', '', 'Subtotal:', `R${unitPrice.toFixed(2)}`],
-      ['', '', '', 'TOTAL VAT:', `R${vat.toFixed(2)}`],
-      ['', '', '', 'TOTAL ZAR:', `R${amount.toFixed(2)}`],
-      ['', '', '', 'Less Amount Paid:', `R${amount.toFixed(2)}`],
-      ['', '', '', 'AMOUNT DUE ZAR:', 'R0.00']
+      ['', '', 'TOTAL ZAR:', `R${amount.toFixed(2)}`],
+      ['', '', 'Less Amount Paid:', `R${amount.toFixed(2)}`],
+      ['', '', 'AMOUNT DUE ZAR:', 'R0.00']
     ],
     headStyles: {
       fontSize: 12,
@@ -123,15 +120,15 @@ export async function downloadInvoice(invoice: {
       0: { fillColor: [255, 255, 255] },
       1: { fillColor: [255, 255, 255] },
       2: { fillColor: [255, 255, 255] },
-      4: { halign: 'right' }
+      3: { halign: 'right' }
     },
     didParseCell: function(data) {
       // Add borders to amount cells and make amount due row bold
-      if (data.row.index > 0 && data.column === 4) {
+      if (data.row.index > 0 && data.column.index === 3) {
         data.cell.styles.lineWidth = 0.1;
         data.cell.styles.lineColor = [0, 0, 0];
       }
-      if (data.row.index === 5) {
+      if (data.row.index === 3) {
         data.cell.styles.fontStyle = 'bold';
       }
       if (data.row.index === 0) {

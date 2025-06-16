@@ -100,21 +100,16 @@ function testBillingCalculations() {
   const tier = pricingTiers.find(t => reportCount >= t.min && reportCount <= t.max);
   const pricePerReport = tier ? tier.price : 140;
   
-  const subtotal = reportCount * pricePerReport;
-  const vatRate = 0.15; // 15% VAT
-  const vatAmount = subtotal * vatRate;
-  const totalAmount = subtotal + vatAmount;
+  const totalAmount = reportCount * pricePerReport;
 
   console.log('Agency:', testAgency.name);
   console.log('Reports Generated:', reportCount);
   console.log('Price Per Report: R' + pricePerReport);
-  console.log('Subtotal: R' + subtotal.toFixed(2));
-  console.log('VAT (15%): R' + vatAmount.toFixed(2));
   console.log('Total Amount: R' + totalAmount.toFixed(2));
   
   console.log('\n✅ Billing calculation complete');
   
-  return { subtotal, vatAmount, totalAmount, pricePerReport };
+  return { totalAmount, pricePerReport };
 }
 
 // Run all tests

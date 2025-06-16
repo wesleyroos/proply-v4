@@ -120,15 +120,13 @@ CREATE TABLE agency_billing_settings (
 1. Monthly cron job runs (1st of each month)
 2. For each agency with billing_enabled = true:
    a. Count reports from report_generations table for previous month
-   b. Calculate: subtotal = report_count × price_per_report
-   c. Calculate: vat_amount = subtotal × 0.15
-   d. Calculate: total_amount = subtotal + vat_amount
-   e. Create record in agency_billing_cycles
-   f. Generate invoice in agency_invoices
-   g. Charge stored Yoco token
-   h. Generate PDF invoice
-   i. Email invoice to billing contact
-   j. Update payment status
+   b. Calculate: total_amount = report_count × price_per_report (no VAT)
+   c. Create record in agency_billing_cycles
+   d. Generate invoice in agency_invoices
+   e. Charge stored PayFast token
+   f. Generate PDF invoice
+   g. Email invoice to billing contact
+   h. Update payment status
 ```
 
 ## API Endpoints
