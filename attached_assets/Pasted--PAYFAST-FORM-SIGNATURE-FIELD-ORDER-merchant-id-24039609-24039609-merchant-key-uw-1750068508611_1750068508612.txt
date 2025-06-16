@@ -1,0 +1,17 @@
+=== PAYFAST FORM SIGNATURE (FIELD ORDER) ===
+merchant_id: "24039609" -> "24039609"
+merchant_key: "uwchc9jpjsqgn" -> "uwchc9jpjsqgn"
+return_url: "https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/payment-setup-success" -> "https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fpayment-setup-success"
+cancel_url: "https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/payment-setup-cancel" -> "https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fpayment-setup-cancel"
+notify_url: "https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/api/payfast/notify" -> "https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fapi%2Fpayfast%2Fnotify"
+amount: "0.00" -> "0.00"
+item_name: "Payment Method Setup" -> "Payment+Method+Setup"
+item_description: "Setup payment method for recurring billing" -> "Setup+payment+method+for+recurring+billing"
+subscription_type: "2" -> "2"
+Added passphrase (encoded): 1nvest1ng_1n_Pr0perty_1s_W1se
+Final signature string: merchant_id=24039609&merchant_key=uwchc9jpjsqgn&return_url=https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fpayment-setup-success&cancel_url=https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fpayment-setup-cancel&notify_url=https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fapi%2Fpayfast%2Fnotify&amount=0.00&item_name=Payment+Method+Setup&item_description=Setup+payment+method+for+recurring+billing&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+Generated signature: 7c29d663c270f9fdfff7545a6f336002
+=== END ===
+
+Final PayFast LIVE tokenize URL (tokenization): https://www.payfast.co.za/eng/process?merchant_id=24039609&merchant_key=uwchc9jpjsqgn&return_url=https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fpayment-setup-success&cancel_url=https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fpayment-setup-cancel&notify_url=https%3A%2F%2Fa4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev%2Fapi%2Fpayfast%2Fnotify&amount=0.00&item_name=Payment+Method+Setup&item_description=Setup+payment+method+for+recurring+billing&subscription_type=2&signature=7c29d663c270f9fdfff7545a6f336002
+10:07:39 AM [express] POST /api/payfast/create-tokenize-url 200 in 73ms :: {"success":true,"tokenizeU…
