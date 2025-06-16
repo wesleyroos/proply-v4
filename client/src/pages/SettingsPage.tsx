@@ -1299,6 +1299,255 @@ export default function SettingsPage() {
     );
   };
 
+  // Agency Invoices Section Component
+  const AgencyInvoicesSection = () => {
+    // Get agency information first
+    const { data: agencyData } = useQuery({
+      queryKey: ['/api/agency-profile'],
+      queryFn: async () => {
+        const response = await fetch('/api/agency-profile', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch agency profile');
+        }
+        return response.json();
+      },
+      enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
+    });
+
+    // Fetch report statistics using the same endpoint as the agency details modal
+    const { data: reportStats, isLoading } = useQuery({
+      queryKey: ['/api/agencies/report-stats', agencyData?.agencySlug],
+      queryFn: async () => {
+        if (!agencyData?.agencySlug) return null;
+        const response = await fetch(`/api/agencies/${agencyData.agencySlug}/report-stats`, {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch report statistics');
+        }
+        return response.json();
+      },
+      enabled: !!(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && !!agencyData?.agencySlug
+    });
+
+    // Billing calculation function (same as AgencyDetailModal)
+    const calculateBillingAmount = (reportCount: number) => {
+      let total = 0;
+      let remaining = reportCount;
+
+      // Tier 1: 1-50 reports at R200 each
+      if (remaining > 0) {
+        const tier1Count = Math.min(remaining, 50);
+        total += tier1Count * 200;
+        remaining -= tier1Count;
+      }
+
+      // Tier 2: 51-100 reports at R180 each
+      if (remaining > 0) {
+        const tier2Count = Math.min(remaining, 50);
+        total += tier2Count * 180;
+        remaining -= tier2Count;
+      }
+
+      // Tier 3: 101-150 reports at R160 each
+      if (remaining > 0) {
+        const tier3Count = Math.min(remaining, 50);
+        total += tier3Count * 160;
+        remaining -= tier3Count;
+      }
+
+      // Tier 4: 151-200 reports at R140 each
+      if (remaining > 0) {
+        const tier4Count = Math.min(remaining, 50);
+        total += tier4Count * 140;
+        remaining -= tier4Count;
+      }
+
+      // Tier 5: 200+ reports at R140 each
+      if (remaining > 0) {
+        total += remaining * 140;
+      }
+
+      return total;
+    };
+
+    if (isLoading) {
+      return (
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              Loading invoice history...
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    if (!reportStats?.invoices || reportStats.invoices.length === 0) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Invoice History
+            </CardTitle>
+            <CardDescription>
+              View and track your agency's billing history
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center py-12">
+            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-lg font-medium text-muted-foreground">No Invoices Available</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Invoice history will appear here once your agency starts generating property reports
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Invoice Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium">Total Invoices</span>
+              </div>
+              <div className="text-2xl font-bold mt-1">{reportStats.invoices.length}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium">Upcoming</span>
+              </div>
+              <div className="text-2xl font-bold mt-1">
+                {reportStats.invoices.filter((inv: any) => inv.status === 'upcoming').length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium">Paid</span>
+              </div>
+              <div className="text-2xl font-bold mt-1">
+                {reportStats.invoices.filter((inv: any) => inv.status === 'paid').length}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Invoices Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Invoice History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 font-medium">Invoice ID</th>
+                    <th className="text-left py-3 px-2 font-medium">Period</th>
+                    <th className="text-right py-3 px-2 font-medium">Reports</th>
+                    <th className="text-right py-3 px-2 font-medium">Amount</th>
+                    <th className="text-left py-3 px-2 font-medium">Invoice Date</th>
+                    <th className="text-left py-3 px-2 font-medium">Due Date</th>
+                    <th className="text-left py-3 px-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportStats.invoices.map((invoice: any) => (
+                    <tr key={invoice.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-2 font-mono text-sm">{invoice.id}</td>
+                      <td className="py-3 px-2">{invoice.monthName}</td>
+                      <td className="py-3 px-2 text-right">{invoice.reportCount}</td>
+                      <td className="py-3 px-2 text-right font-medium">
+                        R{invoice.amount.toLocaleString()}
+                      </td>
+                      <td className="py-3 px-2">
+                        {format(new Date(invoice.invoiceDate), 'MMM d, yyyy')}
+                      </td>
+                      <td className="py-3 px-2">
+                        {format(new Date(invoice.dueDate), 'MMM d, yyyy')}
+                      </td>
+                      <td className="py-3 px-2">
+                        <Badge 
+                          variant={
+                            invoice.status === 'paid' ? 'default' :
+                            invoice.status === 'upcoming' ? 'secondary' :
+                            'destructive'
+                          }
+                          className={
+                            invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                            invoice.status === 'upcoming' ? 'bg-orange-100 text-orange-800' :
+                            'bg-red-100 text-red-800'
+                          }
+                        >
+                          {invoice.status === 'upcoming' ? 'Upcoming' : 
+                           invoice.status === 'paid' ? 'Paid' : 'Overdue'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Next Invoice Preview */}
+        {reportStats.currentMonth > 0 && (
+          <Card className="border-orange-200 bg-orange-50/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-800">
+                <Calendar className="h-5 w-5" />
+                Next Invoice Preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <div className="text-sm text-muted-foreground">Current Month Usage</div>
+                  <div className="text-lg font-bold">{reportStats.currentMonth} reports</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Estimated Amount</div>
+                  <div className="text-lg font-bold text-orange-600">
+                    R{calculateBillingAmount(reportStats.currentMonth).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Invoice Date</div>
+                  <div className="text-lg font-medium">
+                    {format(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1), 'MMM d, yyyy')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Due Date</div>
+                  <div className="text-lg font-medium">
+                    {format(new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1), 'MMM d, yyyy')}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <div className="p-6">
