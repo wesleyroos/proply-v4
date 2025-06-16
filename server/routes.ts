@@ -3598,13 +3598,13 @@ export function registerRoutes(app: Express): Server {
   // PayFast return URL handlers - these must be accessible without authentication
   // since users are redirected from PayFast's external domain
   app.get("/payment-setup-success", (req, res) => {
-    // Let the frontend router handle this - just serve index.html
-    res.redirect('/');
+    // Redirect to frontend success page
+    res.redirect('/#/payment-setup-success');
   });
 
   app.get("/payment-setup-cancel", (req, res) => {
-    // Let the frontend router handle this - just serve index.html
-    res.redirect('/');
+    // Redirect to frontend cancel page with query parameter
+    res.redirect('/#/payment-setup-cancel');
   });
 
   const httpServer = createServer(app);
