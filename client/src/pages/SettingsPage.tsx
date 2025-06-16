@@ -1525,32 +1525,52 @@ export default function SettingsPage() {
 
     return (
       <div className="space-y-6">
-        {/* Report Usage Overview */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Current Month Usage</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <FileText className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-muted-foreground">Reports Generated</span>
-                </div>
-                <div className="text-2xl font-bold">{reportStats.currentMonth}</div>
+        {/* Invoice Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium">Total Invoices</span>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Calendar className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-muted-foreground">Current Bill</span>
-                </div>
-                <div className="text-2xl font-bold text-green-600">
-                  R{calculateBillingAmount(reportStats.currentMonth).toLocaleString()}
-                </div>
+              <div className="text-2xl font-bold mt-1">
+                {reportStats.invoices.length}
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium">Upcoming</span>
+              </div>
+              <div className="text-2xl font-bold mt-1">
+                {
+                  reportStats.invoices.filter(
+                    (inv: any) => inv.status === "upcoming",
+                  ).length
+                }
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium">Paid</span>
+              </div>
+              <div className="text-2xl font-bold mt-1">
+                {
+                  reportStats.invoices.filter(
+                    (inv: any) => inv.status === "paid",
+                  ).length
+                }
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Next Invoice Preview */}
         {reportStats.currentMonth > 0 && (
