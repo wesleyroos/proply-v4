@@ -1060,14 +1060,18 @@ export default function SettingsPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <BarChart3 className="h-4 w-4 text-blue-600" />
-                <span className="text-sm text-muted-foreground">Reports This Month</span>
+                <span className="text-sm text-muted-foreground">
+                  Reports This Month
+                </span>
               </div>
               <div className="text-2xl font-bold">{currentMonthReports}</div>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-muted-foreground">Current Bill</span>
+                <span className="text-sm text-muted-foreground">
+                  Current Bill This Month
+                </span>
               </div>
               <div className="text-2xl font-bold text-green-600">
                 R{totalAmount.toLocaleString()}
