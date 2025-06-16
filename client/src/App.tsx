@@ -200,6 +200,16 @@ function App() {
                 <PaymentFailurePage />
               </PageTransition>
             )} />
+            <Route path="/payment-setup-success" component={() => (
+              <PageTransition>
+                <PaymentSetupSuccess />
+              </PageTransition>
+            )} />
+            <Route path="/payment-setup-cancel" component={() => (
+              <PageTransition>
+                <PaymentSetupCancel />
+              </PageTransition>
+            )} />
 
             <Route path="/risk-index" component={() => (
               <PageTransition>
