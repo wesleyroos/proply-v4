@@ -838,19 +838,77 @@ export default function SettingsPage() {
 
   // Billing Usage Overview Component
   const BillingUsageOverview = () => {
-    const { data: billingCycles, isLoading } = useQuery({
-      queryKey: ['/api/agency-billing/cycles'],
+    // Get agency information first to determine agency name/ID
+    const { data: agencyData } = useQuery({
+      queryKey: ['/api/agency-profile'],
       queryFn: async () => {
-        const response = await fetch('/api/agency-billing/cycles', {
+        const response = await fetch('/api/agency-profile', {
           credentials: 'include'
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch billing cycles');
+          throw new Error('Failed to fetch agency profile');
         }
         return response.json();
       },
       enabled: user?.role === 'branch_admin' || user?.role === 'franchise_admin'
     });
+
+    // Fetch report statistics using the same endpoint as the working agency details modal
+    const { data: reportStats, isLoading } = useQuery({
+      queryKey: ['/api/agencies/report-stats', agencyData?.agencySlug],
+      queryFn: async () => {
+        if (!agencyData?.agencySlug) return null;
+        const response = await fetch(`/api/agencies/${agencyData.agencySlug}/report-stats`, {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch report statistics');
+        }
+        return response.json();
+      },
+      enabled: !!(user?.role === 'branch_admin' || user?.role === 'franchise_admin') && !!agencyData?.agencySlug
+    });
+
+    // Billing calculation function (same as in AgencyDetailModal)
+    const calculateBillingAmount = (reportCount: number) => {
+      let total = 0;
+      let remaining = reportCount;
+
+      // Tier 1: 1-50 reports at R200 each
+      if (remaining > 0) {
+        const tier1Count = Math.min(remaining, 50);
+        total += tier1Count * 200;
+        remaining -= tier1Count;
+      }
+
+      // Tier 2: 51-100 reports at R180 each
+      if (remaining > 0) {
+        const tier2Count = Math.min(remaining, 50);
+        total += tier2Count * 180;
+        remaining -= tier2Count;
+      }
+
+      // Tier 3: 101-150 reports at R160 each
+      if (remaining > 0) {
+        const tier3Count = Math.min(remaining, 50);
+        total += tier3Count * 160;
+        remaining -= tier3Count;
+      }
+
+      // Tier 4: 151-200 reports at R140 each
+      if (remaining > 0) {
+        const tier4Count = Math.min(remaining, 50);
+        total += tier4Count * 140;
+        remaining -= tier4Count;
+      }
+
+      // Tier 5: 200+ reports at R140 each
+      if (remaining > 0) {
+        total += remaining * 140;
+      }
+
+      return total;
+    };
 
     if (isLoading) {
       return (
@@ -868,8 +926,33 @@ export default function SettingsPage() {
       );
     }
 
-    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-    const currentCycle = billingCycles?.billingCycles?.find((cycle: any) => cycle.billingPeriod === currentMonth);
+    if (!reportStats) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Report Usage Overview
+            </CardTitle>
+            <CardDescription>
+              Monthly report generation usage and billing information
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-muted-foreground">
+              <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <div className="font-medium">No billing cycles yet</div>
+              <div className="text-sm">Generate reports to start tracking usage</div>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    const currentMonthReports = reportStats.currentMonth || 0;
+    const subtotalAmount = calculateBillingAmount(currentMonthReports);
+    const vatAmount = subtotalAmount * 0.15;
+    const totalAmount = subtotalAmount + vatAmount;
 
     return (
       <Card>
@@ -887,58 +970,68 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 border rounded-lg">
               <div className="text-2xl font-bold text-[#007B8A]">
-                {currentCycle?.reportCount || 0}
+                {currentMonthReports}
               </div>
               <div className="text-sm text-muted-foreground">Reports This Month</div>
             </div>
             <div className="p-4 border rounded-lg">
               <div className="text-2xl font-bold text-green-600">
-                R{currentCycle?.subtotal || '0.00'}
+                R{subtotalAmount.toFixed(2)}
               </div>
               <div className="text-sm text-muted-foreground">Subtotal (Excl. VAT)</div>
             </div>
             <div className="p-4 border rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
-                R{currentCycle?.totalAmount || '0.00'}
+                R{totalAmount.toFixed(2)}
               </div>
               <div className="text-sm text-muted-foreground">Total (Incl. VAT)</div>
             </div>
           </div>
 
-          {/* Recent Billing Cycles */}
-          {billingCycles?.billingCycles?.length > 0 && (
+          {/* Recent Monthly Stats */}
+          {reportStats.monthlyStats && reportStats.monthlyStats.length > 0 && (
             <div>
-              <h3 className="font-medium text-sm mb-3">Recent Billing Cycles</h3>
+              <h3 className="font-medium text-sm mb-3">Recent Monthly Usage</h3>
               <div className="space-y-2">
-                {billingCycles.billingCycles.slice(0, 3).map((cycle: any) => (
-                  <div key={cycle.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{cycle.billingPeriod}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {cycle.reportCount} reports • R{cycle.pricePerReport} per report
+                {reportStats.monthlyStats.slice(0, 3).map((stat: any) => {
+                  const monthlyBilling = calculateBillingAmount(stat.reports);
+                  const monthlyTotal = monthlyBilling * 1.15; // Including VAT
+                  return (
+                    <div key={stat.month} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{stat.monthName}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {stat.reports} reports • Tiered pricing
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">R{monthlyTotal.toFixed(2)}</div>
+                        <div className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                          generated
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-medium">R{cycle.totalAmount}</div>
-                      <div className={`text-xs px-2 py-1 rounded-full ${
-                        cycle.status === 'paid' ? 'bg-green-100 text-green-800' :
-                        cycle.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {cycle.status}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {(!billingCycles?.billingCycles || billingCycles.billingCycles.length === 0) && (
-            <div className="text-center py-8 text-muted-foreground">
-              <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <div className="font-medium">No billing cycles yet</div>
-              <div className="text-sm">Generate reports to start tracking usage</div>
+          {/* All-time summary */}
+          {reportStats.totalReports > 0 && (
+            <div className="border-t pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+                <div>
+                  <div className="text-xl font-bold text-blue-600">{reportStats.totalReports}</div>
+                  <div className="text-sm text-muted-foreground">Total Reports Generated</div>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-green-600">
+                    R{calculateBillingAmount(reportStats.totalReports).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Value Generated</div>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
