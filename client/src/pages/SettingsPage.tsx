@@ -1549,7 +1549,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-muted-foreground">Estimated Cost</div>
-                  <div className="text-2xl font-bold">R{calculateTieredCost(reportStats.currentMonthReports).toFixed(2)}</div>
+                  <div className="text-2xl font-bold">R{calculateBillingAmount(reportStats.currentMonthReports).toFixed(2)}</div>
                 </div>
               </div>
             </CardContent>
