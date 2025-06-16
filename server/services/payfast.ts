@@ -111,7 +111,7 @@ export class PayFastService {
       merchant_key: this.config.merchantKey,
       return_url: returnUrl,
       cancel_url: cancelUrl,
-      notify_url: `https://app.proply.co.za/api/payfast/notify`,
+      notify_url: `${process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : `https://${process.env.REPLIT_DEV_DOMAIN}`}/api/payfast/notify`,
       amount: '0.00', // Tokenization allows 0.00 amount
       item_name: 'Payment Method Setup',
       item_description: 'Setup payment method for recurring billing',

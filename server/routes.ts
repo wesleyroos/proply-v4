@@ -3531,7 +3531,10 @@ export function registerRoutes(app: Express): Server {
       const { PayFastService } = await import('./services/payfast');
       const payfast = new PayFastService(true);
       
-      const baseUrl = 'https://app.proply.co.za';
+      // Use Replit dev URL for development, production domain for live
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://app.proply.co.za' 
+        : `https://${process.env.REPLIT_DEV_DOMAIN}`;
       const returnUrl = `${baseUrl}/payment-setup-success`;
       const cancelUrl = `${baseUrl}/payment-setup-cancel`;
       
