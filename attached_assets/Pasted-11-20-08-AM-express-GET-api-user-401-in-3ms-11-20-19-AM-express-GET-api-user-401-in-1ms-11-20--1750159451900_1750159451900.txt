@@ -1,0 +1,146 @@
+11:20:08 AM [express] GET /api/user 401 in 3ms
+11:20:19 AM [express] GET /api/user 401 in 1ms
+11:20:20 AM [express] GET /api/user 401 in 1ms
+11:20:48 AM [express] GET /api/user 401 in 1ms
+11:20:48 AM [express] GET /api/user 401 in 1ms
+Login attempt with email: ben@proply.co.za
+Login successful for user: 142
+11:20:58 AM [express] POST /api/login 200 in 291ms :: {"id":142,"email":"ben@proply.co.za","firstName…
+11:20:58 AM [express] GET /api/user 200 in 46ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+11:20:59 AM [express] GET /api/agencies 403 in 51ms :: {"error":"Admin access required"}
+11:21:01 AM [express] GET /api/user 304 in 50ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+11:21:01 AM [express] GET /api/agency-profile 304 in 88ms :: {"id":1,"agencySlug":"sothebys-atlantic-…
+11:21:04 AM [express] GET /api/payment-methods 200 in 97ms :: {"paymentMethods":[]}
+11:21:04 AM [express] GET /api/agencies/sothebys-atlantic-seaboard/report-stats 304 in 388ms :: {"cur…
+11:21:17 AM [express] GET /api/user 401 in 2ms
+PayFast Service Config (LIVE MODE): {
+  merchantId: '24039609',
+  merchantKey: 'uwchc***',
+  passphrase: '1nves***',
+  isTestMode: false
+}
+PayFast URL configuration: {
+  baseUrl: 'https://app.proply.co.za',
+  returnUrl: 'https://app.proply.co.za/payment-setup-success?session=fxk0fwnf27rlhvek3b9zf7zu',
+  cancelUrl: 'https://app.proply.co.za/payment-setup-cancel?session=fxk0fwnf27rlhvek3b9zf7zu',
+  sessionId: 'fxk0fwnf27rlhvek3b9zf7zu',
+  userId: 142,
+  branchId: 1
+}
+
+=== PAYFAST FORM SIGNATURE (FIELD ORDER) ===
+merchant_id: "24039609" -> "24039609"
+merchant_key: "uwchc9jpjsqgn" -> "uwchc9jpjsqgn"
+return_url: "https://app.proply.co.za/payment-setup-success?session=fxk0fwnf27rlhvek3b9zf7zu" -> "https%3A%2F%2Fapp.proply.co.za%2Fpayment-setup-success%3Fsession%3Dfxk0fwnf27rlhvek3b9zf7zu"
+cancel_url: "https://app.proply.co.za/payment-setup-cancel?session=fxk0fwnf27rlhvek3b9zf7zu" -> "https%3A%2F%2Fapp.proply.co.za%2Fpayment-setup-cancel%3Fsession%3Dfxk0fwnf27rlhvek3b9zf7zu"
+notify_url: "https://app.proply.co.za/api/payfast/notify" -> "https%3A%2F%2Fapp.proply.co.za%2Fapi%2Fpayfast%2Fnotify"
+m_payment_id: "fxk0fwnf27rlhvek3b9zf7zu" -> "fxk0fwnf27rlhvek3b9zf7zu"
+amount: "0.00" -> "0.00"
+item_name: "Payment Method Setup" -> "Payment+Method+Setup"
+item_description: "Setup payment method for recurring billing" -> "Setup+payment+method+for+recurring+billing"
+subscription_type: "2" -> "2"
+Added passphrase (encoded): 1nvest1ng_1n_Pr0perty_1s_W1se
+Final signature string: merchant_id=24039609&merchant_key=uwchc9jpjsqgn&return_url=https%3A%2F%2Fapp.proply.co.za%2Fpayment-setup-success%3Fsession%3Dfxk0fwnf27rlhvek3b9zf7zu&cancel_url=https%3A%2F%2Fapp.proply.co.za%2Fpayment-setup-cancel%3Fsession%3Dfxk0fwnf27rlhvek3b9zf7zu&notify_url=https%3A%2F%2Fapp.proply.co.za%2Fapi%2Fpayfast%2Fnotify&m_payment_id=fxk0fwnf27rlhvek3b9zf7zu&amount=0.00&item_name=Payment+Method+Setup&item_description=Setup+payment+method+for+recurring+billing&subscription_type=2&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se
+Generated signature: f83766ef4bd12ed9103b63818fda566a
+=== END ===
+
+Final PayFast LIVE tokenize URL (tokenization): https://www.payfast.co.za/eng/process?merchant_id=24039609&merchant_key=uwchc9jpjsqgn&return_url=https%3A%2F%2Fapp.proply.co.za%2Fpayment-setup-success%3Fsession%3Dfxk0fwnf27rlhvek3b9zf7zu&cancel_url=https%3A%2F%2Fapp.proply.co.za%2Fpayment-setup-cancel%3Fsession%3Dfxk0fwnf27rlhvek3b9zf7zu&notify_url=https%3A%2F%2Fapp.proply.co.za%2Fapi%2Fpayfast%2Fnotify&m_payment_id=fxk0fwnf27rlhvek3b9zf7zu&amount=0.00&item_name=Payment+Method+Setup&item_description=Setup+payment+method+for+recurring+billing&subscription_type=2&signature=f83766ef4bd12ed9103b63818fda566a
+11:21:21 AM [express] POST /api/payfast/create-tokenize-url 200 in 249ms :: {"success":true,"tokenize…
+11:22:55 AM [express] GET /api/user 304 in 46ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+11:22:59 AM [express] GET /api/user 304 in 49ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+Login attempt with email: ben@proply.co.za
+Login successful for user: 142
+11:23:04 AM [express] POST /api/login 200 in 186ms :: {"id":142,"email":"ben@proply.co.za","firstName…
+Fetching property analyzer results for user: 142
+11:23:04 AM [express] GET /api/user 304 in 46ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+11:23:04 AM [express] GET /api/property-analyzer/properties 304 in 93ms :: []
+Fetching properties for user: 142
+11:23:04 AM [express] GET /api/user 304 in 45ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+11:23:04 AM [express] GET /api/properties 304 in 92ms :: []
+Sample agent data: {
+  agent_name: 'Adrian Becker',
+  listings_count: '1',
+  active_count: '1',
+  pending_count: '0',
+  sold_count: '0',
+  archived_count: '0',
+  valuation_count: '0',
+  total_active_value: '6500000.00',
+  reports_count: '1',
+  coverage: '100.0'
+}
+11:23:05 AM [express] GET /api/branch/1/metrics 304 in 377ms :: {"totalAgents":"48","listingsByStatus…
+11:23:07 AM [express] GET /api/user 304 in 47ms :: {"id":142,"email":"ben@proply.co.za","firstName":"…
+11:23:07 AM [express] GET /api/agency-profile 304 in 90ms :: {"id":1,"agencySlug":"sothebys-atlantic-…
+11:23:09 AM [express] GET /api/agencies/sothebys-atlantic-seaboard/report-stats 304 in 401ms :: {"cur…
+11:23:10 AM [express] GET /api/payment-methods 200 in 90ms :: {"paymentMethods":[{"id":10,"agencyBran…
+11:23:21 AM [express] GET /api/user 401 in 1ms
+Login attempt with email: wesley@proply.co.za
+Login successful for user: 2
+11:23:28 AM [express] POST /api/login 200 in 376ms :: {"id":2,"email":"wesley@proply.co.za","firstNam…
+11:23:28 AM [express] GET /api/invoices 200 in 140ms :: []
+11:23:29 AM [express] GET /api/user 200 in 225ms :: {"id":2,"email":"wesley@proply.co.za","firstName"…
+11:23:32 AM [express] GET /api/user 304 in 90ms :: {"id":2,"email":"wesley@proply.co.za","firstName":…
+11:23:33 AM [express] GET /api/agencies 200 in 350ms :: {"agencies":[{"id":"sothebys-atlantic-seaboar…
+11:23:35 AM [express] GET /api/agencies/sothebys-atlantic-seaboard/payment-methods 200 in 195ms :: {"…
+11:23:35 AM [express] GET /api/agencies/sothebys-atlantic-seaboard/report-stats 304 in 409ms :: {"cur…
+=== TEST PAYMENT ENDPOINT HIT === {
+  agencyId: 'sothebys-atlantic-seaboard',
+  body: { amount: 10 },
+  authenticated: true,
+  user: 'wesley@proply.co.za'
+}
+Payment method details: { id: 10, tokenLength: 36, cardLast4: '****', isActive: true }
+PayFast Service Config (LIVE MODE): {
+  merchantId: '24039609',
+  merchantKey: 'uwchc***',
+  passphrase: '1nves***',
+  isTestMode: false
+}
+PayFast payment request details: {
+  mode: 'LIVE',
+  amount: 10,
+  hasToken: true,
+  tokenPrefix: 'cf3e5c52-a...'
+}
+PayFast charge request: {
+  "amount": 10,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750159418116-sothebys-atlantic-seaboard"
+}
+=== PAYFAST API AUTH (Official Method) ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T11:23:38.117Z
+Signature Data Keys: [ 'merchant-id', 'passphrase', 'timestamp', 'version' ]
+Sorted Params (masked): merchant-id=24039609&passphrase=***&timestamp=2025-06-17T11%3A23%3A38.117Z&version=v1
+Generated Signature: b3c51b577a7281855c3f0353e1d839c7
+=== END API AUTH ===
+=== PAYFAST TOKEN VALIDATION ===
+URL: https://api.payfast.co.za/subscriptions/cf3e5c52-a347-4083-a050-8a51fdd860e9/fetch
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T11:23:38.117Z',
+  signature: 'b3c51b577a7281855c3f0353e1d839c7'
+}
+Token Validation Response Status: 400 Bad Request
+Token Validation Response Data: {
+  "code": 400,
+  "status": "failed",
+  "data": {
+    "response": "'timestamp': Format not recognised",
+    "message": false
+  }
+}
+=== END TOKEN VALIDATION ===
+PayFast token validation failed: {
+  isValid: false,
+  error: "'timestamp': Format not recognised",
+  details: {
+    code: 400,
+    status: 'failed',
+    data: { response: "'timestamp': Format not recognised", message: false }
+  }
+}
+11:23:39 AM [express] POST /api/admin/agencies/sothebys-atlantic-seaboard/test-payment 400 in 1407ms …
