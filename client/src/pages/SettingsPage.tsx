@@ -1622,12 +1622,12 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">Due Date</div>
+                  <div className="text-sm text-muted-foreground">Billing Date</div>
                   <div className="text-lg font-medium">
                     {format(
                       new Date(
                         new Date().getFullYear(),
-                        new Date().getMonth() + 2,
+                        new Date().getMonth() + 1,
                         1,
                       ),
                       "MMM d, yyyy",
