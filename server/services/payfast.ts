@@ -94,36 +94,36 @@ export class PayFastService {
     // 4. URL-encode values and join with &
     // 5. Convert to lowercase and calculate MD5 hash
     
-    const signatureData: Record<string, any> = {
+    // Build PayFast signature data with raw strings (no encoding)
+    const rawSignatureData: Record<string, string> = {
       'merchant-id': this.config.merchantId,
       'version': 'v1',
       'timestamp': timestamp
     };
     
-    // Add body fields if provided - ensure all values are URL-encoded for signature
+    // Add body fields as raw strings (no encoding)
     if (bodyData) {
       Object.keys(bodyData).forEach(key => {
         if (bodyData[key] !== null && bodyData[key] !== undefined && bodyData[key] !== '') {
-          // Store the URL-encoded value for signature generation
-          signatureData[key] = String(bodyData[key]);
+          rawSignatureData[key] = String(bodyData[key]);
         }
       });
     }
     
-    // Add passphrase
+    // Add passphrase as raw string
     if (this.config.passphrase) {
-      signatureData['passphrase'] = this.config.passphrase;
+      rawSignatureData['passphrase'] = this.config.passphrase;
     }
     
-    // Use Node's querystring module to match PHP's http_build_query() behavior
-    // This ensures spaces are encoded as '+' instead of '%20'
-    const sortedKeys = Object.keys(signatureData).sort();
-    const sortedData = sortedKeys.reduce((obj, key) => {
-      obj[key] = String(signatureData[key]);
+    // Sort keys alphabetically then use querystring.stringify for PHP-style encoding
+    const sortedKeys = Object.keys(rawSignatureData).sort();
+    const sortedRawData = sortedKeys.reduce((obj, key) => {
+      obj[key] = rawSignatureData[key];
       return obj;
     }, {} as Record<string, string>);
     
-    const sortedParams = stringify(sortedData);
+    // This will encode spaces as '+' like PHP's http_build_query()
+    const sortedParams = stringify(sortedRawData);
     
     // Calculate MD5 (do NOT convert to lowercase for API calls)
     const signature = crypto.createHash("md5").update(sortedParams).digest("hex");
@@ -132,6 +132,7 @@ export class PayFastService {
     console.log('Merchant ID:', this.config.merchantId);
     console.log('Timestamp:', timestamp);
     console.log('Signature Data Keys:', sortedKeys);
+    console.log('Raw data before stringify:', JSON.stringify(sortedRawData, null, 2));
     console.log('Sorted Params (masked):', sortedParams.replace(/passphrase=[^&]+/, 'passphrase=***'));
     console.log('Raw signature string for verification:', sortedParams);
     console.log('Generated Signature:', signature);
