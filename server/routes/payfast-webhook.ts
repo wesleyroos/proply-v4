@@ -95,18 +95,18 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
           console.log('Card details extracted:', { cardLastFour, cardBrand, expiryMonth, expiryYear });
           
           // Create new payment method record with session details
-          const insertResult = await db.insert(agencyPaymentMethods).values({
-            agencyBranchId: tokenizationSession.agencyBranchId,
-            payfastToken: data.token,
-            cardLastFour: cardLastFour,
-            expiryMonth: expiryMonth,
-            expiryYear: expiryYear,
-            cardBrand: cardBrand,
-            isActive: true,
-            addedBy: tokenizationSession.userId
-          }).returning();
+          const [newPaymentMethod] = await db.insert(agencyPaymentMethods).values({
+            agency_branch_id: tokenizationSession.agencyBranchId,
+            payfast_token: data.token,
+            card_last_four: cardLastFour,
+            expiry_month: expiryMonth,
+            expiry_year: expiryYear,
+            card_brand: cardBrand,
+            is_active: true,
+            added_by: tokenizationSession.userId
+          } as any).returning();
           
-          console.log('✅ Payment method inserted successfully:', insertResult);
+          console.log('✅ Payment method inserted successfully:', newPaymentMethod);
           
           // Update tokenization session status
           await db.update(payfastTokenizationSessions)
