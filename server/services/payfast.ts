@@ -99,11 +99,12 @@ export class PayFastService {
       'timestamp': timestamp
     };
     
-    // Add body fields if provided
+    // Add body fields if provided - ensure all values are URL-encoded for signature
     if (bodyData) {
       Object.keys(bodyData).forEach(key => {
         if (bodyData[key] !== null && bodyData[key] !== undefined && bodyData[key] !== '') {
-          signatureData[key] = bodyData[key];
+          // Store the URL-encoded value for signature generation
+          signatureData[key] = String(bodyData[key]);
         }
       });
     }
@@ -113,11 +114,13 @@ export class PayFastService {
       signatureData['passphrase'] = this.config.passphrase;
     }
     
-    // Sort alphabetically by key
+    // Sort alphabetically by key and ensure all values are URL-encoded
     const sortedKeys = Object.keys(signatureData).sort();
-    const sortedParams = sortedKeys.map(key => 
-      `${encodeURIComponent(key)}=${encodeURIComponent(signatureData[key])}`
-    ).join('&');
+    const sortedParams = sortedKeys.map(key => {
+      const encodedKey = encodeURIComponent(key);
+      const encodedValue = encodeURIComponent(String(signatureData[key]));
+      return `${encodedKey}=${encodedValue}`;
+    }).join('&');
     
     // Calculate MD5 (do NOT convert to lowercase for API calls)
     const signature = crypto.createHash("md5").update(sortedParams).digest("hex");
