@@ -2651,6 +2651,19 @@ export function registerRoutes(app: Express): Server {
 
       console.log('PayFast charge request:', JSON.stringify(chargeRequest, null, 2));
 
+      // First validate the token before attempting charge
+      const tokenValidation = await payfast.validateToken(primaryMethod.payfastToken);
+      
+      if (!tokenValidation.isValid) {
+        console.error('PayFast token validation failed:', tokenValidation);
+        return res.status(400).json({ 
+          error: `Payment method invalid: ${tokenValidation.error}. Please add a new payment method.`,
+          requiresReTokenization: true
+        });
+      }
+
+      console.log('PayFast token validation successful:', tokenValidation.details);
+
       // Charge the PayFast token
       const payfastResponse = await payfast.chargeToken(primaryMethod.payfastToken, chargeRequest);
       
