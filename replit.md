@@ -108,7 +108,7 @@ This is a property investment analysis platform that helps users compare short-t
 - June 17, 2025: Completed PayFast integration refinement - removed test payment section from control panel, resolved card display to show actual last 4 digits (6847) instead of token digits, and enhanced webhook to attempt fetching real card details from PayFast API. System now accurately displays payment methods across both settings and control panel interfaces.
 - June 17, 2025: **BREAKTHROUGH**: Successfully resolved PayFast signature generation by implementing PHP-style encoding (spaces as '+', apostrophes as '%27') instead of JavaScript's URL encoding ('%20', raw apostrophes). PayFast ad-hoc charges now authenticate successfully (200 OK response). The Z2 error code indicates amount below merchant minimum, confirming the integration works correctly.
 - June 17, 2025: Updated PayFast minimum amount validation from R100 to R2 (PayFast platform minimum) after discovering the merchant account has a higher specific minimum than the platform default. Enhanced error handling to provide clear guidance when Z2 errors occur, indicating successful authentication but amount below merchant-specific threshold.
-- June 17, 2025: Set test billing amount to R250 across all UI components after discovering the merchant account minimum is higher than R10. This amount ensures successful test payments while validating payment method functionality.
+- June 17, 2025: Implemented flexible test billing with input field allowing R2-R10,000 range. Users can start with R10 and incrementally increase to find their PayFast merchant account minimum, with helpful UI guidance for troubleshooting Z2 errors.
 
 ## User Preferences
 

@@ -38,14 +38,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 function TestBillingButton({ agencyId }: { agencyId: string }) {
+  const [testAmount, setTestAmount] = useState("10");
   const { toast } = useToast();
   
   const testBillingMutation = useMutation({
     mutationFn: async () => {
+      const amount = parseFloat(testAmount);
       const response = await fetch(`/api/admin/agencies/${agencyId}/test-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 250 }),
+        body: JSON.stringify({ amount }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -56,7 +58,7 @@ function TestBillingButton({ agencyId }: { agencyId: string }) {
     onSuccess: (data) => {
       toast({
         title: "Test Billing Successful",
-        description: `R250.00 charged successfully. Transaction ID: ${data.transactionId}`,
+        description: `R${testAmount} charged successfully. Transaction ID: ${data.transactionId}`,
       });
     },
     onError: (error: any) => {
@@ -68,29 +70,61 @@ function TestBillingButton({ agencyId }: { agencyId: string }) {
     },
   });
 
+  const handleTestPayment = () => {
+    const amount = parseFloat(testAmount);
+    if (amount < 2 || amount > 10000) {
+      toast({
+        title: "Invalid Amount",
+        description: "Test amount must be between R2 and R10,000",
+        variant: "destructive",
+      });
+      return;
+    }
+    testBillingMutation.mutate();
+  };
+
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="font-medium">Test Billing</h4>
-          <p className="text-sm text-muted-foreground">
-            Charge R250 to verify payment method works
-          </p>
+      <div>
+        <h4 className="font-medium mb-2">Test Billing</h4>
+        <p className="text-sm text-muted-foreground mb-3">
+          Enter amount to test payment method functionality
+        </p>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="testAmount">Amount (ZAR)</Label>
+            <Input
+              id="testAmount"
+              type="number"
+              min="2"
+              max="10000"
+              step="1"
+              value={testAmount}
+              onChange={(e) => setTestAmount(e.target.value)}
+              placeholder="10"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Start with R10, increase if Z2 error occurs
+            </p>
+          </div>
+          <div className="flex items-end">
+            <Button 
+              onClick={handleTestPayment}
+              disabled={testBillingMutation.isPending}
+              className="w-full"
+            >
+              {testBillingMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <TestTube className="mr-2 h-4 w-4" />
+              Test R{testAmount} Charge
+            </Button>
+          </div>
         </div>
-        <Button 
-          onClick={() => testBillingMutation.mutate()}
-          disabled={testBillingMutation.isPending}
-          size="sm"
-          variant="outline"
-        >
-          {testBillingMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          <TestTube className="mr-2 h-4 w-4" />
-          Test R250 Charge
-        </Button>
       </div>
+      
       <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
         <p className="text-sm text-blue-800">
-          This will charge R250 to the stored payment method to verify it works before automated billing runs.
+          <strong>Testing Strategy:</strong> Start with R{testAmount}. If you get "Z2 - below merchant limit", try R50, R100, R200, etc. until you find the minimum that works.
         </p>
       </div>
     </div>
