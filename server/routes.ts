@@ -2664,6 +2664,9 @@ export function registerRoutes(app: Express): Server {
         .orderBy(sql`COUNT(*) DESC`);
 
       // Get invoice history (simulated based on monthly stats)
+      const currentDate = new Date();
+      const currentMonth = currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0');
+      
       const invoices = monthlyStats.map((stat, index) => {
         const reportCount = Number(stat.reports) || 0;
         let amount = 0;
@@ -2698,6 +2701,9 @@ export function registerRoutes(app: Express): Server {
         const invoiceDate = new Date(String(stat.month) + '-01');
         invoiceDate.setMonth(invoiceDate.getMonth() + 1);
         
+        // Determine status: if the stat month is current month or future, it's upcoming; otherwise paid
+        const isUpcoming = String(stat.month) >= currentMonth;
+        
         return {
           id: `INV-${String(stat.month).replace('-', '')}`,
           month: String(stat.month),
@@ -2705,7 +2711,7 @@ export function registerRoutes(app: Express): Server {
           reportCount,
           amount,
           invoiceDate: invoiceDate.toISOString().split('T')[0],
-          status: index === 0 ? 'upcoming' : 'paid', // Latest is upcoming, rest are paid
+          status: isUpcoming ? 'upcoming' : 'paid',
           dueDate: new Date(invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days after invoice
         };
       }).reverse(); // Show newest first
