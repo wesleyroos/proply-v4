@@ -3728,22 +3728,16 @@ export function registerRoutes(app: Express): Server {
   });
 
   // PayFast webhook/notification endpoint
-  app.post('/api/payfast/notify', express.raw({ type: 'application/x-www-form-urlencoded' }), async (req, res) => {
+  app.post('/api/payfast/notify', async (req, res) => {
     console.log('\n=== PAYFAST WEBHOOK RECEIVED ===');
     console.log('Headers:', req.headers);
-    console.log('Raw body:', req.body?.toString());
+    console.log('Body:', req.body);
     
     try {
       const { payfastTokenizationSessions, agencyPaymentMethods } = await import('@db/schema');
       
-      // Parse the form data
-      const bodyStr = req.body?.toString() || '';
-      const params = new URLSearchParams(bodyStr);
-      const data: Record<string, string> = {};
-      
-      params.forEach((value, key) => {
-        data[key] = value;
-      });
+      // PayFast sends form-encoded data in req.body
+      const data = req.body || {};
       
       console.log('Parsed webhook data:', data);
       
