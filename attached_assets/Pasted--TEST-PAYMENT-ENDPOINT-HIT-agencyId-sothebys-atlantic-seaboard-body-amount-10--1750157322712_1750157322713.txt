@@ -1,0 +1,70 @@
+=== TEST PAYMENT ENDPOINT HIT === {
+  agencyId: 'sothebys-atlantic-seaboard',
+  body: { amount: 10 },
+  authenticated: true,
+  user: 'wesley@proply.co.za'
+}
+Payment method details: { id: 8, tokenLength: 36, cardLast4: '6847', isActive: true }
+PayFast Service Config (LIVE MODE): {
+  merchantId: '24039609',
+  merchantKey: 'uwchc***',
+  passphrase: '1nves***',
+  isTestMode: false
+}
+PayFast payment request details: {
+  mode: 'LIVE',
+  amount: 10,
+  hasToken: true,
+  tokenPrefix: 'ce05fd95-d...'
+}
+PayFast charge request: {
+  "amount": 10,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750157314489-sothebys-atlantic-seaboard"
+}
+=== PAYFAST API AUTH ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T10:48:34.489Z
+Signature String: merchant-id=24039609&passphrase=***&timestamp=2025-06-17T10:48:34.489Z
+Generated Signature: 7fabf0f5d94a72c48bdbce6b833399d9
+=== END API AUTH ===
+=== PAYFAST ADHOC CHARGE REQUEST ===
+URL: https://api.payfast.co.za/subscriptions/ce05fd95-dc48-4559-8f33-377a2c50064d/adhoc
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T10:48:34.489Z',
+  signature: '7fabf0f5d94a72c48bdbce6b833399d9',
+  'Content-Type': 'application/json'
+}
+Body: {
+  "amount": 10,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750157314489-sothebys-atlantic-seaboard"
+}
+=== PAYFAST ADHOC CHARGE RESPONSE ===
+Status: 401 Unauthorized
+Response Data: {
+  "code": 401,
+  "status": "failed",
+  "data": {
+    "response": "Merchant authorization failed.",
+    "message": false
+  }
+}
+PayFast charge failed: {
+  status: 401,
+  statusText: 'Unauthorized',
+  responseData: {
+    code: 401,
+    status: 'failed',
+    data: { response: 'Merchant authorization failed.', message: false }
+  }
+}
+Error processing test payment: Error: PayFast charge failed: Unknown error
+    at PayFastService.chargeToken (/home/runner/workspace/server/services/payfast.ts:253:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:2655:31)
+10:48:35 AM [express] POST /api/admin/agencies/sothebys-atlantic-seaboard/test-payment 500 in 1393ms …

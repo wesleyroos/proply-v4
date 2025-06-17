@@ -84,22 +84,15 @@ export class PayFastService {
   private createAuthHeaders(): Record<string, string> {
     const timestamp = new Date().toISOString();
     
-    // PayFast API authentication signature method
-    // Based on PayFast documentation: concatenate merchant_id + passphrase + timestamp
-    const signatureData = {
-      'merchant-id': this.config.merchantId,
-      'passphrase': this.config.passphrase,
-      'timestamp': timestamp
-    };
-    
-    // Generate signature using the same method as form signatures but with API-specific fields
-    const signatureString = `merchant-id=${this.config.merchantId}&passphrase=${this.config.passphrase}&timestamp=${timestamp}`;
+    // PayFast API signature: simple concatenation of merchant_id + passphrase + timestamp
+    // No parameter formatting, just direct concatenation
+    const signatureString = this.config.merchantId + this.config.passphrase + timestamp;
     const signature = crypto.createHash("md5").update(signatureString).digest("hex");
     
-    console.log('=== PAYFAST API AUTH ===');
+    console.log('=== PAYFAST API AUTH (Simple Concatenation) ===');
     console.log('Merchant ID:', this.config.merchantId);
     console.log('Timestamp:', timestamp);
-    console.log('Signature String:', `merchant-id=${this.config.merchantId}&passphrase=***&timestamp=${timestamp}`);
+    console.log('Signature String (masked):', this.config.merchantId + '***' + timestamp);
     console.log('Generated Signature:', signature);
     console.log('=== END API AUTH ===');
 
