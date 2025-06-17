@@ -135,7 +135,7 @@ export class PayFastService {
     console.log('Merchant ID:', this.config.merchantId);
     console.log('Timestamp:', timestamp);
     console.log('Signature Data Keys:', sortedKeys);
-    console.log('Raw data before stringify:', JSON.stringify(sortedRawData, null, 2));
+    console.log('Raw data before encoding:', JSON.stringify(rawSignatureData, null, 2));
     console.log('Sorted Params (masked):', sortedParams.replace(/passphrase=[^&]+/, 'passphrase=***'));
     console.log('Raw signature string for verification:', sortedParams);
     console.log('Generated Signature:', signature);
