@@ -3669,8 +3669,8 @@ export function registerRoutes(app: Express): Server {
       
       // Use production domain for live deployment
       const baseUrl = 'https://app.proply.co.za';
-      const returnUrl = `${baseUrl}/api/payfast/return?token=success&session=${sessionId}`;
-      const cancelUrl = `${baseUrl}/api/payfast/return?token=cancelled&session=${sessionId}`;
+      const returnUrl = `${baseUrl}/payment-setup-success?session=${sessionId}`;
+      const cancelUrl = `${baseUrl}/payment-setup-cancel?session=${sessionId}`;
       
       console.log('PayFast URL configuration:', {
         baseUrl,
@@ -3694,54 +3694,6 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error creating PayFast tokenize URL:', error);
       res.status(500).json({ error: 'Failed to create tokenization URL' });
-    }
-  });
-
-  // Handle PayFast return URL (success/cancel)
-  app.get('/api/payfast/return', async (req, res) => {
-    try {
-      const { token, session } = req.query;
-      
-      if (!session) {
-        return res.redirect('/settings?error=invalid_session');
-      }
-
-      const { payfastTokenizationSessions } = await import('@db/schema');
-      
-      // Check the tokenization session status
-      const tokenizationSession = await db.query.payfastTokenizationSessions.findFirst({
-        where: eq(payfastTokenizationSessions.sessionId, session as string)
-      });
-
-      if (!tokenizationSession) {
-        return res.redirect('/settings?error=session_not_found');
-      }
-
-      console.log('PayFast return handler - Session status:', tokenizationSession.status);
-
-      if (token === 'success') {
-        if (tokenizationSession.status === 'completed') {
-          return res.redirect('/settings?token=success&message=Payment method added successfully');
-        } else {
-          // Payment may still be processing, redirect with pending status
-          return res.redirect('/settings?token=pending&message=Payment method setup in progress');
-        }
-      } else if (token === 'cancelled') {
-        // Update session to cancelled
-        await db.update(payfastTokenizationSessions)
-          .set({
-            status: 'cancelled',
-            updatedAt: new Date()
-          })
-          .where(eq(payfastTokenizationSessions.sessionId, session as string));
-        
-        return res.redirect('/settings?token=cancelled&message=Payment method setup cancelled');
-      }
-
-      return res.redirect('/settings');
-    } catch (error) {
-      console.error('Error handling PayFast return:', error);
-      return res.redirect('/settings?error=processing_failed');
     }
   });
 

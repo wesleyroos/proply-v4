@@ -2,28 +2,105 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function PaymentSetupSuccess() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(true);
+  const [sessionStatus, setSessionStatus] = useState<'completed' | 'pending' | 'failed' | null>(null);
 
   useEffect(() => {
-    // Show success message
-    toast({
-      title: "Payment Method Added Successfully",
-      description: "Your payment method has been securely stored for future billing.",
-    });
+    const checkSessionStatus = async () => {
+      try {
+        // Get session ID from URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('session');
 
-    // Simulate processing the tokenization response
-    const timer = setTimeout(() => {
-      setIsProcessing(false);
-    }, 2000);
+        if (!sessionId) {
+          toast({
+            title: "Session Error",
+            description: "No session found. Redirecting to settings.",
+            variant: "destructive",
+          });
+          setTimeout(() => setLocation("/settings"), 2000);
+          return;
+        }
 
-    return () => clearTimeout(timer);
-  }, [toast]);
+        // Check session status by polling the payment methods API
+        // The webhook should have processed the tokenization by now
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        const checkStatus = async () => {
+          try {
+            const response = await fetch('/api/payment-methods', {
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data.paymentMethods && data.paymentMethods.length > 0) {
+                // Payment method was successfully added
+                setSessionStatus('completed');
+                setIsProcessing(false);
+                toast({
+                  title: "Payment Method Added Successfully",
+                  description: "Your payment method has been securely stored for future billing.",
+                });
+                return;
+              }
+            }
+            
+            attempts++;
+            if (attempts < maxAttempts) {
+              // Wait 2 seconds and try again
+              setTimeout(checkStatus, 2000);
+            } else {
+              // Max attempts reached, consider it pending
+              setSessionStatus('pending');
+              setIsProcessing(false);
+              toast({
+                title: "Payment Method Setup In Progress",
+                description: "Your payment is being processed. Please check your settings in a few minutes.",
+                variant: "default",
+              });
+            }
+          } catch (error) {
+            console.error('Error checking payment method status:', error);
+            attempts++;
+            if (attempts < maxAttempts) {
+              setTimeout(checkStatus, 2000);
+            } else {
+              setSessionStatus('failed');
+              setIsProcessing(false);
+              toast({
+                title: "Error Checking Status",
+                description: "Unable to verify payment method setup. Please check your settings.",
+                variant: "destructive",
+              });
+            }
+          }
+        };
+
+        // Start checking after a brief delay to allow webhook processing
+        setTimeout(checkStatus, 1000);
+
+      } catch (error) {
+        console.error('Error in payment setup success:', error);
+        setSessionStatus('failed');
+        setIsProcessing(false);
+        toast({
+          title: "Error",
+          description: "Something went wrong. Please check your settings.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    checkSessionStatus();
+  }, [toast, setLocation]);
 
   const handleReturnToSettings = () => {
     setLocation("/settings");

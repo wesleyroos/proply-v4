@@ -104,6 +104,7 @@ This is a property investment analysis platform that helps users compare short-t
 - June 16, 2025: Restructured add agency form to prioritize branch name as primary identifier (required) and franchise name as optional, aligning with data architecture where branch IDs are the true source of identity
 - June 17, 2025: Fixed PayFast tokenization URL generation issue - resolved malformed URLs with comma concatenation by hard-coding production domain. PayFast redirect now works successfully, but 3D Secure authentication still failing (under investigation with PayFast support)
 - June 17, 2025: Implemented persistent invoice storage system - replaced dynamic invoice generation with database-stored invoices using agency_invoices and agency_billing_cycles tables. Invoice history now shows "Billing Date" instead of "Due Date" with conditional download functionality (enabled for paid invoices, disabled for upcoming)
+- June 17, 2025: **RESOLVED**: Fixed PayFast payment method storage issue - implemented comprehensive session tracking system with `payfast_tokenization_sessions` table to properly link webhook responses to specific user sessions. Updated webhook handler to correctly store payment methods for the appropriate agency branch instead of using placeholder data. Payment methods now properly appear in branch admin settings after successful PayFast tokenization.
 
 ## User Preferences
 
