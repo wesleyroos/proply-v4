@@ -100,7 +100,7 @@ function TestBillingButton({ agencyId }: { agencyId: string }) {
 
 
 function TestPaymentForm({ agencyId }: { agencyId: string }) {
-  const [testAmount, setTestAmount] = useState("100.00");
+  const [testAmount, setTestAmount] = useState("10.00");
   const { toast } = useToast();
   
   const testPaymentMutation = useMutation({
@@ -133,10 +133,10 @@ function TestPaymentForm({ agencyId }: { agencyId: string }) {
 
   const handleTestPayment = () => {
     const amount = parseFloat(testAmount);
-    if (amount < 100 || amount > 1000) {
+    if (amount < 2 || amount > 1000) {
       toast({
         title: "Invalid Amount",
-        description: "Test amount must be between R100 and R1000",
+        description: "Test amount must be between R2 and R1000",
         variant: "destructive",
       });
       return;
@@ -152,15 +152,15 @@ function TestPaymentForm({ agencyId }: { agencyId: string }) {
           <Input
             id="testAmount"
             type="number"
-            min="100"
+            min="2"
             max="1000"
             step="1.00"
             value={testAmount}
             onChange={(e) => setTestAmount(e.target.value)}
-            placeholder="100.00"
+            placeholder="10.00"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Minimum R100, Maximum R1000 (PayFast requirement)
+            Minimum R2, Maximum R1000 (PayFast requirement)
           </p>
         </div>
         <div className="flex items-end">

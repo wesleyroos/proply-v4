@@ -2590,8 +2590,8 @@ export function registerRoutes(app: Express): Server {
       const { agencyId } = req.params;
       const { amount } = req.body;
 
-      if (!amount || amount < 100 || amount > 1000) {
-        return res.status(400).json({ error: 'Test amount must be between R100 and R1000' });
+      if (!amount || amount < 2 || amount > 1000) {
+        return res.status(400).json({ error: 'Test amount must be between R2 and R1000' });
       }
 
       // Find the agency branch by slug
@@ -2669,14 +2669,14 @@ export function registerRoutes(app: Express): Server {
       
       console.log('PayFast API response:', payfastResponse);
 
-      // Handle Z2 error (amount below merchant limit) - this is expected for R10
+      // Handle Z2 error (amount below merchant limit)
       if (payfastResponse.code === 200 && payfastResponse.status === 'success' && 
           payfastResponse.data?.response?.code === 'Z2') {
         console.log(`PayFast authentication successful but amount R${amount} below merchant limit (Z2)`);
         return res.status(400).json({ 
-          error: `Test amount R${amount} is below PayFast merchant minimum. Try R100 or higher.`,
+          error: `Test amount R${amount} is below this merchant's minimum limit. Try R200 or higher. PayFast authentication is working correctly.`,
           code: 'Z2',
-          note: 'PayFast authentication is working correctly'
+          note: 'PayFast integration is functioning - this merchant account has a higher minimum than the standard R2 platform minimum'
         });
       }
 
