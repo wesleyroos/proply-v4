@@ -37,7 +37,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
       const logoData = fs.readFileSync(logoPath);
       const logoBase64 = logoData.toString("base64");
       // Maintain aspect ratio (868x229 = ~3.8:1)
-      const logoWidth = 50;
+      const logoWidth = 40;
       const logoHeight = logoWidth / 3.8; // Maintain aspect ratio
       doc.addImage(
         `data:image/png;base64,${logoBase64}`,
