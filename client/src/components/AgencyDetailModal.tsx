@@ -45,7 +45,7 @@ function TestBillingButton({ agencyId }: { agencyId: string }) {
       const response = await fetch(`/api/admin/agencies/${agencyId}/test-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 10 }),
+        body: JSON.stringify({ amount: 250 }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -56,7 +56,7 @@ function TestBillingButton({ agencyId }: { agencyId: string }) {
     onSuccess: (data) => {
       toast({
         title: "Test Billing Successful",
-        description: `R10.00 charged successfully. Transaction ID: ${data.transactionId}`,
+        description: `R250.00 charged successfully. Transaction ID: ${data.transactionId}`,
       });
     },
     onError: (error: any) => {
@@ -74,7 +74,7 @@ function TestBillingButton({ agencyId }: { agencyId: string }) {
         <div>
           <h4 className="font-medium">Test Billing</h4>
           <p className="text-sm text-muted-foreground">
-            Charge R10 to verify payment method works
+            Charge R250 to verify payment method works
           </p>
         </div>
         <Button 
@@ -85,12 +85,12 @@ function TestBillingButton({ agencyId }: { agencyId: string }) {
         >
           {testBillingMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           <TestTube className="mr-2 h-4 w-4" />
-          Test R10 Charge
+          Test R250 Charge
         </Button>
       </div>
       <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
         <p className="text-sm text-blue-800">
-          This will charge R10 to the stored payment method to verify it works before automated billing runs.
+          This will charge R250 to the stored payment method to verify it works before automated billing runs.
         </p>
       </div>
     </div>
