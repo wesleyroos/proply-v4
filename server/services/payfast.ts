@@ -249,8 +249,8 @@ export class PayFastService {
   }
 
   async chargeToken(token: string, request: PayFastAdHocChargeRequest): Promise<PayFastAdHocChargeResponse> {
-    // For ad-hoc charges, signature should only include auth headers, not body data
-    const headers = this.createAuthHeaders();
+    // For ad-hoc charges, signature must include both auth headers AND body data
+    const headers = this.createAuthHeaders(request);
     
     console.log('=== PAYFAST ADHOC CHARGE REQUEST ===');
     console.log('URL:', `${this.baseUrl}/subscriptions/${token}/adhoc`);
