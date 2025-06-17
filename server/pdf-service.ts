@@ -1,4 +1,6 @@
 import { jsPDF } from "jspdf";
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -25,11 +27,27 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   const pageWidth = doc.internal.pageSize.width;
   const margin = 20;
 
-  // Add Proply logo (text-based)
-  doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(59, 130, 246); // Blue color
-  doc.text("PROPLY", margin, 25);
+  // Add Proply logo (actual image)
+  try {
+    const logoPath = path.join(process.cwd(), 'client/public/proply-logo-1.png');
+    if (fs.existsSync(logoPath)) {
+      const logoData = fs.readFileSync(logoPath);
+      const logoBase64 = logoData.toString('base64');
+      doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', margin, 15, 40, 15);
+    } else {
+      // Fallback to text if logo file not found
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(59, 130, 246);
+      doc.text("PROPLY", margin, 25);
+    }
+  } catch (error) {
+    // Fallback to text if there's an error loading the logo
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(59, 130, 246);
+    doc.text("PROPLY", margin, 25);
+  }
 
   // Title
   doc.setFontSize(24);
@@ -37,9 +55,10 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   doc.setTextColor(0, 0, 0); // Back to black
   doc.text("INVOICE", pageWidth - margin, 30, { align: "right" });
 
-  // Company info (left side)
+  // Company info (left side) - adjust position to account for logo
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0); // Ensure text is black
   doc.text("Proply Listing Analyzer", margin, 40);
 
   doc.setFontSize(10);
