@@ -260,13 +260,21 @@ export class PayFastService {
   }
 
   async chargeToken(token: string, request: PayFastAdHocChargeRequest): Promise<PayFastAdHocChargeResponse> {
+    // PayFast expects amounts in cents, so convert from rands
+    const amountInCents = Math.round(request.amount * 100);
+    const chargeRequest = {
+      ...request,
+      amount: amountInCents
+    };
+    
     // For ad-hoc charges, signature must include both auth headers AND body data
-    const headers = this.createAuthHeaders(request);
+    const headers = this.createAuthHeaders(chargeRequest);
     
     console.log('=== PAYFAST ADHOC CHARGE REQUEST ===');
     console.log('URL:', `${this.baseUrl}/subscriptions/${token}/adhoc`);
     console.log('Headers:', { ...headers, 'Content-Type': 'application/json' });
-    console.log('Body:', JSON.stringify(request, null, 2));
+    console.log('Body:', JSON.stringify(chargeRequest, null, 2));
+    console.log(`Amount conversion: R${request.amount} -> ${amountInCents} cents`);
     
     const response = await fetch(`${this.baseUrl}/subscriptions/${token}/adhoc`, {
       method: 'POST',
@@ -274,7 +282,7 @@ export class PayFastService {
         ...headers,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(chargeRequest)
     });
 
     const data = await response.json();

@@ -109,6 +109,7 @@ This is a property investment analysis platform that helps users compare short-t
 - June 17, 2025: **BREAKTHROUGH**: Successfully resolved PayFast signature generation by implementing PHP-style encoding (spaces as '+', apostrophes as '%27') instead of JavaScript's URL encoding ('%20', raw apostrophes). PayFast ad-hoc charges now authenticate successfully (200 OK response). The Z2 error code indicates amount below merchant minimum, confirming the integration works correctly.
 - June 17, 2025: Updated PayFast minimum amount validation from R100 to R2 (PayFast platform minimum) after discovering the merchant account has a higher specific minimum than the platform default. Enhanced error handling to provide clear guidance when Z2 errors occur, indicating successful authentication but amount below merchant-specific threshold.
 - June 17, 2025: Implemented flexible test billing with input field allowing R2-R10,000 range. Users can start with R10 and incrementally increase to find their PayFast merchant account minimum, with helpful UI guidance for troubleshooting Z2 errors.
+- June 17, 2025: **CRITICAL FIX**: Discovered PayFast expects amounts in cents, not rands. Updated chargeToken method to multiply amounts by 100 before sending to PayFast API. Previous tests of R10, R100, R200 were actually processed as R0.10, R1.00, R2.00 - explaining the persistent Z2 errors.
 
 ## User Preferences
 

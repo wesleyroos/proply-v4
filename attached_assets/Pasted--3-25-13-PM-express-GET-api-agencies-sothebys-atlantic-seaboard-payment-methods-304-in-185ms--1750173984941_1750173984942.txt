@@ -1,0 +1,415 @@
+
+3:25:13 PM [express] GET /api/agencies/sothebys-atlantic-seaboard/payment-methods 304 in 185ms :: {"…
+3:25:13 PM [express] GET /api/agencies/sothebys-atlantic-seaboard/report-stats 304 in 516ms :: {"cur…
+=== TEST PAYMENT ENDPOINT HIT === {
+  agencyId: 'sothebys-atlantic-seaboard',
+  body: { amount: 10 },
+  authenticated: true,
+  user: 'wesley@proply.co.za'
+}
+Payment method details: { id: 11, tokenLength: 36, cardLast4: '****', isActive: true }
+PayFast Service Config (LIVE MODE): {
+  merchantId: '24039609',
+  merchantKey: 'uwchc***',
+  passphrase: '1nves***',
+  isTestMode: false
+}
+PayFast payment request details: {
+  mode: 'LIVE',
+  amount: 10,
+  hasToken: true,
+  tokenPrefix: 'b50b6870-6...'
+}
+PayFast charge request: {
+  "amount": 10,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173919015-sothebys-atlantic-seaboard"
+}
+DEBUG (PHP-style) signature string: merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A19%2B00%3A00&version=v1
+=== PAYFAST API AUTH (Official Method) ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T15:25:19+00:00
+Signature Data Keys: [ 'merchant-id', 'passphrase', 'timestamp', 'version' ]
+Raw data before encoding: {
+  "merchant-id": "24039609",
+  "version": "v1",
+  "timestamp": "2025-06-17T15:25:19+00:00",
+  "passphrase": "1nvest1ng_1n_Pr0perty_1s_W1se"
+}
+Sorted Params (masked): merchant-id=24039609&passphrase=***&timestamp=2025-06-17T15%3A25%3A19%2B00%3A00&version=v1
+Raw signature string for verification: merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A19%2B00%3A00&version=v1
+Generated Signature: 8845aebefebd33215b4e62f9e544fed9
+=== END API AUTH ===
+=== PAYFAST TOKEN VALIDATION ===
+URL: https://api.payfast.co.za/subscriptions/b50b6870-6c9e-412d-bdea-baca2f705625/fetch
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T15:25:19+00:00',
+  signature: '8845aebefebd33215b4e62f9e544fed9'
+}
+Token Validation Response Status: 200 OK
+Token Validation Response Data: {
+  "code": 200,
+  "status": "success",
+  "data": {
+    "response": {
+      "status": 1,
+      "status_reason": "",
+      "status_text": "ACTIVE"
+    }
+  }
+}
+=== END TOKEN VALIDATION ===
+PayFast token validation successful: {
+  code: 200,
+  status: 'success',
+  data: { response: { status: 1, status_reason: '', status_text: 'ACTIVE' } }
+}
+DEBUG (PHP-style) signature string: amount=10&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173919015-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A20%2B00%3A00&version=v1
+=== PAYFAST API AUTH (Official Method) ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T15:25:20+00:00
+Signature Data Keys: [
+  'amount',
+  'item_description',
+  'item_name',
+  'm_payment_id',
+  'merchant-id',
+  'passphrase',
+  'timestamp',
+  'version'
+]
+Raw data before encoding: {
+  "merchant-id": "24039609",
+  "version": "v1",
+  "timestamp": "2025-06-17T15:25:20+00:00",
+  "amount": "10",
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173919015-sothebys-atlantic-seaboard",
+  "passphrase": "1nvest1ng_1n_Pr0perty_1s_W1se"
+}
+Sorted Params (masked): amount=10&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173919015-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=***&timestamp=2025-06-17T15%3A25%3A20%2B00%3A00&version=v1
+Raw signature string for verification: amount=10&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173919015-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A20%2B00%3A00&version=v1
+Generated Signature: a009415e47a5c594066150959afe69c7
+=== END API AUTH ===
+=== PAYFAST ADHOC CHARGE REQUEST ===
+URL: https://api.payfast.co.za/subscriptions/b50b6870-6c9e-412d-bdea-baca2f705625/adhoc
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T15:25:20+00:00',
+  signature: 'a009415e47a5c594066150959afe69c7',
+  'Content-Type': 'application/json'
+}
+Body: {
+  "amount": 10,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173919015-sothebys-atlantic-seaboard"
+}
+=== PAYFAST ADHOC CHARGE RESPONSE ===
+Status: 200 OK
+Response Data: {
+  "code": 200,
+  "status": "success",
+  "data": {
+    "response": {
+      "code": "Z2",
+      "reason": "The transaction amount is below the allowed merchant limit. (Z2)"
+    },
+    "message": "Failure",
+    "card_update_url": "https://www.payfast.co.za/eng/recurring/update/b50b6870-6c9e-412d-bdea-baca2f705625"
+  }
+}
+PayFast API response: {
+  code: 200,
+  status: 'success',
+  data: {
+    response: {
+      code: 'Z2',
+      reason: 'The transaction amount is below the allowed merchant limit. (Z2)'
+    },
+    message: 'Failure',
+    card_update_url: 'https://www.payfast.co.za/eng/recurring/update/b50b6870-6c9e-412d-bdea-baca2f705625'
+  }
+}
+PayFast authentication successful but amount R10 below merchant limit (Z2)
+3:25:22 PM [express] POST /api/admin/agencies/sothebys-atlantic-seaboard/test-payment 400 in 3593ms …
+=== TEST PAYMENT ENDPOINT HIT === {
+  agencyId: 'sothebys-atlantic-seaboard',
+  body: { amount: 100 },
+  authenticated: true,
+  user: 'wesley@proply.co.za'
+}
+Payment method details: { id: 11, tokenLength: 36, cardLast4: '****', isActive: true }
+PayFast Service Config (LIVE MODE): {
+  merchantId: '24039609',
+  merchantKey: 'uwchc***',
+  passphrase: '1nves***',
+  isTestMode: false
+}
+PayFast payment request details: {
+  mode: 'LIVE',
+  amount: 100,
+  hasToken: true,
+  tokenPrefix: 'b50b6870-6...'
+}
+PayFast charge request: {
+  "amount": 100,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173934654-sothebys-atlantic-seaboard"
+}
+DEBUG (PHP-style) signature string: merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A34%2B00%3A00&version=v1
+=== PAYFAST API AUTH (Official Method) ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T15:25:34+00:00
+Signature Data Keys: [ 'merchant-id', 'passphrase', 'timestamp', 'version' ]
+Raw data before encoding: {
+  "merchant-id": "24039609",
+  "version": "v1",
+  "timestamp": "2025-06-17T15:25:34+00:00",
+  "passphrase": "1nvest1ng_1n_Pr0perty_1s_W1se"
+}
+Sorted Params (masked): merchant-id=24039609&passphrase=***&timestamp=2025-06-17T15%3A25%3A34%2B00%3A00&version=v1
+Raw signature string for verification: merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A34%2B00%3A00&version=v1
+Generated Signature: bc19e3cd69b7a48a3564e29984f8fc8b
+=== END API AUTH ===
+=== PAYFAST TOKEN VALIDATION ===
+URL: https://api.payfast.co.za/subscriptions/b50b6870-6c9e-412d-bdea-baca2f705625/fetch
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T15:25:34+00:00',
+  signature: 'bc19e3cd69b7a48a3564e29984f8fc8b'
+}
+Token Validation Response Status: 200 OK
+Token Validation Response Data: {
+  "code": 200,
+  "status": "success",
+  "data": {
+    "response": {
+      "status": 1,
+      "status_reason": "",
+      "status_text": "ACTIVE"
+    }
+  }
+}
+=== END TOKEN VALIDATION ===
+PayFast token validation successful: {
+  code: 200,
+  status: 'success',
+  data: { response: { status: 1, status_reason: '', status_text: 'ACTIVE' } }
+}
+DEBUG (PHP-style) signature string: amount=100&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173934654-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A35%2B00%3A00&version=v1
+=== PAYFAST API AUTH (Official Method) ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T15:25:35+00:00
+Signature Data Keys: [
+  'amount',
+  'item_description',
+  'item_name',
+  'm_payment_id',
+  'merchant-id',
+  'passphrase',
+  'timestamp',
+  'version'
+]
+Raw data before encoding: {
+  "merchant-id": "24039609",
+  "version": "v1",
+  "timestamp": "2025-06-17T15:25:35+00:00",
+  "amount": "100",
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173934654-sothebys-atlantic-seaboard",
+  "passphrase": "1nvest1ng_1n_Pr0perty_1s_W1se"
+}
+Sorted Params (masked): amount=100&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173934654-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=***&timestamp=2025-06-17T15%3A25%3A35%2B00%3A00&version=v1
+Raw signature string for verification: amount=100&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173934654-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A35%2B00%3A00&version=v1
+Generated Signature: 91525ae24109d734cda3f77b15dfae6d
+=== END API AUTH ===
+=== PAYFAST ADHOC CHARGE REQUEST ===
+URL: https://api.payfast.co.za/subscriptions/b50b6870-6c9e-412d-bdea-baca2f705625/adhoc
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T15:25:35+00:00',
+  signature: '91525ae24109d734cda3f77b15dfae6d',
+  'Content-Type': 'application/json'
+}
+Body: {
+  "amount": 100,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173934654-sothebys-atlantic-seaboard"
+}
+=== PAYFAST ADHOC CHARGE RESPONSE ===
+Status: 200 OK
+Response Data: {
+  "code": 200,
+  "status": "success",
+  "data": {
+    "response": {
+      "code": "Z2",
+      "reason": "The transaction amount is below the allowed merchant limit. (Z2)"
+    },
+    "message": "Failure",
+    "card_update_url": "https://www.payfast.co.za/eng/recurring/update/b50b6870-6c9e-412d-bdea-baca2f705625"
+  }
+}
+PayFast API response: {
+  code: 200,
+  status: 'success',
+  data: {
+    response: {
+      code: 'Z2',
+      reason: 'The transaction amount is below the allowed merchant limit. (Z2)'
+    },
+    message: 'Failure',
+    card_update_url: 'https://www.payfast.co.za/eng/recurring/update/b50b6870-6c9e-412d-bdea-baca2f705625'
+  }
+}
+PayFast authentication successful but amount R100 below merchant limit (Z2)
+3:25:37 PM [express] POST /api/admin/agencies/sothebys-atlantic-seaboard/test-payment 400 in 3287ms …
+3:25:42 PM [express] GET /api/agencies 304 in 373ms :: {"agencies":[{"id":"sothebys-atlantic-seaboar…
+=== TEST PAYMENT ENDPOINT HIT === {
+  agencyId: 'sothebys-atlantic-seaboard',
+  body: { amount: 200 },
+  authenticated: true,
+  user: 'wesley@proply.co.za'
+}
+Payment method details: { id: 11, tokenLength: 36, cardLast4: '****', isActive: true }
+PayFast Service Config (LIVE MODE): {
+  merchantId: '24039609',
+  merchantKey: 'uwchc***',
+  passphrase: '1nves***',
+  isTestMode: false
+}
+PayFast payment request details: {
+  mode: 'LIVE',
+  amount: 200,
+  hasToken: true,
+  tokenPrefix: 'b50b6870-6...'
+}
+PayFast charge request: {
+  "amount": 200,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173943273-sothebys-atlantic-seaboard"
+}
+DEBUG (PHP-style) signature string: merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A43%2B00%3A00&version=v1
+=== PAYFAST API AUTH (Official Method) ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T15:25:43+00:00
+Signature Data Keys: [ 'merchant-id', 'passphrase', 'timestamp', 'version' ]
+Raw data before encoding: {
+  "merchant-id": "24039609",
+  "version": "v1",
+  "timestamp": "2025-06-17T15:25:43+00:00",
+  "passphrase": "1nvest1ng_1n_Pr0perty_1s_W1se"
+}
+Sorted Params (masked): merchant-id=24039609&passphrase=***&timestamp=2025-06-17T15%3A25%3A43%2B00%3A00&version=v1
+Raw signature string for verification: merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A43%2B00%3A00&version=v1
+Generated Signature: db5332b46b8eae8bd2c4900a6c3b672c
+=== END API AUTH ===
+=== PAYFAST TOKEN VALIDATION ===
+URL: https://api.payfast.co.za/subscriptions/b50b6870-6c9e-412d-bdea-baca2f705625/fetch
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T15:25:43+00:00',
+  signature: 'db5332b46b8eae8bd2c4900a6c3b672c'
+}
+Token Validation Response Status: 200 OK
+Token Validation Response Data: {
+  "code": 200,
+  "status": "success",
+  "data": {
+    "response": {
+      "status": 1,
+      "status_reason": "",
+      "status_text": "ACTIVE"
+    }
+  }
+}
+=== END TOKEN VALIDATION ===
+PayFast token validation successful: {
+  code: 200,
+  status: 'success',
+  data: { response: { status: 1, status_reason: '', status_text: 'ACTIVE' } }
+}
+DEBUG (PHP-style) signature string: amount=200&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173943273-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A44%2B00%3A00&version=v1
+=== PAYFAST API AUTH (Official Method) ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T15:25:44+00:00
+Signature Data Keys: [
+  'amount',
+  'item_description',
+  'item_name',
+  'm_payment_id',
+  'merchant-id',
+  'passphrase',
+  'timestamp',
+  'version'
+]
+Raw data before encoding: {
+  "merchant-id": "24039609",
+  "version": "v1",
+  "timestamp": "2025-06-17T15:25:44+00:00",
+  "amount": "200",
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173943273-sothebys-atlantic-seaboard",
+  "passphrase": "1nvest1ng_1n_Pr0perty_1s_W1se"
+}
+Sorted Params (masked): amount=200&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173943273-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=***&timestamp=2025-06-17T15%3A25%3A44%2B00%3A00&version=v1
+Raw signature string for verification: amount=200&item_description=Test+payment+for+Sotheby%27s+International+Realty+-+Atlantic+Seaboard&item_name=Test+Payment&m_payment_id=test-1750173943273-sothebys-atlantic-seaboard&merchant-id=24039609&passphrase=1nvest1ng_1n_Pr0perty_1s_W1se&timestamp=2025-06-17T15%3A25%3A44%2B00%3A00&version=v1
+Generated Signature: e3747d2e9b31194d016dd51a784a5e48
+=== END API AUTH ===
+=== PAYFAST ADHOC CHARGE REQUEST ===
+URL: https://api.payfast.co.za/subscriptions/b50b6870-6c9e-412d-bdea-baca2f705625/adhoc
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T15:25:44+00:00',
+  signature: 'e3747d2e9b31194d016dd51a784a5e48',
+  'Content-Type': 'application/json'
+}
+Body: {
+  "amount": 200,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750173943273-sothebys-atlantic-seaboard"
+}
+=== PAYFAST ADHOC CHARGE RESPONSE ===
+Status: 200 OK
+Response Data: {
+  "code": 200,
+  "status": "success",
+  "data": {
+    "response": {
+      "code": "Z2",
+      "reason": "The transaction amount is below the allowed merchant limit. (Z2)"
+    },
+    "message": "Failure",
+    "card_update_url": "https://www.payfast.co.za/eng/recurring/update/b50b6870-6c9e-412d-bdea-baca2f705625"
+  }
+}
+PayFast API response: {
+  code: 200,
+  status: 'success',
+  data: {
+    response: {
+      code: 'Z2',
+      reason: 'The transaction amount is below the allowed merchant limit. (Z2)'
+    },
+    message: 'Failure',
+    card_update_url: 'https://www.payfast.co.za/eng/recurring/update/b50b6870-6c9e-412d-bdea-baca2f705625'
+  }
+}
+PayFast authentication successful but amount R200 below merchant limit (Z2)
+3:25:46 PM [express] POST /api/admin/agencies/sothebys-atlantic-seaboard/test-payment 400 in 3149ms …
