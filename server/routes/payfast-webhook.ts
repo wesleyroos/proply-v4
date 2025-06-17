@@ -56,18 +56,52 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
         console.log('Tokenization successful, storing token for branch:', tokenizationSession.agencyBranchId);
         
         try {
-          // PayFast provides a token but not actual card details
-          // Use last 4 digits of the token as identifier
-          const cardLastFour = data.token.slice(-4);
-          const cardBrand = 'PayFast Card'; // PayFast doesn't provide card brand
+          // Fetch real card details from PayFast API
+          const { PayFastService } = await import('../services/payfast');
+          const payfast = new PayFastService(false); // Use live mode
+          
+          let cardLastFour = data.token.slice(-4); // Fallback to token digits
+          let cardBrand = 'PayFast Card';
+          let expiryMonth = null;
+          let expiryYear = null;
+          
+          try {
+            const tokenDetails = await payfast.getTokenDetails(data.token);
+            if (tokenDetails.data?.card) {
+              // Extract real card details from PayFast API
+              const maskedNumber = tokenDetails.data.card.masked_number;
+              if (maskedNumber) {
+                // Extract last 4 digits from masked number (e.g., "****1234" -> "1234")
+                const lastFourMatch = maskedNumber.match(/(\d{4})$/);
+                if (lastFourMatch) {
+                  cardLastFour = lastFourMatch[1];
+                }
+              }
+              cardBrand = tokenDetails.data.card.scheme || 'PayFast Card';
+              
+              // Parse expiry date if available (format: MM/YY)
+              if (tokenDetails.data.card.expiry_date) {
+                const expiryMatch = tokenDetails.data.card.expiry_date.match(/(\d{2})\/(\d{2})/);
+                if (expiryMatch) {
+                  expiryMonth = parseInt(expiryMatch[1]);
+                  expiryYear = 2000 + parseInt(expiryMatch[2]);
+                }
+              }
+            }
+          } catch (apiError) {
+            console.error('❌ Failed to fetch card details from PayFast API:', apiError);
+            // Continue with fallback values
+          }
+          
+          console.log('Card details extracted:', { cardLastFour, cardBrand, expiryMonth, expiryYear });
           
           // Create new payment method record with session details
           await db.insert(agencyPaymentMethods).values({
             agencyBranchId: tokenizationSession.agencyBranchId,
             payfastToken: data.token,
             cardLastFour: cardLastFour,
-            expiryMonth: null, // PayFast doesn't provide expiry details
-            expiryYear: null,  // PayFast doesn't provide expiry details
+            expiryMonth: expiryMonth,
+            expiryYear: expiryYear,
             cardBrand: cardBrand,
             isActive: true,
             addedBy: tokenizationSession.userId

@@ -245,6 +245,23 @@ export class PayFastService {
     }
   }
 
+  async getTokenDetails(token: string): Promise<PayFastTokenizeResponse> {
+    const headers = this.createAuthHeaders();
+    
+    const response = await fetch(`${this.baseUrl}/subscriptions/${token}/fetch`, {
+      method: 'GET',
+      headers
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(`PayFast token fetch failed: ${data.message || 'Unknown error'}`);
+    }
+
+    return data;
+  }
+
   async cancelToken(token: string): Promise<boolean> {
     try {
       const headers = this.createAuthHeaders();
