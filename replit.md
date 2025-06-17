@@ -103,6 +103,7 @@ This is a property investment analysis platform that helps users compare short-t
 - June 16, 2025: Simplified add agency flow to request PropData unique key instead of searching - now requires manual entry of PropData access key, franchise name, and branch name for better integration control
 - June 16, 2025: Restructured add agency form to prioritize branch name as primary identifier (required) and franchise name as optional, aligning with data architecture where branch IDs are the true source of identity
 - June 17, 2025: Fixed PayFast tokenization URL generation issue - resolved malformed URLs with comma concatenation by hard-coding production domain. PayFast redirect now works successfully, but 3D Secure authentication still failing (under investigation with PayFast support)
+- June 17, 2025: Implemented persistent invoice storage system - replaced dynamic invoice generation with database-stored invoices using agency_invoices and agency_billing_cycles tables. Invoice history now shows "Billing Date" instead of "Due Date" with conditional download functionality (enabled for paid invoices, disabled for upcoming)
 
 ## User Preferences
 
