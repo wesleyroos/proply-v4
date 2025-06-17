@@ -15,6 +15,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,9 +39,12 @@ import {
   Download,
   Calendar,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  Copy,
+  CheckCircle2
 } from "lucide-react";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface Transaction {
   transactionId: string;
@@ -62,6 +72,8 @@ export default function TransactionHistoryPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [agencyFilter, setAgencyFilter] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<string>("");
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const { toast } = useToast();
 
   // Fetch transaction data
   const { data: transactionData, isLoading } = useQuery({
@@ -312,10 +324,7 @@ export default function TransactionHistoryPage() {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => {
-                            // Show detailed transaction info in modal or expanded view
-                            console.log('Transaction details:', transaction);
-                          }}
+                          onClick={() => setSelectedTransaction(transaction)}
                         >
                           View Details
                         </Button>
@@ -328,6 +337,147 @@ export default function TransactionHistoryPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Transaction Details Modal */}
+      <Dialog open={!!selectedTransaction} onOpenChange={() => setSelectedTransaction(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Transaction Details</DialogTitle>
+          </DialogHeader>
+          
+          {selectedTransaction && (
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">Transaction ID</h4>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm">{selectedTransaction.transactionId}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedTransaction.transactionId);
+                        toast({ title: "Transaction ID copied to clipboard" });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">Status</h4>
+                  {getStatusBadge(selectedTransaction.status)}
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">Amount</h4>
+                  <span className="text-lg font-medium">{formatCurrency(selectedTransaction.amount)}</span>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">Processed Date</h4>
+                  <span>{format(new Date(selectedTransaction.processedAt), 'MMM dd, yyyy HH:mm:ss')}</span>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Agency Information */}
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground mb-2">Agency Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Agency Name:</span>
+                    <div className="font-medium">{selectedTransaction.agencyName}</div>
+                  </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">Agency ID:</span>
+                    <div className="font-mono text-sm">{selectedTransaction.agencyId}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Payment Information */}
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground mb-2">Payment Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Invoice ID:</span>
+                    <div className="font-mono text-sm">{selectedTransaction.invoiceId}</div>
+                  </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">PayFast Transaction ID:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm">
+                        {selectedTransaction.payfastTransactionId !== 'unknown' 
+                          ? selectedTransaction.payfastTransactionId 
+                          : 'N/A'
+                        }
+                      </span>
+                      {selectedTransaction.payfastTransactionId !== 'unknown' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectedTransaction.payfastTransactionId);
+                            toast({ title: "PayFast ID copied to clipboard" });
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {selectedTransaction.payfastPaymentId && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">PayFast Payment ID:</span>
+                      <div className="font-mono text-sm">{selectedTransaction.payfastPaymentId}</div>
+                    </div>
+                  )}
+                  {selectedTransaction.paymentMethodId && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">Payment Method ID:</span>
+                      <div className="font-mono text-sm">{selectedTransaction.paymentMethodId}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Error Information */}
+              {selectedTransaction.errorMessage && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="font-medium text-sm text-muted-foreground mb-2">Error Information</h4>
+                    <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                      <p className="text-sm text-red-800">{selectedTransaction.errorMessage}</p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Gateway Response */}
+              {selectedTransaction.gatewayResponse && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="font-medium text-sm text-muted-foreground mb-2">PayFast Gateway Response</h4>
+                    <div className="bg-gray-50 border rounded-md p-3">
+                      <pre className="text-xs font-mono whitespace-pre-wrap overflow-x-auto">
+                        {JSON.stringify(selectedTransaction.gatewayResponse, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
