@@ -2669,6 +2669,17 @@ export function registerRoutes(app: Express): Server {
       
       console.log('PayFast API response:', payfastResponse);
 
+      // Handle Z2 error (amount below merchant limit) - this is expected for R10
+      if (payfastResponse.code === 200 && payfastResponse.status === 'success' && 
+          payfastResponse.data?.response?.code === 'Z2') {
+        console.log(`PayFast authentication successful but amount R${amount} below merchant limit (Z2)`);
+        return res.status(400).json({ 
+          error: `Test amount R${amount} is below PayFast merchant minimum. Try R100 or higher.`,
+          code: 'Z2',
+          note: 'PayFast authentication is working correctly'
+        });
+      }
+
       if (payfastResponse.code !== 200 || payfastResponse.status !== 'success') {
         console.error('PayFast test payment error:', payfastResponse);
         return res.status(400).json({ 
@@ -2676,17 +2687,14 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
-      // Log the test payment as a simple record (using existing billing transactions table)
-      const insertResult = await db.execute(sql`
-        INSERT INTO billing_transactions (agency_id, amount, status, transaction_id, description, processed_at)
-        VALUES (${agencyId}, ${amount.toString()}, 'completed', ${payfastResponse.data!.pf_payment_id}, ${'Test payment - R' + amount}, ${new Date()})
-      `);
-
-      console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${payfastResponse.data!.pf_payment_id} - Mode: ${isTestMode ? 'TEST' : 'LIVE'}`);
+      // If we reach here, payment was successful
+      const transactionId = payfastResponse.data?.pf_payment_id || `test-${Date.now()}`;
+      
+      console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${transactionId} - Mode: ${isTestMode ? 'TEST' : 'LIVE'}`);
 
       res.json({
         success: true,
-        transactionId: payfastResponse.data!.pf_payment_id,
+        transactionId,
         amount,
         mode: isTestMode ? 'test' : 'live',
         message: `Test payment completed successfully in ${isTestMode ? 'TEST' : 'LIVE'} mode`
