@@ -2697,7 +2697,36 @@ export function registerRoutes(app: Express): Server {
       const currentDate = new Date();
       const invoiceNumber = `MAN-${currentDate.getFullYear()}${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${agencyId.toUpperCase()}-${Date.now()}`;
       
-      // Insert invoice using raw SQL to match actual database columns (billing_cycle_id = 1 for manual payments)
+      // Create a dummy billing cycle for manual payments to avoid linking to real cycles
+      const manualCycleResult = await db.execute(sql`
+        INSERT INTO agency_billing_cycles (
+          agency_branch_id,
+          billing_period,
+          report_count,
+          price_per_report,
+          subtotal,
+          vat_amount,
+          total_amount,
+          status,
+          due_date,
+          paid_at
+        ) VALUES (
+          ${agencyBranch.id},
+          'MANUAL',
+          0,
+          ${amount},
+          ${amount},
+          0,
+          ${amount},
+          'paid',
+          ${currentDate},
+          ${currentDate}
+        ) RETURNING id
+      `);
+
+      const cycleId = manualCycleResult.rows[0]?.id || 1;
+
+      // Insert invoice using the manual billing cycle
       await db.execute(sql`
         INSERT INTO agency_invoices (
           agency_branch_id, 
@@ -2713,7 +2742,7 @@ export function registerRoutes(app: Express): Server {
           invoice_type
         ) VALUES (
           ${agencyBranch.id}, 
-          1,
+          ${cycleId},
           ${invoiceNumber}, 
           ${currentDate}, 
           ${currentDate}, 
@@ -2726,7 +2755,35 @@ export function registerRoutes(app: Express): Server {
         )
       `);
 
-      console.log(`Manual invoice created: ${invoiceNumber} for R${amount} - Transaction ID: ${transactionId}`);
+      // Create transaction record
+      const { createId } = await import("@paralleldrive/cuid2");
+      const transactionRecordId = createId();
+      
+      await db.execute(sql`
+        INSERT INTO transaction_history (
+          transaction_id,
+          invoice_id,
+          agency_id,
+          amount,
+          payfast_transaction_id,
+          payfast_payment_id,
+          status,
+          gateway_response,
+          processed_at
+        ) VALUES (
+          ${transactionRecordId},
+          ${invoiceNumber},
+          ${agencyId},
+          ${amount},
+          ${transactionId},
+          ${transactionId},
+          'completed',
+          ${JSON.stringify(payfastResponse)},
+          ${currentDate}
+        )
+      `);
+
+      console.log(`Manual invoice created: ${invoiceNumber}, Transaction recorded: ${transactionRecordId} for R${amount} - Transaction ID: ${transactionId}`);
 
       res.json({
         success: true,
@@ -2734,7 +2791,8 @@ export function registerRoutes(app: Express): Server {
         invoiceNumber,
         amount,
         mode: isTestMode ? 'test' : 'live',
-        message: `Test payment completed successfully in ${isTestMode ? 'TEST' : 'LIVE'} mode`
+        message: `Test payment completed successfully in ${isTestMode ? 'TEST' : 'LIVE'} mode`,
+        refreshCache: true // Signal frontend to refresh data
       });
 
     } catch (error) {

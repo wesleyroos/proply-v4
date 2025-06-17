@@ -137,6 +137,8 @@ function TestPaymentForm({ agencyId }: { agencyId: string }) {
   const [testAmount, setTestAmount] = useState("10.00");
   const { toast } = useToast();
   
+  const queryClient = useQueryClient();
+  
   const testPaymentMutation = useMutation({
     mutationFn: async ({ amount }: { amount: number }) => {
       const response = await fetch(`/api/admin/agencies/${agencyId}/test-payment`, {
@@ -155,6 +157,11 @@ function TestPaymentForm({ agencyId }: { agencyId: string }) {
         title: "Test Payment Successful",
         description: `R${testAmount} charged in ${data.mode?.toUpperCase() || 'UNKNOWN'} mode. Transaction ID: ${data.transactionId}`,
       });
+      
+      // Invalidate queries to refresh invoice list and transaction history
+      queryClient.invalidateQueries({ queryKey: [`/api/agencies/${agencyId}/invoices`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/transactions'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/agencies/${agencyId}/report-stats`] });
     },
     onError: (error: any) => {
       toast({
