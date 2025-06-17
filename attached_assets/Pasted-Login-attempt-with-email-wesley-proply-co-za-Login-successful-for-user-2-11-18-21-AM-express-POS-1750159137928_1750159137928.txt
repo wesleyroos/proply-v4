@@ -1,0 +1,69 @@
+Login attempt with email: wesley@proply.co.za
+Login successful for user: 2
+11:18:21 AM [express] POST /api/login 200 in 352ms :: {"id":2,"email":"wesley@proply.co.za","firstNam…
+11:18:22 AM [express] GET /api/user 304 in 248ms :: {"id":2,"email":"wesley@proply.co.za","firstName"…
+11:18:22 AM [express] GET /api/agencies 304 in 356ms :: {"agencies":[{"id":"sothebys-atlantic-seaboar…
+11:18:38 AM [express] GET /api/agencies/sothebys-atlantic-seaboard/payment-methods 304 in 326ms :: {"…
+11:18:38 AM [express] GET /api/agencies/sothebys-atlantic-seaboard/report-stats 304 in 569ms :: {"cur…
+=== TEST PAYMENT ENDPOINT HIT === {
+  agencyId: 'sothebys-atlantic-seaboard',
+  body: { amount: 10 },
+  authenticated: true,
+  user: 'wesley@proply.co.za'
+}
+Payment method details: { id: 8, tokenLength: 36, cardLast4: '6847', isActive: true }
+PayFast Service Config (LIVE MODE): {
+  merchantId: '24039609',
+  merchantKey: 'uwchc***',
+  passphrase: '1nves***',
+  isTestMode: false
+}
+PayFast payment request details: {
+  mode: 'LIVE',
+  amount: 10,
+  hasToken: true,
+  tokenPrefix: 'ce05fd95-d...'
+}
+PayFast charge request: {
+  "amount": 10,
+  "item_name": "Test Payment",
+  "item_description": "Test payment for Sotheby's International Realty - Atlantic Seaboard",
+  "m_payment_id": "test-1750159121402-sothebys-atlantic-seaboard"
+}
+=== PAYFAST API AUTH (Official Method) ===
+Merchant ID: 24039609
+Timestamp: 2025-06-17T11:18:41.402Z
+Signature Data Keys: [ 'merchant-id', 'passphrase', 'timestamp', 'version' ]
+Sorted Params (masked): merchant-id=24039609&passphrase=***&timestamp=2025-06-17T11%3A18%3A41.402Z&version=v1
+Generated Signature: 0b07ddbb3785453e85087f7837c526ec
+=== END API AUTH ===
+=== PAYFAST TOKEN VALIDATION ===
+URL: https://api.payfast.co.za/subscriptions/ce05fd95-dc48-4559-8f33-377a2c50064d/fetch
+Headers: {
+  'merchant-id': '24039609',
+  version: 'v1',
+  timestamp: '2025-06-17T11:18:41.402Z',
+  signature: '0b07ddbb3785453e85087f7837c526ec'
+}
+Token Validation Response Status: 400 Bad Request
+Token Validation Response Data: {
+  "code": 400,
+  "status": "failed",
+  "data": {
+    "response": "'timestamp': Format not recognised",
+    "message": false
+  }
+}
+=== END TOKEN VALIDATION ===
+PayFast token validation failed: {
+  isValid: false,
+  error: "'timestamp': Format not recognised",
+  details: {
+    code: 400,
+    status: 'failed',
+    data: { response: "'timestamp': Format not recognised", message: false }
+  }
+}
+11:18:42 AM [express] POST /api/admin/agencies/sothebys-atlantic-seaboard/test-payment 400 in 1408ms …
+11:18:54 AM [express] GET /api/agencies 200 in 515ms :: {"agencies":[{"id":"sothebys-atlantic-seaboar…
+11:18:56 AM [express] GET /api/user 401 in 1ms
