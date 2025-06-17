@@ -1658,12 +1658,10 @@ export default function SettingsPage() {
                     </th>
                     <th className="text-right py-3 px-2 font-medium">Amount</th>
                     <th className="text-left py-3 px-2 font-medium">
-                      Invoice Date
-                    </th>
-                    <th className="text-left py-3 px-2 font-medium">
-                      Due Date
+                      Billing Date
                     </th>
                     <th className="text-left py-3 px-2 font-medium">Status</th>
+                    <th className="text-right py-3 px-2 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1681,9 +1679,6 @@ export default function SettingsPage() {
                       </td>
                       <td className="py-3 px-2">
                         {format(new Date(invoice.invoiceDate), "MMM d, yyyy")}
-                      </td>
-                      <td className="py-3 px-2">
-                        {format(new Date(invoice.dueDate), "MMM d, yyyy")}
                       </td>
                       <td className="py-3 px-2">
                         <Badge
@@ -1708,6 +1703,25 @@ export default function SettingsPage() {
                               ? "Paid"
                               : "Overdue"}
                         </Badge>
+                      </td>
+                      <td className="py-3 px-2 text-right">
+                        {invoice.status !== "upcoming" ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              // TODO: Implement PDF download functionality
+                              console.log("Download invoice:", invoice.id);
+                            }}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            Download
+                          </Button>
+                        ) : (
+                          <span className="text-gray-400 text-sm">
+                            Download
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
