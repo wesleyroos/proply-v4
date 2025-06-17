@@ -3648,34 +3648,100 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "No branch associated with user" });
       }
 
+      // Import required modules
+      const { createId } = await import('@paralleldrive/cuid2');
+      const { payfastTokenizationSessions } = await import('@db/schema');
+      
+      // Create a unique session ID for tracking
+      const sessionId = createId();
+      
+      // Store the tokenization session
+      await db.insert(payfastTokenizationSessions).values({
+        sessionId,
+        userId: user.id,
+        agencyBranchId: branchId,
+        status: 'pending'
+      });
+
       // Import PayFast service
       const { PayFastService } = await import('./services/payfast');
       const payfast = new PayFastService(true);
       
       // Use production domain for live deployment
       const baseUrl = 'https://app.proply.co.za';
-      const returnUrl = `${baseUrl}/settings?token=success`;
-      const cancelUrl = `${baseUrl}/settings?token=cancelled`;
+      const returnUrl = `${baseUrl}/api/payfast/return?token=success&session=${sessionId}`;
+      const cancelUrl = `${baseUrl}/api/payfast/return?token=cancelled&session=${sessionId}`;
       
       console.log('PayFast URL configuration:', {
         baseUrl,
         returnUrl,
         cancelUrl,
-        replit_domains: process.env.REPLIT_DOMAINS
+        sessionId,
+        userId: user.id,
+        branchId
       });
       
       // Create tokenization URL (amount 0 for tokenization)
-      const tokenizeUrl = await payfast.createTokenizeUrl(returnUrl, cancelUrl, 0);
+      const tokenizeUrl = await payfast.createTokenizeUrl(returnUrl, cancelUrl, 0, sessionId);
       
       res.json({ 
         success: true,
         tokenizeUrl,
+        sessionId,
         message: 'Redirect user to this URL to setup payment method'
       });
 
     } catch (error) {
       console.error('Error creating PayFast tokenize URL:', error);
       res.status(500).json({ error: 'Failed to create tokenization URL' });
+    }
+  });
+
+  // Handle PayFast return URL (success/cancel)
+  app.get('/api/payfast/return', async (req, res) => {
+    try {
+      const { token, session } = req.query;
+      
+      if (!session) {
+        return res.redirect('/settings?error=invalid_session');
+      }
+
+      const { payfastTokenizationSessions } = await import('@db/schema');
+      
+      // Check the tokenization session status
+      const tokenizationSession = await db.query.payfastTokenizationSessions.findFirst({
+        where: eq(payfastTokenizationSessions.sessionId, session as string)
+      });
+
+      if (!tokenizationSession) {
+        return res.redirect('/settings?error=session_not_found');
+      }
+
+      console.log('PayFast return handler - Session status:', tokenizationSession.status);
+
+      if (token === 'success') {
+        if (tokenizationSession.status === 'completed') {
+          return res.redirect('/settings?token=success&message=Payment method added successfully');
+        } else {
+          // Payment may still be processing, redirect with pending status
+          return res.redirect('/settings?token=pending&message=Payment method setup in progress');
+        }
+      } else if (token === 'cancelled') {
+        // Update session to cancelled
+        await db.update(payfastTokenizationSessions)
+          .set({
+            status: 'cancelled',
+            updatedAt: new Date()
+          })
+          .where(eq(payfastTokenizationSessions.sessionId, session as string));
+        
+        return res.redirect('/settings?token=cancelled&message=Payment method setup cancelled');
+      }
+
+      return res.redirect('/settings');
+    } catch (error) {
+      console.error('Error handling PayFast return:', error);
+      return res.redirect('/settings?error=processing_failed');
     }
   });
 

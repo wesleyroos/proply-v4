@@ -97,7 +97,7 @@ export class PayFastService {
     };
   }
 
-  async createTokenizeUrl(returnUrl: string, cancelUrl: string, amount: number = 0): Promise<string> {
+  async createTokenizeUrl(returnUrl: string, cancelUrl: string, amount: number = 0, sessionId?: string): Promise<string> {
     // SUCCESSFUL PAYFAST TOKENIZATION IMPLEMENTATION
     // This configuration has been tested and works with live PayFast environment
     // 
@@ -115,7 +115,8 @@ export class PayFastService {
       amount: '0.00', // Tokenization allows 0.00 amount
       item_name: 'Payment Method Setup',
       item_description: 'Setup payment method for recurring billing',
-      subscription_type: '2' // 2 = tokenization payment (only required field for tokenization)
+      subscription_type: '2', // 2 = tokenization payment (only required field for tokenization)
+      m_payment_id: sessionId || `tokenize_${Date.now()}` // Use session ID to track this tokenization request
     };
 
     // Generate signature and URL parameters using identical encoding

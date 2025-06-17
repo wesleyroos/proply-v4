@@ -12,6 +12,8 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
   console.log('Raw body:', req.body?.toString());
   
   try {
+    const { payfastTokenizationSessions } = await import('@db/schema');
+    
     // Parse the form data
     const bodyStr = req.body?.toString() || '';
     const params = new URLSearchParams(bodyStr);
@@ -24,52 +26,86 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
     console.log('Parsed webhook data:', data);
     
     // Check if this is a tokenization response
-    if (data.token && data.payment_status) {
+    if (data.token && data.payment_status && data.m_payment_id) {
       console.log('Tokenization webhook received:', {
         token: data.token,
         payment_status: data.payment_status,
+        m_payment_id: data.m_payment_id,
         signature: data.signature
       });
       
+      // Find the tokenization session using m_payment_id (which is our session ID)
+      const tokenizationSession = await db.query.payfastTokenizationSessions.findFirst({
+        where: eq(payfastTokenizationSessions.sessionId, data.m_payment_id),
+        with: {
+          user: true,
+          agencyBranch: true
+        }
+      });
+      
+      if (!tokenizationSession) {
+        console.log('❌ No tokenization session found for m_payment_id:', data.m_payment_id);
+        res.status(200).send('OK');
+        return;
+      }
+      
+      console.log('✅ Found tokenization session for user:', tokenizationSession.user.email, 'branch:', tokenizationSession.agencyBranch.branchName);
+      
       // Store the token if tokenization was successful
       if (data.payment_status === 'COMPLETE' && data.token) {
-        // You would store this token associated with the user/agency
-        console.log('Tokenization successful, token received:', data.token);
+        console.log('Tokenization successful, storing token for branch:', tokenizationSession.agencyBranchId);
         
-        // Store token in database - we'll need to implement user session tracking
         try {
-          // For now, we'll store with a placeholder until we implement proper session tracking
-          const existingMethod = await db.query.agencyPaymentMethods.findFirst({
-            where: eq(agencyPaymentMethods.agencyBranchId, 1) // Placeholder agency
-          });
-
-          if (existingMethod) {
-            // Update existing token
-            await db.update(agencyPaymentMethods)
-              .set({ 
-                payfastToken: data.token, 
-                isActive: true,
-                updatedAt: new Date()
-              })
-              .where(eq(agencyPaymentMethods.id, existingMethod.id));
-          } else {
-            // Create new payment method record
-            await db.insert(agencyPaymentMethods).values({
-              agencyBranchId: 1, // Placeholder - will need proper session tracking
-              payfastToken: data.token,
-              cardLastFour: '0000', // Will be updated via separate webhook
-              expiryMonth: 12,
-              expiryYear: 2025,
-              isActive: true,
-              createdAt: new Date(),
-              updatedAt: new Date()
-            });
-          }
+          // Extract card details from webhook data
+          const cardLastFour = data.token.slice(-4) || '0000'; // Use last 4 digits of token as fallback
+          const cardBrand = data.card_scheme || 'Unknown';
           
-          console.log('✅ Token stored successfully in database');
+          // Create new payment method record with session details
+          await db.insert(agencyPaymentMethods).values({
+            agencyBranchId: tokenizationSession.agencyBranchId,
+            payfastToken: data.token,
+            cardLastFour: cardLastFour,
+            expiryMonth: 12, // Will be updated when we get card details
+            expiryYear: 2030, // Will be updated when we get card details
+            cardBrand: cardBrand,
+            isActive: true,
+            addedBy: tokenizationSession.userId
+          });
+          
+          // Update tokenization session status
+          await db.update(payfastTokenizationSessions)
+            .set({
+              status: 'completed',
+              payfastToken: data.token,
+              cardLastFour: cardLastFour,
+              cardBrand: cardBrand,
+              completedAt: new Date(),
+              updatedAt: new Date()
+            })
+            .where(eq(payfastTokenizationSessions.sessionId, data.m_payment_id));
+          
+          console.log('✅ Payment method and session updated successfully');
         } catch (dbError) {
-          console.error('❌ Error storing token in database:', dbError);
+          console.error('❌ Error storing payment method:', dbError);
+          
+          // Update session to failed status
+          await db.update(payfastTokenizationSessions)
+            .set({
+              status: 'failed',
+              updatedAt: new Date()
+            })
+            .where(eq(payfastTokenizationSessions.sessionId, data.m_payment_id));
         }
+      } else {
+        console.log('❌ Tokenization failed or incomplete, status:', data.payment_status);
+        
+        // Update session to failed status
+        await db.update(payfastTokenizationSessions)
+          .set({
+            status: 'failed',
+            updatedAt: new Date()
+          })
+          .where(eq(payfastTokenizationSessions.sessionId, data.m_payment_id));
       }
     }
     
