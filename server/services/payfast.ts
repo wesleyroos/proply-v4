@@ -82,7 +82,9 @@ export class PayFastService {
   }
 
   private createAuthHeaders(bodyData?: Record<string, any>): Record<string, string> {
-    const timestamp = new Date().toISOString();
+    // PayFast expects ISO timestamp with timezone offset
+    const now = new Date();
+    const timestamp = now.toISOString().replace('Z', '+02:00'); // South African timezone
     
     // PayFast API signature method (from official docs):
     // 1. Include all non-empty header and body fields
@@ -282,9 +284,13 @@ export class PayFastService {
     return data;
   }
 
-  async validateToken(token: string): Promise<boolean> {
+  async validateToken(token: string): Promise<{ isValid: boolean; details?: any; error?: string }> {
     try {
       const headers = this.createAuthHeaders();
+      
+      console.log('=== PAYFAST TOKEN VALIDATION ===');
+      console.log('URL:', `${this.baseUrl}/subscriptions/${token}/fetch`);
+      console.log('Headers:', headers);
       
       const response = await fetch(`${this.baseUrl}/subscriptions/${token}/fetch`, {
         method: 'GET',
@@ -292,10 +298,23 @@ export class PayFastService {
       });
 
       const data = await response.json();
-      return response.ok && data.status === 'success';
+      
+      console.log('Token Validation Response Status:', response.status, response.statusText);
+      console.log('Token Validation Response Data:', JSON.stringify(data, null, 2));
+      console.log('=== END TOKEN VALIDATION ===');
+      
+      if (response.ok && data.status === 'success') {
+        return { isValid: true, details: data };
+      } else {
+        return { 
+          isValid: false, 
+          error: data.data?.response || data.message || 'Token validation failed',
+          details: data
+        };
+      }
     } catch (error) {
       console.error('PayFast token validation error:', error);
-      return false;
+      return { isValid: false, error: error.message };
     }
   }
 
