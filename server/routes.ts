@@ -23,8 +23,9 @@ import {
   agencyBillingCycles,
   agencyInvoices,
   systemSettings,
+  transactionHistory,
 } from "@db/schema";
-import { eq, and, gte, lt, sql } from "drizzle-orm";
+import { eq, and, gte, lt, sql, desc, or, ilike } from "drizzle-orm";
 import fetch from "node-fetch";
 import { crypto } from "./auth";
 import { calculateYields } from "../analysis-engine/calculations";
@@ -681,6 +682,108 @@ export function registerRoutes(app: Express): Server {
         error: "Failed to fetch invoices",
         details: error instanceof Error ? error.message : undefined,
       });
+    }
+  });
+
+  // Get all transaction history (admin only)
+  app.get('/api/admin/transactions', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = req.user;
+    if (!user || (user.role !== 'system_admin' && user.role !== 'admin')) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    try {
+      const { status, agency, date } = req.query;
+
+      // Build where conditions
+      let whereConditions = [];
+      
+      if (status && status !== 'all') {
+        whereConditions.push(eq(transactionHistory.status, status as string));
+      }
+      
+      if (agency) {
+        whereConditions.push(
+          or(
+            ilike(transactionHistory.agencyId, `%${agency}%`),
+            ilike(agencyBranches.franchiseName, `%${agency}%`),
+            ilike(agencyBranches.branchName, `%${agency}%`)
+          )
+        );
+      }
+      
+      if (date) {
+        const filterDate = new Date(date as string);
+        const nextDay = new Date(filterDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        whereConditions.push(
+          and(
+            gte(transactionHistory.processedAt, filterDate),
+            lt(transactionHistory.processedAt, nextDay)
+          )
+        );
+      }
+
+      // Fetch transactions with agency details
+      const transactions = await db
+        .select({
+          transactionId: transactionHistory.transactionId,
+          invoiceId: transactionHistory.invoiceId,
+          agencyId: transactionHistory.agencyId,
+          agencyName: sql<string>`COALESCE(${agencyBranches.franchiseName}, '') || ' - ' || COALESCE(${agencyBranches.branchName}, '')`,
+          amount: transactionHistory.amount,
+          status: transactionHistory.status,
+          payfastTransactionId: transactionHistory.payfastTransactionId,
+          payfastPaymentId: transactionHistory.payfastPaymentId,
+          processedAt: transactionHistory.processedAt,
+          errorMessage: transactionHistory.errorMessage,
+          gatewayResponse: transactionHistory.gatewayResponse,
+        })
+        .from(transactionHistory)
+        .leftJoin(agencyBranches, eq(transactionHistory.agencyId, agencyBranches.slug))
+        .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+        .orderBy(desc(transactionHistory.processedAt))
+        .limit(1000);
+
+      // Calculate statistics
+      const stats = await db
+        .select({
+          totalTransactions: sql<number>`COUNT(*)::int`,
+          totalAmount: sql<number>`SUM(CAST(${transactionHistory.amount} AS DECIMAL))`,
+          successfulTransactions: sql<number>`COUNT(CASE WHEN ${transactionHistory.status} = 'completed' THEN 1 END)::int`,
+          failedTransactions: sql<number>`COUNT(CASE WHEN ${transactionHistory.status} = 'failed' THEN 1 END)::int`,
+        })
+        .from(transactionHistory)
+        .leftJoin(agencyBranches, eq(transactionHistory.agencyId, agencyBranches.slug))
+        .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
+
+      const statsData = stats[0] || {
+        totalTransactions: 0,
+        totalAmount: 0,
+        successfulTransactions: 0,
+        failedTransactions: 0,
+      };
+
+      const successRate = statsData.totalTransactions > 0 
+        ? (statsData.successfulTransactions / statsData.totalTransactions) * 100 
+        : 0;
+
+      res.json({
+        transactions,
+        stats: {
+          ...statsData,
+          successRate,
+        },
+      });
+
+    } catch (error) {
+      console.error('Error fetching transaction history:', error);
+      res.status(500).json({ error: 'Failed to fetch transaction history' });
     }
   });
 

@@ -39,6 +39,7 @@ import { ToastDemo } from "./components/ToastDemo";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotificationsMenu from "./components/NotificationsMenu";
 import AirbnbYieldCalculator from "./pages/AirbnbYieldCalculator";
+import TransactionHistoryPage from "./pages/TransactionHistoryPage";
 
 import RiskIndexPage from "./pages/RiskIndexPage";
 import HollardRiskIndexPage from "./pages/HollardRiskIndexPage";
