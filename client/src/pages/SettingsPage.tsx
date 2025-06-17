@@ -1249,7 +1249,7 @@ export default function SettingsPage() {
                           {method.cardType} •••• {method.lastFour}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          PayFast Tokenized Card
+                          Added {new Date(method.createdAt).toLocaleDateString()} at {new Date(method.createdAt).toLocaleTimeString()}
                           {method.isPrimary && (
                             <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                               Primary
