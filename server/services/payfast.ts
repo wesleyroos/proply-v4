@@ -127,6 +127,7 @@ export class PayFastService {
     console.log('Timestamp:', timestamp);
     console.log('Signature Data Keys:', sortedKeys);
     console.log('Sorted Params (masked):', sortedParams.replace(/passphrase=[^&]+/, 'passphrase=***'));
+    console.log('Raw signature string for verification:', sortedParams);
     console.log('Generated Signature:', signature);
     console.log('=== END API AUTH ===');
 
