@@ -12,10 +12,8 @@ import {
   Users,
   Ticket,
   Calculator,
-
   ToggleLeft,
   BarChart2,
-
   Database, // Add this import for the PropData listings icon
   CreditCard,
 } from "lucide-react";
@@ -30,9 +28,9 @@ export default function Sidebar() {
   const handleLogout = async () => {
     try {
       await logout();
-      setLocation('/login');
+      setLocation("/login");
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -41,11 +39,15 @@ export default function Sidebar() {
       title: "Dashboard",
       icon: LayoutDashboard,
       href: "/dashboard",
-    }
+    },
   ];
 
   // Add user-specific tools only for regular users and system admins (not agency admins)
-  if ((user?.role === 'user' || user?.isAdmin) && user?.role !== 'franchise_admin' && user?.role !== 'branch_admin') {
+  if (
+    (user?.role === "user" || user?.isAdmin) &&
+    user?.role !== "franchise_admin" &&
+    user?.role !== "branch_admin"
+  ) {
     navItems.push(
       {
         title: "Property Analyzer",
@@ -61,12 +63,16 @@ export default function Sidebar() {
         title: "Properties",
         icon: Library,
         href: "/properties",
-      }
+      },
     );
   }
 
   // Add PropData Listings for all admin types
-  if (user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin') {
+  if (
+    user?.isAdmin ||
+    user?.role === "franchise_admin" ||
+    user?.role === "branch_admin"
+  ) {
     navItems.push({
       title: "PropData Listings",
       icon: Database,
@@ -78,7 +84,7 @@ export default function Sidebar() {
     <aside
       className={cn(
         "h-screen sticky top-0 bg-[#1E293B] transition-all duration-300 border-none",
-        expanded ? "w-64" : "w-16"
+        expanded ? "w-64" : "w-16",
       )}
     >
       <div className="flex flex-col h-full">
@@ -90,7 +96,7 @@ export default function Sidebar() {
               alt="Proply"
               className={cn(
                 "transition-all duration-300 cursor-pointer",
-                expanded ? "w-24" : "w-8"
+                expanded ? "w-24" : "w-8",
               )}
             />
           </Link>
@@ -125,9 +131,7 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                   "hover:bg-white/10",
-                  isActive
-                    ? "bg-white/20 text-white"
-                    : "text-white/80"
+                  isActive ? "bg-white/20 text-white" : "text-white/80",
                 )}
               >
                 <Icon className="h-5 w-5 text-white" />
@@ -145,29 +149,31 @@ export default function Sidebar() {
                 href="/admin"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                  "hover:bg-white/10 text-white/80"
+                  "hover:bg-white/10 text-white/80",
                 )}
               >
                 <Users className="h-5 w-5 text-white" />
-                {expanded && <span className="text-white">User Management</span>}
+                {expanded && <span className="text-white">Users</span>}
               </Link>
               <Link
                 href="/propdata-listings"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                   "hover:bg-white/10 text-white/80",
-                  location === "/propdata-listings" ? "bg-white/20 text-white" : ""
+                  location === "/propdata-listings"
+                    ? "bg-white/20 text-white"
+                    : "",
                 )}
               >
                 <Database className="h-5 w-5 text-white" />
-                {expanded && <span className="text-white">PropData Listings</span>}
+                {expanded && <span className="text-white">All Listings</span>}
               </Link>
               <Link
                 href="/analytics"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                   "hover:bg-white/10 text-white/80",
-                  location === "/analytics" ? "bg-white/20 text-white" : ""
+                  location === "/analytics" ? "bg-white/20 text-white" : "",
                 )}
               >
                 <BarChart2 className="h-5 w-5 text-white" />
@@ -178,28 +184,34 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                   "hover:bg-white/10 text-white/80",
-                  location === "/dashboard/control-panel" ? "bg-white/20 text-white" : ""
+                  location === "/dashboard/control-panel"
+                    ? "bg-white/20 text-white"
+                    : "",
                 )}
               >
                 <ToggleLeft className="h-5 w-5 text-white" />
-                {expanded && <span className="text-white">Control Panel</span>}
+                {expanded && <span className="text-white">Integrations</span>}
               </Link>
               <Link
                 href="/transaction-history"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                   "hover:bg-white/10 text-white/80",
-                  location === "/transaction-history" ? "bg-white/20 text-white" : ""
+                  location === "/transaction-history"
+                    ? "bg-white/20 text-white"
+                    : "",
                 )}
               >
                 <CreditCard className="h-5 w-5 text-white" />
-                {expanded && <span className="text-white">Transaction History</span>}
+                {expanded && (
+                  <span className="text-white">Transaction History</span>
+                )}
               </Link>
               <Link
                 href="/access-codes"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                  "hover:bg-white/10 text-white/80"
+                  "hover:bg-white/10 text-white/80",
                 )}
               >
                 <Ticket className="h-5 w-5 text-white" />
@@ -211,7 +223,7 @@ export default function Sidebar() {
             href="/settings"
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-              "hover:bg-white/10 text-white/80"
+              "hover:bg-white/10 text-white/80",
             )}
           >
             <Settings className="h-5 w-5 text-white" />
@@ -222,10 +234,10 @@ export default function Sidebar() {
         {/* User section */}
         <div className="p-4">
           <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center"
-            >
-              {user?.firstName ? user.firstName.charAt(0).toUpperCase() : user?.username?.charAt(0).toUpperCase()}
+            <div className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center">
+              {user?.firstName
+                ? user.firstName.charAt(0).toUpperCase()
+                : user?.username?.charAt(0).toUpperCase()}
             </div>
             {expanded && (
               <div className="flex-1 min-w-0">

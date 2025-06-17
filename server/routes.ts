@@ -1459,7 +1459,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Change password
-  app.post("/api/api/change-password", async (req, res) => {
+  app.post("/api/change-password", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
