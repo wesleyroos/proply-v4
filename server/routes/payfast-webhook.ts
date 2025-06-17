@@ -56,9 +56,9 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
         console.log('Tokenization successful, storing token for branch:', tokenizationSession.agencyBranchId);
         
         try {
-          // PayFast doesn't provide actual card details in webhooks, only the token
-          // Set last 4 digits to masked display since real digits aren't available
-          const cardLastFour = '****'; // PayFast doesn't provide real last 4 digits
+          // PayFast provides a token but not actual card details
+          // Use last 4 digits of the token as identifier
+          const cardLastFour = data.token.slice(-4);
           const cardBrand = 'PayFast Card'; // PayFast doesn't provide card brand
           
           // Create new payment method record with session details

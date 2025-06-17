@@ -1246,14 +1246,10 @@ export default function SettingsPage() {
                       <CreditCard className="w-5 h-5 text-muted-foreground" />
                       <div>
                         <div className="font-medium">
-                          {method.cardType} {method.lastFour}
+                          {method.cardType} •••• {method.lastFour}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {method.expiryMonth && method.expiryYear ? (
-                            `Expires ${method.expiryMonth}/${method.expiryYear}`
-                          ) : (
-                            'PayFast Tokenized Card'
-                          )}
+                          PayFast Tokenized Card
                           {method.isPrimary && (
                             <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                               Primary
