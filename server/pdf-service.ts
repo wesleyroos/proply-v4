@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -29,11 +29,24 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
 
   // Add Proply logo (actual image)
   try {
-    const logoPath = path.join(process.cwd(), 'client/public/proply-logo-1.png');
+    const logoPath = path.join(
+      process.cwd(),
+      "client/public/proply-logo-1.png",
+    );
     if (fs.existsSync(logoPath)) {
       const logoData = fs.readFileSync(logoPath);
-      const logoBase64 = logoData.toString('base64');
-      doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', margin, 15, 40, 15);
+      const logoBase64 = logoData.toString("base64");
+      // Maintain aspect ratio (868x229 = ~3.8:1)
+      const logoWidth = 50;
+      const logoHeight = logoWidth / 3.8; // Maintain aspect ratio
+      doc.addImage(
+        `data:image/png;base64,${logoBase64}`,
+        "PNG",
+        margin,
+        15,
+        logoWidth,
+        logoHeight,
+      );
     } else {
       // Fallback to text if logo file not found
       doc.setFontSize(20);
@@ -63,7 +76,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Automated property reports for agents", margin, 48);
+  doc.text("An Intelligence Layer for Real Estate.", margin, 48);
   doc.text("support@proply.co.za", margin, 55);
   doc.text("app.proply.co.za", margin, 62);
 
@@ -200,8 +213,8 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   // Invoice table (manual table since autoTable is not working)
   yPos += 15;
 
-  // Table header
-  doc.setFillColor(59, 130, 246); // Blue color
+  // Table header - using proper Proply blue
+  doc.setFillColor(27, 162, 255); // Proply blue (#1ba2ff)
   doc.rect(margin, yPos, pageWidth - 2 * margin, 10, "F");
 
   doc.setTextColor(255, 255, 255); // White text
