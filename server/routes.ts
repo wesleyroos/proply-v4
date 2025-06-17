@@ -2645,7 +2645,7 @@ export function registerRoutes(app: Express): Server {
       const chargeRequest = {
         amount: amount,
         item_name: 'Test Payment',
-        item_description: `Test payment for ${agencyBranch.franchiseName?.replace(/'/g, '')} - ${agencyBranch.branchName}`,
+        item_description: `Test payment for ${agencyBranch.franchiseName} - ${agencyBranch.branchName}`,
         m_payment_id: `test-${Date.now()}-${agencyId}`
       };
 

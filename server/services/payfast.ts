@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { stringify } from 'querystring';
 
 interface PayFastConfig {
   merchantId: string;
@@ -114,13 +115,15 @@ export class PayFastService {
       signatureData['passphrase'] = this.config.passphrase;
     }
     
-    // Sort alphabetically by key and ensure all values are URL-encoded
+    // Use Node's querystring module to match PHP's http_build_query() behavior
+    // This ensures spaces are encoded as '+' instead of '%20'
     const sortedKeys = Object.keys(signatureData).sort();
-    const sortedParams = sortedKeys.map(key => {
-      const encodedKey = encodeURIComponent(key);
-      const encodedValue = encodeURIComponent(String(signatureData[key]));
-      return `${encodedKey}=${encodedValue}`;
-    }).join('&');
+    const sortedData = sortedKeys.reduce((obj, key) => {
+      obj[key] = String(signatureData[key]);
+      return obj;
+    }, {} as Record<string, string>);
+    
+    const sortedParams = stringify(sortedData);
     
     // Calculate MD5 (do NOT convert to lowercase for API calls)
     const signature = crypto.createHash("md5").update(sortedParams).digest("hex");
