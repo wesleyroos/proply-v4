@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '@db';
-import { agencyPaymentMethods } from '@db/schema';
+import { agencyPaymentMethods, payfastTokenizationSessions } from '@db/schema';
 import { eq } from 'drizzle-orm';
 
 const router = express.Router();
@@ -12,7 +12,6 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
   console.log('Raw body:', req.body?.toString());
   
   try {
-    const { payfastTokenizationSessions } = await import('@db/schema');
     
     // Parse the form data
     const bodyStr = req.body?.toString() || '';
@@ -96,7 +95,7 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
           console.log('Card details extracted:', { cardLastFour, cardBrand, expiryMonth, expiryYear });
           
           // Create new payment method record with session details
-          await db.insert(agencyPaymentMethods).values({
+          const insertResult = await db.insert(agencyPaymentMethods).values({
             agencyBranchId: tokenizationSession.agencyBranchId,
             payfastToken: data.token,
             cardLastFour: cardLastFour,
@@ -105,7 +104,9 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
             cardBrand: cardBrand,
             isActive: true,
             addedBy: tokenizationSession.userId
-          });
+          }).returning();
+          
+          console.log('✅ Payment method inserted successfully:', insertResult);
           
           // Update tokenization session status
           await db.update(payfastTokenizationSessions)
