@@ -17,6 +17,7 @@ import {
   BarChart2,
 
   Database, // Add this import for the PropData listings icon
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -182,6 +183,17 @@ export default function Sidebar() {
               >
                 <ToggleLeft className="h-5 w-5 text-white" />
                 {expanded && <span className="text-white">Control Panel</span>}
+              </Link>
+              <Link
+                href="/transaction-history"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                  "hover:bg-white/10 text-white/80",
+                  location === "/transaction-history" ? "bg-white/20 text-white" : ""
+                )}
+              >
+                <CreditCard className="h-5 w-5 text-white" />
+                {expanded && <span className="text-white">Transaction History</span>}
               </Link>
               <Link
                 href="/access-codes"

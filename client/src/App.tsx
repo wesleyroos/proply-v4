@@ -277,6 +277,7 @@ function App() {
             <Route path="/analytics" component={() => <ProtectedRoute component={AnalyticsPage} />} />
             <Route path="/access-codes" component={() => <ProtectedRoute component={AccessCodePage} />} />
             <Route path="/subscription" component={() => <ProtectedRoute component={SubscriptionPage} />} />
+            <Route path="/transaction-history" component={() => <ProtectedRoute component={TransactionHistoryPage} />} />
             <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
             <Route path="/dashboard/propdata-listings" component={() => <ProtectedRoute component={PropdataListingsPage} />} />
 
