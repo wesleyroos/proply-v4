@@ -3551,10 +3551,12 @@ export function registerRoutes(app: Express): Server {
       const { PayFastService } = await import('./services/payfast');
       const payfast = new PayFastService(true);
       
-      // Use the Replit domain or fallback to environment variable
-      const baseUrl = process.env.REPLIT_DOMAINS 
-        ? `https://${process.env.REPLIT_DOMAINS}` 
-        : (process.env.BASE_URL || 'http://localhost:5000');
+      // Use production domain or Replit domain for development
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://app.proply.co.za'
+        : (process.env.REPLIT_DOMAINS 
+          ? `https://${process.env.REPLIT_DOMAINS}` 
+          : 'http://localhost:5000');
       const returnUrl = `${baseUrl}/settings?token=success`;
       const cancelUrl = `${baseUrl}/settings?token=cancelled`;
       
