@@ -119,8 +119,8 @@ export class PayFastService {
       `${encodeURIComponent(key)}=${encodeURIComponent(signatureData[key])}`
     ).join('&');
     
-    // Convert to lowercase and calculate MD5
-    const signature = crypto.createHash("md5").update(sortedParams.toLowerCase()).digest("hex");
+    // Calculate MD5 (do NOT convert to lowercase for API calls)
+    const signature = crypto.createHash("md5").update(sortedParams).digest("hex");
     
     console.log('=== PAYFAST API AUTH (Official Method) ===');
     console.log('Merchant ID:', this.config.merchantId);
