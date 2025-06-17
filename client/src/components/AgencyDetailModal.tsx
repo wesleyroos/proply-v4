@@ -812,9 +812,9 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                             <th className="text-left py-3 px-2 font-medium">Period</th>
                             <th className="text-right py-3 px-2 font-medium">Reports</th>
                             <th className="text-right py-3 px-2 font-medium">Amount</th>
-                            <th className="text-left py-3 px-2 font-medium">Invoice Date</th>
-                            <th className="text-left py-3 px-2 font-medium">Due Date</th>
+                            <th className="text-left py-3 px-2 font-medium">Billing Date</th>
                             <th className="text-left py-3 px-2 font-medium">Status</th>
+                            <th className="text-right py-3 px-2 font-medium">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -828,9 +828,6 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                               </td>
                               <td className="py-3 px-2">
                                 {format(new Date(invoice.invoiceDate), 'MMM d, yyyy')}
-                              </td>
-                              <td className="py-3 px-2">
-                                {format(new Date(invoice.dueDate), 'MMM d, yyyy')}
                               </td>
                               <td className="py-3 px-2">
                                 <Badge 
@@ -848,6 +845,21 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                                   {invoice.status === 'upcoming' ? 'Upcoming' : 
                                    invoice.status === 'paid' ? 'Paid' : 'Overdue'}
                                 </Badge>
+                              </td>
+                              <td className="py-3 px-2 text-right">
+                                {invoice.status === 'paid' ? (
+                                  <button 
+                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    onClick={() => {
+                                      // PDF download functionality will be implemented separately
+                                      console.log('Download invoice:', invoice.id);
+                                    }}
+                                  >
+                                    Download
+                                  </button>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">Download</span>
+                                )}
                               </td>
                             </tr>
                           ))}

@@ -2663,37 +2663,37 @@ export function registerRoutes(app: Express): Server {
         .orderBy(sql`COUNT(*) DESC`);
 
       // Get invoice history from persistent agency_invoices table
-      const invoicesQuery = await db
-        .select({
-          id: agencyInvoices.id,
-          invoiceNumber: agencyInvoices.invoiceNumber,
-          billingPeriod: agencyBillingCycles.billingPeriod,
-          reportCount: agencyBillingCycles.reportCount,
-          totalAmount: agencyInvoices.totalAmount,
-          issueDate: agencyInvoices.issueDate,
-          status: agencyInvoices.status,
-          paidAt: agencyInvoices.paidAt
-        })
-        .from(agencyInvoices)
-        .innerJoin(agencyBillingCycles, eq(agencyInvoices.billingCycleId, agencyBillingCycles.id))
-        .where(eq(agencyInvoices.agencyBranchId, Number(agencyIdentifier)))
-        .orderBy(sql`${agencyInvoices.issueDate} DESC`);
+      const invoicesQuery = await db.execute(
+        sql`SELECT 
+          ai.id,
+          ai.invoice_number,
+          abc.billing_period,
+          abc.report_count,
+          ai.total_amount,
+          ai.issue_date,
+          ai.status,
+          ai.paid_at
+        FROM agency_invoices ai 
+        INNER JOIN agency_billing_cycles abc ON ai.billing_cycle_id = abc.id
+        WHERE ai.agency_branch_id = ${Number(agencyIdentifier)}
+        ORDER BY ai.issue_date DESC`
+      );
 
-      const invoices = invoicesQuery.map(invoice => {
+      const invoices = invoicesQuery.rows.map((invoice: any) => {
         // Parse billing period to get month name
-        const [year, month] = invoice.billingPeriod.split('-');
+        const [year, month] = invoice.billing_period.split('-');
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthName = `${monthNames[parseInt(month) - 1]} ${year}`;
         
         return {
-          id: invoice.invoiceNumber,
-          month: invoice.billingPeriod,
+          id: invoice.invoice_number,
+          month: invoice.billing_period,
           monthName,
-          reportCount: invoice.reportCount,
-          amount: parseFloat(invoice.totalAmount),
-          invoiceDate: invoice.issueDate.toISOString().split('T')[0],
+          reportCount: invoice.report_count,
+          amount: parseFloat(invoice.total_amount),
+          invoiceDate: new Date(invoice.issue_date).toISOString().split('T')[0],
           status: invoice.status === 'pending' ? 'upcoming' : invoice.status,
-          dueDate: invoice.issueDate.toISOString().split('T')[0] // Use issue date as billing date
+          dueDate: new Date(invoice.issue_date).toISOString().split('T')[0] // Use issue date as billing date
         };
       });
 
