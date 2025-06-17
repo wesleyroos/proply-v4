@@ -60,7 +60,8 @@ router.post('/create-tokenize-url', async (req, res) => {
     const payfast = new PayFastService(true);
     
     // Use production domain or Replit domain for development
-    const baseUrl = process.env.NODE_ENV === 'production' 
+    const isProduction = process.env.REPLIT_DOMAINS && process.env.REPLIT_DOMAINS.includes('app.proply.co.za');
+    const baseUrl = isProduction
       ? 'https://app.proply.co.za'
       : (process.env.REPLIT_DOMAINS 
         ? `https://${process.env.REPLIT_DOMAINS}` 

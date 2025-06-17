@@ -3551,14 +3551,17 @@ export function registerRoutes(app: Express): Server {
       const { PayFastService } = await import('./services/payfast');
       const payfast = new PayFastService(true);
       
-      // Use production domain or Replit domain for development
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://app.proply.co.za'
-        : (process.env.REPLIT_DOMAINS 
-          ? `https://${process.env.REPLIT_DOMAINS}` 
-          : 'http://localhost:5000');
+      // Use production domain for live deployment
+      const baseUrl = 'https://app.proply.co.za';
       const returnUrl = `${baseUrl}/settings?token=success`;
       const cancelUrl = `${baseUrl}/settings?token=cancelled`;
+      
+      console.log('PayFast URL configuration:', {
+        baseUrl,
+        returnUrl,
+        cancelUrl,
+        replit_domains: process.env.REPLIT_DOMAINS
+      });
       
       // Create tokenization URL (amount 0 for tokenization)
       const tokenizeUrl = await payfast.createTokenizeUrl(returnUrl, cancelUrl, 0);
