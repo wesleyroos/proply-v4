@@ -37,6 +37,66 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+function TestBillingButton({ agencyId }: { agencyId: string }) {
+  const { toast } = useToast();
+  
+  const testBillingMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/admin/agencies/${agencyId}/test-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: 10 }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Test billing failed');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Test Billing Successful",
+        description: `R10.00 charged successfully. Transaction ID: ${data.transactionId}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Test Billing Failed", 
+        description: error.message || "Failed to process test billing",
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="font-medium">Test Billing</h4>
+          <p className="text-sm text-muted-foreground">
+            Charge R10 to verify payment method works
+          </p>
+        </div>
+        <Button 
+          onClick={() => testBillingMutation.mutate()}
+          disabled={testBillingMutation.isPending}
+          size="sm"
+          variant="outline"
+        >
+          {testBillingMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <TestTube className="mr-2 h-4 w-4" />
+          Test R10 Charge
+        </Button>
+      </div>
+      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <p className="text-sm text-blue-800">
+          This will charge R10 to the stored payment method to verify it works before automated billing runs.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function TestPaymentForm({ agencyId }: { agencyId: string }) {
   const [testAmount, setTestAmount] = useState("5.00");
   const { toast } = useToast();
@@ -975,37 +1035,46 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                     Loading payment methods...
                   </div>
                 ) : paymentMethods?.paymentMethods?.length > 0 ? (
-                  <div className="space-y-3">
-                    {paymentMethods.paymentMethods.map((method: PaymentMethod) => (
-                      <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center">
-                            <CreditCard className="w-5 h-5 text-gray-400" />
-                          </div>
-                          <div>
-                            <div className="font-medium">
-                              {method.cardBrand} •••• {method.cardLastFour}
-                              {method.isPrimary && (
-                                <Badge variant="secondary" className="ml-2">Primary</Badge>
-                              )}
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      {paymentMethods.paymentMethods.map((method: PaymentMethod) => (
+                        <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center">
+                              <CreditCard className="w-5 h-5 text-gray-400" />
                             </div>
+                            <div>
+                              <div className="font-medium">
+                                {method.cardBrand} •••• {method.cardLastFour}
+                                {method.isPrimary && (
+                                  <Badge variant="secondary" className="ml-2">Primary</Badge>
+                                )}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Expires {method.expiryMonth.toString().padStart(2, '0')}/{method.expiryYear}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
                             <div className="text-sm text-muted-foreground">
-                              Expires {method.expiryMonth.toString().padStart(2, '0')}/{method.expiryYear}
+                              Added {format(new Date(method.addedAt), 'MMM d, yyyy')}
                             </div>
+                            {method.addedBy && (
+                              <div className="text-xs text-muted-foreground">
+                                by {method.addedBy}
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm text-muted-foreground">
-                            Added {format(new Date(method.addedAt), 'MMM d, yyyy')}
-                          </div>
-                          {method.addedBy && (
-                            <div className="text-xs text-muted-foreground">
-                              by {method.addedBy}
-                            </div>
-                          )}
-                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Test Billing Button */}
+                    {agency.billingEnabled && (
+                      <div className="pt-4 border-t">
+                        <TestBillingButton agencyId={agency.id} />
                       </div>
-                    ))}
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-12">
