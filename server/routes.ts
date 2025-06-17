@@ -2692,9 +2692,48 @@ export function registerRoutes(app: Express): Server {
       
       console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${transactionId} - Mode: ${isTestMode ? 'TEST' : 'LIVE'}`);
 
+      // Create manual invoice for test payment (following automated billing pattern)
+      const { agencyInvoices, transactionHistory } = await import("@db/schema");
+      const { createId } = await import("@paralleldrive/cuid2");
+      
+      const currentDate = new Date();
+      const invoiceId = `MAN-${currentDate.getFullYear()}${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${agencyId.toUpperCase()}-${Date.now()}`;
+      
+      // Create invoice record
+      await db.insert(agencyInvoices).values({
+        invoiceId,
+        agencyId: agencyId,
+        agencyName: `${agencyBranch.franchiseName} - ${agencyBranch.branchName}`,
+        month: `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}`,
+        year: currentDate.getFullYear(),
+        reportCount: 0, // Test payment has no reports
+        amount: amount.toString(),
+        invoiceDate: currentDate.toISOString().split('T')[0],
+        status: 'paid', // Mark as paid immediately since payment succeeded
+        paidAt: currentDate,
+        invoiceType: 'manual' // Distinguish from automated billing
+      });
+
+      // Create transaction record
+      const transactionRecordId = createId();
+      await db.insert(transactionHistory).values({
+        transactionId: transactionRecordId,
+        invoiceId,
+        agencyId: agencyId,
+        amount: amount.toString(),
+        payfastTransactionId: transactionId,
+        payfastPaymentId: transactionId,
+        status: 'completed',
+        gatewayResponse: payfastResponse,
+        processedAt: currentDate,
+      });
+
+      console.log(`Invoice created: ${invoiceId}, Transaction recorded: ${transactionRecordId}`);
+
       res.json({
         success: true,
         transactionId,
+        invoiceId,
         amount,
         mode: isTestMode ? 'test' : 'live',
         message: `Test payment completed successfully in ${isTestMode ? 'TEST' : 'LIVE'} mode`

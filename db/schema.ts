@@ -234,6 +234,7 @@ export const agencyInvoices = pgTable("agency_invoices", {
   invoiceDate: date("invoice_date").notNull(),
   // Removed due_date since we bill immediately on 1st of month
   status: text("status").notNull().default('pending'), // pending, paid, overdue, cancelled
+  invoiceType: text("invoice_type").default('automated').notNull(), // automated, manual
   paidAt: timestamp("paid_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
