@@ -2697,10 +2697,11 @@ export function registerRoutes(app: Express): Server {
       const currentDate = new Date();
       const invoiceNumber = `MAN-${currentDate.getFullYear()}${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${agencyId.toUpperCase()}-${Date.now()}`;
       
-      // Insert invoice using raw SQL to match actual database columns
+      // Insert invoice using raw SQL to match actual database columns (billing_cycle_id = 1 for manual payments)
       await db.execute(sql`
         INSERT INTO agency_invoices (
           agency_branch_id, 
+          billing_cycle_id,
           invoice_number, 
           issue_date, 
           due_date, 
@@ -2712,12 +2713,13 @@ export function registerRoutes(app: Express): Server {
           invoice_type
         ) VALUES (
           ${agencyBranch.id}, 
+          1,
           ${invoiceNumber}, 
           ${currentDate}, 
           ${currentDate}, 
-          ${amount}, 
-          0, 
-          ${amount}, 
+          ${amount.toString()}, 
+          '0', 
+          ${amount.toString()}, 
           'paid', 
           ${currentDate}, 
           'manual'
