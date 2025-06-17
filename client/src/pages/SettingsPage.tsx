@@ -2012,7 +2012,7 @@ export default function SettingsPage() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Invoice Number</TableHead>
-                            <TableHead>Billing Date</TableHead>
+                            <TableHead>Date</TableHead>
                             <TableHead>Description</TableHead>
                             <TableHead className="text-right">Amount</TableHead>
                             <TableHead>Status</TableHead>
@@ -2043,20 +2043,14 @@ export default function SettingsPage() {
                                 {invoice.status}
                               </TableCell>
                               <TableCell className="text-right">
-                                {invoice.status !== "upcoming" ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => downloadInvoice(invoice)}
-                                    className="text-blue-600 hover:text-blue-800"
-                                  >
-                                    Download
-                                  </Button>
-                                ) : (
-                                  <span className="text-gray-400 text-sm">
-                                    Download
-                                  </span>
-                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => downloadInvoice(invoice)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
                               </TableCell>
                             </TableRow>
                           ))}
