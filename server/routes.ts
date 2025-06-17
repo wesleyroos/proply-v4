@@ -3003,20 +3003,20 @@ export function registerRoutes(app: Express): Server {
 
       // Prepare invoice data for PDF generation
       const pdfData = {
-        invoiceNumber: invoiceData.invoice_number,
-        issueDate: invoiceData.issue_date,
-        billingPeriod: invoiceData.billing_period,
-        reportCount: invoiceData.report_count,
-        totalAmount: parseFloat(invoiceData.total_amount),
-        status: invoiceData.status,
-        paidAt: invoiceData.paid_at,
+        invoiceNumber: String(invoiceData.invoice_number),
+        issueDate: String(invoiceData.issue_date),
+        billingPeriod: String(invoiceData.billing_period),
+        reportCount: Number(invoiceData.report_count),
+        totalAmount: parseFloat(String(invoiceData.total_amount)),
+        status: String(invoiceData.status),
+        paidAt: invoiceData.paid_at ? String(invoiceData.paid_at) : undefined,
         agency: {
-          companyName: invoiceData.company_name,
-          franchiseName: invoiceData.franchise_name,
-          branchName: invoiceData.branch_name,
-          vatNumber: invoiceData.vat_number,
-          registrationNumber: invoiceData.registration_number,
-          businessAddress: invoiceData.business_address
+          companyName: invoiceData.company_name ? String(invoiceData.company_name) : undefined,
+          franchiseName: String(invoiceData.franchise_name),
+          branchName: String(invoiceData.branch_name),
+          vatNumber: invoiceData.vat_number ? String(invoiceData.vat_number) : undefined,
+          registrationNumber: invoiceData.registration_number ? String(invoiceData.registration_number) : undefined,
+          businessAddress: invoiceData.business_address ? String(invoiceData.business_address) : undefined
         }
       };
 
