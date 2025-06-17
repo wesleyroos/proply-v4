@@ -1465,6 +1465,7 @@ export function registerRoutes(app: Express): Server {
     }
 
     const { currentPassword, newPassword } = req.body;
+    console.log("Password change request for user:", req.user!.id);
 
     try {
       // Verify current password
@@ -1474,20 +1475,30 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user!.id))
         .limit(1);
 
+      console.log("User found:", user ? "Yes" : "No");
+      
       const isMatch = await crypto.compare(currentPassword, user.password);
+      console.log("Current password matches:", isMatch);
+      
       if (!isMatch) {
         return res.status(400).send("Current password is incorrect");
       }
 
       // Hash new password and update
       const hashedPassword = await crypto.hash(newPassword);
-      await db
+      console.log("New password hashed, length:", hashedPassword.length);
+      
+      const updateResult = await db
         .update(users)
-        .set({ password: hashedPassword })
-        .where(eq(users.id, req.user!.id));
+        .set({ password: hashedPassword, updatedAt: new Date() })
+        .where(eq(users.id, req.user!.id))
+        .returning({ id: users.id, updatedAt: users.updatedAt });
+
+      console.log("Database update result:", updateResult);
 
       res.json({ message: "Password updated successfully" });
     } catch (error) {
+      console.error("Password change error:", error);
       res.status(500).json({ error: "Failed to change password" });
     }
   });
