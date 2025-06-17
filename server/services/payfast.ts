@@ -115,16 +115,18 @@ export class PayFastService {
       rawSignatureData['passphrase'] = this.config.passphrase;
     }
     
-    // Sort keys alphabetically then use querystring.stringify for PHP-style encoding
+    // Build signature string with PHP-style encoding (spaces as +, apostrophes as %27)
+    const encode = (val: string) =>
+      encodeURIComponent(val)
+        .replace(/%20/g, '+')   // space -> + (PHP style)
+        .replace(/'/g, '%27');  // apostrophe -> %27 (PHP style)
+
     const sortedKeys = Object.keys(rawSignatureData).sort();
-    const sortedRawData = sortedKeys.reduce((obj, key) => {
-      obj[key] = rawSignatureData[key];
-      return obj;
-    }, {} as Record<string, string>);
+    const sortedParams = sortedKeys
+      .map(key => `${key}=${encode(rawSignatureData[key])}`)
+      .join('&');
     
-    // This will encode spaces as '+' like PHP's http_build_query()
-    const sortedParams = stringify(sortedRawData);
-    console.log('DEBUG signature string directly from stringify:', sortedParams);
+    console.log('DEBUG (PHP-style) signature string:', sortedParams);
     
     // Calculate MD5 (do NOT convert to lowercase for API calls)
     const signature = crypto.createHash("md5").update(sortedParams).digest("hex");
