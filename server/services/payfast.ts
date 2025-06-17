@@ -81,18 +81,50 @@ export class PayFastService {
     return signature;
   }
 
-  private createAuthHeaders(): Record<string, string> {
+  private createAuthHeaders(bodyData?: Record<string, any>): Record<string, string> {
     const timestamp = new Date().toISOString();
     
-    // PayFast API signature: simple concatenation of merchant_id + passphrase + timestamp
-    // No parameter formatting, just direct concatenation
-    const signatureString = this.config.merchantId + this.config.passphrase + timestamp;
-    const signature = crypto.createHash("md5").update(signatureString).digest("hex");
+    // PayFast API signature method (from official docs):
+    // 1. Include all non-empty header and body fields
+    // 2. Add passphrase if exists
+    // 3. Sort alphabetically by key
+    // 4. URL-encode values and join with &
+    // 5. Convert to lowercase and calculate MD5 hash
     
-    console.log('=== PAYFAST API AUTH (Simple Concatenation) ===');
+    const signatureData: Record<string, any> = {
+      'merchant-id': this.config.merchantId,
+      'version': 'v1',
+      'timestamp': timestamp
+    };
+    
+    // Add body fields if provided
+    if (bodyData) {
+      Object.keys(bodyData).forEach(key => {
+        if (bodyData[key] !== null && bodyData[key] !== undefined && bodyData[key] !== '') {
+          signatureData[key] = bodyData[key];
+        }
+      });
+    }
+    
+    // Add passphrase
+    if (this.config.passphrase) {
+      signatureData['passphrase'] = this.config.passphrase;
+    }
+    
+    // Sort alphabetically by key
+    const sortedKeys = Object.keys(signatureData).sort();
+    const sortedParams = sortedKeys.map(key => 
+      `${encodeURIComponent(key)}=${encodeURIComponent(signatureData[key])}`
+    ).join('&');
+    
+    // Convert to lowercase and calculate MD5
+    const signature = crypto.createHash("md5").update(sortedParams.toLowerCase()).digest("hex");
+    
+    console.log('=== PAYFAST API AUTH (Official Method) ===');
     console.log('Merchant ID:', this.config.merchantId);
     console.log('Timestamp:', timestamp);
-    console.log('Signature String (masked):', this.config.merchantId + '***' + timestamp);
+    console.log('Signature Data Keys:', sortedKeys);
+    console.log('Sorted Params (masked):', sortedParams.replace(/passphrase=[^&]+/, 'passphrase=***'));
     console.log('Generated Signature:', signature);
     console.log('=== END API AUTH ===');
 
@@ -215,7 +247,8 @@ export class PayFastService {
   }
 
   async chargeToken(token: string, request: PayFastAdHocChargeRequest): Promise<PayFastAdHocChargeResponse> {
-    const headers = this.createAuthHeaders();
+    // Pass request body data to createAuthHeaders so it can include all fields in signature
+    const headers = this.createAuthHeaders(request);
     
     console.log('=== PAYFAST ADHOC CHARGE REQUEST ===');
     console.log('URL:', `${this.baseUrl}/subscriptions/${token}/adhoc`);

@@ -1,0 +1,44 @@
+Summary (39 words)
+Ad‑hoc charges require four headers; the signature is the lowercase MD5 of the URL‑encoded, alphabetically‑sorted header/body fields plus passphrase. Sandbox calls append testing=true, but that flag must be left out of the signature string. (Source: PayFast Authentication)
+1. Endpoint for ad‑hoc charge
+bash
+POST https://api.payfast.co.za/subscriptions/{token}/adhoc        # live
+POST https://api.payfast.co.za/subscriptions/{token}/adhoc?testing=true   # sandbox
+2. Mandatory request headers
+Header	Example value	Notes
+merchant-id	10000100	Your PayFast merchant number
+version	v1	Current API version
+timestamp	2025‑06‑17T12:34:56+02:00	ISO‑8601 date/time
+signature	4b5c6d7e8f9a0b1c2d3e4f567890abcd	Generated as described below
+3. Signature generation method (API calls)
+Put all non‑empty header and body fields into an array/object.
+If you are testing, do not include the testing=true query parameter in this array.
+If you use a passphrase, add it as passphrase.
+Sort the array alphabetically by key.
+URL‑encode every value and join the pairs with & (e.g. merchant-id=10000100&passphrase=MyPass&version=v1&...).
+Convert the whole string to lower‑case and calculate its MD5 hash.
+The resulting hash is the value for the signature header.
+Equivalent PHP (adapted from the docs)
+php
+function generateApiSignature(array $data, string $passphrase = null): string {
+    if ($passphrase !== null) {
+        $data['passphrase'] = $passphrase;
+    }
+    ksort($data);                         // step 3
+    return md5(http_build_query($data));  // steps 4‑5
+}
+4. Minimal working example (live)
+bash
+curl -v -X POST \
+  https://api.payfast.co.za/subscriptions/3d5f6a7b-token/adhoc \
+  -H "merchant-id: 10000100" \
+  -H "version: v1" \
+  -H "timestamp: 2025-06-17T12:34:56+02:00" \
+  -H "signature: 4b5c6d7e8f9a0b1c2d3e4f567890abcd" \
+  -d "amount=1000&item_name=Extra+top‑up"
+5. Sandbox vs. live differences
+Aspect	Live	Sandbox
+URL	…/adhoc	…/adhoc?testing=true
+Headers & body	Identical	Identical
+Signature string	Includes all headers & body fields + passphrase	Same, but exclude the testing parameter when building the string
+Following the exact steps above should resolve the “401 Unauthorized – Merchant authorisation failed” error when calling /subscriptions/{token}/adhoc.
