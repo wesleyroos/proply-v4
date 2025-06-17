@@ -210,6 +210,11 @@ export class PayFastService {
   async chargeToken(token: string, request: PayFastAdHocChargeRequest): Promise<PayFastAdHocChargeResponse> {
     const headers = this.createAuthHeaders();
     
+    console.log('=== PAYFAST ADHOC CHARGE REQUEST ===');
+    console.log('URL:', `${this.baseUrl}/subscriptions/${token}/adhoc`);
+    console.log('Headers:', { ...headers, 'Content-Type': 'application/json' });
+    console.log('Body:', JSON.stringify(request, null, 2));
+    
     const response = await fetch(`${this.baseUrl}/subscriptions/${token}/adhoc`, {
       method: 'POST',
       headers: {
@@ -221,8 +226,17 @@ export class PayFastService {
 
     const data = await response.json();
     
+    console.log('=== PAYFAST ADHOC CHARGE RESPONSE ===');
+    console.log('Status:', response.status, response.statusText);
+    console.log('Response Data:', JSON.stringify(data, null, 2));
+    
     if (!response.ok) {
-      throw new Error(`PayFast charge failed: ${data.message || 'Unknown error'}`);
+      console.error('PayFast charge failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        responseData: data
+      });
+      throw new Error(`PayFast charge failed: ${data.message || data.error || 'Unknown error'}`);
     }
 
     return data;

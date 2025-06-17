@@ -1,0 +1,63 @@
+chunk-276SZO74.js?v=5ec61fec:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+AgencyDetailModal.tsx?t=1750156907877:2009 Uncaught ReferenceError: TestBillingButton is not defined
+    at AgencyDetailModal (AgencyDetailModal.tsx?t=1750156907877:2009:131)
+    at renderWithHooks (chunk-276SZO74.js?v=5ec61fec:11548:26)
+    at updateFunctionComponent (chunk-276SZO74.js?v=5ec61fec:14582:28)
+    at beginWork (chunk-276SZO74.js?v=5ec61fec:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-276SZO74.js?v=5ec61fec:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-276SZO74.js?v=5ec61fec:3699:24)
+    at invokeGuardedCallback (chunk-276SZO74.js?v=5ec61fec:3733:39)
+    at beginWork$1 (chunk-276SZO74.js?v=5ec61fec:19765:15)
+    at performUnitOfWork (chunk-276SZO74.js?v=5ec61fec:19198:20)
+    at workLoopSync (chunk-276SZO74.js?v=5ec61fec:19137:13)
+AgencyDetailModal.tsx?t=1750156907877:2009 Uncaught ReferenceError: TestBillingButton is not defined
+    at AgencyDetailModal (AgencyDetailModal.tsx?t=1750156907877:2009:131)
+    at renderWithHooks (chunk-276SZO74.js?v=5ec61fec:11548:26)
+    at updateFunctionComponent (chunk-276SZO74.js?v=5ec61fec:14582:28)
+    at beginWork (chunk-276SZO74.js?v=5ec61fec:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-276SZO74.js?v=5ec61fec:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-276SZO74.js?v=5ec61fec:3699:24)
+    at invokeGuardedCallback (chunk-276SZO74.js?v=5ec61fec:3733:39)
+    at beginWork$1 (chunk-276SZO74.js?v=5ec61fec:19765:15)
+    at performUnitOfWork (chunk-276SZO74.js?v=5ec61fec:19198:20)
+    at workLoopSync (chunk-276SZO74.js?v=5ec61fec:19137:13)
+chunk-276SZO74.js?v=5ec61fec:14032 The above error occurred in the <AgencyDetailModal> component:
+
+    at AgencyDetailModal (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/AgencyDetailModal.tsx?t=1750156907877:199:37)
+    at div
+    at ControlPanel (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/pages/ControlPanel.tsx?t=1750156535990:81:47)
+    at div
+    at MotionComponent (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=5ec61fec:6536:40)
+    at PageTransition (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/components/PageTransition.tsx:18:34)
+    at main
+    at div
+    at ProtectedRoute (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/App.tsx?t=1750156762260:68:38)
+    at component
+    at Route (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=5ec61fec:323:16)
+    at Switch (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=5ec61fec:379:17)
+    at PresenceChild (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=5ec61fec:7742:24)
+    at AnimatePresence (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=5ec61fec:7800:26)
+    at Provider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LPZXWPW6.js?v=5ec61fec:38:15)
+    at TooltipProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=5ec61fec:61:5)
+    at App (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/App.tsx?t=1750156762260:175:22)
+    at ToastProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/src/hooks/use-toast.ts:66:3)
+    at QueryClientProvider (https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=5ec61fec:2805:3)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-276SZO74.js?v=5ec61fec:14032
+AgencyDetailModal.tsx?t=1750156907877:2009 Uncaught (in promise) ReferenceError: TestBillingButton is not defined
+    at AgencyDetailModal (AgencyDetailModal.tsx?t=1750156907877:2009:131)
+    at renderWithHooks (chunk-276SZO74.js?v=5ec61fec:11548:26)
+    at updateFunctionComponent (chunk-276SZO74.js?v=5ec61fec:14582:28)
+    at beginWork (chunk-276SZO74.js?v=5ec61fec:15924:22)
+    at beginWork$1 (chunk-276SZO74.js?v=5ec61fec:19753:22)
+    at performUnitOfWork (chunk-276SZO74.js?v=5ec61fec:19198:20)
+    at workLoopSync (chunk-276SZO74.js?v=5ec61fec:19137:13)
+    at renderRootSync (chunk-276SZO74.js?v=5ec61fec:19116:15)
+    at recoverFromConcurrentError (chunk-276SZO74.js?v=5ec61fec:18736:28)
+    at performSyncWorkOnRoot (chunk-276SZO74.js?v=5ec61fec:18879:28)
+/api/admin/agencies/sothebys-atlantic-seaboard/test-payment:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 (Internal Server Error)
