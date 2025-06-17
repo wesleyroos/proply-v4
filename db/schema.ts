@@ -774,6 +774,24 @@ export const agencyPaymentMethods = pgTable("agency_payment_methods", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Tokenization session tracking for PayFast
+export const payfastTokenizationSessions = pgTable("payfast_tokenization_sessions", {
+  id: serial("id").primaryKey(),
+  sessionId: text("session_id").unique().notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  agencyBranchId: integer("agency_branch_id").notNull().references(() => agencyBranches.id),
+  status: text("status").default("pending").notNull(), // pending, completed, failed, cancelled
+  payfastMPaymentId: text("payfast_m_payment_id"), // PayFast merchant payment ID
+  payfastToken: text("payfast_token"), // Token received from PayFast
+  cardLastFour: text("card_last_four"),
+  expiryMonth: integer("expiry_month"),
+  expiryYear: integer("expiry_year"),
+  cardBrand: text("card_brand"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const agencyBillingCycles = pgTable("agency_billing_cycles", {
   id: serial("id").primaryKey(),
   agencyBranchId: integer("agency_branch_id").notNull().references(() => agencyBranches.id),
@@ -809,6 +827,17 @@ export const agencyPaymentMethodsRelations = relations(agencyPaymentMethods, ({ 
   addedByUser: one(users, {
     fields: [agencyPaymentMethods.addedBy],
     references: [users.id],
+  }),
+}));
+
+export const payfastTokenizationSessionsRelations = relations(payfastTokenizationSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [payfastTokenizationSessions.userId],
+    references: [users.id],
+  }),
+  agencyBranch: one(agencyBranches, {
+    fields: [payfastTokenizationSessions.agencyBranchId],
+    references: [agencyBranches.id],
   }),
 }));
 
