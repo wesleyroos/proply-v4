@@ -2692,48 +2692,44 @@ export function registerRoutes(app: Express): Server {
       
       console.log(`Test payment successful for agency ${agencyId}: R${amount} - Transaction ID: ${transactionId} - Mode: ${isTestMode ? 'TEST' : 'LIVE'}`);
 
-      // Create manual invoice for test payment (following automated billing pattern)
-      const { agencyInvoices, transactionHistory } = await import("@db/schema");
-      const { createId } = await import("@paralleldrive/cuid2");
-      
+      // Create manual invoice for test payment using direct SQL to match actual database schema
+      const { sql } = await import("drizzle-orm");
       const currentDate = new Date();
-      const invoiceId = `MAN-${currentDate.getFullYear()}${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${agencyId.toUpperCase()}-${Date.now()}`;
+      const invoiceNumber = `MAN-${currentDate.getFullYear()}${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${agencyId.toUpperCase()}-${Date.now()}`;
       
-      // Create invoice record
-      await db.insert(agencyInvoices).values({
-        invoiceId,
-        agencyId: agencyId,
-        agencyName: `${agencyBranch.franchiseName} - ${agencyBranch.branchName}`,
-        month: `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}`,
-        year: currentDate.getFullYear(),
-        reportCount: 0, // Test payment has no reports
-        amount: amount.toString(),
-        invoiceDate: currentDate.toISOString().split('T')[0],
-        status: 'paid', // Mark as paid immediately since payment succeeded
-        paidAt: currentDate,
-        invoiceType: 'manual' // Distinguish from automated billing
-      });
+      // Insert invoice using raw SQL to match actual database columns
+      await db.execute(sql`
+        INSERT INTO agency_invoices (
+          agency_branch_id, 
+          invoice_number, 
+          issue_date, 
+          due_date, 
+          subtotal, 
+          vat_amount, 
+          total_amount, 
+          status, 
+          paid_at, 
+          invoice_type
+        ) VALUES (
+          ${agencyBranch.id}, 
+          ${invoiceNumber}, 
+          ${currentDate}, 
+          ${currentDate}, 
+          ${amount}, 
+          0, 
+          ${amount}, 
+          'paid', 
+          ${currentDate}, 
+          'manual'
+        )
+      `);
 
-      // Create transaction record
-      const transactionRecordId = createId();
-      await db.insert(transactionHistory).values({
-        transactionId: transactionRecordId,
-        invoiceId,
-        agencyId: agencyId,
-        amount: amount.toString(),
-        payfastTransactionId: transactionId,
-        payfastPaymentId: transactionId,
-        status: 'completed',
-        gatewayResponse: payfastResponse,
-        processedAt: currentDate,
-      });
-
-      console.log(`Invoice created: ${invoiceId}, Transaction recorded: ${transactionRecordId}`);
+      console.log(`Manual invoice created: ${invoiceNumber} for R${amount} - Transaction ID: ${transactionId}`);
 
       res.json({
         success: true,
         transactionId,
-        invoiceId,
+        invoiceNumber,
         amount,
         mode: isTestMode ? 'test' : 'live',
         message: `Test payment completed successfully in ${isTestMode ? 'TEST' : 'LIVE'} mode`
