@@ -11,7 +11,6 @@ import {
   agencySettings,
   type SelectUser,
   type InsertUser,
-
   subscriptionHistory,
   invoices,
   passwordResetTokens,
@@ -2663,58 +2662,40 @@ export function registerRoutes(app: Express): Server {
         .groupBy(reportGenerations.reportType)
         .orderBy(sql`COUNT(*) DESC`);
 
-      // Get invoice history (simulated based on monthly stats)
-      const currentDate = new Date();
-      const currentMonth = currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0');
-      
-      const invoices = monthlyStats.map((stat, index) => {
-        const reportCount = Number(stat.reports) || 0;
-        let amount = 0;
-        
-        // Calculate tiered billing amount
-        let remaining = reportCount;
-        if (remaining > 0) {
-          const tier1Count = Math.min(remaining, 50);
-          amount += tier1Count * 200;
-          remaining -= tier1Count;
-        }
-        if (remaining > 0) {
-          const tier2Count = Math.min(remaining, 50);
-          amount += tier2Count * 180;
-          remaining -= tier2Count;
-        }
-        if (remaining > 0) {
-          const tier3Count = Math.min(remaining, 50);
-          amount += tier3Count * 160;
-          remaining -= tier3Count;
-        }
-        if (remaining > 0) {
-          const tier4Count = Math.min(remaining, 50);
-          amount += tier4Count * 140;
-          remaining -= tier4Count;
-        }
-        if (remaining > 0) {
-          amount += remaining * 140;
-        }
+      // Get invoice history from persistent agency_invoices table
+      const invoicesQuery = await db
+        .select({
+          id: agencyInvoices.id,
+          invoiceNumber: agencyInvoices.invoiceNumber,
+          billingPeriod: agencyBillingCycles.billingPeriod,
+          reportCount: agencyBillingCycles.reportCount,
+          totalAmount: agencyInvoices.totalAmount,
+          issueDate: agencyInvoices.issueDate,
+          status: agencyInvoices.status,
+          paidAt: agencyInvoices.paidAt
+        })
+        .from(agencyInvoices)
+        .innerJoin(agencyBillingCycles, eq(agencyInvoices.billingCycleId, agencyBillingCycles.id))
+        .where(eq(agencyInvoices.agencyBranchId, Number(agencyIdentifier)))
+        .orderBy(sql`${agencyInvoices.issueDate} DESC`);
 
-        // Create invoice date (1st of following month)
-        const invoiceDate = new Date(String(stat.month) + '-01');
-        invoiceDate.setMonth(invoiceDate.getMonth() + 1);
-        
-        // Determine status: if the stat month is current month or future, it's upcoming; otherwise paid
-        const isUpcoming = String(stat.month) >= currentMonth;
+      const invoices = invoicesQuery.map(invoice => {
+        // Parse billing period to get month name
+        const [year, month] = invoice.billingPeriod.split('-');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthName = `${monthNames[parseInt(month) - 1]} ${year}`;
         
         return {
-          id: `INV-${String(stat.month).replace('-', '')}`,
-          month: String(stat.month),
-          monthName: String(stat.monthName),
-          reportCount,
-          amount,
-          invoiceDate: invoiceDate.toISOString().split('T')[0],
-          status: isUpcoming ? 'upcoming' : 'paid',
-          dueDate: new Date(invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days after invoice
+          id: invoice.invoiceNumber,
+          month: invoice.billingPeriod,
+          monthName,
+          reportCount: invoice.reportCount,
+          amount: parseFloat(invoice.totalAmount),
+          invoiceDate: invoice.issueDate.toISOString().split('T')[0],
+          status: invoice.status === 'pending' ? 'upcoming' : invoice.status,
+          dueDate: invoice.issueDate.toISOString().split('T')[0] // Use issue date as billing date
         };
-      }).reverse(); // Show newest first
+      });
 
       res.json({
         currentMonth: currentMonth[0]?.reports || 0,
