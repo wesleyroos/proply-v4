@@ -159,9 +159,8 @@ function TestPaymentForm({ agencyId }: { agencyId: string }) {
       });
       
       // Invalidate queries to refresh invoice list and transaction history
-      queryClient.invalidateQueries({ queryKey: [`/api/agencies/${agencyId}/invoices`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/report-stats', agencyId] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/transactions'] });
-      queryClient.invalidateQueries({ queryKey: [`/api/agencies/${agencyId}/report-stats`] });
     },
     onError: (error: any) => {
       toast({
