@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
@@ -196,6 +197,7 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/propdata-reports/") || // PropData PDF reports
       req.path === "/pdf-test" || // PDF test endpoint
       req.path.startsWith("/pdf-generate/") || // PDF generation endpoint
+      req.path === "/payfast/notify" || // PayFast webhook endpoint
 
       req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept") // Admin invitation acceptance
     ) {
@@ -3697,45 +3699,132 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // PayFast webhook/notification endpoint
-  app.post('/api/payfast/notify', async (req, res) => {
+  // PayFast return URL handler (for success/cancel redirects)
+  app.get('/api/payfast/return', async (req, res) => {
+    const { token, session } = req.query;
+    
     try {
-      console.log('PayFast webhook received:', req.body);
+      console.log('PayFast return URL accessed:', { token, session });
       
-      // PayFast sends webhook data as form-encoded
-      const webhookData = req.body;
+      // Determine the correct redirect URL based on environment
+      const isProduction = process.env.NODE_ENV === 'production';
+      const baseUrl = isProduction ? 'https://app.proply.co.za' : 'http://localhost:5000';
       
-      // Import PayFast service
-      const { PayFastService } = await import('./services/payfast');
-      const payfast = new PayFastService(true); // Use test mode for webhook validation
-      
-      // Validate webhook signature
-      const receivedSignature = webhookData.signature;
-      delete webhookData.signature; // Remove signature from data before validation
-      
-      const isValid = payfast.validateWebhookSignature(webhookData, receivedSignature);
-      
-      if (!isValid) {
-        console.error('Invalid PayFast webhook signature');
-        return res.status(400).json({ error: 'Invalid signature' });
+      if (token === 'success') {
+        // Redirect to payment setup success page
+        res.redirect(`${baseUrl}/payment-setup-success?session=${session}`);
+      } else if (token === 'cancelled') {
+        // Redirect to payment setup cancel page  
+        res.redirect(`${baseUrl}/payment-setup-cancel?session=${session}`);
+      } else {
+        // Unknown token, redirect to settings with error
+        res.redirect(`${baseUrl}/settings?error=payment_error`);
       }
-
-      // Handle tokenization success
-      if (webhookData.payment_status === 'COMPLETE' && webhookData.token) {
-        console.log('PayFast tokenization successful, token:', webhookData.token);
-        
-        // Store the token in the database
-        // This would typically be associated with the user who initiated the tokenization
-        // For now, just log the success
-        console.log('Token received from PayFast:', webhookData.token);
-      }
-
-      // Respond to PayFast
-      res.status(200).send('OK');
-
     } catch (error) {
-      console.error('Error processing PayFast webhook:', error);
-      res.status(500).json({ error: 'Failed to process webhook' });
+      console.error('Error handling PayFast return:', error);
+      const baseUrl = process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : 'http://localhost:5000';
+      res.redirect(`${baseUrl}/settings?error=payment_error`);
+    }
+  });
+
+  // PayFast webhook/notification endpoint
+  app.post('/api/payfast/notify', express.raw({ type: 'application/x-www-form-urlencoded' }), async (req, res) => {
+    console.log('\n=== PAYFAST WEBHOOK RECEIVED ===');
+    console.log('Headers:', req.headers);
+    console.log('Raw body:', req.body?.toString());
+    
+    try {
+      const { payfastTokenizationSessions, agencyPaymentMethods } = await import('@db/schema');
+      
+      // Parse the form data
+      const bodyStr = req.body?.toString() || '';
+      const params = new URLSearchParams(bodyStr);
+      const data: Record<string, string> = {};
+      
+      params.forEach((value, key) => {
+        data[key] = value;
+      });
+      
+      console.log('Parsed webhook data:', data);
+      
+      // Check if this is a tokenization response
+      if (data.token && data.payment_status && data.m_payment_id) {
+        console.log('Tokenization webhook received:', {
+          token: data.token,
+          payment_status: data.payment_status,
+          m_payment_id: data.m_payment_id,
+          signature: data.signature
+        });
+        
+        // Find the tokenization session using m_payment_id (which is our session ID)
+        const tokenizationSession = await db.query.payfastTokenizationSessions.findFirst({
+          where: eq(payfastTokenizationSessions.sessionId, data.m_payment_id),
+          with: {
+            user: true,
+            agencyBranch: true
+          }
+        });
+        
+        if (!tokenizationSession) {
+          console.log('❌ No tokenization session found for m_payment_id:', data.m_payment_id);
+          res.status(200).send('OK');
+          return;
+        }
+        
+        console.log('✅ Found tokenization session:', {
+          sessionId: tokenizationSession.sessionId,
+          userId: tokenizationSession.userId,
+          branchId: tokenizationSession.agencyBranchId,
+          branchName: tokenizationSession.agencyBranch?.branchName
+        });
+        
+        // Handle successful tokenization
+        if (data.payment_status === 'COMPLETE') {
+          console.log('Processing successful tokenization...');
+          
+          // Extract card details from webhook data
+          const cardLastFour = data.card_number ? data.card_number.slice(-4) : '****';
+          const cardBrand = data.card_type || 'Unknown';
+          
+          // Store the payment method
+          await db.insert(agencyPaymentMethods).values({
+            agencyBranchId: tokenizationSession.agencyBranchId,
+            payfastToken: data.token,
+            cardLastFour: cardLastFour,
+            cardBrand: cardBrand,
+            expiryMonth: 12, // PayFast doesn't provide expiry in webhook
+            expiryYear: 2025, // PayFast doesn't provide expiry in webhook
+            addedBy: tokenizationSession.userId
+          });
+          
+          // Update session status
+          await db
+            .update(payfastTokenizationSessions)
+            .set({ status: 'completed' })
+            .where(eq(payfastTokenizationSessions.sessionId, data.m_payment_id));
+          
+          console.log('✅ Payment method stored successfully:', {
+            token: data.token,
+            lastFour: cardLastFour,
+            brand: cardBrand,
+            branchId: tokenizationSession.agencyBranchId
+          });
+        } else {
+          console.log('❌ Tokenization failed:', data.payment_status);
+          
+          // Update session status to failed
+          await db
+            .update(payfastTokenizationSessions)
+            .set({ status: 'failed' })
+            .where(eq(payfastTokenizationSessions.sessionId, data.m_payment_id));
+        }
+      }
+      
+      res.status(200).send('OK');
+      
+    } catch (error) {
+      console.error('❌ Error processing PayFast webhook:', error);
+      res.status(200).send('OK'); // Always respond OK to PayFast
     }
   });
 

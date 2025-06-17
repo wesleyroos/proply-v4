@@ -1,75 +1,54 @@
-import { useEffect } from "react";
-import { useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { XCircle, ArrowLeft } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useLocation } from 'wouter';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { XCircle, ArrowLeft, CreditCard } from 'lucide-react';
 
 export default function PaymentSetupCancel() {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
+  const [location, setLocation] = useLocation();
 
-  useEffect(() => {
-    toast({
-      title: "Payment Setup Cancelled",
-      description: "Your payment method was not added. You can try again anytime.",
-      variant: "destructive",
-    });
-  }, [toast]);
-
-  const handleReturnToSettings = () => {
-    setLocation("/settings");
+  const goToSettings = () => {
+    setLocation('/settings');
   };
 
-  const handleTryAgain = () => {
-    setLocation("/settings");
+  const tryAgain = () => {
+    setLocation('/settings');
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <XCircle className="h-16 w-16 text-red-500" />
+          <div className="mx-auto mb-4 w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <XCircle className="w-8 h-8 text-red-600" />
           </div>
-          <CardTitle className="text-2xl text-red-600">
-            Payment Setup Cancelled
-          </CardTitle>
+          <CardTitle className="text-2xl text-red-800">Payment Setup Cancelled</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center space-y-2">
-            <p className="text-gray-600">
-              The payment method setup was cancelled. No payment information was stored.
+        <CardContent className="space-y-6">
+          <div className="text-center py-4">
+            <p className="text-gray-600 mb-4">
+              Your payment method setup was cancelled. No charges were made to your account.
             </p>
             <p className="text-sm text-gray-500">
-              You can try adding a payment method again anytime from your settings.
+              You can try adding a payment method again at any time from your settings.
             </p>
           </div>
-          
-          <div className="bg-yellow-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-yellow-800 mb-2">Need help?</h3>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• Check your card details are correct</li>
-              <li>• Ensure your bank allows online transactions</li>
-              <li>• Contact support if issues persist</li>
-            </ul>
+
+          <div className="space-y-3">
+            <Button onClick={tryAgain} className="w-full">
+              <CreditCard className="w-4 h-4 mr-2" />
+              Try Adding Payment Method Again
+            </Button>
+            
+            <Button onClick={goToSettings} variant="outline" className="w-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Return to Settings
+            </Button>
           </div>
 
-          <div className="flex space-x-3">
-            <Button 
-              variant="outline"
-              onClick={handleReturnToSettings}
-              className="flex-1"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Settings
-            </Button>
-            <Button 
-              onClick={handleTryAgain}
-              className="flex-1"
-            >
-              Try Again
-            </Button>
+          <div className="text-center">
+            <p className="text-xs text-gray-500">
+              Need help setting up your payment method? Contact support for assistance.
+            </p>
           </div>
         </CardContent>
       </Card>
