@@ -69,13 +69,9 @@ async function runTimestampTests() {
   
   const now = new Date();
   
-  // Test 1: Standard ISO format (what we're using)
-  const iso = now.toISOString();
-  await testTimestampFormat('Standard ISO (Z)', iso);
-  
-  // Test 2: ISO with +02:00 (South African timezone)
-  const isoSA = now.toISOString().replace('Z', '+02:00');
-  await testTimestampFormat('ISO with +02:00', isoSA);
+  // Test CORRECTED FORMAT: ISO-8601 without milliseconds and with explicit timezone offset
+  const correctedFormat = now.toISOString().replace(/\.\d{3}Z$/, '+00:00');
+  await testTimestampFormat('CORRECTED: ISO without milliseconds (+00:00)', correctedFormat);
   
   // Test 3: Unix timestamp
   const unix = Math.floor(now.getTime() / 1000).toString();

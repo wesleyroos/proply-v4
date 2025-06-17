@@ -82,9 +82,9 @@ export class PayFastService {
   }
 
   private createAuthHeaders(bodyData?: Record<string, any>): Record<string, string> {
-    // PayFast API expects specific timestamp format
+    // PayFast API requires ISO-8601 format without milliseconds and with explicit timezone offset
     const now = new Date();
-    const timestamp = now.toISOString(); // Use standard ISO format without timezone modification
+    const timestamp = now.toISOString().replace(/\.\d{3}Z$/, '+00:00'); // Remove milliseconds and add explicit UTC offset
     
     // PayFast API signature method (from official docs):
     // 1. Include all non-empty header and body fields
