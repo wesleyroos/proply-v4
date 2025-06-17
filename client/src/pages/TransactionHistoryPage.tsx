@@ -154,7 +154,7 @@ export default function TransactionHistoryPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalAmount.toString())}</div>
+            <div className="text-2xl font-bold">{formatCurrency((stats.totalAmount || 0).toString())}</div>
           </CardContent>
         </Card>
 
