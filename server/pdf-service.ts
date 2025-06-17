@@ -1,5 +1,4 @@
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -147,39 +146,44 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   
   const pricing = calculatePricing(invoiceData.reportCount);
   
-  // Invoice table
+  // Invoice table (manual table since autoTable is not working)
   yPos += 15;
-  const tableData = pricing.breakdown.map(item => [
-    item.description,
-    item.quantity.toString(),
-    `R${item.unitPrice.toFixed(2)}`,
-    `R${item.total.toFixed(2)}`
-  ]);
   
-  autoTable(doc, {
-    startY: yPos,
-    head: [['Description', 'Quantity', 'Unit Price', 'Total']],
-    body: tableData,
-    theme: 'striped',
-    headStyles: {
-      fillColor: [59, 130, 246], // Blue color
-      textColor: 255,
-      fontStyle: 'bold',
-      fontSize: 11
-    },
-    bodyStyles: {
-      fontSize: 10
-    },
-    columnStyles: {
-      1: { halign: 'center' },
-      2: { halign: 'right' },
-      3: { halign: 'right' }
-    },
-    margin: { left: margin, right: margin }
+  // Table header
+  doc.setFillColor(59, 130, 246); // Blue color
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 10, 'F');
+  
+  doc.setTextColor(255, 255, 255); // White text
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Description', margin + 5, yPos + 7);
+  doc.text('Quantity', margin + 90, yPos + 7);
+  doc.text('Unit Price', margin + 120, yPos + 7);
+  doc.text('Total', pageWidth - margin - 5, yPos + 7, { align: 'right' });
+  
+  yPos += 10;
+  doc.setTextColor(0, 0, 0); // Back to black
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  
+  // Table rows
+  let rowColor = true;
+  pricing.breakdown.forEach((item, index) => {
+    if (rowColor) {
+      doc.setFillColor(248, 249, 250); // Light gray
+      doc.rect(margin, yPos, pageWidth - (2 * margin), 8, 'F');
+    }
+    
+    doc.text(item.description, margin + 5, yPos + 6);
+    doc.text(item.quantity.toString(), margin + 90, yPos + 6, { align: 'center' });
+    doc.text(`R${item.unitPrice.toFixed(2)}`, margin + 120, yPos + 6, { align: 'right' });
+    doc.text(`R${item.total.toFixed(2)}`, pageWidth - margin - 5, yPos + 6, { align: 'right' });
+    
+    yPos += 8;
+    rowColor = !rowColor;
   });
   
-  // Get the final Y position after the table
-  const finalY = (doc as any).lastAutoTable.finalY || yPos + 40;
+  const finalY = yPos;
   
   // Totals section
   const totalsX = pageWidth - 80;
