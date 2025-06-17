@@ -124,6 +124,7 @@ export class PayFastService {
     
     // This will encode spaces as '+' like PHP's http_build_query()
     const sortedParams = stringify(sortedRawData);
+    console.log('DEBUG signature string directly from stringify:', sortedParams);
     
     // Calculate MD5 (do NOT convert to lowercase for API calls)
     const signature = crypto.createHash("md5").update(sortedParams).digest("hex");
