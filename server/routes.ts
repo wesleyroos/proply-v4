@@ -2590,8 +2590,8 @@ export function registerRoutes(app: Express): Server {
       const { agencyId } = req.params;
       const { amount } = req.body;
 
-      if (!amount || amount < 1 || amount > 50) {
-        return res.status(400).json({ error: 'Test amount must be between R1 and R50' });
+      if (!amount || amount < 100 || amount > 1000) {
+        return res.status(400).json({ error: 'Test amount must be between R100 and R1000' });
       }
 
       // Find the agency branch by slug
