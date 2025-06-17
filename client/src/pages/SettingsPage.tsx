@@ -1389,6 +1389,47 @@ export default function SettingsPage() {
 
   // Agency Invoices Section Component
   const AgencyInvoicesSection = () => {
+    // Invoice download handler
+    const handleDownloadInvoice = async (invoiceNumber: string) => {
+      try {
+        const response = await fetch(`/api/invoices/${invoiceNumber}/download`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to download invoice');
+        }
+
+        // Create blob from response
+        const blob = await response.blob();
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Invoice-${invoiceNumber}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        toast({
+          title: "Download started",
+          description: "Your invoice PDF has been downloaded successfully.",
+        });
+      } catch (error) {
+        console.error('Error downloading invoice:', error);
+        toast({
+          title: "Download failed",
+          description: error instanceof Error ? error.message : "Failed to download invoice PDF",
+          variant: "destructive",
+        });
+      }
+    };
+
     // Get agency information first
     const { data: agencyData } = useQuery({
       queryKey: ["/api/agency-profile"],
@@ -1688,10 +1729,7 @@ export default function SettingsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              // TODO: Implement PDF download functionality
-                              console.log("Download invoice:", invoice.id);
-                            }}
+                            onClick={() => handleDownloadInvoice(invoice.id)}
                             className="text-blue-600 hover:text-blue-800"
                           >
                             Download

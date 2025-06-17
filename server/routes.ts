@@ -33,6 +33,7 @@ import { calculateYields } from "../analysis-engine/calculations";
 import { trackPriceLabsApiCall } from "./utils/pricelabs-tracker";
 import { trackReportGeneration } from "./utils/report-tracker";
 import { priceLabsUsage, reportGenerations } from "@db/schema";
+import { generateInvoicePDF } from "./pdf-service";
 
 // Function to track agency report usage for billing
 async function trackAgencyReportUsage(agencyBranchId: number, userId: number, propertyAddress: string) {
@@ -2940,6 +2941,99 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error fetching agency report stats:', error);
       res.status(500).json({ error: 'Failed to fetch report statistics' });
+    }
+  });
+
+  // Download invoice PDF endpoint
+  app.get('/api/invoices/:invoiceNumber/download', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const { invoiceNumber } = req.params;
+
+      // Get invoice details with agency information
+      const invoiceQuery = await db.execute(
+        sql`SELECT 
+          ai.id,
+          ai.invoice_number,
+          ai.issue_date,
+          ai.total_amount,
+          ai.status,
+          ai.paid_at,
+          abc.billing_period,
+          abc.report_count,
+          ab.franchise_name,
+          ab.branch_name,
+          ab.company_name,
+          ab.vat_number,
+          ab.registration_number,
+          ab.business_address,
+          ab.id as agency_branch_id
+        FROM agency_invoices ai 
+        INNER JOIN agency_billing_cycles abc ON ai.billing_cycle_id = abc.id
+        INNER JOIN agency_branches ab ON abc.agency_branch_id = ab.id
+        WHERE ai.invoice_number = ${invoiceNumber}`
+      );
+
+      if (invoiceQuery.rows.length === 0) {
+        return res.status(404).json({ error: 'Invoice not found' });
+      }
+
+      const invoiceData = invoiceQuery.rows[0];
+
+      // Check permissions: only system admins or agency members can download invoices
+      if (user.role !== 'system_admin' && user.role !== 'admin') {
+        if (user.role !== 'branch_admin' && user.role !== 'franchise_admin') {
+          return res.status(403).json({ error: 'Access denied' });
+        }
+        
+        // Verify user belongs to this agency
+        if (!user.branchId || user.branchId !== invoiceData.agency_branch_id) {
+          return res.status(403).json({ error: 'Access denied - can only download your own agency invoices' });
+        }
+      }
+
+      // Only allow downloads for paid invoices (not upcoming/pending)
+      if (invoiceData.status === 'pending') {
+        return res.status(400).json({ error: 'Cannot download invoice for upcoming billing period' });
+      }
+
+      // Prepare invoice data for PDF generation
+      const pdfData = {
+        invoiceNumber: invoiceData.invoice_number,
+        issueDate: invoiceData.issue_date,
+        billingPeriod: invoiceData.billing_period,
+        reportCount: invoiceData.report_count,
+        totalAmount: parseFloat(invoiceData.total_amount),
+        status: invoiceData.status,
+        paidAt: invoiceData.paid_at,
+        agency: {
+          companyName: invoiceData.company_name,
+          franchiseName: invoiceData.franchise_name,
+          branchName: invoiceData.branch_name,
+          vatNumber: invoiceData.vat_number,
+          registrationNumber: invoiceData.registration_number,
+          businessAddress: invoiceData.business_address
+        }
+      };
+
+      // Generate PDF
+      const pdfBuffer = generateInvoicePDF(pdfData);
+
+      // Set response headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="Invoice-${invoiceNumber}.pdf"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+
+      // Send PDF buffer
+      res.send(pdfBuffer);
+
+    } catch (error) {
+      console.error('Error generating invoice PDF:', error);
+      res.status(500).json({ error: 'Failed to generate invoice PDF' });
     }
   });
 

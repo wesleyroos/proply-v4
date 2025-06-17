@@ -384,6 +384,47 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
     }
   });
 
+  // Invoice download handler
+  const handleDownloadInvoice = async (invoiceNumber: string) => {
+    try {
+      const response = await fetch(`/api/invoices/${invoiceNumber}/download`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to download invoice');
+      }
+
+      // Create blob from response
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice-${invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download started",
+        description: "Your invoice PDF has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      toast({
+        title: "Download failed",
+        description: error instanceof Error ? error.message : "Failed to download invoice PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!agency) return null;
 
   // Billing calculation functions
@@ -952,10 +993,7 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                                 {invoice.status === 'paid' ? (
                                   <button 
                                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    onClick={() => {
-                                      // PDF download functionality will be implemented separately
-                                      console.log('Download invoice:', invoice.id);
-                                    }}
+                                    onClick={() => handleDownloadInvoice(invoice.id)}
                                   >
                                     Download
                                   </button>
