@@ -2675,7 +2675,7 @@ export function registerRoutes(app: Express): Server {
           ai.paid_at
         FROM agency_invoices ai 
         INNER JOIN agency_billing_cycles abc ON ai.billing_cycle_id = abc.id
-        WHERE ai.agency_branch_id = ${Number(agencyIdentifier)}
+        WHERE ai.agency_branch_id = ${agencyBranch.id}
         ORDER BY ai.issue_date DESC`
       );
 
