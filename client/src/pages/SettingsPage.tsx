@@ -1298,28 +1298,7 @@ export default function SettingsPage() {
                     processed for tokenization.
                   </div>
 
-                  {/* Test Card Information */}
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-                    <h4 className="text-sm font-medium text-blue-800 mb-2">
-                      Test Mode Active - Use These Test Cards:
-                    </h4>
-                    <div className="text-xs text-blue-700 space-y-1">
-                      <div>
-                        <strong>Successful Payment:</strong> 4111 1111 1111 1111
-                        (Visa)
-                      </div>
-                      <div>
-                        <strong>Successful Payment:</strong> 5555 5555 5555 4444
-                        (Mastercard)
-                      </div>
-                      <div>
-                        <strong>Expiry:</strong> Any future date (e.g., 12/25)
-                      </div>
-                      <div>
-                        <strong>CVV:</strong> Any 3-digit number (e.g., 123)
-                      </div>
-                    </div>
-                  </div>
+
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
