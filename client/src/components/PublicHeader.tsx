@@ -35,10 +35,15 @@ export default function PublicHeader() {
             <Link href="/agents" className="text-sm font-medium hover:text-proply-blue transition-colors">
               For Agents
             </Link>
-            <div className="text-sm font-medium flex items-center">
+            <a 
+              href="https://dealscore.co.za/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm font-medium hover:text-proply-blue transition-colors flex items-center"
+            >
               <span>For Buyers</span>
-              <span className="ml-1.5 text-proply-blue">(coming soon)</span>
-            </div>
+              <span className="ml-1.5 text-proply-blue">(new)</span>
+            </a>
             <div className="relative group">
               <button className="text-sm font-medium hover:text-proply-blue transition-colors flex items-center gap-1">
                 Resources

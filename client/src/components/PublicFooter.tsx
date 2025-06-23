@@ -76,9 +76,16 @@ export default function PublicFooter() {
                     Agents
                   </Link>
                 </li>
-                <li className="flex">
-                  <span className="hover:text-proply-blue">Buyers</span>
-                  <span className="ml-1.5 text-proply-blue">(coming soon)</span>
+                <li>
+                  <a 
+                    href="https://dealscore.co.za/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-proply-blue flex"
+                  >
+                    <span>Buyers</span>
+                    <span className="ml-1.5 text-proply-blue">(new)</span>
+                  </a>
                 </li>
               </ul>
             </div>
