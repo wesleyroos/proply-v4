@@ -189,12 +189,17 @@ export default function PricingPage() {
                   <span>Investment potential visualization</span>
                 </li>
               </ul>
-              <Button className="w-full bg-gray-300 text-gray-700 cursor-not-allowed" disabled>
-                Buy Reports (Coming Soon)
-                <ExternalLink className="ml-2 h-4 w-4" />
+              <Button 
+                className="w-full bg-black hover:bg-gray-800 text-white"
+                asChild
+              >
+                <a href="https://dealscore.co.za/" target="_blank" rel="noopener noreferrer">
+                  Buy Reports
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
               </Button>
               <p className="text-xs text-center mt-2 text-gray-500">
-                Will be available at dealscore.co.za
+                Available at dealscore.co.za
               </p>
             </CardContent>
           </Card>
@@ -228,7 +233,7 @@ export default function PricingPage() {
                 <strong>Deal Score</strong> will follow a simple pay-per-report model:
               </p>
               <div className="mt-4 bg-gray-50 p-4 rounded-lg inline-block">
-                <span className="text-2xl font-bold">R49</span>
+                <span className="text-2xl font-bold">R89</span>
                 <span className="text-gray-600 ml-2">per report</span>
               </div>
               <p className="mt-4 text-gray-600">
