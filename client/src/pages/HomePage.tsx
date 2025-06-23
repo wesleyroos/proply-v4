@@ -393,11 +393,11 @@ export default function HomePage() {
                           "Investment potential",
                         ],
                         price: "R89/report, no login required",
-                        cta: "Coming Soon",
+                        cta: "Try It Now",
                         icon: TrendingUp,
                         audience: "For Buyers",
                         id: "for-buyers",
-                        link: "#",
+                        link: "https://dealscore.co.za/",
                       },
                     ].map((product, i) => (
                       <div
@@ -432,12 +432,21 @@ export default function HomePage() {
                         <div className="mb-6 text-sm font-medium text-gray-500">
                           {product.price}
                         </div>
-                        <Link href={product.link || "#"}>
-                          <Button className="w-full bg-black hover:bg-gray-800 text-white">
-                            {product.cta}{" "}
-                            <ChevronRight className="ml-1 h-4 w-4" />
-                          </Button>
-                        </Link>
+                        {product.link.startsWith("http") ? (
+                          <a href={product.link} target="_blank" rel="noopener noreferrer">
+                            <Button className="w-full bg-black hover:bg-gray-800 text-white">
+                              {product.cta}{" "}
+                              <ChevronRight className="ml-1 h-4 w-4" />
+                            </Button>
+                          </a>
+                        ) : (
+                          <Link href={product.link || "#"}>
+                            <Button className="w-full bg-black hover:bg-gray-800 text-white">
+                              {product.cta}{" "}
+                              <ChevronRight className="ml-1 h-4 w-4" />
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     ))}
                   </div>

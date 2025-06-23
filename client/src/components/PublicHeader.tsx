@@ -121,10 +121,15 @@ export default function PublicHeader() {
               <Link href="/agents" className="block py-2 text-sm font-medium hover:text-proply-blue">
                 For Agents
               </Link>
-              <div className="block py-2 text-sm font-medium flex items-center">
+              <a 
+                href="https://dealscore.co.za/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block py-2 text-sm font-medium hover:text-proply-blue flex items-center"
+              >
                 <span>For Buyers</span>
-                <span className="ml-1.5 text-proply-blue">(coming soon)</span>
-              </div>
+                <span className="ml-1.5 text-proply-blue">(new)</span>
+              </a>
               <div className="py-2">
                 <button className="flex items-center justify-between w-full text-sm font-medium hover:text-proply-blue" 
                         onClick={(e) => {
