@@ -232,9 +232,15 @@ export default function PricingPage() {
               <p className="text-gray-700">
                 <strong>Deal Score</strong> will follow a simple pay-per-report model:
               </p>
-              <div className="mt-4 bg-gray-50 p-4 rounded-lg inline-block">
-                <span className="text-2xl font-bold">R89</span>
-                <span className="text-gray-600 ml-2">per report</span>
+              <div className="mt-4 space-y-3">
+                <div className="bg-gray-50 p-4 rounded-lg inline-block">
+                  <span className="text-2xl font-bold">R89</span>
+                  <span className="text-gray-600 ml-2">per report</span>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg inline-block ml-4">
+                  <span className="text-lg font-medium text-gray-700">+ Rental Performance Data addon for an extra </span>
+                  <span className="text-xl font-bold">R29</span>
+                </div>
               </div>
               <p className="mt-4 text-gray-600">
                 Pay only for what you need with no subscription required.
