@@ -9,20 +9,13 @@ import { autoSyncService } from "../services/autoSync";
 
 const router = Router();
 
-// GET /api/propdata/listings - Fetch PropData listings with agency-based filtering and pagination
+// GET /api/propdata/listings - Fetch PropData listings with agency-based filtering
 router.get("/propdata/listings", async (req, res) => {
   try {
     // Allow system admins, franchise admins, and branch admins
     if (!req.user?.isAdmin && req.user?.role !== 'franchise_admin' && req.user?.role !== 'branch_admin') {
       return res.status(403).json({ error: "Admin access required" });
     }
-
-    // Parse pagination parameters
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100); // Default 50, max 100
-    const offset = (page - 1) * limit;
-    
-    console.log(`[Listings] Fetching page ${page} with limit ${limit}, offset ${offset}`);
 
     // Build base query
     let query = db
@@ -66,49 +59,21 @@ router.get("/propdata/listings", async (req, res) => {
       .leftJoin(agencyBranches, eq(propdataListings.branchId, agencyBranches.id))
       .leftJoin(valuationReports, eq(propdataListings.propdataId, valuationReports.propertyId));
 
-    // Build count query for total records
-    let countQuery = db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(propdataListings)
-      .leftJoin(agencyBranches, eq(propdataListings.branchId, agencyBranches.id));
-
     // Apply agency-based filtering based on user role
     let listings;
-    let totalCount;
-    
     if (req.user?.role === 'branch_admin' && req.user?.branchId) {
       // Branch admins see only their specific branch properties
       listings = await query
         .where(eq(propdataListings.branchId, req.user.branchId))
-        .orderBy(desc(propdataListings.listingDate))
-        .limit(limit)
-        .offset(offset);
-        
-      const countResult = await countQuery
-        .where(eq(propdataListings.branchId, req.user.branchId));
-      totalCount = countResult[0]?.count || 0;
-      
+        .orderBy(desc(propdataListings.listingDate));
     } else if (req.user?.role === 'franchise_admin' && req.user?.franchiseId) {
       // Franchise admins see all branches within their franchise
       listings = await query
         .where(eq(agencyBranches.id, req.user.franchiseId))
-        .orderBy(desc(propdataListings.listingDate))
-        .limit(limit)
-        .offset(offset);
-        
-      const countResult = await countQuery
-        .where(eq(agencyBranches.id, req.user.franchiseId));
-      totalCount = countResult[0]?.count || 0;
-      
+        .orderBy(desc(propdataListings.listingDate));
     } else {
       // System admins see all properties (no additional filtering)
-      listings = await query
-        .orderBy(desc(propdataListings.listingDate))
-        .limit(limit)
-        .offset(offset);
-        
-      const countResult = await countQuery;
-      totalCount = countResult[0]?.count || 0;
+      listings = await query.orderBy(desc(propdataListings.listingDate));
     }
     
     // Parse JSON fields in the response
@@ -119,7 +84,6 @@ router.get("/propdata/listings", async (req, res) => {
           try {
             return JSON.parse(listing.images as string);
           } catch (e) {
-            console.warn(`Failed to parse images for listing ${listing.id}`);
             return [];
           }
         })() : 
@@ -129,7 +93,6 @@ router.get("/propdata/listings", async (req, res) => {
           try {
             return JSON.parse(listing.location as string);
           } catch (e) {
-            console.warn(`Failed to parse location for listing ${listing.id}`);
             return null;
           }
         })() : 
@@ -139,24 +102,13 @@ router.get("/propdata/listings", async (req, res) => {
           try {
             return JSON.parse(listing.features as string);
           } catch (e) {
-            console.warn(`Failed to parse features for listing ${listing.id}`);
             return [];
           }
         })() : 
         (listing.features || [])
     }));
     
-    // Return paginated response with metadata
-    return res.json({
-      data: parsedListings,
-      pagination: {
-        page,
-        limit,
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        hasMore: page * limit < totalCount
-      }
-    });
+    return res.json(parsedListings);
   } catch (error) {
     console.error("Error fetching PropData listings:", error);
     return res.status(500).json({ error: "Failed to fetch PropData listings" });

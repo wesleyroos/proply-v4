@@ -83,15 +83,11 @@ interface PropdataListing {
   reportId?: number;
 }
 
-interface PaginatedResponse {
-  data: PropdataListing[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasMore: boolean;
-  };
+interface ApiResponse {
+  total: number;
+  results: PropdataListing[];
+  next?: string;
+  previous?: string;
 }
 
 type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate' | 'agentName' | 'reportGenerated';
@@ -101,7 +97,6 @@ export default function PropdataListingsPage() {
   const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [serverPage, setServerPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
     field: 'listingDate',
@@ -122,11 +117,11 @@ export default function PropdataListingsPage() {
     details?: string;
   }>>([]);
 
-  // Query to fetch PropData listings from database with pagination
-  const { data, isLoading, error, refetch } = useQuery<PaginatedResponse>({
-    queryKey: ['/api/propdata/listings', serverPage],
+  // Query to fetch PropData listings from database
+  const { data: listings, isLoading, error, refetch } = useQuery<PropdataListing[]>({
+    queryKey: ['/api/propdata/listings'],
     queryFn: async () => {
-      const response = await fetch(`/api/propdata/listings?page=${serverPage}&limit=50`, {
+      const response = await fetch('/api/propdata/listings', {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -152,10 +147,6 @@ export default function PropdataListingsPage() {
     enabled: !!(user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin'),
     refetchInterval: 30000, // Refetch every 30 seconds to show updated sync status
   });
-  
-  // Extract listings from paginated response
-  const listings = data?.data || [];
-  const paginationInfo = data?.pagination;
 
   // Function to add sync log entry
   const addSyncLog = (type: 'quick' | 'full' | 'image', message: string, details?: string) => {
