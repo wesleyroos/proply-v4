@@ -1,0 +1,176 @@
+2025-10-07 12:16:48.84
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978275/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Success! File 47978561 found at /gallery/api/v1/files/47978561/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Success! File 47978277 found at /gallery/api/v1/files/47978277/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Success! File 47978283 found at /gallery/api/v1/files/47978283/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Success! File 47978275 found at /gallery/api/v1/files/47978275/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Success! File 47978301 found at /gallery/api/v1/files/47978301/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978467/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978181/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978187/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978186/
+2025-10-07 12:16:49.94
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978518/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Success! File 47978467 found at /gallery/api/v1/files/47978467/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Success! File 47978518 found at /gallery/api/v1/files/47978518/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Success! File 47978187 found at /gallery/api/v1/files/47978187/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Success! File 47978186 found at /gallery/api/v1/files/47978186/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Success! File 47978181 found at /gallery/api/v1/files/47978181/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978511/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978191/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978866/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978466/
+2025-10-07 12:16:52.14
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978462/
+2025-10-07 12:16:53.24
+0b9c68d8
+User
+Success! File 47978866 found at /gallery/api/v1/files/47978866/
+2025-10-07 12:16:53.24
+0b9c68d8
+User
+Success! File 47978191 found at /gallery/api/v1/files/47978191/
+2025-10-07 12:16:53.24
+0b9c68d8
+User
+Success! File 47978466 found at /gallery/api/v1/files/47978466/
+2025-10-07 12:16:53.24
+0b9c68d8
+User
+Success! File 47978462 found at /gallery/api/v1/files/47978462/
+2025-10-07 12:16:53.24
+0b9c68d8
+User
+Success! File 47978511 found at /gallery/api/v1/files/47978511/
+2025-10-07 12:16:53.24
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978226/
+2025-10-07 12:16:53.24
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978169/
+2025-10-07 12:16:53.24
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978273/
+2025-10-07 12:16:53.44
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978002/
+2025-10-07 12:16:53.44
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978564/
+2025-10-07 12:16:54.24
+0b9c68d8
+User
+Success! File 47978226 found at /gallery/api/v1/files/47978226/
+2025-10-07 12:16:54.54
+0b9c68d8
+User
+Success! File 47978002 found at /gallery/api/v1/files/47978002/
+2025-10-07 12:16:54.64
+0b9c68d8
+User
+Success! File 47978169 found at /gallery/api/v1/files/47978169/
+2025-10-07 12:16:54.84
+0b9c68d8
+User
+Success! File 47978273 found at /gallery/api/v1/files/47978273/
+2025-10-07 12:16:54.84
+0b9c68d8
+User
+Success! File 47978564 found at /gallery/api/v1/files/47978564/
+2025-10-07 12:16:55.04
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978565/
+2025-10-07 12:16:55.04
+0b9c68d8
+User
+Trying PropData file endpoint: /gallery/api/v1/files/47978566/
+2025-10-07 12:16:55.24
+0b9c68d8
+User
+Success! File 47978566 found at /gallery/api/v1/files/47978566/
+2025-10-07 12:16:55.24
+0b9c68d8
+User
+Success! File 47978565 found at /gallery/api/v1/files/47978565/
+2025-10-07 12:16:55.24
+0b9c68d8
+User
+File fetch summary: 37 successful, 0 failed
+2025-10-07 12:16:55.24
+0b9c68d8
+User
+Fetched 37/37 images for property 2449062
+2025-10-07 12:16:56.38
+0b9c68d8
+User
+Quick sync completed: 0 new, 1 updated, 0 errors
+2025-10-07 12:17:07.52
+0b9c68d8
+User
+10:17:07 AM [express] GET /api/user 304 in 233ms :: {"id":2,"email":"wesley@proply.co.za","firstName"…
