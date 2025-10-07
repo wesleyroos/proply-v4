@@ -1,0 +1,176 @@
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"created": "2025-05-08T14:03:56.938430+02:00",
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"modified": "2025-05-08T14:03:56.938434+02:00",
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"deleted": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"uuid": "3b65908e-b811-4378-ad7d-0d7d8cdd3f01",
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"portal": 15,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"active": false,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"expiration_date": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"reference": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"last_log": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"last_message": "Listing is not set to feed to this portal",
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"feed_status": "disabled",
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"on_portal": false,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"development_id": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"publish_street_address": false,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"publish_map_to_address": false,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"publish_feature_notes": false,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"display_price": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"exclusive_time_period": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"zoning": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"delayed_until": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"residential": 2449062,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"commercial": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+},
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+{
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"id": 17949662,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"site": 50,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"statistics": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"source_ref": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"modified": "2025-05-08T14:03:56.938397+02:00",
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"deleted": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"uuid": "3a3604eb-bd48-454c-8f73-939aa5eecdc1",
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"active": false,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"expiration_date": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"last_log": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"last_message": "Listing is not set to feed to this portal",
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"on_portal": false,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"publish_feature_notes": false,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"delayed_until": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"holiday": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"commercial": null,
+2025-10-07 12:48:17.47
+0b9c68d8
+User
+"project": null
+2025-10-07 12:48:23.95
+0b9c68d8
+User
+10:48:23 AM [express] GET /api/propdata/listings/sync-status 200 in 285ms :: {"id":34927,"syncType":"…
+2025-10-07 12:48:31.78
+0b9c68d8
+User
+10:48:31 AM [express] GET /api/propdata/listings 200 in 1649ms :: [{"id":2591,"propdataId":"2924353",…
+2025-10-07 12:48:31.79
+0b9c68d8
+System
+error proxying request error=read tcp 127.0.0.1:40514->127.0.0.1:5000: read: connection reset by peer

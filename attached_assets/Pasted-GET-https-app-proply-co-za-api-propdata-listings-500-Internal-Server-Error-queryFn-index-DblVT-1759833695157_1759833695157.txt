@@ -1,0 +1,111 @@
+GET https://app.proply.co.za/api/propdata/listings 500 (Internal Server Error)
+queryFn @ index-DblVTJrc.js:40
+i @ index-DblVTJrc.js:40
+f @ index-DblVTJrc.js:40
+start @ index-DblVTJrc.js:40
+fetch @ index-DblVTJrc.js:40
+q0 @ index-DblVTJrc.js:40
+onSubscribe @ index-DblVTJrc.js:40
+subscribe @ index-DblVTJrc.js:40
+(anonymous) @ index-DblVTJrc.js:40
+o9 @ index-DblVTJrc.js:38
+v5 @ index-DblVTJrc.js:40
+Ep @ index-DblVTJrc.js:40
+Zae @ index-DblVTJrc.js:40
+LA @ index-DblVTJrc.js:40
+yO @ index-DblVTJrc.js:40
+hA @ index-DblVTJrc.js:38
+(anonymous) @ index-DblVTJrc.js:40Understand this error
+index-DblVTJrc.js:863  GET https://app.proply.co.za/api/user 401 (Unauthorized)
+jge @ index-DblVTJrc.js:863
+i @ index-DblVTJrc.js:40
+f @ index-DblVTJrc.js:40
+start @ index-DblVTJrc.js:40
+fetch @ index-DblVTJrc.js:40
+q0 @ index-DblVTJrc.js:40
+onSubscribe @ index-DblVTJrc.js:40
+subscribe @ index-DblVTJrc.js:40
+(anonymous) @ index-DblVTJrc.js:40
+o9 @ index-DblVTJrc.js:38
+v5 @ index-DblVTJrc.js:40
+Ep @ index-DblVTJrc.js:40
+Zae @ index-DblVTJrc.js:40
+LA @ index-DblVTJrc.js:40
+yO @ index-DblVTJrc.js:40
+hA @ index-DblVTJrc.js:38
+(anonymous) @ index-DblVTJrc.js:40Understand this error
+index-DblVTJrc.js:863  GET https://app.proply.co.za/api/user 401 (Unauthorized)
+jge @ index-DblVTJrc.js:863
+i @ index-DblVTJrc.js:40
+f @ index-DblVTJrc.js:40
+start @ index-DblVTJrc.js:40
+fetch @ index-DblVTJrc.js:40
+q0 @ index-DblVTJrc.js:40
+fetch @ index-DblVTJrc.js:40
+refetch @ index-DblVTJrc.js:40
+onFocus @ index-DblVTJrc.js:40
+(anonymous) @ index-DblVTJrc.js:40
+(anonymous) @ index-DblVTJrc.js:40
+batch @ index-DblVTJrc.js:40
+onFocus @ index-DblVTJrc.js:40
+(anonymous) @ index-DblVTJrc.js:40
+await in (anonymous)
+(anonymous) @ index-DblVTJrc.js:40
+onFocus @ index-DblVTJrc.js:40
+(anonymous) @ index-DblVTJrc.js:40
+n @ index-DblVTJrc.js:40Understand this error
+index-DblVTJrc.js:40  GET https://app.proply.co.za/api/propdata/listings 500 (Internal Server Error)
+queryFn @ index-DblVTJrc.js:40
+i @ index-DblVTJrc.js:40
+f @ index-DblVTJrc.js:40
+start @ index-DblVTJrc.js:40
+fetch @ index-DblVTJrc.js:40
+q0 @ index-DblVTJrc.js:40
+onSubscribe @ index-DblVTJrc.js:40
+subscribe @ index-DblVTJrc.js:40
+(anonymous) @ index-DblVTJrc.js:40
+o9 @ index-DblVTJrc.js:38
+v5 @ index-DblVTJrc.js:40
+Ep @ index-DblVTJrc.js:40
+Zae @ index-DblVTJrc.js:40
+LA @ index-DblVTJrc.js:40
+yO @ index-DblVTJrc.js:40
+hA @ index-DblVTJrc.js:38
+(anonymous) @ index-DblVTJrc.js:40Understand this error
+index-DblVTJrc.js:40  GET https://app.proply.co.za/api/propdata/listings net::ERR_ABORTED 500 (Internal Server Error)
+queryFn @ index-DblVTJrc.js:40
+i @ index-DblVTJrc.js:40
+f @ index-DblVTJrc.js:40
+start @ index-DblVTJrc.js:40
+fetch @ index-DblVTJrc.js:40
+q0 @ index-DblVTJrc.js:40
+fetch @ index-DblVTJrc.js:40
+refetch @ index-DblVTJrc.js:40
+onClick @ index-DblVTJrc.js:1128
+await in onClick
+(anonymous) @ index-DblVTJrc.js:40
+xse @ index-DblVTJrc.js:37
+vse @ index-DblVTJrc.js:37
+bse @ index-DblVTJrc.js:37
+$M @ index-DblVTJrc.js:37
+z$ @ index-DblVTJrc.js:37
+(anonymous) @ index-DblVTJrc.js:37
+aR @ index-DblVTJrc.js:40
+f$ @ index-DblVTJrc.js:37
+h4 @ index-DblVTJrc.js:37
+ET @ index-DblVTJrc.js:37
+Ose @ index-DblVTJrc.js:37Understand this error
+index-DblVTJrc.js:1128  POST https://app.proply.co.za/api/propdata/listings/sync 403 (Forbidden)
+onClick @ index-DblVTJrc.js:1128
+(anonymous) @ index-DblVTJrc.js:40
+xse @ index-DblVTJrc.js:37
+vse @ index-DblVTJrc.js:37
+bse @ index-DblVTJrc.js:37
+$M @ index-DblVTJrc.js:37
+z$ @ index-DblVTJrc.js:37
+(anonymous) @ index-DblVTJrc.js:37
+aR @ index-DblVTJrc.js:40
+f$ @ index-DblVTJrc.js:37
+h4 @ index-DblVTJrc.js:37
+ET @ index-DblVTJrc.js:37
+Ose @ index-DblVTJrc.js:37Understand this error

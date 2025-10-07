@@ -83,11 +83,15 @@ interface PropdataListing {
   reportId?: number;
 }
 
-interface ApiResponse {
-  total: number;
-  results: PropdataListing[];
-  next?: string;
-  previous?: string;
+interface PaginatedResponse {
+  data: PropdataListing[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
 }
 
 type SortField = 'address' | 'price' | 'propertyType' | 'bedrooms' | 'createdAt' | 'listingDate' | 'agentName' | 'reportGenerated';
@@ -97,6 +101,7 @@ export default function PropdataListingsPage() {
   const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [serverPage, setServerPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
     field: 'listingDate',
@@ -117,9 +122,18 @@ export default function PropdataListingsPage() {
     details?: string;
   }>>([]);
 
-  // Query to fetch PropData listings from database
-  const { data, isLoading, error, refetch } = useQuery<PropdataListing[]>({
-    queryKey: ['/api/propdata/listings'],
+  // Query to fetch PropData listings from database with pagination
+  const { data, isLoading, error, refetch } = useQuery<PaginatedResponse>({
+    queryKey: ['/api/propdata/listings', serverPage],
+    queryFn: async () => {
+      const response = await fetch(`/api/propdata/listings?page=${serverPage}&limit=50`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch listings');
+      }
+      return response.json();
+    },
     enabled: !!(user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin'), // Allow all admin types
   });
 
@@ -139,8 +153,9 @@ export default function PropdataListingsPage() {
     refetchInterval: 30000, // Refetch every 30 seconds to show updated sync status
   });
   
-  // Extract listings from response
-  const listings = data || [];
+  // Extract listings from paginated response
+  const listings = data?.data || [];
+  const paginationInfo = data?.pagination;
 
   // Function to add sync log entry
   const addSyncLog = (type: 'quick' | 'full' | 'image', message: string, details?: string) => {
@@ -890,7 +905,7 @@ export default function PropdataListingsPage() {
               </div>
               
               {getTotalPages() > 1 && (
-                <div className="mt-4 flex justify-center w-full">
+                <div className="mt-4 flex justify-between items-center w-full">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -902,7 +917,7 @@ export default function PropdataListingsPage() {
                     </Button>
                     
                     <span className="text-sm text-muted-foreground px-2">
-                      Page {currentPage} of {getTotalPages()}
+                      Page {currentPage} of {getTotalPages()} (Showing {getPageData().length} listings)
                     </span>
                     
                     <Button
@@ -914,6 +929,26 @@ export default function PropdataListingsPage() {
                       Next
                     </Button>
                   </div>
+                  
+                  {paginationInfo && paginationInfo.hasMore && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        Loaded {listings.length} of {paginationInfo.total} total listings
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setServerPage(prev => prev + 1)}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          'Load More from Server'
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </>
