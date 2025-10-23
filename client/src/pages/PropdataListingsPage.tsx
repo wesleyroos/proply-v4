@@ -629,7 +629,7 @@ export default function PropdataListingsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Agents</SelectItem>
-                {Array.from(new Set(listings
+                {listings && Array.from(new Set(listings
                   .filter(listing => listing.agentName)
                   .map(listing => listing.agentName)
                 )).sort().map((agentName) => (
@@ -657,7 +657,7 @@ export default function PropdataListingsPage() {
         <CardHeader>
           <CardTitle>Property Listings</CardTitle>
           <CardDescription>
-            {listings.length > 0 ? `${listings.length} total properties found` : 'Loading properties...'}
+            {listings && listings.length > 0 ? `${listings.length} total properties found` : 'Loading properties...'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -920,26 +920,6 @@ export default function PropdataListingsPage() {
                       Next
                     </Button>
                   </div>
-                  
-                  {paginationInfo && paginationInfo.hasMore && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        Loaded {listings.length} of {paginationInfo.total} total listings
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setServerPage(prev => prev + 1)}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          'Load More from Server'
-                        )}
-                      </Button>
-                    </div>
-                  )}
                 </div>
               )}
             </>
