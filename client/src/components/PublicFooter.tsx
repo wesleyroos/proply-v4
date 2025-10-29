@@ -127,7 +127,17 @@ export default function PublicFooter() {
           </div>
         </div>
         <div className="mt-12 border-t pt-8 text-center text-sm text-gray-500">
-          <p>© {currentYear} Proply. All rights reserved.</p>
+          <p>
+            © {currentYear} Proply. All rights reserved. | Design by{" "}
+            <a
+              href="https://www.grodigital.co.za/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-proply-blue underline"
+            >
+              Gro Digital
+            </a>
+          </p>
         </div>
       </div>
     </footer>
