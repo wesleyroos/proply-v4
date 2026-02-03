@@ -53,6 +53,9 @@ export default function PublicHeader() {
                 <Link href="/airbnb-yield-calculator" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-proply-blue">
                   Airbnb Yield Calculator
                 </Link>
+                <Link href="/deal-analyser" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-proply-blue">
+                  Deal Analyser
+                </Link>
               </div>
             </div>
             <Link href="/pricing" className="text-sm font-medium hover:text-proply-blue transition-colors">
@@ -145,6 +148,9 @@ export default function PublicHeader() {
                 <div className="hidden ml-4 mt-2 space-y-2">
                   <Link href="/airbnb-yield-calculator" className="block py-2 pl-2 text-sm text-gray-700 border-l-2 border-gray-200 hover:border-proply-blue hover:text-proply-blue">
                     Airbnb Yield Calculator
+                  </Link>
+                  <Link href="/deal-analyser" className="block py-2 pl-2 text-sm text-gray-700 border-l-2 border-gray-200 hover:border-proply-blue hover:text-proply-blue">
+                    Deal Analyser
                   </Link>
                 </div>
               </div>
