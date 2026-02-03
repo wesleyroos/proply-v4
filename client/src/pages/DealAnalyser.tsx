@@ -493,7 +493,7 @@ export default function DealAnalyser() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="airbnbFee">Airbnb/OTA Host Fee (%)</Label>
+                      <Label htmlFor="airbnbFee">Airbnb Host Fee (%)</Label>
                       <Input
                         id="airbnbFee"
                         placeholder="e.g. 3"
