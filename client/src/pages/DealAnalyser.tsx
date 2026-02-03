@@ -109,19 +109,21 @@ export default function DealAnalyser() {
     const totalVariableCosts = cleaningCost + laundryCost + amenitiesCost + otherVariableCost;
 
     // Self-managed: 3% Airbnb fee from gross revenue
-    // Professionally managed: 15.5% host-only fee from gross, then management fee from remainder
+    // Professionally managed: 15.5% host-only fee + 15% VAT from gross, then management fee from remainder
+    const SA_VAT_RATE = 0.15; // South African VAT rate
     let airbnbCommission: number;
     let managementCommission: number;
     let revenueAfterAirbnb: number;
     
     if (isProfessionallyManaged) {
-      // Host-only fee model: 15.5% deducted first
-      airbnbCommission = monthlyRevenue * (parseNumber(hostOnlyFee) / 100);
+      // Host-only fee model: 15.5% + VAT deducted first (as per Airbnb SA billing)
+      const baseFee = monthlyRevenue * (parseNumber(hostOnlyFee) / 100);
+      airbnbCommission = baseFee * (1 + SA_VAT_RATE); // Add 15% VAT on top
       revenueAfterAirbnb = monthlyRevenue - airbnbCommission;
       // Management fee applied to revenue after Airbnb takes their cut
       managementCommission = revenueAfterAirbnb * (parseNumber(managementFee) / 100);
     } else {
-      // Split-fee model: only 3% host fee
+      // Split-fee model: only 3% host fee (no VAT as it's a different fee structure)
       airbnbCommission = monthlyRevenue * (parseNumber(selfManagedFee) / 100);
       managementCommission = 0;
     }
@@ -185,11 +187,13 @@ export default function DealAnalyser() {
         const otherVariableCost = monthlyRevenue * (parseNumber(variableCosts.otherVariablePercent) / 100);
         const totalVariableCosts = cleaningCost + laundryCost + amenitiesCost + otherVariableCost;
 
+        const SA_VAT_RATE = 0.15;
         let airbnbCommission: number;
         let managementCommission: number;
         
         if (isProfessionallyManaged) {
-          airbnbCommission = monthlyRevenue * (parseNumber(hostOnlyFee) / 100);
+          const baseFee = monthlyRevenue * (parseNumber(hostOnlyFee) / 100);
+          airbnbCommission = baseFee * (1 + SA_VAT_RATE); // 15.5% + VAT
           const revenueAfterAirbnb = monthlyRevenue - airbnbCommission;
           managementCommission = revenueAfterAirbnb * (parseNumber(managementFee) / 100);
         } else {
@@ -525,7 +529,7 @@ export default function DealAnalyser() {
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="hostOnlyFee">Airbnb Host-Only Fee (%) <span className="text-gray-400 font-normal">PMS model</span></Label>
+                        <Label htmlFor="hostOnlyFee">Airbnb Host Service Fee (%) <span className="text-gray-400 font-normal">+ 15% VAT</span></Label>
                         <Input
                           id="hostOnlyFee"
                           placeholder="e.g. 15.5"
