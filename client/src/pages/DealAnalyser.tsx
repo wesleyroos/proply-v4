@@ -77,7 +77,6 @@ export default function DealAnalyser() {
   const [isProfessionallyManaged, setIsProfessionallyManaged] = useState(false);
   const [airbnbFee, setAirbnbFee] = useState("3");
   const [managementFee, setManagementFee] = useState("20");
-  const [transactionFee, setTransactionFee] = useState("2.5");
 
   const calculations = useMemo(() => {
     const rate = parseNumber(nightlyRate);
@@ -112,8 +111,7 @@ export default function DealAnalyser() {
     const managementCommission = isProfessionallyManaged 
       ? monthlyRevenue * (parseNumber(managementFee) / 100)
       : 0;
-    const transactionFees = monthlyRevenue * (parseNumber(transactionFee) / 100);
-    const totalCommissions = airbnbCommission + managementCommission + transactionFees;
+    const totalCommissions = airbnbCommission + managementCommission;
 
     const totalMonthlyCosts = totalFixedCosts + totalVariableCosts + totalCommissions;
     const monthlyProfit = monthlyRevenue - totalMonthlyCosts;
@@ -131,13 +129,12 @@ export default function DealAnalyser() {
       turnoversPerMonth,
       airbnbCommission,
       managementCommission,
-      transactionFees,
       totalCommissions,
       totalMonthlyCosts,
       monthlyProfit,
       annualProfit,
     };
-  }, [nightlyRate, occupancyRate, fixedCosts, variableCosts, isProfessionallyManaged, airbnbFee, managementFee, transactionFee]);
+  }, [nightlyRate, occupancyRate, fixedCosts, variableCosts, isProfessionallyManaged, airbnbFee, managementFee]);
 
   const profitMatrix = useMemo(() => {
     const nightlyRates = [500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000];
@@ -178,8 +175,7 @@ export default function DealAnalyser() {
         const managementCommission = isProfessionallyManaged 
           ? monthlyRevenue * (parseNumber(managementFee) / 100)
           : 0;
-        const transactionFees = monthlyRevenue * (parseNumber(transactionFee) / 100);
-        const totalCommissions = airbnbCommission + managementCommission + transactionFees;
+        const totalCommissions = airbnbCommission + managementCommission;
 
         const totalMonthlyCosts = totalFixedCosts + totalVariableCosts + totalCommissions;
         const monthlyProfit = monthlyRevenue - totalMonthlyCosts;
@@ -191,7 +187,7 @@ export default function DealAnalyser() {
     }
     
     return { matrix, occupancyRates };
-  }, [fixedCosts, variableCosts, isProfessionallyManaged, airbnbFee, managementFee, transactionFee]);
+  }, [fixedCosts, variableCosts, isProfessionallyManaged, airbnbFee, managementFee]);
 
   const handleFixedCostChange = (field: keyof FixedCosts, value: string) => {
     const cleaned = value.replace(/[^\d]/g, '');
@@ -516,17 +512,6 @@ export default function DealAnalyser() {
                         <p className="text-xs text-gray-500 mt-1">Commission: {formatCurrency(calculations.managementCommission)}/month</p>
                       </div>
                     )}
-                    <div>
-                      <Label htmlFor="transactionFee">Transaction/Payment Fee (%)</Label>
-                      <Input
-                        id="transactionFee"
-                        placeholder="e.g. 2.5"
-                        value={transactionFee}
-                        onChange={(e) => setTransactionFee(e.target.value.replace(/[^\d.]/g, ''))}
-                        className="mt-1"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Fees: {formatCurrency(calculations.transactionFees)}/month</p>
-                    </div>
                   </div>
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex justify-between items-center">
