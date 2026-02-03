@@ -75,7 +75,8 @@ export default function DealAnalyser() {
   });
 
   const [isProfessionallyManaged, setIsProfessionallyManaged] = useState(false);
-  const [airbnbFee, setAirbnbFee] = useState("3");
+  const [selfManagedFee, setSelfManagedFee] = useState("3");
+  const [hostOnlyFee, setHostOnlyFee] = useState("15.5");
   const [managementFee, setManagementFee] = useState("20");
 
   const calculations = useMemo(() => {
@@ -107,10 +108,23 @@ export default function DealAnalyser() {
     const otherVariableCost = monthlyRevenue * (parseNumber(variableCosts.otherVariablePercent) / 100);
     const totalVariableCosts = cleaningCost + laundryCost + amenitiesCost + otherVariableCost;
 
-    const airbnbCommission = monthlyRevenue * (parseNumber(airbnbFee) / 100);
-    const managementCommission = isProfessionallyManaged 
-      ? monthlyRevenue * (parseNumber(managementFee) / 100)
-      : 0;
+    // Self-managed: 3% Airbnb fee from gross revenue
+    // Professionally managed: 15.5% host-only fee from gross, then management fee from remainder
+    let airbnbCommission: number;
+    let managementCommission: number;
+    let revenueAfterAirbnb: number;
+    
+    if (isProfessionallyManaged) {
+      // Host-only fee model: 15.5% deducted first
+      airbnbCommission = monthlyRevenue * (parseNumber(hostOnlyFee) / 100);
+      revenueAfterAirbnb = monthlyRevenue - airbnbCommission;
+      // Management fee applied to revenue after Airbnb takes their cut
+      managementCommission = revenueAfterAirbnb * (parseNumber(managementFee) / 100);
+    } else {
+      // Split-fee model: only 3% host fee
+      airbnbCommission = monthlyRevenue * (parseNumber(selfManagedFee) / 100);
+      managementCommission = 0;
+    }
     const totalCommissions = airbnbCommission + managementCommission;
 
     const totalMonthlyCosts = totalFixedCosts + totalVariableCosts + totalCommissions;
@@ -134,7 +148,7 @@ export default function DealAnalyser() {
       monthlyProfit,
       annualProfit,
     };
-  }, [nightlyRate, occupancyRate, fixedCosts, variableCosts, isProfessionallyManaged, airbnbFee, managementFee]);
+  }, [nightlyRate, occupancyRate, fixedCosts, variableCosts, isProfessionallyManaged, selfManagedFee, hostOnlyFee, managementFee]);
 
   const profitMatrix = useMemo(() => {
     const nightlyRates = [500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000];
@@ -171,10 +185,17 @@ export default function DealAnalyser() {
         const otherVariableCost = monthlyRevenue * (parseNumber(variableCosts.otherVariablePercent) / 100);
         const totalVariableCosts = cleaningCost + laundryCost + amenitiesCost + otherVariableCost;
 
-        const airbnbCommission = monthlyRevenue * (parseNumber(airbnbFee) / 100);
-        const managementCommission = isProfessionallyManaged 
-          ? monthlyRevenue * (parseNumber(managementFee) / 100)
-          : 0;
+        let airbnbCommission: number;
+        let managementCommission: number;
+        
+        if (isProfessionallyManaged) {
+          airbnbCommission = monthlyRevenue * (parseNumber(hostOnlyFee) / 100);
+          const revenueAfterAirbnb = monthlyRevenue - airbnbCommission;
+          managementCommission = revenueAfterAirbnb * (parseNumber(managementFee) / 100);
+        } else {
+          airbnbCommission = monthlyRevenue * (parseNumber(selfManagedFee) / 100);
+          managementCommission = 0;
+        }
         const totalCommissions = airbnbCommission + managementCommission;
 
         const totalMonthlyCosts = totalFixedCosts + totalVariableCosts + totalCommissions;
@@ -187,7 +208,7 @@ export default function DealAnalyser() {
     }
     
     return { matrix, occupancyRates };
-  }, [fixedCosts, variableCosts, isProfessionallyManaged, airbnbFee, managementFee]);
+  }, [fixedCosts, variableCosts, isProfessionallyManaged, selfManagedFee, hostOnlyFee, managementFee]);
 
   const handleFixedCostChange = (field: keyof FixedCosts, value: string) => {
     const cleaned = value.replace(/[^\d]/g, '');
@@ -487,19 +508,33 @@ export default function DealAnalyser() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="airbnbFee">Airbnb Host Fee (%)</Label>
-                      <Input
-                        id="airbnbFee"
-                        placeholder="e.g. 3"
-                        value={airbnbFee}
-                        onChange={(e) => setAirbnbFee(e.target.value.replace(/[^\d.]/g, ''))}
-                        className="mt-1"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Platform fee: {formatCurrency(calculations.airbnbCommission)}/month</p>
+                  {!isProfessionallyManaged ? (
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <Label htmlFor="selfManagedFee">Airbnb Host Fee (%) <span className="text-gray-400 font-normal">split-fee model</span></Label>
+                        <Input
+                          id="selfManagedFee"
+                          placeholder="e.g. 3"
+                          value={selfManagedFee}
+                          onChange={(e) => setSelfManagedFee(e.target.value.replace(/[^\d.]/g, ''))}
+                          className="mt-1"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Platform fee: {formatCurrency(calculations.airbnbCommission)}/month</p>
+                      </div>
                     </div>
-                    {isProfessionallyManaged && (
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="hostOnlyFee">Airbnb Host-Only Fee (%) <span className="text-gray-400 font-normal">PMS model</span></Label>
+                        <Input
+                          id="hostOnlyFee"
+                          placeholder="e.g. 15.5"
+                          value={hostOnlyFee}
+                          onChange={(e) => setHostOnlyFee(e.target.value.replace(/[^\d.]/g, ''))}
+                          className="mt-1"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Platform fee: {formatCurrency(calculations.airbnbCommission)}/month</p>
+                      </div>
                       <div>
                         <Label htmlFor="managementFee">Management Fee (%) <span className="text-gray-400 font-normal">typically 15-25%</span></Label>
                         <Input
@@ -509,10 +544,10 @@ export default function DealAnalyser() {
                           onChange={(e) => setManagementFee(e.target.value.replace(/[^\d.]/g, ''))}
                           className="mt-1"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Commission: {formatCurrency(calculations.managementCommission)}/month</p>
+                        <p className="text-xs text-gray-500 mt-1">Commission: {formatCurrency(calculations.managementCommission)}/month (applied after Airbnb fee)</p>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex justify-between items-center">
                       <span className="font-medium text-gray-700">Total Commissions</span>
