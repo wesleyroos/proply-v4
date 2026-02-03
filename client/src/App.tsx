@@ -39,6 +39,7 @@ import { ToastDemo } from "./components/ToastDemo";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotificationsMenu from "./components/NotificationsMenu";
 import AirbnbYieldCalculator from "./pages/AirbnbYieldCalculator";
+import DealAnalyser from "./pages/DealAnalyser";
 import TransactionHistoryPage from "./pages/TransactionHistoryPage";
 
 import RiskIndexPage from "./pages/RiskIndexPage";
@@ -284,6 +285,11 @@ function App() {
             <Route path="/airbnb-yield-calculator" component={() => (
               <PageTransition>
                 <AirbnbYieldCalculator />
+              </PageTransition>
+            )} />
+            <Route path="/deal-analyser" component={() => (
+              <PageTransition>
+                <DealAnalyser />
               </PageTransition>
             )} />
             <Route path="/payment-setup-success" component={() => (
