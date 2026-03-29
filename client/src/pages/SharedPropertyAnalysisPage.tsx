@@ -123,18 +123,23 @@ export default function SharedPropertyAnalysisPage() {
   const totalCapitalRequired = deposit + bondRegistration + transferCosts;
 
   return (
-    <div className="px-4 py-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Property Analysis</h1>
-          <p className="text-muted-foreground mt-1">{property.address}</p>
+    <div className="min-h-screen bg-slate-50">
+      {/* Branded header */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <img src="/proply-logo-1.png" alt="Proply" className="h-8 object-contain" />
+          <div className="text-right">
+            <p className="text-sm font-semibold text-slate-800">Property Analysis Report</p>
+            <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" })}</p>
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-muted-foreground">Powered by</p>
-          <p className="text-base font-bold text-blue-600">Proply</p>
+        <div className="max-w-7xl mx-auto px-6 py-3 bg-slate-50 border-t">
+          <h1 className="text-xl font-bold text-slate-900">{property.address}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Shared via Proply · Property Investment Intelligence</p>
         </div>
       </div>
+
+    <div className="px-4 py-6 max-w-7xl mx-auto">
 
       <div className="space-y-6">
         {/* Top 3-column grid */}
@@ -481,12 +486,24 @@ export default function SharedPropertyAnalysisPage() {
         </div>
       </div>
 
+    </div>
+
       {/* Branded footer */}
-      <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-        <p className="text-sm text-muted-foreground">
-          This analysis was prepared using{" "}
-          <span className="font-semibold text-blue-600">Proply</span> — South Africa's property investment analysis platform.
-        </p>
+      <div className="bg-white border-t mt-12">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <img src="/proply-logo-1.png" alt="Proply" className="h-7 object-contain opacity-80" />
+            <p className="text-sm text-muted-foreground text-center">
+              This report was generated using <span className="font-semibold text-slate-700">Proply</span> — South Africa's property investment intelligence platform.
+            </p>
+            <p className="text-xs text-muted-foreground whitespace-nowrap">
+              © {new Date().getFullYear()} Proply Tech (Pty) Ltd
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground mt-4 text-center">
+            Disclaimer: All figures are indicative only and based on inputs provided at the time of analysis. This report does not constitute financial, legal, or investment advice.
+          </p>
+        </div>
       </div>
     </div>
   );
