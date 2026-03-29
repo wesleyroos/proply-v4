@@ -2200,7 +2200,7 @@ export function registerRoutes(app: Express): Server {
         .limit(1);
 
       if (!property) return res.status(404).send("Property not found");
-      if (property.userId !== req.user.id) return res.status(403).send("Not authorized");
+      if (property.userId !== req.user.id && !req.user.isAdmin) return res.status(403).send("Not authorized");
 
       // Reuse existing token or generate a new one
       const token = property.shareToken || randomUUID();
