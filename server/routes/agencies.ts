@@ -5,7 +5,7 @@ import { desc, count, eq, inArray, sql, and } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { branchesClient } from "../services/propdata/branchesClient";
+import { getBranchesClient } from "../services/propdata/branchesClient";
 
 const router = Router();
 
@@ -247,7 +247,8 @@ router.post("/agencies/search-franchise", async (req, res) => {
     }
 
     // Search franchises via PropData API using authenticated client
-    const franchises = await branchesClient.searchFranchises(name);
+    const client = getBranchesClient();
+    const franchises = await client.searchFranchises(name);
 
     if (franchises.length === 0) {
       return res.status(404).json({ error: "No agency found with that name in PropData" });
@@ -256,7 +257,7 @@ router.post("/agencies/search-franchise", async (req, res) => {
     // Return all matches so the user can pick the right one
     const results = await Promise.all(
       franchises.map(async (franchise) => {
-        const branches = await branchesClient.getBranchesForFranchise(franchise.id);
+        const branches = await client.getBranchesForFranchise(franchise.id);
         return {
           id: franchise.id,
           name: franchise.name,

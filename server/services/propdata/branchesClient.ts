@@ -36,4 +36,8 @@ export class BranchesClient extends BaseApiClient {
   }
 }
 
-export const branchesClient = new BranchesClient();
+let _branchesClient: BranchesClient | null = null;
+export function getBranchesClient(): BranchesClient {
+  if (!_branchesClient) _branchesClient = new BranchesClient();
+  return _branchesClient;
+}

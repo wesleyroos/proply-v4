@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@db";
 import { propdataListings, syncTracking, agencyBranches, valuationReports } from "@db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql, and } from "drizzle-orm";
 import { ListingsClient } from "../services/propdata/listingsClient";
 import { AgentsClient } from "../services/propdata/agentsClient";
 import { FilesClient } from "../services/propdata/filesClient";
@@ -72,8 +72,15 @@ router.get("/propdata/listings", async (req, res) => {
         .where(eq(agencyBranches.id, req.user.franchiseId))
         .orderBy(desc(propdataListings.listingDate));
     } else {
-      // System admins see all properties (no additional filtering)
-      listings = await query.orderBy(desc(propdataListings.listingDate));
+      // System admins see all properties, with optional agency filter
+      const agencySlug = req.query.agency as string | undefined;
+      if (agencySlug && agencySlug !== 'all') {
+        listings = await query
+          .where(eq(agencyBranches.slug, agencySlug))
+          .orderBy(desc(propdataListings.listingDate));
+      } else {
+        listings = await query.orderBy(desc(propdataListings.listingDate));
+      }
     }
     
     // Parse JSON fields in the response

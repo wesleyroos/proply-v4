@@ -105,6 +105,7 @@ export default function PropdataListingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>("all");
   const [agentFilter, setAgentFilter] = useState<string>("all");
+  const [agencyFilter, setAgencyFilter] = useState<string>("all");
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetailListing | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isQuickSyncing, setIsQuickSyncing] = useState(false);
@@ -117,11 +118,25 @@ export default function PropdataListingsPage() {
     details?: string;
   }>>([]);
 
+  // Query to fetch agencies for the filter dropdown
+  const { data: agenciesData } = useQuery<{ id: string; name: string; branches: { id: number; branchName: string; slug: string }[] }[]>({
+    queryKey: ['/api/agencies'],
+    queryFn: async () => {
+      const response = await fetch('/api/agencies', { credentials: 'include' });
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!user?.isAdmin,
+  });
+
   // Query to fetch PropData listings from database
   const { data: listings, isLoading, error, refetch } = useQuery<PropdataListing[]>({
-    queryKey: ['/api/propdata/listings'],
+    queryKey: ['/api/propdata/listings', agencyFilter],
     queryFn: async () => {
-      const response = await fetch('/api/propdata/listings', {
+      const url = agencyFilter && agencyFilter !== 'all'
+        ? `/api/propdata/listings?agency=${encodeURIComponent(agencyFilter)}`
+        : '/api/propdata/listings';
+      const response = await fetch(url, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -582,7 +597,7 @@ export default function PropdataListingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -640,11 +655,28 @@ export default function PropdataListingsPage() {
               </SelectContent>
             </Select>
 
+            {user?.isAdmin && agenciesData && agenciesData.length > 1 && (
+              <Select value={agencyFilter} onValueChange={(val) => { setAgencyFilter(val); setCurrentPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Agency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Agencies</SelectItem>
+                  {agenciesData.map((agency) => (
+                    <SelectItem key={agency.id} value={agency.id}>
+                      {agency.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
             <Button variant="outline" onClick={() => {
               setSearchTerm("");
               setStatusFilter("all");
               setPropertyTypeFilter("all");
               setAgentFilter("all");
+              setAgencyFilter("all");
               setSortConfig({ field: 'createdAt', direction: 'desc' });
             }}>
               Clear Filters
