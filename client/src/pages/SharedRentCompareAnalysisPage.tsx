@@ -92,7 +92,7 @@ export default function SharedRentCompareAnalysisPage() {
       </header>
 
       {/* ── Report content ── */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="px-4 sm:px-6 py-8">
         <RentCompareReport property={property} />
       </div>
 

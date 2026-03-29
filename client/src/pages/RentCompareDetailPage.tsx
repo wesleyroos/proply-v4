@@ -132,7 +132,7 @@ export default function RentCompareDetailPage() {
     <div className="min-h-screen bg-slate-50 pb-16">
       {/* ── Sticky action bar ── */}
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
+        <div className="px-6 py-3 flex items-center justify-between gap-3">
           <Link href="/properties">
             <Button variant="ghost" size="sm" className="gap-1.5 text-slate-600 hover:text-slate-900">
               <ArrowLeft className="h-4 w-4" />
@@ -168,7 +168,7 @@ export default function RentCompareDetailPage() {
       </div>
 
       {/* ── Report content ── */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="px-4 sm:px-6 py-8">
         <RentCompareReport property={property} />
       </div>
 

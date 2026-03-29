@@ -85,10 +85,12 @@ export async function generateRentComparePDF(
 
   // --- Header/footer helpers ---
   const addHeader = (pageTitle = "Rent Compare Analysis") => {
-    doc.setFillColor(...SLATE_800);
+    doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, pageWidth, 14, "F");
+    doc.setDrawColor(226, 232, 240);
+    doc.line(0, 14, pageWidth, 14);
     if (proplyLogo) doc.addImage(proplyLogo, "PNG", margin, 3, 28, 8);
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...SLATE_800);
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
     doc.text(pageTitle, pageWidth - margin, 9, { align: "right" });
