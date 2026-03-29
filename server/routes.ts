@@ -1818,6 +1818,42 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get single property analyzer result
+  app.get("/api/property-analyzer/properties/:id", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.id) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
+
+    try {
+      const [property] = await db
+        .select()
+        .from(propertyAnalyzerResults)
+        .where(eq(propertyAnalyzerResults.id, propertyId))
+        .limit(1);
+
+      if (!property) {
+        return res.status(404).send("Property not found");
+      }
+
+      if (property.userId !== req.user.id) {
+        return res.status(403).send("Not authorized to view this property");
+      }
+
+      res.json(property);
+    } catch (error) {
+      console.error("Error fetching property analyzer result:", error);
+      res.status(500).json({
+        error: "Failed to fetch property analyzer result",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
   // Delete property analyzer result
   app.delete("/api/property-analyzer/properties/:id", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.id) {

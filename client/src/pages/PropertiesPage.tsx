@@ -32,7 +32,6 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { PropertyAnalyzerModal } from "@/components/PropertyAnalyzerModal";
 
 interface Property {
   id: number;
@@ -76,7 +75,6 @@ export default function PropertiesPage() {
   const [propertyToDelete, setPropertyToDelete] = useState<Property | AnalyzerProperty | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProperty, setSelectedProperty] = useState<AnalyzerProperty | null>(null);
   const [previewProperty, setPreviewProperty] = useState<Property | null>(null);
   const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -478,14 +476,15 @@ export default function PropertiesPage() {
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                onClick={() => setSelectedProperty(property)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
+                              <Link href={`/properties/analyzer/${property.id}`}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </Link>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -638,11 +637,6 @@ export default function PropertiesPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <PropertyAnalyzerModal
-        property={selectedProperty}
-        open={!!selectedProperty}
-        onOpenChange={(open) => !open && setSelectedProperty(null)}
-      />
 
       <PropertyComparisonModal
         properties={selectedPropertiesForComparison}

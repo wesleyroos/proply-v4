@@ -156,19 +156,6 @@ export default function Sidebar() {
                 {expanded && <span className="text-white">Users</span>}
               </Link>
               <Link
-                href="/propdata-listings"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                  "hover:bg-white/10 text-white/80",
-                  location === "/propdata-listings"
-                    ? "bg-white/20 text-white"
-                    : "",
-                )}
-              >
-                <Database className="h-5 w-5 text-white" />
-                {expanded && <span className="text-white">All Listings</span>}
-              </Link>
-              <Link
                 href="/analytics"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
