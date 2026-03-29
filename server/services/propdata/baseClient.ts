@@ -95,9 +95,9 @@ export class BaseApiClient {
                 }
             );
 
-            if (response.data && Array.isArray(response.data.clients) && response.data.clients.length === 1) {
+            if (response.data && Array.isArray(response.data.clients) && response.data.clients.length >= 1) {
                 this.applyNewToken(response.data.clients[0].token);
-                console.log('Authentication successful');
+                console.log(`Authentication successful (${response.data.clients.length} client(s) on account)`);
             } else {
                 console.log('Authentication failed due to unexpected response');
                 console.log(response.data);
@@ -120,7 +120,7 @@ export class BaseApiClient {
                 }
             );
 
-            if (response.data && Array.isArray(response.data.clients) && response.data.clients.length === 1) {
+            if (response.data && Array.isArray(response.data.clients) && response.data.clients.length >= 1) {
                 this.applyNewToken(response.data.clients[0].token);
                 console.log('Refresh authentication successful');
             } else {
