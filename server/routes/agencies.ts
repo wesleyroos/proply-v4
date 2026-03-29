@@ -5,6 +5,7 @@ import { desc, count, eq, inArray, sql, and } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { branchesClient } from "../services/propdata/branchesClient";
 
 const router = Router();
 
@@ -233,7 +234,7 @@ router.post("/agencies/:agencyId/sync", async (req, res) => {
   }
 });
 
-// POST /api/agencies/search-franchise - Search for franchise in PropData
+// POST /api/agencies/search-franchise - Search for franchise/agency in PropData
 router.post("/agencies/search-franchise", async (req, res) => {
   try {
     if (!req.user?.isAdmin) {
@@ -242,98 +243,37 @@ router.post("/agencies/search-franchise", async (req, res) => {
 
     const { name } = req.body;
     if (!name) {
-      return res.status(400).json({ error: "Franchise name is required" });
+      return res.status(400).json({ error: "Agency name is required" });
     }
 
-    // Check if PropData API token exists
-    if (!process.env.PROPDATA_API_TOKEN) {
-      // Allow manual agency addition without API verification
-      return res.json({
-        id: `manual-${Date.now()}`,
-        name: name,
-        branches: [{
-          id: `manual-branch-${Date.now()}`,
-          name: `${name} - Main Branch`,
-          address: "Address to be confirmed"
-        }],
-        isManual: true,
-        note: "Agency added manually - PropData API access pending"
-      });
+    // Search franchises via PropData API using authenticated client
+    const franchises = await branchesClient.searchFranchises(name);
+
+    if (franchises.length === 0) {
+      return res.status(404).json({ error: "No agency found with that name in PropData" });
     }
 
-    // Call PropData API to search for franchise
-    const franchiseResponse = await fetch('https://staging.api-gw.propdata.net/branches/api/v1/franchises/search/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Token ${process.env.PROPDATA_API_TOKEN}`
-      },
-      body: JSON.stringify({
-        filters: {
-          name__icontains: name
-        }
+    // Return all matches so the user can pick the right one
+    const results = await Promise.all(
+      franchises.map(async (franchise) => {
+        const branches = await branchesClient.getBranchesForFranchise(franchise.id);
+        return {
+          id: franchise.id,
+          name: franchise.name,
+          branches: branches.map((b) => ({
+            id: b.id,
+            name: b.name,
+            address: b.address ?? null,
+          })),
+        };
       })
-    });
+    );
 
-    if (!franchiseResponse.ok) {
-      // Fall back to manual addition if API fails
-      return res.json({
-        id: `manual-${Date.now()}`,
-        name: name,
-        branches: [{
-          id: `manual-branch-${Date.now()}`,
-          name: `${name} - Main Branch`,
-          address: "Address to be confirmed"
-        }],
-        isManual: true,
-        note: "Agency added manually - PropData API search failed"
-      });
-    }
-
-    const franchiseData = await franchiseResponse.json();
-    
-    if (!franchiseData.results || franchiseData.results.length === 0) {
-      return res.status(404).json({ error: "No franchise found with that name" });
-    }
-
-    // Get the first franchise match
-    const franchise = franchiseData.results[0];
-
-    // Get branches for this franchise
-    const branchesResponse = await fetch('https://staging.api-gw.propdata.net/branches/api/v1/branches/search/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Token ${process.env.PROPDATA_API_TOKEN}`
-      },
-      body: JSON.stringify({
-        filters: {
-          franchises: [franchise.id]
-        }
-      })
-    });
-
-    if (!branchesResponse.ok) {
-      throw new Error('Failed to fetch branches from PropData API');
-    }
-
-    const branchesData = await branchesResponse.json();
-
-    const result = {
-      id: franchise.id,
-      name: franchise.name,
-      branches: branchesData.results.map((branch: any) => ({
-        id: branch.id,
-        name: branch.name,
-        address: branch.address
-      }))
-    };
-
-    return res.json(result);
+    return res.json({ results });
   } catch (error) {
     console.error("Error searching franchise:", error);
-    return res.status(500).json({ 
-      error: "Failed to search franchise", 
+    return res.status(500).json({
+      error: "Failed to search PropData",
       details: error instanceof Error ? error.message : "Unknown error"
     });
   }

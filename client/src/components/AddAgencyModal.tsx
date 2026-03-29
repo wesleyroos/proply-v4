@@ -10,82 +10,112 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Loader2, Building2, Key } from "lucide-react";
+import { Plus, Loader2, Building2, Search, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface AddAgencyData {
-  propdataKey: string;
-  branchName: string;
-  franchiseName: string | null;
+interface PropDataBranch {
+  id: number;
+  name: string;
+  address: string | null;
 }
 
-interface AddAgencyModalProps {
-  children?: React.ReactNode;
+interface PropDataResult {
+  id: number;
+  name: string;
+  branches: PropDataBranch[];
 }
 
-export function AddAgencyModal({ children }: AddAgencyModalProps) {
+type Step = "search" | "select" | "confirm";
+
+export function AddAgencyModal({ children }: { children?: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [propdataKey, setPropdataKey] = useState("");
-  const [branchName, setBranchName] = useState("");
-  const [franchiseName, setFranchiseName] = useState("");
-  
+  const [step, setStep] = useState<Step>("search");
+  const [searchName, setSearchName] = useState("");
+  const [results, setResults] = useState<PropDataResult[]>([]);
+  const [selectedFranchise, setSelectedFranchise] = useState<PropDataResult | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<PropDataBranch | null>(null);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Add agency integration
-  const addAgencyMutation = useMutation({
-    mutationFn: async (agencyData: AddAgencyData) => {
-      const response = await fetch('/api/agencies/add-integration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(agencyData),
+  const searchMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const res = await fetch("/api/agencies/search-franchise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
       });
-      if (!response.ok) throw new Error('Failed to add agency');
-      return response.json();
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Search failed");
+      }
+      return res.json() as Promise<{ results: PropDataResult[] }>;
     },
     onSuccess: (data) => {
-      toast({
-        title: "Agency added successfully",
-        description: `${data.franchiseName} integration has been created.`,
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/agencies"] });
-      handleReset();
-      setIsOpen(false);
+      setResults(data.results);
+      setStep("select");
     },
     onError: (error: any) => {
       toast({
-        title: "Failed to add agency",
-        description: error.message || "Please try again",
+        title: "Agency not found",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const handleSubmit = () => {
-    if (!propdataKey.trim() || !branchName.trim()) {
+  const addMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedFranchise || !selectedBranch) throw new Error("No selection");
+      const res = await fetch("/api/agencies/add-integration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propdataKey: String(selectedBranch.id),
+          branchName: selectedBranch.name,
+          franchiseName: selectedFranchise.name,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to add agency");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
       toast({
-        title: "Please fill required fields",
-        description: "PropData key and branch name are required.",
+        title: "Agency added",
+        description: `${selectedFranchise?.name} — ${selectedBranch?.name} is now syncing.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/agencies"] });
+      handleClose();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to add agency",
+        description: error.message,
         variant: "destructive",
       });
-      return;
-    }
+    },
+  });
 
-    addAgencyMutation.mutate({
-      propdataKey: propdataKey.trim(),
-      branchName: branchName.trim(),
-      franchiseName: franchiseName.trim() || branchName.trim(), // Use branch name as franchise name for standalone agencies
-    });
+  const handleClose = () => {
+    setIsOpen(false);
+    setStep("search");
+    setSearchName("");
+    setResults([]);
+    setSelectedFranchise(null);
+    setSelectedBranch(null);
   };
 
-  const handleReset = () => {
-    setPropdataKey("");
-    setBranchName("");
-    setFranchiseName("");
+  const handleSelectBranch = (franchise: PropDataResult, branch: PropDataBranch) => {
+    setSelectedFranchise(franchise);
+    setSelectedBranch(branch);
+    setStep("confirm");
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); else setIsOpen(true); }}>
       <DialogTrigger asChild>
         {children || (
           <Button className="flex items-center gap-2">
@@ -94,84 +124,126 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="w-5 h-5" />
-            Add New Agency
+            Add Agency Integration
           </DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-4">
-          {/* PropData Key */}
-          <div className="space-y-2">
-            <Label htmlFor="propdataKey" className="flex items-center gap-2">
-              <Key className="w-4 h-4" />
-              PropData Access Key
-            </Label>
-            <Input
-              id="propdataKey"
-              placeholder="e.g., 1090"
-              value={propdataKey}
-              onChange={(e) => setPropdataKey(e.target.value)}
-            />
-            <p className="text-sm text-muted-foreground">
-              The numeric branch ID from PropData (find it in the PropData dashboard or API).
-            </p>
-          </div>
 
-          {/* Branch Name */}
-          <div className="space-y-2">
-            <Label htmlFor="branchName">Branch/Agency Name</Label>
-            <Input
-              id="branchName"
-              placeholder="e.g., Atlantic Seaboard or NOX Properties"
-              value={branchName}
-              onChange={(e) => setBranchName(e.target.value)}
-            />
+        {/* STEP 1: Search */}
+        {step === "search" && (
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              The specific branch or agency name that PropData will use to identify this office.
+              Search for the agency by name to find them in PropData.
             </p>
-          </div>
-
-          {/* Franchise Name */}
-          <div className="space-y-2">
-            <Label htmlFor="franchiseName">Franchise Name (Optional)</Label>
-            <Input
-              id="franchiseName"
-              placeholder="e.g., Pam Golding Properties (leave empty for independent agencies)"
-              value={franchiseName}
-              onChange={(e) => setFranchiseName(e.target.value)}
-            />
-            <p className="text-sm text-muted-foreground">
-              Only needed if this branch belongs to a larger franchise group.
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-4">
-            <Button 
-              onClick={handleSubmit}
-              disabled={addAgencyMutation.isPending}
-              className="flex-1"
+            <div className="space-y-2">
+              <Label htmlFor="searchName">Agency Name</Label>
+              <Input
+                id="searchName"
+                placeholder="e.g., Prospr Real Estate"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchName.trim()) {
+                    searchMutation.mutate(searchName.trim());
+                  }
+                }}
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={() => searchMutation.mutate(searchName.trim())}
+              disabled={!searchName.trim() || searchMutation.isPending}
             >
-              {addAgencyMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Adding Agency...
-                </>
+              {searchMutation.isPending ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Searching PropData...</>
               ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Agency
-                </>
+                <><Search className="w-4 h-4 mr-2" />Search</>
               )}
             </Button>
-            <Button variant="outline" onClick={handleReset}>
-              Reset
-            </Button>
           </div>
-        </div>
+        )}
+
+        {/* STEP 2: Select branch */}
+        {step === "select" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {results.length} result{results.length !== 1 ? "s" : ""} found. Select the branch to add.
+              </p>
+              <Button variant="ghost" size="sm" onClick={() => setStep("search")}>
+                ← Back
+              </Button>
+            </div>
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+              {results.map((franchise) => (
+                <div key={franchise.id} className="border rounded-lg p-3 space-y-2">
+                  <p className="font-medium text-sm">{franchise.name}</p>
+                  {franchise.branches.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No branches found</p>
+                  ) : (
+                    franchise.branches.map((branch) => (
+                      <button
+                        key={branch.id}
+                        onClick={() => handleSelectBranch(franchise, branch)}
+                        className="w-full text-left flex items-start justify-between rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors border"
+                      >
+                        <span>
+                          <span className="font-medium">{branch.name}</span>
+                          {branch.address && (
+                            <span className="block text-xs text-muted-foreground">{branch.address}</span>
+                          )}
+                          <span className="block text-xs text-muted-foreground">ID: {branch.id}</span>
+                        </span>
+                        <Plus className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
+                      </button>
+                    ))
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: Confirm */}
+        {step === "confirm" && selectedFranchise && selectedBranch && (
+          <div className="space-y-4">
+            <div className="rounded-lg border bg-muted/40 p-4 space-y-2 text-sm">
+              <div className="flex items-center gap-2 font-medium">
+                <Check className="w-4 h-4 text-green-500" />
+                Ready to add
+              </div>
+              <div><span className="text-muted-foreground">Franchise:</span> {selectedFranchise.name}</div>
+              <div><span className="text-muted-foreground">Branch:</span> {selectedBranch.name}</div>
+              {selectedBranch.address && (
+                <div><span className="text-muted-foreground">Address:</span> {selectedBranch.address}</div>
+              )}
+              <div><span className="text-muted-foreground">PropData branch ID:</span> {selectedBranch.id}</div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Listings for this branch will start syncing automatically within 5 minutes.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                onClick={() => addMutation.mutate()}
+                disabled={addMutation.isPending}
+              >
+                {addMutation.isPending ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Adding...</>
+                ) : (
+                  <><Plus className="w-4 h-4 mr-2" />Add Agency</>
+                )}
+              </Button>
+              <Button variant="outline" onClick={() => setStep("select")}>
+                Back
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
