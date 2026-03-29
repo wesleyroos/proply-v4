@@ -437,7 +437,7 @@ export default function PropertyAnalyzerPage() {
       revenueProjections: analysisResult.analysis.revenueProjections || {},
       operatingExpenses: analysisResult.analysis.operatingExpenses || {},
       longTermOperatingExpenses: analysisResult.analysis.longTermOperatingExpenses || {},
-      netOperatingIncome: analysisResult.netOperatingIncome || {},
+      netOperatingIncome: analysisResult.analysis.netOperatingIncome || {},
       investmentMetrics: analysisResult.analysis.investmentMetrics || {},
     };
 

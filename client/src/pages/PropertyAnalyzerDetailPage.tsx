@@ -126,7 +126,9 @@ export default function PropertyAnalyzerDetailPage() {
 
   const revenueProjections = property.revenueProjections || {};
   const operatingExpenses = property.operatingExpenses || {};
-  const netOperatingIncome = property.netOperatingIncome || null;
+  // Guard against previously saved analyses that stored {} instead of the real NOI
+  const rawNoi = property.netOperatingIncome;
+  const netOperatingIncome = rawNoi && (rawNoi as any).year1 ? rawNoi : null;
   const investmentMetrics = property.investmentMetrics || {};
 
   const bondRegistration = calculateBondRegistration(purchasePrice, !removeVat);
