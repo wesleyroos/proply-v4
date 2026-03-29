@@ -4,3 +4,24 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Replit internals
+.replit
+replit.nix
+.breakpoints
+.local/
+
+# Temp / test files
+temp_pdfs/
+temp_*.tsx
+test_*.js
+test_*.pdf
+payfast_*.js
+cookies.txt
+test_cookies.txt
+temp_session_cookie.txt
