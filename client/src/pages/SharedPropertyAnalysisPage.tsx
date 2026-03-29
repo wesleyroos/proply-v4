@@ -16,7 +16,6 @@ import {
   BedDouble,
   Bath,
   Ruler,
-  Home,
 } from "lucide-react";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
@@ -138,9 +137,10 @@ export default function SharedPropertyAnalysisPage() {
       <div className="px-4 sm:px-6 py-8 space-y-5">
 
         {/* ── Hero card ── */}
-        <div className="bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900 rounded-2xl p-8 shadow-lg">
-          <div className="flex items-start justify-between gap-6">
-            <div className="flex-1 min-w-0">
+        <div className="bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900 rounded-2xl shadow-lg overflow-hidden">
+          <div className="flex flex-col md:flex-row">
+            {/* Left: text content */}
+            <div className="flex-1 p-8">
               <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.15em] mb-2">
                 Property Analysis Report
               </p>
@@ -163,10 +163,14 @@ export default function SharedPropertyAnalysisPage() {
                   </span>
                 ))}
               </div>
+              <div className="mt-6 hidden sm:block">
+                <p className="text-slate-500 text-[10px] uppercase tracking-wide">Analysis Date</p>
+                <p className="text-slate-200 text-sm font-semibold mt-0.5">{analysisDate}</p>
+              </div>
             </div>
-            <div className="text-right shrink-0 hidden sm:block">
-              <p className="text-slate-500 text-[10px] uppercase tracking-wide">Analysis Date</p>
-              <p className="text-slate-200 text-sm font-semibold mt-1">{analysisDate}</p>
+            {/* Right: map */}
+            <div className="w-full md:w-80 h-56 md:h-auto shrink-0 opacity-90">
+              <MapView address={property.address} />
             </div>
           </div>
         </div>
@@ -212,18 +216,6 @@ export default function SharedPropertyAnalysisPage() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* ── Location Map ── */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-            <Home className="h-4 w-4 text-slate-400" />
-            <h3 className="font-bold text-slate-800 text-[15px]">Location</h3>
-            <p className="text-[12px] text-slate-400 ml-1">{property.address}</p>
-          </div>
-          <div className="h-[260px]">
-            <MapView address={property.address} />
-          </div>
         </div>
 
         {/* ── Revenue comparison ── */}
