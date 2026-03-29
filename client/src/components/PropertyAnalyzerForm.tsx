@@ -842,14 +842,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           step="0.01"
                           min="0"
                           max="100"
-                          placeholder="e.g. 11.75"
+                          placeholder="e.g. 10.25"
                           {...field}
                           onChange={(e) =>
                             field.onChange(e.target.valueAsNumber)
                           }
                         />
                       </FormControl>
-                      <p className="text-xs text-muted-foreground mt-1">SA prime rate is typically prime (11.75%) to prime + 2%</p>
+                      <p className="text-xs text-muted-foreground mt-1">SA prime rate is currently 10.25%. Most bonds are priced at prime to prime + 2%</p>
                       <FormMessage />
                     </FormItem>
                   )}
