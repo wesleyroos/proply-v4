@@ -35,16 +35,21 @@ import {
 
 interface Property {
   id: number;
+  userId?: number;
   title: string;
   address: string;
   bedrooms: string;
   bathrooms: string;
+  shortTermNightly: number;
+  annualOccupancy: string;
   longTermMonthly: number;
   shortTermAnnual: number;
   shortTermAfterFees: number;
   breakEvenOccupancy: number;
   propertyType: 'rent_compare' | 'property_analyzer';
   createdAt: string;
+  userEmail?: string | null;
+  userName?: string | null;
 }
 
 interface AnalyzerProperty {
@@ -85,8 +90,8 @@ export default function PropertiesPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { hasAccess: hasProAccess } = useProAccess();
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
-    field: 'address',
-    direction: 'asc'
+    field: 'createdAt',
+    direction: 'desc'
   });
   const [isDeletingProperties, setIsDeletingProperties] = useState(false);
 
@@ -557,19 +562,25 @@ export default function PropertiesPage() {
                       <th className="py-3 px-4 text-right">Short-Term Annual</th>
                       <th className="py-3 px-4 text-right">Break-even</th>
                       <th className="py-3 px-4 text-right">Added</th>
+                      {user?.isAdmin && (
+                        <>
+                          <th className="py-3 px-4 text-right">Run On</th>
+                          <th className="py-3 px-4 text-right">Run By</th>
+                        </>
+                      )}
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {isLoadingProperties ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={user?.isAdmin ? 9 : 7} className="text-center py-8 text-muted-foreground">
                           Loading properties...
                         </td>
                       </tr>
                     ) : !properties?.length ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={user?.isAdmin ? 9 : 7} className="text-center py-8 text-muted-foreground">
                           No properties analyzed yet.{' '}
                           <Link href="/dashboard/rent-compare" className="text-primary hover:underline">
                             Compare your first property
@@ -595,9 +606,21 @@ export default function PropertiesPage() {
                           <td className="py-3 px-4 text-right">{formatter.format(property.longTermMonthly)}</td>
                           <td className="py-3 px-4 text-right">{formatter.format(property.shortTermAfterFees)}</td>
                           <td className="py-3 px-4 text-right">{property.breakEvenOccupancy}%</td>
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            {new Date(property.createdAt).toLocaleDateString()}
+                          <td className="py-3 px-4 text-right whitespace-nowrap text-sm text-muted-foreground">
+                            {new Date(property.createdAt).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
+                          {user?.isAdmin && (
+                            <>
+                              <td className="py-3 px-4 text-right whitespace-nowrap text-sm text-muted-foreground">
+                                {new Date(property.createdAt).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </td>
+                              <td className="py-3 px-4 text-right text-sm text-muted-foreground max-w-[140px]">
+                                <div className="truncate text-right" title={property.userEmail || ''}>
+                                  {property.userName || property.userEmail || `User ${property.userId}`}
+                                </div>
+                              </td>
+                            </>
+                          )}
                           <td className="py-3 px-4">
                             <div className="flex justify-end gap-2">
                               <Button

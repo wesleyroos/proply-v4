@@ -1294,13 +1294,43 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
-      console.log("Fetching properties for user:", req.user.id);
+      if (req.user.isAdmin) {
+        const allProperties = await db
+          .select({
+            id: properties.id,
+            userId: properties.userId,
+            title: properties.title,
+            address: properties.address,
+            bedrooms: properties.bedrooms,
+            bathrooms: properties.bathrooms,
+            longTermRental: properties.longTermRental,
+            annualEscalation: properties.annualEscalation,
+            shortTermNightly: properties.shortTermNightly,
+            annualOccupancy: properties.annualOccupancy,
+            managementFee: properties.managementFee,
+            propertyType: properties.propertyType,
+            longTermMonthly: properties.longTermMonthly,
+            longTermAnnual: properties.longTermAnnual,
+            shortTermMonthly: properties.shortTermMonthly,
+            shortTermAnnual: properties.shortTermAnnual,
+            shortTermAfterFees: properties.shortTermAfterFees,
+            breakEvenOccupancy: properties.breakEvenOccupancy,
+            createdAt: properties.createdAt,
+            userEmail: users.email,
+            userName: users.username,
+          })
+          .from(properties)
+          .leftJoin(users, eq(properties.userId, users.id))
+          .orderBy(desc(properties.createdAt));
+
+        return res.json(allProperties);
+      }
 
       const userProperties = await db
         .select()
         .from(properties)
         .where(eq(properties.userId, req.user.id))
-        .orderBy(properties.createdAt);
+        .orderBy(desc(properties.createdAt));
 
       res.json(userProperties);
     } catch (error) {
@@ -1834,7 +1864,7 @@ export function registerRoutes(app: Express): Server {
         .select()
         .from(propertyAnalyzerResults)
         .where(eq(propertyAnalyzerResults.userId, req.user.id))
-        .orderBy(propertyAnalyzerResults.createdAt);
+        .orderBy(desc(propertyAnalyzerResults.createdAt));
 
       res.json(results);
     } catch (error) {
