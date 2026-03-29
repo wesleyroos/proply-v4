@@ -173,8 +173,8 @@ export default function PropertyAnalyzerDetailPage() {
         propertyDescription: property.propertyDescription,
       },
       analysis: {
-        netOperatingIncome,
-        longTermNetOperatingIncome,
+        netOperatingIncome:         netOperatingIncome         ?? emptyNoi(),
+        longTermNetOperatingIncome: longTermNetOperatingIncome ?? emptyNoi(),
         revenueProjections,
       },
       performance: {
@@ -545,6 +545,11 @@ export default function PropertyAnalyzerDetailPage() {
 }
 
 // ── Tiny helpers ────────────────────────────────────────────────────────────
+function emptyNoi() {
+  const yr = { value: 0, annualCashflow: 0, cumulativeRentalIncome: 0, netWorthChange: 0 };
+  return { year1: yr, year2: yr, year3: yr, year4: yr, year5: yr, year10: yr, year20: yr };
+}
+
 function RevRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between py-2.5">
