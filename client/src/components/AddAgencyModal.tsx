@@ -111,12 +111,12 @@ export function AddAgencyModal({ children }: AddAgencyModalProps) {
             </Label>
             <Input
               id="propdataKey"
-              placeholder="Enter unique PropData key"
+              placeholder="e.g., 1090"
               value={propdataKey}
               onChange={(e) => setPropdataKey(e.target.value)}
             />
             <p className="text-sm text-muted-foreground">
-              Unique key provided by PropData for accessing this agency's listings.
+              The numeric branch ID from PropData (find it in the PropData dashboard or API).
             </p>
           </div>
 

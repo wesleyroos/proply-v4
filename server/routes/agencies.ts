@@ -428,56 +428,49 @@ router.post("/agencies/add-integration", async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const { id: franchiseId, name: franchiseName, branches, isManual, note } = req.body;
-    
-    if (!franchiseId || !franchiseName || !branches || !Array.isArray(branches)) {
-      return res.status(400).json({ error: "Invalid franchise data" });
+    const { propdataKey, branchName, franchiseName } = req.body;
+
+    if (!propdataKey?.trim() || !branchName?.trim()) {
+      return res.status(400).json({ error: "PropData key and branch name are required" });
     }
+
+    const effectiveFranchiseName = franchiseName?.trim() || branchName.trim();
 
     // Generate slug from franchise name
-    const slug = franchiseName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    const slug = effectiveFranchiseName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
-    // Check if this franchise is already integrated by slug (for manual entries)
-    const existingBranch = await db
+    // Check for duplicate branch ID
+    const existingByKey = await db
       .select()
       .from(agencyBranches)
-      .where(eq(agencyBranches.slug, slug))
+      .where(eq(agencyBranches.propdataBranchId, propdataKey.trim()))
       .limit(1);
 
-    if (existingBranch.length > 0) {
-      return res.status(400).json({ error: "This franchise is already integrated" });
+    if (existingByKey.length > 0) {
+      return res.status(400).json({ error: "An agency with this PropData key is already integrated" });
     }
 
-    // Determine status based on whether this is manual or API-verified
-    const status = isManual ? 'pending_activation' : 'active';
-    const syncEnabled = !isManual;
-
-    // Insert all branches
-    const branchRecords = branches.map((branch: any) => ({
-      franchiseName,
+    await db.insert(agencyBranches).values({
+      franchiseName: effectiveFranchiseName,
       slug,
-      branchName: branch.name,
-      propdataFranchiseId: isManual ? null : franchiseId,
-      propdataBranchId: isManual ? null : branch.id,
+      branchName: branchName.trim(),
+      propdataFranchiseId: slug,
+      propdataBranchId: propdataKey.trim(),
       provider: 'PropData',
-      status,
-      autoSyncEnabled: syncEnabled,
+      status: 'active',
+      autoSyncEnabled: true,
       syncFrequency: '5 minutes',
-      notes: note || null
-    }));
-
-    await db.insert(agencyBranches).values(branchRecords);
+    });
 
     return res.json({
       success: true,
-      franchiseName,
-      branchCount: branches.length,
-      message: `Successfully integrated ${franchiseName} with ${branches.length} branches`
+      franchiseName: effectiveFranchiseName,
+      message: `Successfully integrated ${effectiveFranchiseName}`
     });
   } catch (error) {
     console.error("Error adding agency integration:", error);
-    return res.status(500).json({ 
-      error: "Failed to add agency integration", 
+    return res.status(500).json({
+      error: "Failed to add agency integration",
       details: error instanceof Error ? error.message : "Unknown error"
     });
   }
