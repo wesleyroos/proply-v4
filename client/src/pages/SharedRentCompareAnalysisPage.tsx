@@ -11,7 +11,6 @@ import {
   Building2,
   TrendingUp,
 } from "lucide-react";
-import PropertyMap from "@/components/PropertyMap";
 import ComparisonChart from "@/components/ComparisonChart";
 import { formatter } from "@/utils/formatting";
 
@@ -100,22 +99,7 @@ export default function SharedRentCompareAnalysisPage() {
 
       <div className="px-6 py-8 space-y-6 max-w-7xl mx-auto">
         {/* Top grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Map */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-indigo-500" />
-                Location
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg overflow-hidden">
-                <PropertyMap address={property.address} />
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Property Details */}
           <Card>
             <CardHeader>

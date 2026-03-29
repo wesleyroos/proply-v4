@@ -18,7 +18,6 @@ import {
   ArrowUpDown,
   Share2,
 } from "lucide-react";
-import PropertyMap from "@/components/PropertyMap";
 import ComparisonChart from "@/components/ComparisonChart";
 import { formatter } from "@/utils/formatting";
 
@@ -117,7 +116,7 @@ export default function RentCompareDetailPage() {
   };
 
   return (
-    <div className="px-4 py-6">
+    <div className="px-4 py-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
@@ -146,23 +145,8 @@ export default function RentCompareDetailPage() {
       </div>
 
       <div className="space-y-6">
-        {/* Top 2-column grid: map + property details */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Map */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-indigo-500" />
-                Location
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg overflow-hidden">
-                <PropertyMap address={property.address} />
-              </div>
-            </CardContent>
-          </Card>
-
+        {/* Top 2-column grid: property details + key metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Property Details */}
           <Card>
             <CardHeader>
