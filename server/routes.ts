@@ -2078,7 +2078,7 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).send("Property not found");
       }
 
-      if (property.userId !== req.user.id) {
+      if (property.userId !== req.user.id && !req.user.isAdmin) {
         return res.status(403).send("Not authorized to view this property");
       }
 
@@ -2113,7 +2113,7 @@ export function registerRoutes(app: Express): Server {
       if (!existing) {
         return res.status(404).send("Property not found");
       }
-      if (existing.userId !== req.user.id) {
+      if (existing.userId !== req.user.id && !req.user.isAdmin) {
         return res.status(403).send("Not authorized");
       }
 
@@ -2160,7 +2160,7 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).send("Property not found");
       }
 
-      if (property.userId !== req.user.id) {
+      if (property.userId !== req.user.id && !req.user.isAdmin) {
         return res.status(403).send("Not authorized to delete this property");
       }
 
