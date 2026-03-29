@@ -1448,7 +1448,7 @@ export function registerRoutes(app: Express): Server {
       const longTermAnnualNum = longTermMonthlyNum * 12;
       const stNightlyNum = parseFloat(stNightly) || 0;
       const occupancyRate = parseFloat(annOccupancy) / 100;
-      const mgmtFeeNum = parseFloat(mgmtFee) || 0;
+      const mgmtFeeNum = (parseFloat(mgmtFee) || 0) / 100; // convert % input to decimal
 
       const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
       const shortTermAnnualNum = SEASONALITY_FACTORS.reduce((sum, factor, month) => {
@@ -1478,7 +1478,7 @@ export function registerRoutes(app: Express): Server {
           annualEscalation: String(annualEscalation),
           shortTermNightly: String(stNightly),
           annualOccupancy: String(annOccupancy),
-          managementFee: String(mgmtFee),
+          managementFee: String(mgmtFeeNum), // stored as decimal (0.20 for 20%)
           longTermMonthly: String(longTermMonthlyNum),
           longTermAnnual: String(longTermAnnualNum),
           shortTermMonthly: String(shortTermMonthlyNum),

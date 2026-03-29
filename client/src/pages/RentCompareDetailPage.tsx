@@ -83,7 +83,7 @@ export default function RentCompareDetailPage() {
       annualEscalation: property?.annualEscalation || "",
       shortTermNightly: property?.shortTermNightly || "",
       annualOccupancy: property?.annualOccupancy || "",
-      managementFee: property?.managementFee || "",
+      managementFee: property?.managementFee ? String(Number(property.managementFee) * 100) : "",
     });
     setIsEditing(true);
   };
@@ -279,7 +279,7 @@ export default function RentCompareDetailPage() {
                 <p className="text-sm font-semibold text-slate-600">Fees</p>
                 <p className="mt-1 text-sm text-slate-700">
                   Platform: {platformFee}%
-                  {managementFee > 0 && ` · Management: ${managementFee}%`}
+                  {managementFee > 0 && ` · Management: ${(managementFee * 100).toFixed(1)}%`}
                 </p>
               </div>
             </CardContent>
@@ -341,9 +341,9 @@ export default function RentCompareDetailPage() {
                 <Input type="number" value={editForm.annualOccupancy || ""} onChange={e => setEditForm(f => ({ ...f, annualOccupancy: e.target.value }))} />
               </div>
               <div className="col-span-2">
-                <Label>Management Fee (decimal, e.g. 0.20 for 20%)</Label>
-                <Input type="number" step="0.01" value={editForm.managementFee || ""} onChange={e => setEditForm(f => ({ ...f, managementFee: e.target.value }))} />
-                <p className="text-xs text-muted-foreground mt-1">Enter 0 for no management fee. Platform fee (3% or 15%) is set automatically.</p>
+                <Label>Management Fee (%)</Label>
+                <Input type="number" step="0.1" value={editForm.managementFee || ""} onChange={e => setEditForm(f => ({ ...f, managementFee: e.target.value }))} />
+                <p className="text-xs text-muted-foreground mt-1">Enter 0 for no management fee. E.g. enter 20 for 20%. Platform fee (3% or 15%) is set automatically.</p>
               </div>
             </div>
           </div>
