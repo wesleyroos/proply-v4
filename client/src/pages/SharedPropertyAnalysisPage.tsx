@@ -134,7 +134,7 @@ export default function SharedPropertyAnalysisPage() {
         </div>
       </header>
 
-      <div className="px-4 sm:px-6 py-8 space-y-5">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-5">
 
         {/* ── Hero card ── */}
         <div className="bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900 rounded-2xl shadow-lg overflow-hidden">
@@ -416,7 +416,7 @@ export default function SharedPropertyAnalysisPage() {
 
       {/* ── Branded footer ── */}
       <footer className="bg-white border-t border-slate-200 mt-8">
-        <div className="px-6 py-8">
+        <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <img src="/proply-logo-1.png" alt="Proply" className="h-7 object-contain opacity-70" />
             <p className="text-[12px] text-slate-500 text-center">
