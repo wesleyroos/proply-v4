@@ -22,8 +22,7 @@ interface ComparableSalesData {
   averageSalePrice: number;
 }
 
-// Initialize the OpenAI client for fallback
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'not-configured' });
 
 /**
  * Find comparable sales data for a property using a tiered approach:

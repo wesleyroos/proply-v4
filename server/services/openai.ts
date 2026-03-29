@@ -1,10 +1,6 @@
 import OpenAI from "openai";
 
-// Initialize the OpenAI client directly
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY,
-  dangerouslyAllowBrowser: false
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'not-configured', dangerouslyAllowBrowser: false });
 
 // Analysis Categories with weights
 const ANALYSIS_CATEGORIES = [

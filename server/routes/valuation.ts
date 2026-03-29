@@ -206,10 +206,7 @@ export async function calculateAndSaveFinancialDataAfterValuation(
   console.log(`Successfully saved comprehensive financial data for property ${propertyId}`);
 }
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'not-configured' });
 
 // POST /api/generate-valuation-report - Generate AI-powered property valuation
 router.post("/generate-valuation-report", async (req, res) => {

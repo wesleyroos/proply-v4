@@ -1,7 +1,7 @@
 
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'not-configured' });
 
 // Function to generate luxury context based on rating
 function getLuxuryContext(luxuryRating: number): string {
