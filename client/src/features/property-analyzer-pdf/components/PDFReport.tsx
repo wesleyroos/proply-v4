@@ -34,20 +34,16 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
               <p className="mt-1 text-lg">{data.propertyDetails.address}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Property URL</h3>
-              <p className="mt-1 text-lg">{data.propertyDetails.propertyUrl}</p>
-            </div>
-            <div>
               <h3 className="text-sm font-medium text-gray-500">Purchase Price</h3>
               <p className="mt-1 text-lg">{formatCurrency(data.propertyDetails.purchasePrice)}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Property Rate per m²</h3>
-              <p className="mt-1 text-lg">{formatCurrency(data.propertyDetails.currentPropertyRatePerSqm)}</p>
+              <p className="mt-1 text-lg">{formatCurrency(data.propertyDetails.floorArea > 0 ? data.propertyDetails.purchasePrice / data.propertyDetails.floorArea : 0)}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Area Rate per m²</h3>
-              <p className="mt-1 text-lg">{formatCurrency(data.propertyDetails.areaRatePerSqm)}</p>
+              <p className="mt-1 text-lg">{formatCurrency(data.propertyDetails.ratePerSquareMeter)}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Rate Difference</h3>
@@ -109,7 +105,7 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
               <div className="space-y-4">
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Monthly Rate</h4>
-                  <p className="mt-1">{formatCurrency(data.performance.longTermMonthlyRate)}</p>
+                  <p className="mt-1">{formatCurrency(data.performance.longTermAnnualRevenue / 12)}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Annual Revenue</h4>
@@ -194,7 +190,7 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
             <div>
               <h3 className="text-xl font-semibold mb-4">Short-Term</h3>
               <div className="space-y-4">
-                {Object.entries(data.revenueProjections.shortTerm).map(([year, value]) => (
+                {Object.entries(data.analysis.revenueProjections.shortTerm).map(([year, value]) => (
                   <div key={year}>
                     <h4 className="text-sm font-medium text-gray-500">Year {year.replace('year', '')}</h4>
                     <p className="mt-1">{formatCurrency(value)}</p>
@@ -205,7 +201,7 @@ export function PDFReport({ data, selections, companyLogo }: PDFReportProps) {
             <div>
               <h3 className="text-xl font-semibold mb-4">Long-Term</h3>
               <div className="space-y-4">
-                {Object.entries(data.revenueProjections.longTerm).map(([year, value]) => (
+                {Object.entries(data.analysis.revenueProjections.longTerm).map(([year, value]) => (
                   <div key={year}>
                     <h4 className="text-sm font-medium text-gray-500">Year {year.replace('year', '')}</h4>
                     <p className="mt-1">{formatCurrency(value)}</p>

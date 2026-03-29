@@ -40,13 +40,13 @@ export interface ReportSelections {
     longTermMonthlyRevenue: boolean;
     longTermAnnualRevenue: boolean;
     longTermGrossYield: boolean;
-    rentalPerforamceChart: boolean;
+    rentalPerformanceChart: boolean;
   };
   cashflowMetrics: {
     annualRevenue: boolean;
     netOperatingIncome: boolean;
     netOperatingExpense: boolean;
-    anualBondPayment: boolean;
+    annualBondPayment: boolean;
     annualCashflow: boolean;
     cumulativeCashflow: boolean;
     cashflowChart: boolean;

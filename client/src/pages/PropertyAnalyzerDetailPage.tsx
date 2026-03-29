@@ -195,6 +195,7 @@ export default function PropertyAnalyzerDetailPage() {
         longTermAnnualRevenue,
         shortTermGrossYield,
         longTermGrossYield,
+        platformFee: managementFee > 0 ? 15 : 3,
       },
       financialMetrics: {
         depositAmount: deposit,
@@ -213,18 +214,7 @@ export default function PropertyAnalyzerDetailPage() {
         maintenancePercent: Number(property.maintenancePercent || 0),
         managementFee,
       },
-      rentalPerformance: {
-        shortTermNightlyRate,
-        annualOccupancy,
-        shortTermAnnualRevenue,
-        longTermAnnualRevenue,
-        shortTermGrossYield,
-        longTermGrossYield,
-        platformFee: managementFee > 0 ? 15 : 3,
-      },
       investmentMetrics,
-      netOperatingIncome,
-      revenueProjections,
     });
     setShowPDFGenerator(true);
   };

@@ -713,6 +713,8 @@ export default function PropertyAnalyzerPage() {
                                   longTermGrossYield: Number(
                                     analysisResult.longTermGrossYield,
                                   ),
+                                  platformFee:
+                                    analysisResult.managementFee > 0 ? 15 : 3,
                                 },
                                 financialMetrics: {
                                   depositAmount: Number(analysisResult.deposit),
@@ -762,34 +764,7 @@ export default function PropertyAnalyzerPage() {
                                     analysisResult.managementFee
                                   ) || 0,
                                 },
-                                rentalPerformance: {
-                                  shortTermNightlyRate: Number(
-                                    analysisResult.shortTermNightlyRate,
-                                  ),
-                                  annualOccupancy: Number(
-                                    analysisResult.annualOccupancy,
-                                  ),
-                                  shortTermAnnualRevenue: Number(
-                                    analysisResult.analysis
-                                      .shortTermAnnualRevenue,
-                                  ),
-                                  longTermAnnualRevenue: Number(
-                                    analysisResult.analysis.longTermAnnualRevenue,
-                                  ),
-                                  shortTermGrossYield: Number(
-                                    analysisResult.shortTermGrossYield,
-                                  ),
-                                  longTermGrossYield: Number(
-                                    analysisResult.longTermGrossYield,
-                                  ),
-                                  platformFee:
-                                    analysisResult.managementFee > 0 ? 15 : 3,
-                                },
                                 investmentMetrics: analysisResult.analysis.investmentMetrics,
-                                netOperatingIncome:
-                                  analysisResult.netOperatingIncome,
-                                revenueProjections:
-                                  analysisResult.analysis.revenueProjections,
                               });
                               setIsDataReady(true);
 

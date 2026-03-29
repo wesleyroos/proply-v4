@@ -11,9 +11,7 @@ export interface PropertyDetails {
   areaRate: number;
   rateDifference: number;
   propertyDescription?: string;
-  areaRateM2: number;
-  currentPropertyRateM2: number;
-  rateM2Difference: number;
+  propertyUrl?: string;
 }
 
 export interface FinancialMetrics {
@@ -43,7 +41,7 @@ export interface RentalPerformance {
   shortTermGrossYield: number;
   longTermGrossYield: number;
   platformFee: number;
-  feeAdjustedRate: number;
+  feeAdjustedRate?: number;
 }
 
 export interface YearlyMetrics {
@@ -75,7 +73,7 @@ export interface PropertyData {
   };
   propertyDetails: PropertyDetails;
   financialMetrics: FinancialMetrics;
-  operatingExpenses: OperatingExpenses;
+  expenses: OperatingExpenses;
   performance: RentalPerformance;
   investmentMetrics: {
     shortTerm: YearlyMetrics[];

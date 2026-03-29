@@ -654,7 +654,7 @@ export async function generatePDF(
       ];
     });
 
-    if (selections.rentalPerformance.rentalPerforamceChart === true) {
+    if (selections.rentalPerformance.rentalPerformanceChart === true) {
       checkPageBreak(150);
 
       // Monthly Revenue Performance Graph
@@ -1063,7 +1063,7 @@ export async function generatePDF(
                 ],
               ]
             : []),
-          ...(selections.cashflowMetrics.anualBondPayment
+          ...(selections.cashflowMetrics.annualBondPayment
             ? [
                 [
                   "Annual Bond Payment",
