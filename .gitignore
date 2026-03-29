@@ -20,8 +20,13 @@ replit.nix
 temp_pdfs/
 temp_*.tsx
 test_*.js
-test_*.pdf
+*.pdf
 payfast_*.js
 cookies.txt
 test_cookies.txt
 temp_session_cookie.txt
+
+# Large binary / generated assets not needed in repo
+public/*.pdf
+*.jpg
+*.jpg.pdf
