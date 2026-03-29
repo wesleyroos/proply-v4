@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatter } from "../utils/formatting";
-import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown, BarChart3, Sparkles, Search } from "lucide-react";
+import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown, BarChart3, Sparkles, Search, FileText } from "lucide-react";
 import { PropertyPreviewModal } from "@/components/PropertyPreviewModal";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { PropertyComparisonModal } from "@/components/PropertyComparisonModal";
@@ -297,6 +297,19 @@ export default function PropertiesPage() {
                       {selectedProperties.length} {selectedProperties.length === 1 ? 'property' : 'properties'} selected
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          selectedProperties.forEach(id => {
+                            window.open(`/properties/analyzer/${id}`, '_blank');
+                          });
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <FileText className="h-4 w-4" />
+                        View Selected
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"

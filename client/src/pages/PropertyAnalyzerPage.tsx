@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { useParams } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import html2canvas from "html2canvas";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { useToast } from "@/hooks/use-toast";
@@ -220,11 +222,57 @@ interface AnalysisResult {
 }
 
 export default function PropertyAnalyzerPage() {
+  const params = useParams<{ id?: string }>();
+  const editId = params.id ? parseInt(params.id) : null;
+
   const [isDataReady, setIsDataReady] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const { user } = useUser();
   const hasProAccess = useProAccess();
   const queryClient = useQueryClient();
+
+  const { data: existingProperty } = useQuery({
+    queryKey: ["property-analyzer", editId],
+    queryFn: async () => {
+      const res = await fetch(`/api/property-analyzer/properties/${editId}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load property");
+      return res.json();
+    },
+    enabled: !!editId,
+  });
+
+  // Map saved DB record back to form values for pre-filling
+  const initialFormValues = useMemo(() => {
+    if (!existingProperty) return undefined;
+    return {
+      address: existingProperty.address || "",
+      propertyUrl: existingProperty.propertyUrl || "",
+      purchasePrice: Number(existingProperty.purchasePrice),
+      floorArea: Number(existingProperty.floorArea),
+      bedrooms: Number(existingProperty.bedrooms),
+      bathrooms: Number(existingProperty.bathrooms),
+      parkingSpaces: Number(existingProperty.parkingSpaces || 0),
+      depositType: (existingProperty.depositType as "amount" | "percentage") || "percentage",
+      depositAmount: Number(existingProperty.depositAmount),
+      depositPercentage: Number(existingProperty.depositPercentage),
+      interestRate: Number(existingProperty.interestRate),
+      loanTerm: Number(existingProperty.loanTerm),
+      monthlyLevies: Number(existingProperty.monthlyLevies),
+      monthlyRatesTaxes: Number(existingProperty.monthlyRatesTaxes),
+      otherMonthlyExpenses: Number(existingProperty.otherMonthlyExpenses),
+      maintenancePercent: Number(existingProperty.maintenancePercent),
+      managementFee: Number(existingProperty.managementFee),
+      airbnbNightlyRate: Number(existingProperty.shortTermNightlyRate || 0),
+      occupancyRate: Number(existingProperty.annualOccupancy || 0),
+      longTermRental: Number(existingProperty.longTermRental || 0),
+      leaseCycleGap: Number(existingProperty.leaseCycleGap || 0),
+      annualIncomeGrowth: Number(existingProperty.annualIncomeGrowth || 6),
+      annualExpenseGrowth: Number(existingProperty.annualExpenseGrowth || 4),
+      annualPropertyAppreciation: Number(existingProperty.annualPropertyAppreciation || 4),
+      cmaRatePerSqm: Number(existingProperty.ratePerSquareMeter),
+      comments: existingProperty.propertyDescription || "",
+    };
+  }, [existingProperty]);
   // Removed isOpen and setIsOpen
   useEffect(() => {
     if (user && !hasProAccess && user.reportsGenerated >= 3) {
@@ -434,10 +482,17 @@ export default function PropertyAnalyzerPage() {
       shortTermGrossYield: Number(analysisResult.shortTermGrossYield || 0),
       longTermGrossYield: Number(analysisResult.longTermGrossYield || 0),
       ratePerSquareMeter: Number(formData.cmaRatePerSqm || 0),
+      longTermRental: Number(formData.longTermRental || 0),
+      leaseCycleGap: Number(formData.leaseCycleGap || 0),
+      depositType: formData.depositType || "percentage",
+      annualIncomeGrowth: Number(formData.annualIncomeGrowth || 0),
+      annualExpenseGrowth: Number(formData.annualExpenseGrowth || 0),
+      annualPropertyAppreciation: Number(formData.annualPropertyAppreciation || 0),
       revenueProjections: analysisResult.analysis.revenueProjections || {},
       operatingExpenses: analysisResult.analysis.operatingExpenses || {},
       longTermOperatingExpenses: analysisResult.analysis.longTermOperatingExpenses || {},
       netOperatingIncome: analysisResult.analysis.netOperatingIncome || {},
+      longTermNetOperatingIncome: analysisResult.analysis.longTermNetOperatingIncome || {},
       investmentMetrics: analysisResult.analysis.investmentMetrics || {},
     };
 
@@ -488,8 +543,11 @@ export default function PropertyAnalyzerPage() {
       console.log("Bedrooms raw value:", formData.bedrooms);
       console.log("Bedrooms parsed value:", dataToSave.bedrooms);
 
-      const response = await fetch("/api/property-analyzer/save", {
-        method: "POST",
+      const url = editId
+        ? `/api/property-analyzer/properties/${editId}`
+        : "/api/property-analyzer/save";
+      const response = await fetch(url, {
+        method: editId ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -554,7 +612,10 @@ export default function PropertyAnalyzerPage() {
       </div>
 
       <div className="space-y-6">
-        <PropertyAnalyzerForm onAnalysisComplete={handleAnalysisComplete} />
+        <PropertyAnalyzerForm
+          onAnalysisComplete={handleAnalysisComplete}
+          initialValues={initialFormValues}
+        />
 
         {analysisError && (
           <Card className="border-red-200 bg-red-50">

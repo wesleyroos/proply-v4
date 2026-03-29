@@ -373,10 +373,25 @@ export const propertyAnalyzerResults = pgTable("property_analyzer_results", {
   // Rate comparison
   ratePerSquareMeter: decimal("rate_per_square_meter", { precision: 10, scale: 2 }).notNull(),
 
+  // Shareable link token
+  shareToken: text("share_token").unique(),
+
+  // Revenue inputs (not derived)
+  longTermRental: decimal("long_term_rental", { precision: 10, scale: 2 }),
+  leaseCycleGap: decimal("lease_cycle_gap", { precision: 5, scale: 2 }),
+  depositType: text("deposit_type"),
+
+  // Escalation inputs
+  annualIncomeGrowth: decimal("annual_income_growth", { precision: 5, scale: 2 }),
+  annualExpenseGrowth: decimal("annual_expense_growth", { precision: 5, scale: 2 }),
+  annualPropertyAppreciation: decimal("annual_property_appreciation", { precision: 5, scale: 2 }),
+
   // Analysis results stored as JSON
   revenueProjections: jsonb("revenue_projections"),
   operatingExpenses: jsonb("operating_expenses"),
+  longTermOperatingExpenses: jsonb("long_term_operating_expenses"),
   netOperatingIncome: jsonb("net_operating_income"),
+  longTermNetOperatingIncome: jsonb("long_term_net_operating_income"),
   investmentMetrics: jsonb("investment_metrics"),
 
   // Timestamps

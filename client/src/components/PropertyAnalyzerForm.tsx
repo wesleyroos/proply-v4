@@ -45,6 +45,7 @@ interface RevenueData {
 
 interface PropertyAnalyzerFormProps {
   onAnalysisComplete?: (data: PropertyAnalyzerFormValues) => Promise<void>;
+  initialValues?: Partial<PropertyAnalyzerFormValues>;
 }
 
 const formSchema = z.object({
@@ -423,6 +424,13 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
       comments: "",
     },
   });
+
+  // Pre-fill form when editing an existing analysis
+  useEffect(() => {
+    if (props.initialValues) {
+      form.reset({ ...form.getValues(), ...props.initialValues });
+    }
+  }, [props.initialValues]);
 
   const handleScrapePropertyData = async (url: string) => {
     if (!url) return;
@@ -834,12 +842,14 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           step="0.01"
                           min="0"
                           max="100"
+                          placeholder="e.g. 11.75"
                           {...field}
                           onChange={(e) =>
                             field.onChange(e.target.valueAsNumber)
                           }
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">SA prime rate is typically prime (11.75%) to prime + 2%</p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1126,27 +1136,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             }}
                           />
                         </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="flex items-center gap-2"
-                          onClick={() => {
-                            toast({
-                              title: "Feature In Development",
-                              description:
-                                "Long term rental data integration will be available soon.",
-                              duration: 3000,
-                            });
-                          }}
-                        >
-                          Get Long-Term Rental Data
-                          <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">
-                              COMING SOON
-                            </span>
-                            <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                          </div>
-                        </Button>
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -1196,6 +1185,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           }
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">How much rental income grows each year. Typical SA range: 5–8%</p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1218,6 +1208,7 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                           }
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">How much operating costs grow per year. Typical SA range: 3–6% (CPI-linked)</p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1229,40 +1220,18 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Annual Property Appreciation (%)</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(e.target.valueAsNumber)
-                            }
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="flex items-center gap-2"
-                          onClick={() => {
-                            toast({
-                              title: "Feature In Development",
-                              description:
-                                "Property appreciation data integration will be available soon.",
-                              duration: 3000,
-                            });
-                          }}
-                        >
-                          Get Appreciation Data
-                          <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">
-                              COMING SOON
-                            </span>
-                            <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                          </div>
-                        </Button>
-                      </div>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
+                        />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">Expected annual property value growth. SA long-term average: 4–7%</p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1298,27 +1267,6 @@ export default function PropertyAnalyzerForm(props: PropertyAnalyzerFormProps) {
                             }}
                           />
                         </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="flex items-center gap-2"
-                          onClick={() => {
-                            toast({
-                              title: "Feature In Development",
-                              description:
-                                "Area rate data integration will be available soon.",
-                              duration: 3000,
-                            });
-                          }}
-                        >
-                          Get Area Rate Data
-                          <div className="ml-2 flex items-center gap-1">
-                            <span className="text-xs font-semibold text-[#3B82F6]">
-                              COMING SOON
-                            </span>
-                            <Sparkles className="h-4 w-4 text-[#3B82F6]" />
-                          </div>
-                        </Button>
                       </div>
                       <FormMessage />
                     </FormItem>

@@ -1,9 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useUser } from "@/hooks/use-user";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Link } from "wouter";
 import {
   Card,
   CardContent,
@@ -23,45 +20,27 @@ import {
   BarChart3,
   TrendingUp,
   Building2,
-  ArrowLeft,
-  FileText,
-  Pencil,
-  Share2,
 } from "lucide-react";
 import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
 import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
 import PropertyMap from "@/components/PropertyMap";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { PropertyAnalyzerPDF } from "@/features/property-analyzer-pdf/PropertyAnalyzerPDF";
 
-export default function PropertyAnalyzerDetailPage() {
-  const params = useParams<{ id: string }>();
-  const id = params.id;
-  const { user } = useUser();
+export default function SharedPropertyAnalysisPage() {
+  const params = useParams<{ token: string }>();
+  const token = params.token;
   const [removeVat, setRemoveVat] = useState(false);
   const [removeTransferDuty, setRemoveTransferDuty] = useState(false);
-  const [showPDFGenerator, setShowPDFGenerator] = useState(false);
-  const [pdfData, setPDFData] = useState<any>(null);
-  const [isSharing, setIsSharing] = useState(false);
-  const { toast } = useToast();
 
   const { data: property, isLoading, error } = useQuery({
-    queryKey: ["/api/property-analyzer/properties", id],
+    queryKey: ["/api/property-analyzer/shared", token],
     queryFn: async () => {
-      const res = await fetch(`/api/property-analyzer/properties/${id}`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to fetch property");
+      const res = await fetch(`/api/property-analyzer/shared/${token}`);
+      if (!res.ok) throw new Error("Analysis not found");
       return res.json();
     },
-    enabled: !!id,
+    enabled: !!token,
   });
 
   const calculateBondRegistration = (
@@ -96,13 +75,13 @@ export default function PropertyAnalyzerDetailPage() {
 
   if (error || !property) {
     return (
-      <div className="px-4 py-6">
+      <div className="px-4 py-6 max-w-2xl mx-auto">
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-red-800">
               <AlertCircle className="h-5 w-5" />
               <p className="text-sm font-medium">
-                Property not found or failed to load.
+                This analysis could not be found or the link has expired.
               </p>
             </div>
           </CardContent>
@@ -131,7 +110,6 @@ export default function PropertyAnalyzerDetailPage() {
 
   const revenueProjections = property.revenueProjections || {};
   const operatingExpenses = property.operatingExpenses || {};
-  // Guard against previously saved analyses that stored {} instead of the real NOI
   const rawNoi = property.netOperatingIncome;
   const netOperatingIncome = rawNoi && (rawNoi as any).year1 ? rawNoi : null;
   const rawLongTermNoi = property.longTermNetOperatingIncome;
@@ -141,124 +119,20 @@ export default function PropertyAnalyzerDetailPage() {
   const annualPropertyAppreciation = Number(property.annualPropertyAppreciation || 5);
 
   const bondRegistration = calculateBondRegistration(purchasePrice, !removeVat);
-  const transferCosts = calculateTransferCosts(
-    purchasePrice,
-    !removeVat,
-    !removeTransferDuty,
-  );
+  const transferCosts = calculateTransferCosts(purchasePrice, !removeVat, !removeTransferDuty);
   const totalCapitalRequired = deposit + bondRegistration + transferCosts;
 
-  const handleShare = async () => {
-    setIsSharing(true);
-    try {
-      const res = await fetch(`/api/property-analyzer/properties/${id}/share`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to generate share link");
-      const { token } = await res.json();
-      const url = `${window.location.origin}/shared/analysis/${token}`;
-      await navigator.clipboard.writeText(url);
-      toast({ title: "Link copied!", description: "Share link copied to clipboard." });
-    } catch {
-      toast({ variant: "destructive", title: "Error", description: "Failed to generate share link." });
-    } finally {
-      setIsSharing(false);
-    }
-  };
-
-  const handleExportPDF = () => {
-    setPDFData({
-      propertyDetails: {
-        address: property.address,
-        propertyPhoto: property.propertyPhoto || null,
-        mapImage: null,
-        bedrooms: property.bedrooms,
-        bathrooms: property.bathrooms,
-        floorArea,
-        parkingSpaces: Number(property.parkingSpaces || 0),
-        purchasePrice,
-        ratePerSquareMeter: cmaRatePerSqm,
-        areaRate: propertyRatePerSqm,
-        rateDifference,
-        propertyDescription: property.propertyDescription,
-      },
-      analysis: {
-        netOperatingIncome,
-        longTermNetOperatingIncome,
-        revenueProjections,
-      },
-      performance: {
-        shortTermNightlyRate,
-        annualOccupancy,
-        shortTermAnnualRevenue,
-        longTermAnnualRevenue,
-        shortTermGrossYield,
-        longTermGrossYield,
-      },
-      financialMetrics: {
-        depositAmount: deposit,
-        depositPercentage,
-        interestRate,
-        loanTerm,
-        monthlyBondRepayment,
-        bondRegistration,
-        transferCosts,
-        totalCapitalRequired,
-      },
-      expenses: {
-        monthlyLevies: Number(property.monthlyLevies || 0),
-        monthlyRatesTaxes: Number(property.monthlyRatesTaxes || 0),
-        otherMonthlyExpenses: Number(property.otherMonthlyExpenses || 0),
-        maintenancePercent: Number(property.maintenancePercent || 0),
-        managementFee,
-      },
-      rentalPerformance: {
-        shortTermNightlyRate,
-        annualOccupancy,
-        shortTermAnnualRevenue,
-        longTermAnnualRevenue,
-        shortTermGrossYield,
-        longTermGrossYield,
-        platformFee: managementFee > 0 ? 15 : 3,
-      },
-      investmentMetrics,
-      netOperatingIncome,
-      revenueProjections,
-    });
-    setShowPDFGenerator(true);
-  };
-
   return (
-    <div className="px-4 py-6">
+    <div className="px-4 py-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Link href="/properties">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Analysis Results</h1>
-            <p className="text-muted-foreground mt-1">{property.address}</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">Property Analysis</h1>
+          <p className="text-muted-foreground mt-1">{property.address}</p>
         </div>
-        <div className="flex gap-2">
-          <Link href={`/dashboard/property-analyzer/${id}`}>
-            <Button variant="outline">
-              <Pencil className="w-4 h-4 mr-2" />
-              Edit Analysis
-            </Button>
-          </Link>
-          <Button variant="outline" onClick={handleShare} disabled={isSharing}>
-            <Share2 className="w-4 h-4 mr-2" />
-            {isSharing ? "Generating..." : "Share"}
-          </Button>
-          <Button onClick={handleExportPDF} className="bg-blue-600 hover:bg-blue-700">
-            <FileText className="w-4 h-4 mr-2" />
-            Export PDF
-          </Button>
+        <div className="text-right">
+          <p className="text-sm text-muted-foreground">Powered by</p>
+          <p className="text-base font-bold text-blue-600">Proply</p>
         </div>
       </div>
 
@@ -295,9 +169,7 @@ export default function PropertyAnalyzerDetailPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h3 className="text-sm font-semibold text-slate-600">
-                  Property Description
-                </h3>
+                <h3 className="text-sm font-semibold text-slate-600">Property Description</h3>
                 <p className="mt-2 text-slate-700">
                   {property.propertyDescription || "No description available"}
                 </p>
@@ -305,17 +177,13 @@ export default function PropertyAnalyzerDetailPage() {
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
-                    Purchase Price
-                  </h3>
+                  <h3 className="text-sm font-semibold text-slate-600">Purchase Price</h3>
                   <p className="mt-2 text-2xl font-bold text-slate-800">
                     R{purchasePrice.toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
-                    Deposit
-                  </h3>
+                  <h3 className="text-sm font-semibold text-slate-600">Deposit</h3>
                   <p className="mt-2 text-2xl font-bold text-slate-800">
                     R{deposit.toLocaleString()}
                     <span className="ml-2 text-base font-semibold text-indigo-600">
@@ -327,36 +195,24 @@ export default function PropertyAnalyzerDetailPage() {
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
-                    Interest Rate
-                  </h3>
-                  <p className="mt-2 text-lg font-bold text-slate-800">
-                    {interestRate}%
-                  </p>
+                  <h3 className="text-sm font-semibold text-slate-600">Interest Rate</h3>
+                  <p className="mt-2 text-lg font-bold text-slate-800">{interestRate}%</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
-                    Loan Term
-                  </h3>
-                  <p className="mt-2 text-lg font-bold text-slate-800">
-                    {loanTerm} years
-                  </p>
+                  <h3 className="text-sm font-semibold text-slate-600">Loan Term</h3>
+                  <p className="mt-2 text-lg font-bold text-slate-800">{loanTerm} years</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
-                    Monthly Bond Payment
-                  </h3>
+                  <h3 className="text-sm font-semibold text-slate-600">Monthly Bond Payment</h3>
                   <p className="mt-2 text-lg font-bold text-slate-800">
                     R{monthlyBondRepayment.toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
-                    Bond Registration
-                  </h3>
+                  <h3 className="text-sm font-semibold text-slate-600">Bond Registration</h3>
                   <p className="mt-2 text-lg font-bold text-slate-800">
                     R{bondRegistration.toLocaleString()}
                   </p>
@@ -364,9 +220,7 @@ export default function PropertyAnalyzerDetailPage() {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-slate-600">
-                  Transfer Costs
-                </h3>
+                <h3 className="text-sm font-semibold text-slate-600">Transfer Costs</h3>
                 <p className="mt-2 text-lg font-bold text-slate-800">
                   R{transferCosts.toLocaleString()}
                 </p>
@@ -375,14 +229,9 @@ export default function PropertyAnalyzerDetailPage() {
                     <Checkbox
                       id="removeVat"
                       checked={removeVat}
-                      onCheckedChange={(checked) =>
-                        setRemoveVat(checked as boolean)
-                      }
+                      onCheckedChange={(checked) => setRemoveVat(checked as boolean)}
                     />
-                    <label
-                      htmlFor="removeVat"
-                      className="text-sm text-slate-600 cursor-pointer"
-                    >
+                    <label htmlFor="removeVat" className="text-sm text-slate-600 cursor-pointer">
                       Remove VAT
                     </label>
                   </div>
@@ -390,14 +239,9 @@ export default function PropertyAnalyzerDetailPage() {
                     <Checkbox
                       id="removeTransferDuty"
                       checked={removeTransferDuty}
-                      onCheckedChange={(checked) =>
-                        setRemoveTransferDuty(checked as boolean)
-                      }
+                      onCheckedChange={(checked) => setRemoveTransferDuty(checked as boolean)}
                     />
-                    <label
-                      htmlFor="removeTransferDuty"
-                      className="text-sm text-slate-600 cursor-pointer"
-                    >
+                    <label htmlFor="removeTransferDuty" className="text-sm text-slate-600 cursor-pointer">
                       Remove Transfer Duty
                     </label>
                   </div>
@@ -405,9 +249,7 @@ export default function PropertyAnalyzerDetailPage() {
               </div>
 
               <div className="pt-4 mt-4 border-t border-gray-200">
-                <h3 className="text-base font-bold text-slate-800">
-                  Total Capital Required
-                </h3>
+                <h3 className="text-base font-bold text-slate-800">Total Capital Required</h3>
                 <p className="mt-2 text-2xl font-bold text-slate-800">
                   R{totalCapitalRequired.toLocaleString()}
                 </p>
@@ -436,11 +278,7 @@ export default function PropertyAnalyzerDetailPage() {
                           R{shortTermAnnualRevenue.toLocaleString()}
                         </p>
                         <p className="text-base text-slate-600">
-                          R
-                          {Math.round(
-                            shortTermAnnualRevenue / 12,
-                          ).toLocaleString()}
-                          /month
+                          R{Math.round(shortTermAnnualRevenue / 12).toLocaleString()}/month
                         </p>
                       </div>
                       <p className="text-sm flex items-center gap-2">
@@ -451,21 +289,7 @@ export default function PropertyAnalyzerDetailPage() {
                       <div className="pt-2 border-t border-blue-100">
                         <div className="flex justify-between items-center">
                           <p className="text-sm text-slate-600">Nightly Rate:</p>
-                          <p className="text-sm font-medium">
-                            R{shortTermNightlyRate.toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="flex justify-between items-center mt-1">
-                          <p className="text-sm text-slate-600">
-                            Fee-adjusted Rate:
-                          </p>
-                          <p className="text-sm font-medium">
-                            R
-                            {Math.round(
-                              shortTermNightlyRate *
-                                (1 - (managementFee > 0 ? 0.15 : 0.03)),
-                            ).toLocaleString()}
-                          </p>
+                          <p className="text-sm font-medium">R{shortTermNightlyRate.toLocaleString()}</p>
                         </div>
                         <div className="flex justify-between items-center mt-1">
                           <p className="text-sm text-slate-600">Platform Fee:</p>
@@ -474,16 +298,8 @@ export default function PropertyAnalyzerDetailPage() {
                           </p>
                         </div>
                         <div className="flex justify-between items-center mt-1">
-                          <p className="text-sm text-slate-600">
-                            Management Fee:
-                          </p>
-                          <p className="text-sm font-medium">{managementFee}%</p>
-                        </div>
-                        <div className="flex justify-between items-center mt-1">
                           <p className="text-sm text-slate-600">Occupancy:</p>
-                          <p className="text-sm font-medium">
-                            {annualOccupancy}%
-                          </p>
+                          <p className="text-sm font-medium">{annualOccupancy}%</p>
                         </div>
                       </div>
                     </div>
@@ -495,15 +311,13 @@ export default function PropertyAnalyzerDetailPage() {
                     <div className="space-y-2">
                       <div>
                         <p className="text-2xl font-bold text-slate-800">
-                          R{" "}
-                          {longTermAnnualRevenue.toLocaleString(undefined, {
+                          R{longTermAnnualRevenue.toLocaleString(undefined, {
                             maximumFractionDigits: 2,
                             minimumFractionDigits: 2,
                           })}
                         </p>
                         <p className="text-base text-slate-600">
-                          R{Math.round(longTermAnnualRevenue / 12).toLocaleString()}{" "}
-                          /month
+                          R{Math.round(longTermAnnualRevenue / 12).toLocaleString()} /month
                         </p>
                       </div>
                       <p className="text-sm flex items-center gap-2">
@@ -528,50 +342,34 @@ export default function PropertyAnalyzerDetailPage() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Floor Area
-                      </h3>
-                      <p className="mt-2 text-lg font-bold text-slate-800">
-                        {floorArea} m²
-                      </p>
+                      <h3 className="text-sm font-semibold text-slate-600">Floor Area</h3>
+                      <p className="mt-2 text-lg font-bold text-slate-800">{floorArea} m²</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Current Property Rate/m²
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">Property Rate/m²</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
-                        R
-                        {propertyRatePerSqm.toLocaleString(undefined, {
+                        R{propertyRatePerSqm.toLocaleString(undefined, {
                           maximumFractionDigits: 2,
                           minimumFractionDigits: 2,
                         })}
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Area Rate/m²
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">Area Rate/m²</h3>
                       <p className="mt-2 text-lg font-bold text-slate-800">
                         R{cmaRatePerSqm.toLocaleString()}
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-600">
-                        Rate/m² Difference
-                      </h3>
+                      <h3 className="text-sm font-semibold text-slate-600">Rate/m² Difference</h3>
                       <div className="flex items-center gap-2">
-                        <p
-                          className={`mt-2 text-lg font-bold ${rateDifference > 0 ? "text-green-600" : "text-red-600"}`}
-                        >
-                          R
-                          {Math.abs(rateDifference).toLocaleString(undefined, {
+                        <p className={`mt-2 text-lg font-bold ${rateDifference > 0 ? "text-green-600" : "text-red-600"}`}>
+                          R{Math.abs(rateDifference).toLocaleString(undefined, {
                             maximumFractionDigits: 2,
                             minimumFractionDigits: 2,
                           })}
                         </p>
-                        <span
-                          className={`text-sm font-medium ${rateDifference > 0 ? "text-green-600" : "text-red-600"}`}
-                        >
+                        <span className={`text-sm font-medium ${rateDifference > 0 ? "text-green-600" : "text-red-600"}`}>
                           ({rateDifference > 0 ? "less" : "more"} than avg.)
                         </span>
                       </div>
@@ -629,59 +427,43 @@ export default function PropertyAnalyzerDetailPage() {
                 metricDescriptions={{
                   grossYield: {
                     title: "Gross Yield",
-                    explanation:
-                      "Annual gross rental income as a percentage of the property's purchase price",
-                    calculationMethod:
-                      "(Annual Gross Rental Income / Property Purchase Price) × 100",
+                    explanation: "Annual gross rental income as a percentage of the property's purchase price",
+                    calculationMethod: "(Annual Gross Rental Income / Property Purchase Price) × 100",
                   },
                   netYield: {
                     title: "Net Yield",
-                    explanation:
-                      "Annual net rental income (after expenses) as a percentage of the property's purchase price",
-                    calculationMethod:
-                      "(Annual Net Operating Income / Property Purchase Price) × 100",
+                    explanation: "Annual net rental income (after expenses) as a percentage of the property's purchase price",
+                    calculationMethod: "(Annual Net Operating Income / Property Purchase Price) × 100",
                   },
                   returnOnEquity: {
                     title: "Return on Equity",
-                    explanation:
-                      "Annual return relative to the equity invested in the property",
-                    calculationMethod:
-                      "(Annual Net Operating Income / Total Equity Invested) × 100",
+                    explanation: "Annual return relative to the equity invested in the property",
+                    calculationMethod: "(Annual Net Operating Income / Total Equity Invested) × 100",
                   },
                   annualReturn: {
                     title: "Annual Return",
-                    explanation:
-                      "Total return including rental income and property appreciation for the year",
-                    calculationMethod:
-                      "((Net Operating Income + Property Value Increase) / Initial Investment) × 100",
+                    explanation: "Total return including rental income and property appreciation for the year",
+                    calculationMethod: "((Net Operating Income + Property Value Increase) / Initial Investment) × 100",
                   },
                   capRate: {
                     title: "Cap Rate",
-                    explanation:
-                      "Net operating income as a percentage of property value, indicating potential return regardless of financing",
-                    calculationMethod:
-                      "(Net Operating Income / Current Property Value) × 100",
+                    explanation: "Net operating income as a percentage of property value",
+                    calculationMethod: "(Net Operating Income / Current Property Value) × 100",
                   },
                   cashOnCashReturn: {
                     title: "Cash on Cash Return",
-                    explanation:
-                      "Annual pre-tax cash flow relative to total cash invested",
-                    calculationMethod:
-                      "(Annual Pre-tax Cash Flow / Total Cash Invested) × 100",
+                    explanation: "Annual pre-tax cash flow relative to total cash invested",
+                    calculationMethod: "(Annual Pre-tax Cash Flow / Total Cash Invested) × 100",
                   },
                   irr: {
                     title: "Internal Rate of Return (IRR)",
-                    explanation:
-                      "The discount rate that makes the net present value of all cash flows equal to zero",
-                    calculationMethod:
-                      "Complex calculation using all future cash flows and initial investment",
+                    explanation: "The discount rate that makes the net present value of all cash flows equal to zero",
+                    calculationMethod: "Complex calculation using all future cash flows and initial investment",
                   },
                   netWorthChange: {
                     title: "Net Worth Change",
-                    explanation:
-                      "Total change in net worth including equity buildup, appreciation, and rental income",
-                    calculationMethod:
-                      "Property Value Increase + Loan Principal Paid + Cumulative Rental Income",
+                    explanation: "Total change in net worth including equity buildup, appreciation, and rental income",
+                    calculationMethod: "Property Value Increase + Loan Principal Paid + Cumulative Rental Income",
                   },
                 }}
               />
@@ -699,21 +481,13 @@ export default function PropertyAnalyzerDetailPage() {
         </div>
       </div>
 
-      <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Generate Property Analysis Report</DialogTitle>
-          </DialogHeader>
-          {pdfData && (
-            <PropertyAnalyzerPDF
-              data={pdfData}
-              companyLogo={user?.settings?.companyLogo || ""}
-              onClose={() => setShowPDFGenerator(false)}
-              isOpen={showPDFGenerator}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Branded footer */}
+      <div className="mt-12 pt-8 border-t border-gray-200 text-center">
+        <p className="text-sm text-muted-foreground">
+          This analysis was prepared using{" "}
+          <span className="font-semibold text-blue-600">Proply</span> — South Africa's property investment analysis platform.
+        </p>
+      </div>
     </div>
   );
 }

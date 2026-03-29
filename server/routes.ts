@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
@@ -199,6 +200,7 @@ export function registerRoutes(app: Express): Server {
       req.path === "/pdf-test" || // PDF test endpoint
       req.path.startsWith("/pdf-generate/") || // PDF generation endpoint
       req.path === "/payfast/notify" || // PayFast webhook endpoint
+      req.path.startsWith("/api/property-analyzer/shared/") || // Public shared analysis
 
       req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept") // Admin invitation acceptance
     ) {
@@ -1854,6 +1856,51 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Update (re-save) a property analyzer result
+  app.put("/api/property-analyzer/properties/:id", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.id) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
+
+    try {
+      const [existing] = await db
+        .select({ userId: propertyAnalyzerResults.userId })
+        .from(propertyAnalyzerResults)
+        .where(eq(propertyAnalyzerResults.id, propertyId))
+        .limit(1);
+
+      if (!existing) {
+        return res.status(404).send("Property not found");
+      }
+      if (existing.userId !== req.user.id) {
+        return res.status(403).send("Not authorized");
+      }
+
+      const [updated] = await db
+        .update(propertyAnalyzerResults)
+        .set({
+          ...req.body,
+          userId: req.user!.id,
+          updatedAt: new Date(),
+        })
+        .where(eq(propertyAnalyzerResults.id, propertyId))
+        .returning();
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating property analysis:", error);
+      res.status(500).json({
+        error: "Failed to update property analysis",
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
+  });
+
   // Delete property analyzer result
   app.delete("/api/property-analyzer/properties/:id", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.id) {
@@ -1897,6 +1944,62 @@ export function registerRoutes(app: Express): Server {
   });
 
 
+
+  // Generate a shareable link for a property analysis
+  app.post("/api/property-analyzer/properties/:id/share", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.id) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
+
+    try {
+      const [property] = await db
+        .select()
+        .from(propertyAnalyzerResults)
+        .where(eq(propertyAnalyzerResults.id, propertyId))
+        .limit(1);
+
+      if (!property) return res.status(404).send("Property not found");
+      if (property.userId !== req.user.id) return res.status(403).send("Not authorized");
+
+      // Reuse existing token or generate a new one
+      const token = property.shareToken || randomUUID();
+
+      if (!property.shareToken) {
+        await db
+          .update(propertyAnalyzerResults)
+          .set({ shareToken: token })
+          .where(eq(propertyAnalyzerResults.id, propertyId));
+      }
+
+      res.json({ token });
+    } catch (error) {
+      console.error("Error generating share token:", error);
+      res.status(500).json({ error: "Failed to generate share link" });
+    }
+  });
+
+  // Public endpoint — view a shared analysis (no auth required)
+  app.get("/api/property-analyzer/shared/:token", async (req, res) => {
+    try {
+      const [property] = await db
+        .select()
+        .from(propertyAnalyzerResults)
+        .where(eq(propertyAnalyzerResults.shareToken, req.params.token))
+        .limit(1);
+
+      if (!property) return res.status(404).send("Analysis not found");
+
+      res.json(property);
+    } catch (error) {
+      console.error("Error fetching shared analysis:", error);
+      res.status(500).json({ error: "Failed to fetch analysis" });
+    }
+  });
 
   // Add this new endpoint after the existing admin endpoints
   app.get("/api/analytics", async (req, res) => {

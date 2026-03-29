@@ -22,6 +22,7 @@ import InsurersPage from "./pages/InsurersPage";
 import DashboardPage from "./pages/DashboardPage";
 import PropertyAnalyzerPage from "./pages/PropertyAnalyzerPage";
 import PropertyAnalyzerDetailPage from "./pages/PropertyAnalyzerDetailPage";
+import SharedPropertyAnalysisPage from "./pages/SharedPropertyAnalysisPage";
 
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
@@ -264,10 +265,16 @@ function App() {
                 <AcceptInvitationPage />
               </PageTransition>
             )} />
+            <Route path="/shared/analysis/:token" component={() => (
+              <PageTransition>
+                <SharedPropertyAnalysisPage />
+              </PageTransition>
+            )} />
 
             {/* Protected routes */}
             <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
             <Route path="/dashboard/property-analyzer" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
+            <Route path="/dashboard/property-analyzer/:id" component={() => <ProtectedRoute component={PropertyAnalyzerPage} />} />
             <Route path="/properties/analyzer/:id" component={() => <ProtectedRoute component={PropertyAnalyzerDetailPage} />} />
 
             <Route path="/dashboard/rent-compare" component={() => <ProtectedRoute component={ComparisonPage} />} />
