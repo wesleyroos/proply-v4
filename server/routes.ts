@@ -201,6 +201,7 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/pdf-generate/") || // PDF generation endpoint
       req.path === "/payfast/notify" || // PayFast webhook endpoint
       req.path.startsWith("/api/property-analyzer/shared/") || // Public shared analysis
+      req.path.startsWith("/api/properties/shared/") || // Public shared rent compare analysis
 
       req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept") // Admin invitation acceptance
     ) {
@@ -1374,6 +1375,99 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error deleting property:", error);
       res.status(500).json({ error: "Failed to delete property" });
+    }
+  });
+
+  // Get a single rent compare property by ID
+  app.get("/api/properties/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
+
+    try {
+      const [property] = await db
+        .select()
+        .from(properties)
+        .where(eq(properties.id, propertyId));
+
+      if (!property) {
+        return res.status(404).send("Property not found");
+      }
+
+      if (property.userId !== req.user!.id && !req.user!.isAdmin) {
+        return res.status(403).send("Not authorized");
+      }
+
+      res.json(property);
+    } catch (error) {
+      console.error("Error fetching property:", error);
+      res.status(500).json({ error: "Failed to fetch property" });
+    }
+  });
+
+  // Generate / retrieve a share token for a rent compare property
+  app.post("/api/properties/:id/share", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
+
+    try {
+      const [property] = await db
+        .select()
+        .from(properties)
+        .where(eq(properties.id, propertyId));
+
+      if (!property) {
+        return res.status(404).send("Property not found");
+      }
+
+      if (property.userId !== req.user!.id && !req.user!.isAdmin) {
+        return res.status(403).send("Not authorized");
+      }
+
+      if (property.shareToken) {
+        return res.json({ token: property.shareToken });
+      }
+
+      const token = randomUUID();
+      await db
+        .update(properties)
+        .set({ shareToken: token })
+        .where(eq(properties.id, propertyId));
+
+      res.json({ token });
+    } catch (error) {
+      console.error("Error generating share token:", error);
+      res.status(500).json({ error: "Failed to generate share token" });
+    }
+  });
+
+  // Public endpoint — view a shared rent compare property (no auth required)
+  app.get("/api/properties/shared/:token", async (req, res) => {
+    try {
+      const [property] = await db
+        .select()
+        .from(properties)
+        .where(eq(properties.shareToken, req.params.token));
+
+      if (!property) {
+        return res.status(404).send("Shared analysis not found");
+      }
+
+      res.json(property);
+    } catch (error) {
+      console.error("Error fetching shared property:", error);
+      res.status(500).json({ error: "Failed to fetch shared property" });
     }
   });
 

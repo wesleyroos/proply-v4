@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatter } from "../utils/formatting";
 import { Trash2, Calculator, ArrowUpDown, Eye, ChevronUp, ChevronDown, BarChart3, Sparkles, Search, FileText } from "lucide-react";
-import { PropertyPreviewModal } from "@/components/PropertyPreviewModal";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { PropertyComparisonModal } from "@/components/PropertyComparisonModal";
 import {
@@ -83,8 +82,7 @@ export default function PropertiesPage() {
   const [propertyToDelete, setPropertyToDelete] = useState<Property | AnalyzerProperty | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [previewProperty, setPreviewProperty] = useState<Property | null>(null);
-  const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
+const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedPropertiesForComparison, setSelectedPropertiesForComparison] = useState<AnalyzerProperty[]>([]);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -623,14 +621,15 @@ export default function PropertiesPage() {
                           )}
                           <td className="py-3 px-4">
                             <div className="flex justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                onClick={() => setPreviewProperty(property)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
+                              <Link href={`/properties/rent-compare/${property.id}`}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </Link>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -707,11 +706,6 @@ export default function PropertiesPage() {
       />
 
       <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
-      <PropertyPreviewModal
-        property={previewProperty}
-        open={!!previewProperty}
-        onOpenChange={(open) => !open && setPreviewProperty(null)}
-      />
     </div>
   );
 }
