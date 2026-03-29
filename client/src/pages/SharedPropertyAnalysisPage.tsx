@@ -214,6 +214,18 @@ export default function SharedPropertyAnalysisPage() {
           ))}
         </div>
 
+        {/* ── Location Map ── */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+            <Home className="h-4 w-4 text-slate-400" />
+            <h3 className="font-bold text-slate-800 text-[15px]">Location</h3>
+            <p className="text-[12px] text-slate-400 ml-1">{property.address}</p>
+          </div>
+          <div className="h-[260px]">
+            <MapView address={property.address} />
+          </div>
+        </div>
+
         {/* ── Revenue comparison ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Short-Term */}
@@ -407,17 +419,6 @@ export default function SharedPropertyAnalysisPage() {
           annualAppreciation={annualPropertyAppreciation}
         />
 
-        {/* ── Location Map ── */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-            <Home className="h-4 w-4 text-slate-400" />
-            <h3 className="font-bold text-slate-800 text-[15px]">Location</h3>
-            <p className="text-[12px] text-slate-400 ml-1">{property.address}</p>
-          </div>
-          <div className="h-[300px]">
-            <MapView address={property.address} />
-          </div>
-        </div>
 
       </div>
 
