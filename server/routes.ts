@@ -1795,14 +1795,40 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get all property analyzer results for the current user
+  // Get all property analyzer results for the current user (or all users for admin)
   app.get("/api/property-analyzer/properties", async (req, res) => {
     if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).send("Not authenticated");
     }
 
     try {
-      console.log("Fetching property analyzer results for user:", req.user.id);
+      if (req.user.isAdmin) {
+        // Admins get all properties joined with user info
+        const results = await db
+          .select({
+            id: propertyAnalyzerResults.id,
+            userId: propertyAnalyzerResults.userId,
+            address: propertyAnalyzerResults.address,
+            purchasePrice: propertyAnalyzerResults.purchasePrice,
+            floorArea: propertyAnalyzerResults.floorArea,
+            bedrooms: propertyAnalyzerResults.bedrooms,
+            bathrooms: propertyAnalyzerResults.bathrooms,
+            parkingSpaces: propertyAnalyzerResults.parkingSpaces,
+            shortTermGrossYield: propertyAnalyzerResults.shortTermGrossYield,
+            longTermGrossYield: propertyAnalyzerResults.longTermGrossYield,
+            shortTermAnnualRevenue: propertyAnalyzerResults.shortTermAnnualRevenue,
+            longTermAnnualRevenue: propertyAnalyzerResults.longTermAnnualRevenue,
+            ratePerSquareMeter: propertyAnalyzerResults.ratePerSquareMeter,
+            createdAt: propertyAnalyzerResults.createdAt,
+            userEmail: users.email,
+            userName: users.username,
+          })
+          .from(propertyAnalyzerResults)
+          .leftJoin(users, eq(propertyAnalyzerResults.userId, users.id))
+          .orderBy(desc(propertyAnalyzerResults.createdAt));
+
+        return res.json(results);
+      }
 
       const results = await db
         .select()

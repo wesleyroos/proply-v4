@@ -49,6 +49,7 @@ interface Property {
 
 interface AnalyzerProperty {
   id: number;
+  userId?: number;
   address: string;
   purchasePrice: number;
   bedrooms: number;
@@ -62,6 +63,8 @@ interface AnalyzerProperty {
   longTermAnnualRevenue: number | null;
   shortTermAnnualRevenue: number | null;
   createdAt: string;
+  userEmail?: string | null;
+  userName?: string | null;
 }
 
 type PropertyType = 'rent_compare' | 'property_analyzer';
@@ -427,19 +430,30 @@ export default function PropertiesPage() {
                           <SortIcon field="ratePerSquareMeter" />
                         </div>
                       </th>
+                      {user?.isAdmin && (
+                        <>
+                          <th onClick={() => handleSort('createdAt')} className="py-3 px-4 text-right cursor-pointer hover:bg-muted/75">
+                            <div className="flex items-center justify-end">
+                              Run On
+                              <SortIcon field="createdAt" />
+                            </div>
+                          </th>
+                          <th className="py-3 px-4 text-right">Run By</th>
+                        </>
+                      )}
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {isLoadingAnalyzer ? (
                       <tr>
-                        <td colSpan={11} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={user?.isAdmin ? 13 : 11} className="text-center py-8 text-muted-foreground">
                           Loading properties...
                         </td>
                       </tr>
                     ) : !filteredAndSortedProperties.length ? (
                       <tr>
-                        <td colSpan={11} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={user?.isAdmin ? 13 : 11} className="text-center py-8 text-muted-foreground">
                           No properties analyzed yet.{' '}
                           <Link href="/dashboard/property-analyzer" className="text-primary hover:underline">
                             Analyze your first property
@@ -487,6 +501,18 @@ export default function PropertiesPage() {
                           <td className="py-3 px-4 text-right whitespace-nowrap">
                             {formatter.format(calculateRatePerSqm(property))}
                           </td>
+                          {user?.isAdmin && (
+                            <>
+                              <td className="py-3 px-4 text-right whitespace-nowrap text-sm text-muted-foreground">
+                                {new Date(property.createdAt).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </td>
+                              <td className="py-3 px-4 text-right text-sm text-muted-foreground max-w-[140px]">
+                                <div className="truncate text-right" title={property.userEmail || ''}>
+                                  {property.userName || property.userEmail || `User ${property.userId}`}
+                                </div>
+                              </td>
+                            </>
+                          )}
                           <td className="py-3 px-4">
                             <div className="flex justify-end gap-2">
                               <Link href={`/properties/analyzer/${property.id}`}>
