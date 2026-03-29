@@ -1410,6 +1410,92 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Update a rent compare property (recalculates derived fields server-side)
+  app.patch("/api/properties/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) {
+      return res.status(400).send("Invalid property ID");
+    }
+
+    try {
+      const [existing] = await db
+        .select()
+        .from(properties)
+        .where(eq(properties.id, propertyId));
+
+      if (!existing) {
+        return res.status(404).send("Property not found");
+      }
+
+      if (existing.userId !== req.user!.id && !req.user!.isAdmin) {
+        return res.status(403).send("Not authorized");
+      }
+
+      const {
+        title, address, bedrooms, bathrooms,
+        longTermRental, annualEscalation,
+        shortTermNightly: stNightly,
+        annualOccupancy: annOccupancy,
+        managementFee: mgmtFee,
+      } = req.body;
+
+      // Recalculate derived fields
+      const longTermMonthlyNum = parseFloat(longTermRental) || 0;
+      const longTermAnnualNum = longTermMonthlyNum * 12;
+      const stNightlyNum = parseFloat(stNightly) || 0;
+      const occupancyRate = parseFloat(annOccupancy) / 100;
+      const mgmtFeeNum = parseFloat(mgmtFee) || 0;
+
+      const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
+      const shortTermAnnualNum = SEASONALITY_FACTORS.reduce((sum, factor, month) => {
+        const daysInMonth = new Date(2024, month + 1, 0).getDate();
+        return sum + stNightlyNum * factor * daysInMonth * occupancyRate;
+      }, 0);
+      const shortTermMonthlyNum = shortTermAnnualNum / 12;
+
+      const platformFeeRate = mgmtFeeNum > 0 ? 0.15 : 0.03;
+      const afterPlatformFee = shortTermAnnualNum * (1 - platformFeeRate);
+      const managementFeeAmount = mgmtFeeNum > 0 ? afterPlatformFee * mgmtFeeNum : 0;
+      const shortTermAfterFeesNum = afterPlatformFee - managementFeeAmount;
+
+      const platformFeeMultiplier = mgmtFeeNum > 0 ? 0.85 : 0.97;
+      const managementFeeMultiplier = 1 - mgmtFeeNum;
+      const netDailyRateNeeded = longTermAnnualNum / (365 * platformFeeMultiplier * managementFeeMultiplier);
+      const breakEvenOccupancyNum = stNightlyNum > 0 ? (netDailyRateNeeded / stNightlyNum) * 100 : 0;
+
+      const [updated] = await db
+        .update(properties)
+        .set({
+          title,
+          address,
+          bedrooms,
+          bathrooms,
+          longTermRental: String(longTermRental),
+          annualEscalation: String(annualEscalation),
+          shortTermNightly: String(stNightly),
+          annualOccupancy: String(annOccupancy),
+          managementFee: String(mgmtFee),
+          longTermMonthly: String(longTermMonthlyNum),
+          longTermAnnual: String(longTermAnnualNum),
+          shortTermMonthly: String(shortTermMonthlyNum),
+          shortTermAnnual: String(shortTermAnnualNum),
+          shortTermAfterFees: String(shortTermAfterFeesNum),
+          breakEvenOccupancy: String(Math.round(breakEvenOccupancyNum * 10) / 10),
+        })
+        .where(eq(properties.id, propertyId))
+        .returning();
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating property:", error);
+      res.status(500).json({ error: "Failed to update property" });
+    }
+  });
+
   // Generate / retrieve a share token for a rent compare property
   app.post("/api/properties/:id/share", async (req, res) => {
     if (!req.isAuthenticated()) {
