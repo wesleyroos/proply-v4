@@ -91,12 +91,12 @@ const triggerSync = async (agencyId: string) => {
 };
 
 const toggleBilling = async (agencyId: string, enabled: boolean) => {
-  const response = await fetch(`/api/agencies/${agencyId}/billing`, {
-    method: 'PATCH',
+  const response = await fetch(`/api/admin/agencies/${agencyId}/billing`, {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ enabled }),
+    body: JSON.stringify({ billingEnabled: enabled }),
   });
   if (!response.ok) {
     throw new Error('Failed to toggle billing');
