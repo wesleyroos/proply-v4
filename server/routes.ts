@@ -73,8 +73,8 @@ async function trackAgencyReportUsage(agencyBranchId: number, userId: number, pr
           reportCount: 1,
           pricePerReport: pricePerReport.toFixed(2),
           subtotal: pricePerReport.toFixed(2),
-          vatAmount: (pricePerReport * 0.15).toFixed(2), // 15% VAT
-          totalAmount: (pricePerReport * 1.15).toFixed(2),
+          vatAmount: '0.00',
+          totalAmount: pricePerReport.toFixed(2),
           status: "pending",
           dueDate: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, billingSettings?.billingDay || 1)
         })
@@ -84,16 +84,14 @@ async function trackAgencyReportUsage(agencyBranchId: number, userId: number, pr
       const newReportCount = billingCycle.reportCount + 1;
       const pricePerReport = parseFloat(billingCycle.pricePerReport);
       const newSubtotal = newReportCount * pricePerReport;
-      const newVatAmount = newSubtotal * 0.15;
-      const newTotalAmount = newSubtotal + newVatAmount;
 
       await db
         .update(agencyBillingCycles)
         .set({
           reportCount: newReportCount,
           subtotal: newSubtotal.toFixed(2),
-          vatAmount: newVatAmount.toFixed(2),
-          totalAmount: newTotalAmount.toFixed(2),
+          vatAmount: '0.00',
+          totalAmount: newSubtotal.toFixed(2),
           updatedAt: new Date()
         })
         .where(eq(agencyBillingCycles.id, billingCycle.id));

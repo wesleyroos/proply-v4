@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -26,7 +26,10 @@ import {
   Settings,
   BarChart3,
   CreditCard,
+  FlaskConical,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { AddAgencyModal } from "@/components/AddAgencyModal";
 import { AgencyDetailModal } from "@/components/AgencyDetailModal";
 import { AgencyStatsModal } from "@/components/AgencyStatsModal";
@@ -106,6 +109,30 @@ export function ControlPanel() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [statsModalOpen, setStatsModalOpen] = useState(false);
   const [selectedAgencyName, setSelectedAgencyName] = useState('');
+  const queryClient = useQueryClient();
+
+  const { data: testModeSetting } = useQuery({
+    queryKey: ['system-settings', 'payfast_test_mode'],
+    queryFn: async () => {
+      const res = await fetch('/api/system-settings/payfast_test_mode');
+      if (!res.ok) return { value: 'false' };
+      return res.json();
+    },
+  });
+  const isTestMode = testModeSetting?.value === 'true';
+
+  const testModeMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const res = await fetch('/api/system-settings/payfast_test_mode', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: enabled ? 'true' : 'false' }),
+      });
+      if (!res.ok) throw new Error('Failed to update setting');
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['system-settings', 'payfast_test_mode'] }),
+  });
 
   const { data: agenciesData, isLoading, error, refetch } = useQuery({
     queryKey: ['agencies'],
@@ -205,6 +232,38 @@ export function ControlPanel() {
         </div>
         <AddAgencyModal />
       </div>
+
+      {/* PayFast Mode */}
+      <Card className="mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FlaskConical className="h-4 w-4" />
+            PayFast Mode
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">Sandbox / Test Mode</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {isTestMode
+                  ? 'Using PayFast sandbox — no real charges will be made'
+                  : 'Using PayFast live — real charges are active'}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {isTestMode && (
+                <Badge className="bg-amber-100 text-amber-800 border-amber-200">Sandbox</Badge>
+              )}
+              <Switch
+                checked={isTestMode}
+                onCheckedChange={(checked) => testModeMutation.mutate(checked)}
+                disabled={testModeMutation.isPending}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Agency Integrations Table */}
       <Card className="mb-8">
