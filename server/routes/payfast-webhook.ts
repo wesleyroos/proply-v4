@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '@db';
-import { agencyPaymentMethods, payfastTokenizationSessions } from '@db/schema';
+import { agencyPaymentMethods, payfastTokenizationSessions, systemSettings } from '@db/schema';
 import { eq } from 'drizzle-orm';
 
 const router = express.Router();
@@ -23,7 +23,24 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
     });
     
     console.log('Parsed webhook data:', data);
-    
+
+    // Validate webhook signature
+    if (data.signature) {
+      const { PayFastService } = await import('../services/payfast');
+      const [testModeSetting] = await db.select().from(systemSettings).where(eq(systemSettings.key, 'payfast_test_mode')).limit(1);
+      const isTestMode = testModeSetting?.value === 'true';
+      const payfast = new PayFastService(isTestMode);
+
+      if (!payfast.validateWebhookSignature(data, data.signature)) {
+        console.error('❌ PayFast webhook signature validation failed — ignoring payload');
+        res.status(200).send('OK');
+        return;
+      }
+      console.log('✅ PayFast webhook signature validated');
+    } else {
+      console.warn('⚠️ PayFast webhook received without signature — proceeding (legacy/sandbox)');
+    }
+
     // Check if this is a tokenization response
     if (data.token && data.payment_status && data.m_payment_id) {
       console.log('Tokenization webhook received:', {
@@ -57,7 +74,8 @@ router.post('/notify', express.raw({ type: 'application/x-www-form-urlencoded' }
         try {
           // Fetch real card details from PayFast API
           const { PayFastService } = await import('../services/payfast');
-          const payfast = new PayFastService(false); // Use live mode
+          const [tmSetting] = await db.select().from(systemSettings).where(eq(systemSettings.key, 'payfast_test_mode')).limit(1);
+          const payfast = new PayFastService(tmSetting?.value === 'true');
           
           let cardLastFour = data.token.slice(-4); // Fallback to token digits
           let cardBrand = 'PayFast Card';

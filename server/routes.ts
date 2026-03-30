@@ -4250,9 +4250,12 @@ export function registerRoutes(app: Express): Server {
         status: 'pending'
       });
 
-      // Import PayFast service
+      // Import PayFast service — read test mode from DB
       const { PayFastService } = await import('./services/payfast');
-      const payfast = new PayFastService(true);
+      const payfastTestSetting = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, 'payfast_test_mode')
+      });
+      const payfast = new PayFastService(payfastTestSetting?.value === 'true');
       
       // Use production domain for live deployment
       const baseUrl = 'https://app.proply.co.za';

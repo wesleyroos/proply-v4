@@ -1,9 +1,10 @@
 import cron from 'node-cron';
 import { db } from '@db/index';
-import { reportGenerations, agencyInvoices, transactionHistory, agencyBillingSettings, agencyBranches, agencyPaymentMethods } from '@db/schema';
-import { sql, gte, lt, eq, and } from 'drizzle-orm';
+import { reportGenerations, agencyInvoices, transactionHistory, agencyBillingSettings, agencyBranches, agencyPaymentMethods, systemSettings } from '@db/schema';
+import { sql, gte, lt, eq, and, count } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 import { PayFastService } from '../services/payfast';
+import { sendAdminNotification } from '../services/email';
 
 interface BillingCalculation {
   agencyId: string;
@@ -98,6 +99,16 @@ async function getMonthlyUsageByAgency(year: number, month: number): Promise<Bil
   }));
 }
 
+// Read PayFast test mode setting from DB
+async function getIsTestMode(): Promise<boolean> {
+  const [setting] = await db
+    .select()
+    .from(systemSettings)
+    .where(eq(systemSettings.key, 'payfast_test_mode'))
+    .limit(1);
+  return setting?.value === 'true';
+}
+
 // Charge agency using stored PayFast payment method
 async function chargeAgencyCard(agencyId: string, amount: number, invoiceId: string): Promise<PayFastChargeResponse> {
   try {
@@ -124,8 +135,8 @@ async function chargeAgencyCard(agencyId: string, amount: number, invoiceId: str
       throw new Error(`No active payment method found for agency: ${agencyId}`);
     }
 
-    // Initialize PayFast service (default to live mode for production billing)
-    const payfast = new PayFastService(false);
+    const isTestMode = await getIsTestMode();
+    const payfast = new PayFastService(isTestMode);
     
     // Create PayFast charge request
     const chargeRequest = {
@@ -205,10 +216,55 @@ async function updateInvoiceStatus(invoiceId: string, status: 'paid' | 'failed',
     .where(eq(agencyInvoices.invoiceId, invoiceId));
 }
 
-// Send notification email (placeholder for now)
+// Send billing notification emails via SendGrid
 async function sendBillingNotification(agencyId: string, success: boolean, amount: number, errorMessage?: string): Promise<void> {
-  console.log(`Billing notification for ${agencyId}: ${success ? 'SUCCESS' : 'FAILED'} - R${amount}${errorMessage ? ` - ${errorMessage}` : ''}`);
-  // TODO: Implement actual email sending using SendGrid
+  const adminEmail = 'wesley@proply.co.za';
+
+  // Look up billing contact email
+  const agencyBranch = await db.query.agencyBranches.findFirst({
+    where: eq(agencyBranches.slug, agencyId)
+  });
+  const billingSettings = agencyBranch
+    ? await db.query.agencyBillingSettings.findFirst({
+        where: eq(agencyBillingSettings.agencyBranchId, agencyBranch.id)
+      })
+    : null;
+  const billingEmail = billingSettings?.billingContactEmail || null;
+  const agencyDisplayName = agencyBranch
+    ? `${agencyBranch.franchiseName} — ${agencyBranch.branchName}`
+    : agencyId;
+  const amtFormatted = `R${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
+
+  if (success) {
+    if (billingEmail) {
+      await sendAdminNotification({
+        to: billingEmail,
+        subject: `Proply Invoice — ${amtFormatted} charged successfully`,
+        html: `<p>Hi,</p>
+<p>Your monthly Proply invoice of <strong>${amtFormatted}</strong> for <em>${agencyDisplayName}</em> has been processed successfully.</p>
+<p>Thank you for using Proply.</p>
+<p style="color:#888;font-size:12px">This is an automated message from Proply Billing.</p>`,
+        text: `Your Proply invoice of ${amtFormatted} for ${agencyDisplayName} was charged successfully.`
+      });
+    }
+  } else {
+    // Notify billing contact (if known) and admin about failure
+    const failSubject = `Proply billing failed — ${amtFormatted} for ${agencyDisplayName}`;
+    const failHtml = `<p>Hi,</p>
+<p>We were unable to process your Proply invoice of <strong>${amtFormatted}</strong> for <em>${agencyDisplayName}</em>.</p>
+${errorMessage ? `<p>Reason: ${errorMessage}</p>` : ''}
+<p>Please ensure your payment method is up to date. We will retry automatically on the 4th of this month.</p>
+<p style="color:#888;font-size:12px">This is an automated message from Proply Billing.</p>`;
+    const failText = `Proply billing failed: ${amtFormatted} for ${agencyDisplayName}.${errorMessage ? ` Reason: ${errorMessage}` : ''} Retry will occur on the 4th.`;
+
+    if (billingEmail) {
+      await sendAdminNotification({ to: billingEmail, subject: failSubject, html: failHtml, text: failText });
+    }
+    // Always notify admin on failure
+    await sendAdminNotification({ to: adminEmail, subject: `[Admin] ${failSubject}`, html: failHtml, text: failText });
+  }
+
+  console.log(`Billing notification sent for ${agencyId}: ${success ? 'SUCCESS' : 'FAILED'} - ${amtFormatted}`);
 }
 
 // Process monthly billing for a single agency
@@ -317,24 +373,105 @@ export async function runMonthlyBilling(): Promise<void> {
   }
 }
 
+// Retry failed invoices from the previous billing month
+async function retryFailedInvoices(): Promise<void> {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-based → previous month
+  const billingMonth = `${year}-${month.toString().padStart(2, '0')}`;
+
+  console.log(`Retrying failed invoices for ${billingMonth}`);
+
+  const adminEmail = 'wesley@proply.co.za';
+
+  const failedInvoices = await db
+    .select()
+    .from(agencyInvoices)
+    .where(and(eq(agencyInvoices.month, billingMonth), eq(agencyInvoices.status, 'failed')));
+
+  console.log(`Found ${failedInvoices.length} failed invoices to retry`);
+
+  for (const invoice of failedInvoices) {
+    try {
+      // Count previous failed transactions for this invoice to detect second failure
+      const [{ failCount }] = await db
+        .select({ failCount: count() })
+        .from(transactionHistory)
+        .where(and(eq(transactionHistory.invoiceId, invoice.invoiceId), eq(transactionHistory.status, 'failed')));
+
+      if (failCount >= 2) {
+        // Already failed twice — mark overdue and notify admin
+        await db.update(agencyInvoices)
+          .set({ status: 'overdue', updatedAt: new Date() })
+          .where(eq(agencyInvoices.invoiceId, invoice.invoiceId));
+
+        await sendAdminNotification({
+          to: adminEmail,
+          subject: `[Admin] Invoice ${invoice.invoiceId} marked OVERDUE`,
+          html: `<p>Invoice <strong>${invoice.invoiceId}</strong> for <em>${invoice.agencyName}</em> (${invoice.month}) has been marked <strong>overdue</strong> after 2 failed charge attempts.</p><p>Amount: R${invoice.amount}</p>`,
+          text: `Invoice ${invoice.invoiceId} for ${invoice.agencyName} marked overdue after 2 failed attempts. Amount: R${invoice.amount}`
+        });
+        console.log(`Invoice ${invoice.invoiceId} marked overdue after 2 failures`);
+        continue;
+      }
+
+      const amount = parseFloat(invoice.amount);
+      const payfastResponse = await chargeAgencyCard(invoice.agencyId, amount, invoice.invoiceId);
+      const success = payfastResponse.code === 200 && payfastResponse.status === 'success';
+
+      await recordTransaction(invoice.invoiceId, invoice.agencyId, amount, payfastResponse, success, payfastResponse.message);
+      await updateInvoiceStatus(invoice.invoiceId, success ? 'paid' : 'failed', success ? new Date() : undefined);
+      await sendBillingNotification(invoice.agencyId, success, amount, payfastResponse.message);
+
+      console.log(`Retry for ${invoice.invoiceId}: ${success ? 'SUCCESS' : 'FAILED'}`);
+    } catch (error) {
+      console.error(`Retry failed for invoice ${invoice.invoiceId}:`, error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      await sendAdminNotification({
+        to: adminEmail,
+        subject: `[Admin] Retry failed for invoice ${invoice.invoiceId}`,
+        html: `<p>Retry charge for invoice <strong>${invoice.invoiceId}</strong> (${invoice.agencyName}) failed with error: ${errorMsg}</p>`,
+        text: `Retry for invoice ${invoice.invoiceId} failed: ${errorMsg}`
+      });
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  console.log(`Retry run completed for ${billingMonth}`);
+}
+
 // Schedule monthly billing to run on the 1st of each month at 9:00 AM
 export function startAutomatedBilling(): void {
   console.log('Starting automated billing scheduler');
-  
-  // Run at 9:00 AM on the 1st of every month
+
+  // Initial charge: 9:00 AM on the 1st of every month
   cron.schedule('0 9 1 * *', async () => {
     console.log('Automated monthly billing triggered');
     try {
       await runMonthlyBilling();
     } catch (error) {
       console.error('Automated billing failed:', error);
-      // TODO: Send alert to administrators
+      await sendAdminNotification({
+        to: 'wesley@proply.co.za',
+        subject: '[Admin] Monthly billing process failed',
+        html: `<p>The automated monthly billing process failed with error: ${error instanceof Error ? error.message : 'Unknown error'}</p>`,
+        text: `Monthly billing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
     }
-  }, {
-    timezone: 'Africa/Johannesburg'
-  });
-  
-  console.log('Automated billing scheduler started - will run at 9:00 AM on the 1st of each month');
+  }, { timezone: 'Africa/Johannesburg' });
+
+  // Retry failed charges: 9:00 AM on the 4th of every month
+  cron.schedule('0 9 4 * *', async () => {
+    console.log('Automated billing retry triggered');
+    try {
+      await retryFailedInvoices();
+    } catch (error) {
+      console.error('Billing retry run failed:', error);
+    }
+  }, { timezone: 'Africa/Johannesburg' });
+
+  console.log('Automated billing scheduler started — 1st (initial charge) and 4th (retry) of each month at 9:00 AM SAST');
 }
 
 // Manual trigger for testing

@@ -45,34 +45,32 @@ export class PayFastService {
   private baseUrl: string;
 
   constructor(isTestMode: boolean = false) {
-    // Use live PayFast credentials for better reliability
-    const useLive = true; // Force live mode
-    
     this.config = {
-      merchantId: useLive 
-        ? process.env.PAYFAST_MERCHANT_ID!
-        : process.env.PAYFAST_TEST_MERCHANT_ID!,
-      merchantKey: useLive 
-        ? process.env.PAYFAST_MERCHANT_KEY!
-        : process.env.PAYFAST_TEST_MERCHANT_KEY!,
-      passphrase: useLive 
-        ? process.env.PAYFAST_PASSPHRASE!
-        : process.env.PAYFAST_TEST_PASSPHRASE!,
-      isTestMode: false // Always use live mode
+      merchantId: isTestMode
+        ? process.env.PAYFAST_TEST_MERCHANT_ID!
+        : process.env.PAYFAST_MERCHANT_ID!,
+      merchantKey: isTestMode
+        ? process.env.PAYFAST_TEST_MERCHANT_KEY!
+        : process.env.PAYFAST_MERCHANT_KEY!,
+      passphrase: isTestMode
+        ? process.env.PAYFAST_TEST_PASSPHRASE!
+        : process.env.PAYFAST_PASSPHRASE!,
+      isTestMode
     };
 
-    console.log('PayFast Service Config (LIVE MODE):', {
+    console.log(`PayFast Service Config (${isTestMode ? 'SANDBOX' : 'LIVE'} MODE):`, {
       merchantId: this.config.merchantId,
       merchantKey: this.config.merchantKey?.substring(0, 5) + '***',
       passphrase: this.config.passphrase?.substring(0, 5) + '***',
       isTestMode: this.config.isTestMode
     });
 
-    // Use live PayFast URLs
-    this.baseUrl = 'https://api.payfast.co.za';
+    this.baseUrl = isTestMode
+      ? 'https://api.sandbox.payfast.co.za'
+      : 'https://api.payfast.co.za';
 
     if (!this.config.merchantId || !this.config.merchantKey || !this.config.passphrase) {
-      throw new Error('Missing PayFast live credentials');
+      throw new Error(`Missing PayFast ${isTestMode ? 'sandbox' : 'live'} credentials`);
     }
   }
 
@@ -174,13 +172,14 @@ export class PayFastService {
     // Generate signature and URL parameters using identical encoding
     const { signature, encodedParams } = this.generateSignatureAndParams(data);
     
-    // Always use live PayFast for production reliability
-    const baseUrl = 'https://www.payfast.co.za/eng/process';
-    
+    const baseUrl = this.config.isTestMode
+      ? 'https://sandbox.payfast.co.za/eng/process'
+      : 'https://www.payfast.co.za/eng/process';
+
     // Use the exact same encoded parameters that were used for signature generation
     const tokenizeUrl = `${baseUrl}?${encodedParams}&signature=${signature}`;
-    
-    console.log('Final PayFast LIVE tokenize URL (tokenization):', tokenizeUrl);
+
+    console.log(`Final PayFast ${this.config.isTestMode ? 'SANDBOX' : 'LIVE'} tokenize URL (tokenization):`, tokenizeUrl);
     
     return tokenizeUrl;
   }
@@ -252,12 +251,6 @@ export class PayFastService {
   }
 
 
-
-  validateWebhookSignature(data: Record<string, any>, receivedSignature: string): boolean {
-    // Generate signature for webhook validation using the same method as forms
-    const calculatedSignature = this.generateSignature(data);
-    return calculatedSignature === receivedSignature;
-  }
 
   async chargeToken(token: string, request: PayFastAdHocChargeRequest): Promise<PayFastAdHocChargeResponse> {
     // PayFast expects amounts in cents, so convert from rands
@@ -371,9 +364,27 @@ export class PayFastService {
     }
   }
 
-  // Webhook signature validation
+  // Webhook (ITN) signature validation — PayFast signs webhooks with alphabetical field order
   validateWebhookSignature(postData: Record<string, any>, receivedSignature: string): boolean {
-    const calculatedSignature = this.generateSignature(postData);
+    // Remove signature field before computing
+    const data: Record<string, string> = { ...postData };
+    delete data.signature;
+
+    const encode = (val: string) =>
+      encodeURIComponent(val).replace(/%20/g, '+').replace(/'/g, '%27');
+
+    const sortedKeys = Object.keys(data).sort();
+    let signatureString = sortedKeys
+      .filter(key => data[key] !== '' && data[key] !== null && data[key] !== undefined)
+      .map(key => `${key}=${encode(String(data[key]))}`)
+      .join('&');
+
+    if (this.config.passphrase) {
+      signatureString += `&passphrase=${encode(this.config.passphrase)}`;
+    }
+
+    const calculatedSignature = crypto.createHash('md5').update(signatureString).digest('hex');
+    console.log('Webhook signature validation:', { calculatedSignature, receivedSignature, match: calculatedSignature === receivedSignature });
     return calculatedSignature === receivedSignature;
   }
 
