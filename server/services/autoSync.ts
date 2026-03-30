@@ -1,6 +1,6 @@
 import { db } from "@db";
 import { propdataListings, syncTracking, agencyBranches } from "@db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { ListingsClient } from "./propdata/listingsClient";
 import { AgentsClient } from "./propdata/agentsClient";
 import { FilesClient } from "./propdata/filesClient";
@@ -57,7 +57,12 @@ class AutoSyncService {
     }
 
     this.isRunning = true;
-    
+
+    // Ensure the sequence is ahead of the current max id (guards against out-of-sync sequences)
+    await db.execute(
+      sql`SELECT setval(pg_get_serial_sequence('sync_tracking', 'id'), COALESCE((SELECT MAX(id) FROM sync_tracking), 0) + 1, false)`
+    );
+
     // Create sync tracking record
     const [syncRecord] = await db
       .insert(syncTracking)
