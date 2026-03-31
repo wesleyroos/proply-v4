@@ -126,7 +126,8 @@ export default function PropdataListingsPage() {
     queryFn: async () => {
       const response = await fetch('/api/agencies', { credentials: 'include' });
       if (!response.ok) return [];
-      return response.json();
+      const data = await response.json();
+      return data.agencies ?? data;
     },
     enabled: !!user?.isAdmin,
   });
