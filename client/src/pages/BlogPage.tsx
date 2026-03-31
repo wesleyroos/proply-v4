@@ -48,6 +48,35 @@ export default function BlogPage() {
 
           {/* Articles Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Lightstone Article Card */}
+            <Card className="overflow-hidden flex flex-col">
+              <div className="relative h-48 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                <div className="text-center px-4">
+                  <div className="text-4xl mb-2">🏠</div>
+                  <p className="text-white/70 text-xs font-medium uppercase tracking-wider">Property Data</p>
+                </div>
+              </div>
+              <CardContent className="flex-1 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                  <Link href="/blog/lightstone-property-reports-explained">
+                    Lightstone Property Reports Explained: What You Get and What It Costs
+                  </Link>
+                </h2>
+                <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+                  A full breakdown of what a Lightstone property report contains, what it costs, and how Proply gives you the same data plus a complete investment analysis in one place.
+                </p>
+                <div className="mt-auto flex items-center justify-between">
+                  <div className="text-sm text-gray-500">March 31, 2026</div>
+                  <Link href="/blog/lightstone-property-reports-explained">
+                    <Button variant="outline" size="sm">
+                      Read More
+                      <span className="ml-2">→</span>
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Deal Score Article Card */}
             <Card className="overflow-hidden flex flex-col">
               <div className="relative h-48">
@@ -104,35 +133,6 @@ export default function BlogPage() {
                 <div className="mt-auto flex items-center justify-between">
                   <div className="text-sm text-gray-500">December 28, 2024</div>
                   <Link href="/blog/introduction-to-investing-in-short-term-rentals-cape-town">
-                    <Button variant="outline" size="sm">
-                      Read More
-                      <span className="ml-2">→</span>
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Lightstone Article Card */}
-            <Card className="overflow-hidden flex flex-col">
-              <div className="relative h-48 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                <div className="text-center px-4">
-                  <div className="text-4xl mb-2">🏠</div>
-                  <p className="text-white/70 text-xs font-medium uppercase tracking-wider">Property Data</p>
-                </div>
-              </div>
-              <CardContent className="flex-1 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                  <Link href="/blog/lightstone-property-reports-explained">
-                    Lightstone Property Reports Explained: What You Get and What It Costs
-                  </Link>
-                </h2>
-                <p className="text-gray-600 mb-4 text-sm line-clamp-3">
-                  A full breakdown of what a Lightstone property report contains, what it costs, and how Proply gives you the same data plus a complete investment analysis in one place.
-                </p>
-                <div className="mt-auto flex items-center justify-between">
-                  <div className="text-sm text-gray-500">March 31, 2026</div>
-                  <Link href="/blog/lightstone-property-reports-explained">
                     <Button variant="outline" size="sm">
                       Read More
                       <span className="ml-2">→</span>
