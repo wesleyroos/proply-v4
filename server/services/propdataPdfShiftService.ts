@@ -78,12 +78,20 @@ export class PropdataPdfShiftService {
 
     // Agency logo
     let agencyLogoDataUri: string | null = null;
-    if (property.branchId) {
+    const branchId = property.branchId;
+    console.log(`Agency logo lookup — branchId: ${branchId}`);
+    if (branchId) {
       const branch = await db.query.agencyBranches.findFirst({
-        where: eq(agencyBranches.id, property.branchId),
+        where: eq(agencyBranches.id, branchId),
       });
+      console.log(`Branch found: ${!!branch}, logoUrl: ${branch?.logoUrl}`);
       if (branch?.logoUrl) {
+        // Try as local file first
         agencyLogoDataUri = await this.fileToDataUri(branch.logoUrl);
+        // If file not found locally, try as URL
+        if (!agencyLogoDataUri && branch.logoUrl.startsWith("http")) {
+          agencyLogoDataUri = await this.urlToDataUri(branch.logoUrl);
+        }
         console.log("Agency logo loaded:", !!agencyLogoDataUri, "from", branch.logoUrl);
       }
     }
@@ -270,7 +278,7 @@ export class PropdataPdfShiftService {
         line-height: 1.15; letter-spacing: -0.025em; margin-bottom: 18px;
       }
       .price-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); margin-bottom: 4px; }
-      .price-value { font-size: 32px; font-weight: 900; color: var(--blue); letter-spacing: -0.04em; line-height: 1; margin-bottom: 20px; }
+      .price-value { font-size: 32px; font-weight: 600; color: var(--ink); letter-spacing: -0.04em; line-height: 1; margin-bottom: 20px; }
       .hero-stats-grid {
         display: grid; grid-template-columns: 1fr 1fr;
         gap: 1px; background: var(--border);
@@ -290,7 +298,8 @@ export class PropdataPdfShiftService {
       .stat-bar-item .s-value { font-size: 11.5px; font-weight: 700; color: var(--ink); }
 
       /* ── Media ── */
-      .media-row { display: grid; grid-template-columns: 1fr 1fr; height: 210px; border-bottom: 1px solid var(--border); }
+      .media-row-wrapper { padding: 12px 42px 16px; border-bottom: 1px solid var(--border); }
+      .media-row { display: grid; grid-template-columns: 1fr 1fr; height: 210px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
       .media-panel { overflow: hidden; position: relative; }
       .media-panel:first-child { border-right: 1px solid var(--border); }
       .media-panel img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -711,17 +720,19 @@ export class PropdataPdfShiftService {
 
 <div class="stat-bar">${statBar}</div>
 
-<div class="media-row">
-  <div class="media-panel">${mapContent}</div>
-  <div class="media-panel">${imgContent}</div>
+<div class="media-row-wrapper">
+  <div class="media-row">
+    <div class="media-panel">${mapContent}</div>
+    <div class="media-panel">${imgContent}</div>
+  </div>
 </div>
 
 ${valuationHtml}
 ${rentalHtml}
 ${financialHtml}
 ${detailsHtml}
-${disclaimerHtml}
 ${footerHtml}
+${disclaimerHtml}
 
 </body>
 </html>`;
@@ -754,7 +765,7 @@ ${footerHtml}
         landscape: false,
         use_print: false,
         format:    "A4",
-        margin:    { top: "0mm", bottom: "0mm", left: "0mm", right: "0mm" },
+        margin:    { top: "10mm", bottom: "10mm", left: "0mm", right: "0mm" },
       }),
     });
 
