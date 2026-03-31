@@ -196,7 +196,8 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/propdata-debug/") || // PropData debug endpoint
       req.path.startsWith("/propdata-reports/") || // PropData PDF reports
       req.path === "/pdf-test" || // PDF test endpoint
-      req.path.startsWith("/pdf-generate/") || // PDF generation endpoint
+      req.path.startsWith("/pdf-generate/") || // PDF generation endpoint (internal)
+      req.path.startsWith("/api/pdf-generate/") || // PDF generation endpoint (public download)
       req.path === "/payfast/notify" || // PayFast webhook endpoint
       req.path.startsWith("/api/property-analyzer/shared/") || // Public shared analysis
       req.path.startsWith("/api/properties/shared/") || // Public shared rent compare analysis
@@ -2649,6 +2650,27 @@ export function registerRoutes(app: Express): Server {
       `);
 
       if (!rentalData.rows || rentalData.rows.length === 0) {
+        // Fallback: extract rentalPerformance from valuation_reports.valuation_data
+        const vrResult = await db.execute(sql`
+          SELECT valuation_data FROM valuation_reports
+          WHERE property_id = ${propertyId}
+          ORDER BY updated_at DESC LIMIT 1
+        `);
+        const vd = vrResult.rows[0]?.valuation_data as any;
+        const rp = vd?.rentalPerformance;
+        if (rp) {
+          const lt = rp.longTerm;
+          const st = rp.shortTerm;
+          return res.json({
+            property_id: propertyId,
+            long_term_min_rental: lt?.minRental ?? null,
+            long_term_max_rental: lt?.maxRental ?? null,
+            long_term_min_yield: lt?.minYield ?? null,
+            long_term_max_yield: lt?.maxYield ?? null,
+            long_term_reasoning: lt?.reasoning ?? null,
+            short_term_data: st ?? null,
+          });
+        }
         console.log(`No rental data found for property ID: ${propertyId}, user ID: ${req.user.id}`);
         return res.status(404).json({ error: "Rental data not found" });
       }

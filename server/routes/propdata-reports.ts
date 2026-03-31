@@ -295,6 +295,18 @@ router.post('/create-preview/:propertyId', async (req, res) => {
     const reportId = createId();
     ReportMappingService.storeReportMapping(reportId, propertyId);
 
+    // Persist to DB so mapping survives server restarts
+    try {
+      await logReportActivity({
+        propertyId,
+        reportId,
+        activityType: 'viewed',
+        recipientEmail: 'preview',
+        ipAddress: req.ip || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown',
+      });
+    } catch { /* non-critical */ }
+
     const baseUrl = process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : '';
     const previewUrl = `${baseUrl}/download/${reportId}`;
 
