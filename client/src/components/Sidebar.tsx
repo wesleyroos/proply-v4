@@ -74,9 +74,9 @@ export default function Sidebar() {
     user?.role === "branch_admin"
   ) {
     navItems.push({
-      title: "PropData Listings",
+      title: "Listings",
       icon: Database,
-      href: "/propdata-listings",
+      href: "/listings",
     });
   }
 

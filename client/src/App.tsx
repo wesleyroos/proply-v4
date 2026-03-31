@@ -291,6 +291,7 @@ function App() {
             <Route path="/properties" component={() => <ProtectedRoute component={PropertiesPage} />} />
             <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
             <Route path="/admin" component={() => <ProtectedRoute component={AdminPage} />} />
+            <Route path="/listings" component={() => <ProtectedRoute component={PropdataListingsPage} />} />
             <Route path="/propdata-listings" component={() => <ProtectedRoute component={PropdataListingsPage} />} />
             <Route path="/analytics" component={() => <ProtectedRoute component={AnalyticsPage} />} />
             <Route path="/access-codes" component={() => <ProtectedRoute component={AccessCodePage} />} />

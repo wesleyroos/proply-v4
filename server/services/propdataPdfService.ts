@@ -134,10 +134,25 @@ export class PropdataPdfService {
         }
       }
 
+      // Financial analysis data is saved to valuation_reports, but addFinancialsSection
+      // reads it from rentalData. Merge the fields so the PDF renders correctly.
+      const mergedRentalData = rentalData
+        ? {
+            ...rentalData,
+            financingAnalysisData: rentalData.financingAnalysisData ?? valuationReport?.financingAnalysisData,
+            cashflowAnalysisData: rentalData.cashflowAnalysisData ?? valuationReport?.cashflowAnalysisData,
+          }
+        : valuationReport
+          ? {
+              financingAnalysisData: valuationReport.financingAnalysisData,
+              cashflowAnalysisData: valuationReport.cashflowAnalysisData,
+            }
+          : null;
+
       return {
         property,
         valuationReport,
-        rentalData,
+        rentalData: mergedRentalData,
         savedValuationData: valuationReport,
         agencyLogo,
       };

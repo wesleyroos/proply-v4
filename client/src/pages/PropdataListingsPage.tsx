@@ -339,9 +339,9 @@ export default function PropdataListingsPage() {
     <div className="p-8 space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold mb-2">PropData Listings</h1>
+          <h1 className="text-2xl font-bold mb-2">Listings</h1>
           <p className="text-muted-foreground">
-            View and manage property listings from PropData integration.
+            View and manage property listings.
           </p>
         </div>
         <div className="flex items-center space-x-2">
