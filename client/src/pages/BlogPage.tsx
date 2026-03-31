@@ -36,6 +36,13 @@ export default function BlogPage() {
     return <Property24VsLightstoneBlogPost />;
   }
 
+  if (
+    match &&
+    params?.slug === "how-to-check-what-a-property-sold-for-south-africa"
+  ) {
+    return <SoldPricesBlogPost />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <PublicHeader />
@@ -55,6 +62,33 @@ export default function BlogPage() {
 
           {/* Articles Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Sold Prices Article Card */}
+            <Link href="/blog/how-to-check-what-a-property-sold-for-south-africa">
+              <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
+                <div className="relative h-48 bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center">
+                  <div className="text-center px-4">
+                    <div className="text-4xl mb-2">🔍</div>
+                    <p className="text-white/70 text-xs font-medium uppercase tracking-wider">Sold Prices</p>
+                  </div>
+                </div>
+                <CardContent className="flex-1 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                    How to Check What a Property Actually Sold For in South Africa
+                  </h2>
+                  <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+                    A step-by-step guide to finding verified sold prices using the Deeds Office, Property24, and Lightstone — and why it matters before you make an offer.
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="text-sm text-gray-500">April 14, 2026</div>
+                    <Button variant="outline" size="sm">
+                      Read More
+                      <span className="ml-2">→</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
             {/* Property24 vs Lightstone Article Card */}
             <Link href="/blog/property24-vs-lightstone-which-report-should-you-use">
               <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
@@ -1211,6 +1245,208 @@ function Property24VsLightstoneBlogPost() {
           <div className="mt-12 border-t pt-8">
             <p className="text-sm text-gray-500">
               Published on April 7, 2026 · Written by the Proply Team
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <PublicFooter />
+    </div>
+  );
+}
+
+function SoldPricesBlogPost() {
+  return (
+    <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>How to Check What a Property Actually Sold For in South Africa | Proply</title>
+        <meta
+          name="description"
+          content="A step-by-step guide to checking verified sold prices in South Africa using the Deeds Office, Property24, and Lightstone — and why it matters before making an offer."
+        />
+        <meta name="keywords" content="check sold prices South Africa, property sold prices, what did property sell for, deeds office sold prices, property24 sold prices, lightstone sold prices" />
+      </Helmet>
+
+      <PublicHeader />
+
+      {/* Hero */}
+      <div className="relative h-[50vh] min-h-[380px] bg-gradient-to-br from-emerald-700 to-teal-900 flex items-center">
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}
+        />
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-emerald-300 text-sm font-semibold uppercase tracking-widest mb-4">Property Research · South Africa</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+            How to Check What a Property Actually Sold For in South Africa
+          </h1>
+          <p className="text-emerald-100 text-lg">
+            Asking prices are just the starting point. Here's how to find out what properties really change hands for — before you make an offer.
+          </p>
+          <p className="text-emerald-300 text-sm mt-6">April 14, 2026 · 7 min read</p>
+        </div>
+      </div>
+
+      {/* Article */}
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="prose prose-lg prose-slate mx-auto">
+
+          <p className="lead">
+            One of the most powerful pieces of information you can have before buying a property in South Africa is what similar properties have actually sold for — not what they were listed at, but what buyers ultimately paid. This data is publicly available, but knowing where to find it and how to interpret it is something most buyers never learn. This guide walks you through every method, step by step.
+          </p>
+
+          <h2>Why Sold Prices Matter More Than Asking Prices</h2>
+          <p>
+            Asking prices reflect what sellers hope to achieve. Sold prices reflect what the market was actually willing to pay. The gap between the two can be significant — in a slow market, properties regularly sell 5–15% below asking price. In a competitive area, they can sell at or above asking.
+          </p>
+          <p>
+            Before making an offer on any property, knowing the recent sold prices of comparable properties in the same suburb gives you:
+          </p>
+          <ul>
+            <li>A reliable benchmark to evaluate whether the asking price is fair</li>
+            <li>Negotiating leverage — backed by data, not guesswork</li>
+            <li>Confidence that you're not overpaying in a softening market</li>
+            <li>Evidence to support your bond application if the bank's valuation comes in lower than the purchase price</li>
+          </ul>
+
+          <h2>Method 1: The Deeds Office</h2>
+          <p>
+            All property transfers in South Africa are registered at the Deeds Office, which is administered by the Department of Agriculture, Land Reform and Rural Development. This makes the Deeds Office the most authoritative source of sold price data in the country — every registered sale is a matter of public record.
+          </p>
+          <p>
+            You can search Deeds Office records directly through the <strong>e-DeedsSearch portal</strong> at deeds.gov.za. A search costs a small fee (currently around R10–R15 per search) and gives you the registered transfer price, transfer date, and the names of the buyer and seller.
+          </p>
+          <p>
+            The limitation is that Deeds Office data can lag by several weeks or months — transfers are only registered once the full conveyancing process is complete, which typically takes 6–10 weeks after the sale is agreed. So while it's the most authoritative source, it's not always the most current.
+          </p>
+          <p>
+            <strong>Best for:</strong> Verifying the exact registered price of a specific property, or checking historical sales on a property you're about to buy.
+          </p>
+
+          <h2>Method 2: Property24</h2>
+          <p>
+            Property24 publishes sold price data sourced from Deeds Office registrations, making it one of the most accessible ways to check what properties have sold for in a suburb — without paying for a formal report.
+          </p>
+          <p>
+            Here's how to use it:
+          </p>
+          <ol>
+            <li>Go to property24.com and search for the suburb you're interested in</li>
+            <li>On the suburb results page, look for the "Sold" filter or navigate to the suburb's price trends section</li>
+            <li>You'll see a feed of recent transfers, including property type, size, and registered sale price</li>
+            <li>You can also view median sold prices over time to understand how the suburb has trended</li>
+          </ol>
+          <p>
+            Property24's sold data is free to access and gives you a solid overview of recent market activity in any suburb. It's the quickest way to get a feel for what buyers have been paying in an area.
+          </p>
+          <p>
+            <strong>Best for:</strong> Quick suburb-level research and getting a broad sense of recent sold prices before committing to deeper due diligence.
+          </p>
+
+          <h2>Method 3: A Lightstone Property Report</h2>
+          <p>
+            For detailed sold price information on a specific property — not just the suburb — a Lightstone report is the most comprehensive option available to private buyers.
+          </p>
+          <p>
+            A full Lightstone report includes:
+          </p>
+          <ul>
+            <li>The complete sales history of the specific property, with every registered transfer price going back many years</li>
+            <li>Comparable sales — recent transactions of similar properties in the immediate area, with addresses and sale prices</li>
+            <li>An automated valuation (AVM) range based on those comparable sales</li>
+            <li>Suburb-level price statistics, including median sold prices and price per square metre</li>
+          </ul>
+          <p>
+            This level of detail makes a Lightstone report particularly valuable when you're doing due diligence on a specific property. Rather than looking at suburb-level trends, you get granular data on what buyers paid for similar homes on nearby streets — often within the last six to twelve months.
+          </p>
+          <p>
+            <strong>Best for:</strong> Thorough due diligence on a specific property before making an offer, or when you need a reliable valuation benchmark.
+          </p>
+
+          <h2>Method 4: Your Estate Agent</h2>
+          <p>
+            A good estate agent who is active in the area will have direct access to recent comparable sales, often through their own CMA (Comparative Market Analysis) tools and through their PropData or Lightstone subscriptions. Don't hesitate to ask your agent to pull a CMA on the property you're considering — it's part of their job, and a professional agent will do this as standard.
+          </p>
+          <p>
+            The advantage of getting this from an agent is that they can add qualitative context: they know which properties had visible defects, which sales were motivated (divorce, estate, financial distress), and which comparables are truly equivalent. Raw data tells you prices; an experienced agent helps you interpret them.
+          </p>
+          <p>
+            <strong>Best for:</strong> Adding human context to the data, especially in areas with limited recent sales where the numbers alone don't tell the full story.
+          </p>
+
+          <h2>Method 5: Proply</h2>
+          <p>
+            For investors and buyers who want to go beyond just checking what a property sold for, Proply combines sold price data and Lightstone valuations with a full investment analysis. When you run a property through Proply's Property Analyzer, you get the market context and valuation data alongside rental yield projections, cash flow analysis, and long-term return modelling.
+          </p>
+          <p>
+            This is particularly useful if you're evaluating a property as an investment rather than a primary residence — knowing the sold price is only the first step. Understanding whether buying at that price makes financial sense requires the kind of analysis Proply provides.
+          </p>
+          <p>
+            <strong>Best for:</strong> Investors who need to evaluate both the price and the investment case in a single report.
+          </p>
+
+          <h2>Which Method Should You Use?</h2>
+          <p>
+            The answer depends on where you are in the buying process:
+          </p>
+          <ul>
+            <li><strong>Early research:</strong> Start with Property24's free sold price data to understand the suburb</li>
+            <li><strong>Due diligence on a specific property:</strong> Pull a Lightstone report for detailed comparable sales and the property's own sales history</li>
+            <li><strong>Final verification:</strong> Cross-check with the Deeds Office if you need the official registered price</li>
+            <li><strong>Investment analysis:</strong> Use Proply to combine all of this with yield and cash flow projections</li>
+          </ul>
+          <p>
+            For most buyers, starting with Property24 for a broad picture and then running a Lightstone report for specific due diligence covers all the bases.
+          </p>
+
+          <h2>A Note on Transfer Prices vs Purchase Prices</h2>
+          <p>
+            One important nuance: the price registered at the Deeds Office is the <em>transfer price</em>, which is the amount declared for transfer duty purposes. In the vast majority of residential sales, this matches the purchase price exactly. However, in some transactions — particularly off-plan sales, lease-to-buy arrangements, or sales between related parties — the registered amount may differ from the actual price paid. Treat Deeds Office data as an excellent guide, not an absolute record of every rand that changed hands.
+          </p>
+
+          {/* CTA */}
+          <div className="not-prose my-10 rounded-2xl bg-slate-900 p-8 text-white">
+            <h3 className="text-xl font-bold mb-2">Turn sold prices into investment insights</h3>
+            <p className="text-slate-300 text-sm mb-6">
+              Proply gives you Lightstone valuation data and comparable sales, plus a full investment analysis — yield, cash flow, and capital growth projections in one report.
+            </p>
+            <a
+              href="/register"
+              className="inline-block bg-white text-slate-900 font-semibold px-6 py-3 rounded-lg text-sm hover:bg-slate-100 transition-colors"
+            >
+              Try Proply Free →
+            </a>
+          </div>
+
+          <h2>Frequently Asked Questions</h2>
+
+          <h3>Are property sold prices public record in South Africa?</h3>
+          <p>
+            Yes. All property transfers in South Africa are registered at the Deeds Office, which is a public record. Transfer prices are accessible through the Deeds Office e-DeedsSearch portal, and are also republished by platforms like Property24 and Lightstone.
+          </p>
+
+          <h3>How long does it take for a sale to appear in sold price data?</h3>
+          <p>
+            Typically 6–12 weeks after the sale is agreed, once the full conveyancing process is complete and the transfer is registered at the Deeds Office. This means very recent sales may not yet appear in any database — something to keep in mind when interpreting sold price data in fast-moving markets.
+          </p>
+
+          <h3>Can I find out what my neighbour's house sold for?</h3>
+          <p>
+            Yes. Because property transfers are public record, you can look up the sold price of any residential property in South Africa using the Deeds Office portal, Property24's sold data, or a Lightstone report. There is no privacy restriction on registered transfer prices.
+          </p>
+
+          <h3>Is the sold price the same as the asking price?</h3>
+          <p>
+            Not necessarily. The sold price is what the buyer and seller agreed on and registered at the Deeds Office. The asking price is what the seller advertised. In a balanced market, properties often sell within a few percent of asking price. In a buyer's market, significant discounts are common. Comparing asking prices to final sold prices in a suburb gives you a useful sense of how much negotiating room typically exists.
+          </p>
+
+          <h3>What's the best free way to check sold prices in South Africa?</h3>
+          <p>
+            Property24's sold price data is the most accessible free option — it's sourced from Deeds Office registrations and updated regularly. For more detailed information on a specific property, including its full sales history and comparable sales, a Lightstone report (paid) gives you the most comprehensive view.
+          </p>
+
+          <div className="mt-12 border-t pt-8">
+            <p className="text-sm text-gray-500">
+              Published on April 14, 2026 · Written by the Proply Team
             </p>
           </div>
         </div>
