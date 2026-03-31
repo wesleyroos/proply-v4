@@ -29,6 +29,13 @@ export default function BlogPage() {
     return <LightstoneBlogPost />;
   }
 
+  if (
+    match &&
+    params?.slug === "property24-vs-lightstone-which-report-should-you-use"
+  ) {
+    return <Property24VsLightstoneBlogPost />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <PublicHeader />
@@ -48,6 +55,33 @@ export default function BlogPage() {
 
           {/* Articles Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Property24 vs Lightstone Article Card */}
+            <Link href="/blog/property24-vs-lightstone-which-report-should-you-use">
+              <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
+                <div className="relative h-48 bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center">
+                  <div className="text-center px-4">
+                    <p className="text-white font-bold text-lg tracking-tight">Property24 <span className="text-white/60 font-normal text-base">vs</span> Lightstone</p>
+                    <p className="text-white/60 text-xs font-medium uppercase tracking-wider mt-1">Which report do you need?</p>
+                  </div>
+                </div>
+                <CardContent className="flex-1 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                    Property24 vs Lightstone: Which Report Should You Use Before Buying?
+                  </h2>
+                  <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+                    Property24 and Lightstone both give you property data — but they answer very different questions. Here's how to use each one at the right stage of your buying process.
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="text-sm text-gray-500">April 7, 2026</div>
+                    <Button variant="outline" size="sm">
+                      Read More
+                      <span className="ml-2">→</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
             {/* Lightstone Article Card */}
             <Link href="/blog/lightstone-property-reports-explained">
               <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
@@ -975,6 +1009,202 @@ function LightstoneBlogPost() {
           <div className="mt-12 border-t pt-8">
             <p className="text-sm text-gray-500">
               Published on March 31, 2026 · Written by the Proply Team
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <PublicFooter />
+    </div>
+  );
+}
+
+function Property24VsLightstoneBlogPost() {
+  return (
+    <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Property24 vs Lightstone: Which Report Should You Use Before Buying? | Proply</title>
+        <meta
+          name="description"
+          content="Property24 and Lightstone both provide property data in South Africa — but they serve very different purposes. Here's how to use each one effectively before buying."
+        />
+        <meta name="keywords" content="property24 report, lightstone vs property24, property report South Africa, lightstone property report, property24 sold prices" />
+      </Helmet>
+
+      <PublicHeader />
+
+      {/* Hero */}
+      <div className="relative h-[50vh] min-h-[380px] bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center">
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}
+        />
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-blue-300 text-sm font-semibold uppercase tracking-widest mb-4">Property Research · South Africa</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+            Property24 vs Lightstone: Which Report Should You Use Before Buying?
+          </h1>
+          <p className="text-blue-100 text-lg">
+            Both platforms give you property data — but they answer very different questions. Here's how to use each one at the right stage of your buying process.
+          </p>
+          <p className="text-blue-300 text-sm mt-6">April 7, 2026 · 7 min read</p>
+        </div>
+      </div>
+
+      {/* Article */}
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="prose prose-lg prose-slate mx-auto">
+
+          <p className="lead">
+            When you're researching a property in South Africa, two names come up constantly: Property24 and Lightstone. Both are trusted sources of property data, and both are worth using — but they serve fundamentally different purposes. Understanding what each one does, and when to use it, can make the difference between a well-researched purchase and one based on incomplete information.
+          </p>
+
+          <h2>What Is Property24?</h2>
+          <p>
+            Property24 is South Africa's largest property listings portal. It's where estate agents advertise properties for sale and to let, and where most buyers begin their property search. At its core, Property24 is a marketplace — it connects buyers and sellers, and tenants and landlords.
+          </p>
+          <p>
+            But Property24 has grown into much more than a listings site. It also publishes asking price data, suburb price trends, and sold price statistics sourced from Deeds Office registrations. This makes it genuinely useful for market research, even before you've identified a specific property.
+          </p>
+          <p>
+            A Property24 report gives you a picture of the live market: what's currently for sale, at what prices, and how those prices compare to recent sales in the area. It's the starting point for any property search in South Africa.
+          </p>
+
+          <h2>What Is Lightstone?</h2>
+          <p>
+            Lightstone is a property data and analytics company that aggregates information directly from the Deeds Office, municipal records, and other official sources. Unlike Property24, Lightstone is not a listings portal — it doesn't show you what's for sale. Instead, it tells you everything about a specific property: its ownership history, bond information, sales history, and an automated valuation estimate (AVM).
+          </p>
+          <p>
+            Lightstone is the platform banks use when processing home loans, that conveyancing attorneys use when processing transfers, and that estate agents use when pricing mandates. It's the gold standard for verified property intelligence in South Africa.
+          </p>
+          <p>
+            A Lightstone property report gives you a deep dive on one specific property — confirmed historical data from official records, not listings or asking prices.
+          </p>
+
+          <h2>Property24 vs Lightstone: The Core Difference</h2>
+          <p>
+            The simplest way to understand the difference is this:
+          </p>
+          <ul>
+            <li><strong>Property24</strong> tells you what the market looks like right now — asking prices, active listings, and broad sales trends.</li>
+            <li><strong>Lightstone</strong> tells you the verified history and current estimated value of a specific property — official records, not advertised prices.</li>
+          </ul>
+          <p>
+            Property24 is where you go to find a property and understand the market. Lightstone is where you go once you've found a property and need to verify what it's actually worth.
+          </p>
+
+          <h2>What You Get From a Property24 Report</h2>
+          <p>
+            Property24's data tools — available through their website and app — give you access to:
+          </p>
+          <ul>
+            <li><strong>Active listings</strong> — everything currently for sale or to let in a suburb, with asking prices and listing details</li>
+            <li><strong>Sold prices</strong> — recent Deeds Office registrations showing what properties actually transferred for (note: these are transfer prices, not necessarily the full purchase price)</li>
+            <li><strong>Suburb price trends</strong> — median asking prices over time, giving you a sense of how a market has moved</li>
+            <li><strong>Property estimates</strong> — Property24's own automated value estimates on individual properties, based on their listing and sales data</li>
+            <li><strong>Neighbourhood insights</strong> — schools, amenities, and demographic data for areas you're considering</li>
+          </ul>
+          <p>
+            This data is particularly useful in the early stages of a property search, when you're narrowing down suburbs and getting a feel for what your budget can buy.
+          </p>
+
+          <h2>What You Get From a Lightstone Property Report</h2>
+          <p>
+            A full Lightstone report on a specific property includes:
+          </p>
+          <ul>
+            <li><strong>Property details</strong> — erf size, floor area, property type, and Deeds Office registration information</li>
+            <li><strong>Ownership history</strong> — every registered owner, with transfer dates and purchase prices</li>
+            <li><strong>Bond information</strong> — existing mortgages registered against the property, including which bank holds them</li>
+            <li><strong>Sales history and price trends</strong> — how the property's value has moved over time</li>
+            <li><strong>Automated Valuation Model (AVM)</strong> — Lightstone's data-driven estimate of current market value, expressed as a range</li>
+            <li><strong>Comparable sales</strong> — recent sales of similar properties in the immediate area</li>
+            <li><strong>Suburb statistics</strong> — median prices, volume of transactions, and price per square metre for the area</li>
+          </ul>
+          <p>
+            This level of detail is what you need when you're doing due diligence on a specific property — before making an offer, before arranging a bond, or before committing to a purchase.
+          </p>
+
+          <h2>When to Use Each One</h2>
+
+          <h3>Use Property24 when:</h3>
+          <ul>
+            <li>You're in the early stages of a property search and exploring which suburbs fit your budget</li>
+            <li>You want to understand what's currently available on the market</li>
+            <li>You're trying to gauge whether a suburb's prices have been rising or falling</li>
+            <li>You want a quick sense of how a specific listing is priced relative to comparable properties</li>
+          </ul>
+
+          <h3>Use Lightstone when:</h3>
+          <ul>
+            <li>You've identified a specific property and want to verify its history before making an offer</li>
+            <li>You want to understand the ownership and bond situation on a property</li>
+            <li>You need a reliable, data-driven valuation to benchmark against the asking price</li>
+            <li>Your bank or attorney requires a Lightstone report as part of the transaction process</li>
+          </ul>
+
+          <h2>Do You Need Both?</h2>
+          <p>
+            For most buyers, yes — and they're used at different stages of the process. Property24 gets you to the right property in the right suburb at the right price point. Lightstone gives you the verified data you need before signing anything.
+          </p>
+          <p>
+            Think of it as a two-step process: use Property24 to find and compare, then use Lightstone to verify and validate.
+          </p>
+
+          <h2>How Proply Brings It Together</h2>
+          <p>
+            Proply is built for the step that comes after both — turning verified property data into a complete investment analysis. When you run a property through Proply's Property Analyzer, you get Lightstone's valuation and suburb data combined with rental income estimates, cash flow projections, yield calculations, and capital growth modelling.
+          </p>
+          <p>
+            The result is a single, shareable report that answers not just "what is this property worth?" but "what will it actually return if I buy it?" — giving you everything you need to make a fully informed investment decision.
+          </p>
+          <p>
+            For estate agents, Proply's Rent Compare tool adds another layer — benchmarking a property's rental potential against actual comparable listings in the area, making it a powerful tool for client presentations and rental mandates.
+          </p>
+
+          {/* CTA */}
+          <div className="not-prose my-10 rounded-2xl bg-slate-900 p-8 text-white">
+            <h3 className="text-xl font-bold mb-2">Go beyond the data — analyse the investment</h3>
+            <p className="text-slate-300 text-sm mb-6">
+              Proply combines Lightstone property data with full investment analysis — cash flow, yield, capital growth, and a shareable PDF report.
+            </p>
+            <a
+              href="/register"
+              className="inline-block bg-white text-slate-900 font-semibold px-6 py-3 rounded-lg text-sm hover:bg-slate-100 transition-colors"
+            >
+              Try Proply Free →
+            </a>
+          </div>
+
+          <h2>Frequently Asked Questions</h2>
+
+          <h3>Is Property24 data accurate?</h3>
+          <p>
+            Property24's listing data is supplied by estate agents and is generally reliable for understanding the live market. Their sold price data comes from Deeds Office registrations, which are official records. However, keep in mind that transfer prices don't always reflect the full purchase price — sometimes seller concessions or other arrangements affect the registered amount. For verified valuation purposes, Lightstone remains the industry standard.
+          </p>
+
+          <h3>Can I use Property24 instead of Lightstone?</h3>
+          <p>
+            They serve different purposes, so it's not really an either/or choice. Property24 is excellent for market research and property discovery. Lightstone is the tool for verified due diligence on a specific property. For serious buyers and investors, using both — along with an investment analysis tool like Proply — gives you the most complete picture.
+          </p>
+
+          <h3>How do I access a Lightstone report?</h3>
+          <p>
+            You can purchase Lightstone reports directly through their consumer platform, through your estate agent, or through conveyancing attorneys. Proply incorporates Lightstone valuation data as part of its property analysis — so you get both the property intelligence and the investment analysis in one report.
+          </p>
+
+          <h3>Does Property24 show what properties sold for?</h3>
+          <p>
+            Yes — Property24 publishes sold price data sourced from the Deeds Office, which shows registered transfer prices. This is useful for getting a sense of what buyers have actually paid in an area. For a more detailed breakdown of a specific property's sales history, a Lightstone report gives you the most comprehensive view.
+          </p>
+
+          <h3>What's the best way to research a property before making an offer?</h3>
+          <p>
+            A thorough approach covers three bases: use Property24 to understand the market and benchmark the asking price against comparable listings; pull a Lightstone report to verify the property's history, ownership, and valuation; and run the numbers through a tool like Proply to understand the investment case — rental yield, cash flow, and long-term returns.
+          </p>
+
+          <div className="mt-12 border-t pt-8">
+            <p className="text-sm text-gray-500">
+              Published on April 7, 2026 · Written by the Proply Team
             </p>
           </div>
         </div>
