@@ -55,6 +55,7 @@ import OnevapResidentialRiskIndexPage from "./pages/OnevapResidentialRiskIndexPa
 import AgentsPage from "./pages/AgentsPage";
 import PropdataListingsPage from "./pages/PropdataListingsPage";
 import DownloadSuccessPage from "./pages/DownloadSuccessPage";
+import PropertyReportPage from "./pages/PropertyReportPage";
 import AcceptInvitationPage from "./pages/AcceptInvitationPage";
 
 
@@ -258,9 +259,7 @@ function App() {
               </PageTransition>
             )} />
             <Route path="/download/:reportId" component={() => (
-              <PageTransition>
-                <DownloadSuccessPage />
-              </PageTransition>
+              <PropertyReportPage />
             )} />
             <Route path="/admin/accept-invitation" component={() => (
               <PageTransition>

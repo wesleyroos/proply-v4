@@ -6,8 +6,8 @@ import { createId } from '@paralleldrive/cuid2';
 import fs from 'fs/promises';
 import path from 'path';
 import { db } from '../../db';
-import { propdataListings, valuationReports, rentalPerformanceData } from '../../db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { propdataListings, valuationReports, rentalPerformanceData, agencyBranches } from '../../db/schema';
+import { eq, sql, desc } from 'drizzle-orm';
 import { logReportActivity } from './report-activity';
 import { ReportMappingService } from '../services/reportMappingService';
 
@@ -286,5 +286,86 @@ router.get('/download/:reportId', async (req, res) => {
 });
 
 
+// Public endpoint — returns all data needed to render the web preview page
+router.get('/preview-data/:reportId', async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    if (!reportId) return res.status(400).json({ error: 'Report ID is required' });
+
+    const propertyId = await ReportMappingService.getPropertyIdFromReportId(reportId);
+    if (!propertyId) return res.status(404).json({ error: 'Report not found' });
+
+    const property = await db.query.propdataListings.findFirst({
+      where: eq(propdataListings.propdataId, propertyId)
+    });
+    if (!property) return res.status(404).json({ error: 'Property not found' });
+
+    const valuationReport = await db.query.valuationReports.findFirst({
+      where: eq(valuationReports.propertyId, propertyId),
+      orderBy: [desc(valuationReports.updatedAt)]
+    });
+
+    const rentalData = await db.query.rentalPerformanceData.findFirst({
+      where: eq(rentalPerformanceData.propertyId, propertyId)
+    });
+
+    // Merge financial data same as PDF service
+    const mergedRentalData = rentalData
+      ? {
+          ...rentalData,
+          financingAnalysisData: rentalData.financingAnalysisData ?? valuationReport?.financingAnalysisData,
+          cashflowAnalysisData: rentalData.cashflowAnalysisData ?? valuationReport?.cashflowAnalysisData,
+          annualPropertyAppreciationData: (rentalData as any).annualPropertyAppreciationData ?? valuationReport?.annualPropertyAppreciationData,
+        }
+      : valuationReport
+        ? {
+            financingAnalysisData: valuationReport.financingAnalysisData,
+            cashflowAnalysisData: valuationReport.cashflowAnalysisData,
+            annualPropertyAppreciationData: valuationReport.annualPropertyAppreciationData,
+          }
+        : null;
+
+    let branch = null;
+    if (property.branchId) {
+      branch = await db.query.agencyBranches.findFirst({
+        where: eq(agencyBranches.id, property.branchId)
+      });
+    }
+
+    res.json({
+      property: {
+        propdataId: property.propdataId,
+        address: property.address,
+        price: property.price,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        garages: property.garages,
+        parking: property.parking,
+        erfSize: property.erfSize,
+        floorSize: property.floorSize,
+        propertyType: property.propertyType,
+        description: property.description,
+        images: property.images,
+        status: property.status,
+        lastModified: property.lastModified,
+        agentName: property.agentName,
+        agentEmail: property.agentEmail,
+        agentPhone: property.agentPhone,
+      },
+      valuationReport: valuationReport ? { valuationData: valuationReport.valuationData } : null,
+      rentalData: mergedRentalData,
+      branch: branch ? {
+        franchiseName: branch.franchiseName,
+        branchName: branch.branchName,
+        logoUrl: branch.logoUrl,
+        primaryColor: branch.primaryColor,
+        companyName: branch.companyName,
+      } : null,
+    });
+  } catch (error) {
+    console.error('Error fetching preview data:', error);
+    res.status(500).json({ error: 'Failed to fetch report data' });
+  }
+});
 
 export default router;

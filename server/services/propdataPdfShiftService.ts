@@ -258,7 +258,7 @@ export class PropdataPdfShiftService {
       .report-header {
         display: flex; align-items: center; justify-content: space-between;
         padding: 22px 42px 20px;
-        border-bottom: 5px solid var(--blue);
+        border-bottom: 1px solid var(--border);
       }
       .header-left { display: flex; align-items: center; gap: 18px; }
       .header-divider { width: 1px; height: 30px; background: var(--border); }
@@ -272,7 +272,7 @@ export class PropdataPdfShiftService {
       /* ── Hero ── */
       .property-hero {
         padding: 34px 42px 0;
-        background: linear-gradient(160deg, #f0f7ff 0%, #fafcff 60%, white 100%);
+        background: white;
       }
       .property-badge {
         display: inline-flex; align-items: center; gap: 5px;
