@@ -286,6 +286,24 @@ router.get('/download/:reportId', async (req, res) => {
 });
 
 
+// Create a preview session for a property (no email sent) — returns a reportId + URL
+router.post('/create-preview/:propertyId', async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    if (!propertyId) return res.status(400).json({ error: 'Property ID is required' });
+
+    const reportId = createId();
+    ReportMappingService.storeReportMapping(reportId, propertyId);
+
+    const baseUrl = process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : '';
+    const previewUrl = `${baseUrl}/download/${reportId}`;
+
+    res.json({ reportId, previewUrl });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create preview' });
+  }
+});
+
 // Public endpoint — returns all data needed to render the web preview page
 router.get('/preview-data/:reportId', async (req, res) => {
   try {

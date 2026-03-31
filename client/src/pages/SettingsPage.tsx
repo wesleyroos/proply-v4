@@ -112,6 +112,7 @@ interface AgencyProfile {
   franchiseName: string;
   branchName: string;
   logoUrl?: string;
+  primaryColor?: string;
   companyName?: string;
   vatNumber?: string;
   registrationNumber?: string;
@@ -127,6 +128,8 @@ function ProfileSection() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [brandColor, setBrandColor] = useState<string>("#1ba2ff");
+  const [isSavingColor, setIsSavingColor] = useState(false);
 
   // Fetch agency profile data for admin users
   const { data: agencyProfile } = useQuery<AgencyProfile>({
@@ -177,6 +180,7 @@ function ProfileSection() {
           agencyProfile?.businessAddress || user.businessAddress || "",
         companyLogo: agencyProfile?.logoUrl || user.companyLogo || "",
       });
+      if (agencyProfile?.primaryColor) setBrandColor(agencyProfile.primaryColor);
     }
   }, [user, agencyProfile, form]);
 
@@ -262,6 +266,24 @@ function ProfileSection() {
         form.setValue("companyLogo", base64Data);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveBrandColor = async () => {
+    setIsSavingColor(true);
+    try {
+      const res = await fetch("/api/agency-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ primaryColor: brandColor }),
+      });
+      if (!res.ok) throw new Error("Failed to save colour");
+      queryClient.invalidateQueries({ queryKey: ["/api/agency-profile"] });
+    } catch {
+      alert("Failed to save brand colour. Please try again.");
+    } finally {
+      setIsSavingColor(false);
     }
   };
 
@@ -464,6 +486,30 @@ function ProfileSection() {
                     </div>
                   </div>
                 </FormItem>
+
+                {(user?.role === "branch_admin" || user?.role === "franchise_admin") && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Brand Colour</label>
+                    <p className="text-sm text-gray-500">Used in property reports sent to clients.</p>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={brandColor}
+                        onChange={(e) => setBrandColor(e.target.value)}
+                        className="h-10 w-16 rounded border border-input cursor-pointer p-1"
+                      />
+                      <span className="text-sm text-muted-foreground font-mono">{brandColor}</span>
+                      <button
+                        type="button"
+                        onClick={handleSaveBrandColor}
+                        disabled={isSavingColor}
+                        className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        {isSavingColor ? "Saving…" : "Save colour"}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   <FormField

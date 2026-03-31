@@ -164,13 +164,23 @@ export default function PropertyReportPage() {
   const accentColor = data?.branch?.primaryColor || "#1ba2ff";
   const accentLight = `${accentColor}18`;
 
-  const handleDownload = () => {
-    const link = document.createElement("a");
-    link.href = `/api/propdata-reports/download/${reportId}?direct=true`;
-    link.download = `Proply_Report_${new Date().toISOString().split("T")[0]}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (!data?.property?.propdataId) return;
+    try {
+      const res = await fetch(`/api/pdf-generate/${data.property.propdataId}`);
+      if (!res.ok) throw new Error("Failed to generate PDF");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Proply_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch {
+      alert("Failed to download PDF. Please try again.");
+    }
   };
 
   // ── Loading / error states ─────────────────────────────────────────────────

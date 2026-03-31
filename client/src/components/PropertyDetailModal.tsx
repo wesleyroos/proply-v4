@@ -60,6 +60,7 @@ import {
   Download,
   ChevronDown,
   BarChart3,
+  ExternalLink,
 } from "lucide-react";
 import {
   LineChart,
@@ -1234,6 +1235,22 @@ export default function PropertyDetailModal({
     setShowSendReportDialog(true);
   };
 
+  const handlePreviewReport = async () => {
+    if (!property) return;
+    try {
+      const res = await fetch(`/api/propdata-reports/create-preview/${property.propdataId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to create preview");
+      const { previewUrl } = await res.json();
+      window.open(previewUrl, "_blank");
+    } catch (error) {
+      console.error("Error opening preview:", error);
+      alert("Failed to open preview. Please try again.");
+    }
+  };
+
   const handleConfirmSendReport = async () => {
     if (!property) return;
 
@@ -1852,6 +1869,18 @@ export default function PropertyDetailModal({
                     >
                       <Send className="h-4 w-4 mr-2" />
                       Send Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handlePreviewReport}
+                      disabled={
+                        isGeneratingReport ||
+                        isGeneratingPdf ||
+                        isSendingReport ||
+                        isSavingAddress
+                      }
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Preview Report
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setShowActivityModal(true)}

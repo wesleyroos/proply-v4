@@ -87,6 +87,7 @@ router.get("/agency-profile", async (req, res) => {
       franchiseName: agency.franchiseName,
       branchName: agency.branchName,
       logoUrl: agency.logoUrl,
+      primaryColor: agency.primaryColor,
       companyName: agency.companyName,
       vatNumber: agency.vatNumber,
       registrationNumber: agency.registrationNumber,
@@ -112,7 +113,7 @@ router.put("/agency-profile", async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const { companyName, vatNumber, registrationNumber, businessAddress } = req.body;
+    const { companyName, vatNumber, registrationNumber, businessAddress, primaryColor } = req.body;
 
     let branchId = req.user.branchId;
     
@@ -137,10 +138,11 @@ router.put("/agency-profile", async (req, res) => {
     await db
       .update(agencyBranches)
       .set({
-        companyName,
-        vatNumber,
-        registrationNumber,
-        businessAddress,
+        ...(companyName !== undefined && { companyName }),
+        ...(vatNumber !== undefined && { vatNumber }),
+        ...(registrationNumber !== undefined && { registrationNumber }),
+        ...(businessAddress !== undefined && { businessAddress }),
+        ...(primaryColor !== undefined && { primaryColor }),
         updatedAt: new Date()
       })
       .where(eq(agencyBranches.id, branchId));
@@ -157,6 +159,7 @@ router.put("/agency-profile", async (req, res) => {
       franchiseName: updatedAgency.franchiseName,
       branchName: updatedAgency.branchName,
       logoUrl: updatedAgency.logoUrl,
+      primaryColor: updatedAgency.primaryColor,
       companyName: updatedAgency.companyName,
       vatNumber: updatedAgency.vatNumber,
       registrationNumber: updatedAgency.registrationNumber,
