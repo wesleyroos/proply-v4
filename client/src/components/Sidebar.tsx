@@ -14,8 +14,9 @@ import {
   Calculator,
   ToggleLeft,
   BarChart2,
-  Database, // Add this import for the PropData listings icon
+  Database,
   CreditCard,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -63,6 +64,12 @@ export default function Sidebar() {
         title: "Properties",
         icon: Library,
         href: "/properties",
+      },
+      {
+        title: "Deal Score",
+        icon: ExternalLink,
+        href: "https://dealscore.co.za",
+        external: true,
       },
     );
   }
@@ -122,6 +129,24 @@ export default function Sidebar() {
 
             if (item.adminOnly && !user?.isAdmin) {
               return null;
+            }
+
+            if (item.external) {
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+                    "hover:bg-white/10 text-white/80",
+                  )}
+                >
+                  <Icon className="h-5 w-5 text-white" />
+                  {expanded && <span className="text-white">{item.title}</span>}
+                </a>
+              );
             }
 
             return (
