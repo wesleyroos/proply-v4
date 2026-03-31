@@ -22,7 +22,15 @@ interface PdfGenerationOptions {
   includeImages?: boolean;
 }
 
-// Enhanced Proply brand colors - using simple values for jsPDF compatibility
+// Proply brand colors as RGB arrays for jsPDF
+const BLUE: [number, number, number]       = [27, 162, 255];   // #1ba2ff  – primary
+const NAVY: [number, number, number]       = [15,  40,  80];   // #0f2850  – dark backgrounds
+const LIGHT_BLUE: [number, number, number] = [235, 247, 255];  // #ebf7ff  – subtle row fill
+const DARK_TEXT: [number, number, number]  = [30,  41,  59];   // #1e293b  – headings
+const MID_GRAY: [number, number, number]   = [100, 116, 139];  // #64748b  – secondary text
+const RULE: [number, number, number]       = [226, 232, 240];  // #e2e8f0  – dividers
+
+// Legacy aliases kept for any references
 const PROPLY_BLUE = "#1ba2ff";
 const PROPLY_SECONDARY = "#3b82f6";
 const PROPLY_GRAY = "#6b7280";
@@ -175,33 +183,31 @@ export class PropdataPdfService {
   }
 
   private async addHeader(data: PropertyPdfData): Promise<void> {
-    // Simple clean header without colorful background
+    const bandH = 38;
 
-    // Add report title on the left
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(24);
+    // Full-width navy header band
+    this.doc.setFillColor(...NAVY);
+    this.doc.rect(0, 0, this.pageWidth, bandH, "F");
+
+    // Accent strip at the bottom of the band in brand blue
+    this.doc.setFillColor(...BLUE);
+    this.doc.rect(0, bandH - 3, this.pageWidth, 3, "F");
+
+    // Report title in white
+    this.doc.setTextColor(255, 255, 255);
+    this.doc.setFontSize(20);
     this.doc.setFont("helvetica", "bold");
-    this.doc.text("Property Report", this.margin, this.margin + 15);
+    this.doc.text("Property Report", this.margin, bandH / 2 + 3);
 
-    // Load and add logo on the top right (agency logo with Proply fallback)
-    await this.addLogo(data.agencyLogo);
-
-    // Add thin blue divider line below the heading
-    this.doc.setDrawColor(27, 162, 255);
-    this.doc.line(
-      this.margin,
-      this.margin + 25,
-      this.pageWidth - this.margin,
-      this.margin + 25,
-    );
+    // Logo on the right (inside the band – white bg not needed, logo on dark works if transparent)
+    await this.addLogo(data.agencyLogo, bandH);
 
     // Reset text color
-    this.doc.setTextColor(0, 0, 0);
-
-    this.currentY = this.margin + 35;
+    this.doc.setTextColor(...DARK_TEXT);
+    this.currentY = bandH + 12;
   }
 
-  private async addLogo(agencyLogoUrl?: string | null): Promise<void> {
+  private async addLogo(agencyLogoUrl?: string | null, bandH: number = 38): Promise<void> {
     try {
       let logoBase64: string | null = null;
       let logoFormat = "PNG";
@@ -287,44 +293,28 @@ export class PropdataPdfService {
             }
             
             const logoX = this.pageWidth - this.margin - logoWidth;
+            const logoY = (bandH - logoHeight) / 2;
 
-            this.doc.addImage(
-              logoBase64,
-              logoFormat,
-              logoX,
-              this.margin,
-              logoWidth,
-              logoHeight,
-            );
-            console.log(`Successfully added logo to PDF: ${logoWidth.toFixed(1)}x${logoHeight.toFixed(1)} (aspect ratio: ${actualAspectRatio.toFixed(2)})`);
+            this.doc.addImage(logoBase64, logoFormat, logoX, logoY, logoWidth, logoHeight);
+            console.log(`Successfully added logo to PDF: ${logoWidth.toFixed(1)}x${logoHeight.toFixed(1)}`);
           } else {
             throw new Error("Could not determine image dimensions");
           }
         } catch (error) {
           console.error("Error getting image dimensions:", error);
-          // Fallback to locked dimensions that work well for most logos
           const logoHeight = 12;
-          const logoWidth = 36; // Conservative width to prevent overflow
+          const logoWidth = 36;
           const logoX = this.pageWidth - this.margin - logoWidth;
-
-          this.doc.addImage(
-            logoBase64,
-            logoFormat,
-            logoX,
-            this.margin,
-            logoWidth,
-            logoHeight,
-          );
-          console.log("Used fallback logo dimensions to prevent distortion");
+          const logoY = (bandH - logoHeight) / 2;
+          this.doc.addImage(logoBase64, logoFormat, logoX, logoY, logoWidth, logoHeight);
         }
       } else {
-        // Text fallback if no logo could be loaded
-        console.log("Using text fallback logo");
+        // Text fallback
         const logoX = this.pageWidth - this.margin - 50;
-        this.doc.setTextColor(27, 162, 255);
-        this.doc.setFontSize(20);
+        this.doc.setTextColor(255, 255, 255);
+        this.doc.setFontSize(18);
         this.doc.setFont("helvetica", "bold");
-        this.doc.text("PROPLY", logoX, this.margin + 15);
+        this.doc.text("PROPLY", logoX, bandH / 2 + 3);
       }
     } catch (error) {
       console.error("Logo loading error:", error);
@@ -346,91 +336,72 @@ export class PropdataPdfService {
       return;
     }
 
-    // Property address with "Address:" prefix
-    this.doc.setFontSize(14);
+    // Property address
+    this.doc.setFontSize(13);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.text(
-      `Address: ${data.property.address || "Address not available"}`,
-      this.margin,
-      this.currentY,
-    );
-    this.currentY += 15;
+    this.doc.setTextColor(...DARK_TEXT);
+    const addressText = data.property.address || "Address not available";
+    const wrappedAddress = this.doc.splitTextToSize(addressText, this.pageWidth - 2 * this.margin);
+    this.doc.text(wrappedAddress, this.margin, this.currentY);
+    this.currentY += wrappedAddress.length * 7 + 6;
 
-    // Property details in two columns
-    this.doc.setFontSize(10);
-    this.doc.setTextColor(0, 0, 0);
+    // Thin rule under address
+    this.doc.setDrawColor(...RULE);
+    this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY);
+    this.currentY += 8;
 
-    const leftColumn = this.margin;
-    const rightColumn = this.margin + 90;
-
-    // Helper function to add text with bold label and normal value
-    const addLabelValue = (label: string, value: any, x: number, y: number) => {
-      this.doc.setFont("helvetica", "bold");
-      const labelWidth = this.doc.getTextWidth(label);
-      this.doc.text(label, x, y);
-
-      this.doc.setFont("helvetica", "normal");
-      // Ensure value is always a string
-      const stringValue =
-        value === null || value === undefined ? "N/A" : String(value);
-      this.doc.text(stringValue, x + labelWidth, y);
-    };
-
-    // Left column
+    // Stat tiles: 4 across
     const formattedPrice = data.property.price
-      ? Number(data.property.price).toLocaleString("en-ZA")
+      ? `R${Number(data.property.price).toLocaleString("en-ZA")}`
       : "N/A";
-    addLabelValue("Price: ", `R${formattedPrice}`, leftColumn, this.currentY);
-    addLabelValue(
-      "Property Type: ",
-      data.property.propertyType || "N/A",
-      leftColumn,
-      this.currentY + 8,
-    );
-    addLabelValue(
-      "Bedrooms: ",
-      data.property.bedrooms || "N/A",
-      leftColumn,
-      this.currentY + 16,
-    );
-    addLabelValue(
-      "Bathrooms: ",
-      data.property.bathrooms || "N/A",
-      leftColumn,
-      this.currentY + 24,
-    );
-
-    // Right column
-    addLabelValue(
-      "Floor Size: ",
-      `${data.property.floorSize || "N/A"} m²`,
-      rightColumn,
-      this.currentY,
-    );
-    addLabelValue(
-      "Land Size: ",
-      `${data.property.landSize || "N/A"} m²`,
-      rightColumn,
-      this.currentY + 8,
-    );
-    addLabelValue(
-      "Parking: ",
-      `${data.property.parkingSpaces || "N/A"} spaces`,
-      rightColumn,
-      this.currentY + 16,
-    );
     const formattedLevy = data.property.monthlyLevy
-      ? Number(data.property.monthlyLevy).toLocaleString("en-ZA")
+      ? `R${Number(data.property.monthlyLevy).toLocaleString("en-ZA")}`
       : "N/A";
-    addLabelValue(
-      "Monthly Levy: ",
-      `R${formattedLevy}`,
-      rightColumn,
-      this.currentY + 24,
-    );
 
-    this.currentY += 40;
+    const tiles = [
+      { label: "Price",          value: formattedPrice },
+      { label: "Floor Size",     value: `${data.property.floorSize || "N/A"} m²` },
+      { label: "Bedrooms",       value: String(data.property.bedrooms || "N/A") },
+      { label: "Bathrooms",      value: String(data.property.bathrooms || "N/A") },
+      { label: "Parking",        value: `${data.property.parkingSpaces || "N/A"}` },
+      { label: "Property Type",  value: data.property.propertyType || "N/A" },
+      { label: "Land Size",      value: `${data.property.landSize || "N/A"} m²` },
+      { label: "Monthly Levy",   value: formattedLevy },
+    ];
+
+    const cols = 4;
+    const tileW = (this.pageWidth - 2 * this.margin - (cols - 1) * 4) / cols;
+    const tileH = 20;
+
+    tiles.forEach((tile, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = this.margin + col * (tileW + 4);
+      const y = this.currentY + row * (tileH + 4);
+
+      // Tile background
+      this.doc.setFillColor(...LIGHT_BLUE);
+      this.doc.rect(x, y, tileW, tileH, "F");
+
+      // Top accent line
+      this.doc.setFillColor(...BLUE);
+      this.doc.rect(x, y, tileW, 2, "F");
+
+      // Label
+      this.doc.setFontSize(7);
+      this.doc.setFont("helvetica", "normal");
+      this.doc.setTextColor(...MID_GRAY);
+      this.doc.text(tile.label.toUpperCase(), x + 4, y + 8);
+
+      // Value
+      this.doc.setFontSize(9);
+      this.doc.setFont("helvetica", "bold");
+      this.doc.setTextColor(...DARK_TEXT);
+      this.doc.text(tile.value, x + 4, y + 15);
+    });
+
+    const rows = Math.ceil(tiles.length / cols);
+    this.currentY += rows * (tileH + 4) + 6;
 
     // Add static map and property image side by side
     await this.addMapAndImage(data);
@@ -731,17 +702,7 @@ export class PropdataPdfService {
         startY: this.currentY,
         head: [["Estimate Type", "Size × Rate/m²", "Valuation"]],
         body: tableData,
-        theme: "grid",
-        headStyles: {
-          fillColor: proplyBlueRGB,
-          textColor: 255,
-          fontStyle: "bold",
-        },
-        styles: {
-          fontSize: 8,
-          cellPadding: 1.5,
-        },
-        margin: { left: this.margin, right: this.margin },
+        ...this.tableStyles(),
         columnStyles: {
           0: { halign: "left", cellWidth: 50 },
           1: { halign: "center", cellWidth: 60 },
@@ -884,14 +845,7 @@ export class PropdataPdfService {
             ],
           ],
           body: percentileData,
-          theme: "grid",
-          headStyles: {
-            fillColor: [27, 162, 255],
-            textColor: 255,
-            fontStyle: "bold",
-          },
-          styles: { fontSize: 8 },
-          margin: { left: this.margin, right: this.margin },
+          ...this.tableStyles(),
           columnStyles: {
             0: { halign: "left" },
             1: { halign: "right" },
@@ -1006,18 +960,7 @@ export class PropdataPdfService {
             startY: this.currentY,
             head: [["Metric", "Y1", "Y2", "Y3", "Y4", "Y5", "Y10", "Y20"]],
             body: tableData,
-            theme: "grid",
-            headStyles: {
-              fillColor: [27, 162, 255],
-              textColor: 255,
-              fontStyle: "bold",
-              fontSize: 8,
-            },
-            styles: {
-              fontSize: 8,
-              cellPadding: 1.5,
-            },
-            margin: { left: this.margin, right: this.margin },
+            ...this.tableStyles(),
             tableWidth: "auto",
             columnStyles: {
               0: { halign: "left" },
@@ -1028,11 +971,6 @@ export class PropdataPdfService {
               5: { halign: "right" },
               6: { halign: "right" },
               7: { halign: "right" },
-            },
-            bodyStyles: {
-              0: { fillColor: [245, 245, 245] }, // Light gray for bond payment
-              1: { fillColor: [220, 255, 220] }, // Light green for equity
-              2: { fillColor: [255, 220, 220] }, // Light red for remaining balance
             },
           });
 
@@ -1131,14 +1069,7 @@ export class PropdataPdfService {
           startY: this.currentY,
           head: [["Strategy", ...yearHeaders]],
           body: tableRows,
-          theme: "grid",
-          headStyles: {
-            fillColor: [27, 162, 255],
-            textColor: 255,
-            fontStyle: "bold",
-          },
-          styles: { fontSize: 8 },
-          margin: { left: this.margin, right: this.margin },
+          ...this.tableStyles(),
           columnStyles: {
             0: { halign: "left", cellWidth: 40 },
             ...Object.fromEntries(
@@ -1147,12 +1078,6 @@ export class PropdataPdfService {
                 { halign: "right" },
               ]),
             ),
-          },
-          bodyStyles: {
-            0: { textColor: [0, 123, 255] }, // Blue text for short-term revenue
-            1: { textColor: [0, 123, 255] }, // Blue text for short-term yield
-            2: { textColor: [40, 167, 69] }, // Green text for long-term revenue  
-            3: { textColor: [40, 167, 69] }, // Green text for long-term yield
           },
         });
 
@@ -1210,14 +1135,7 @@ export class PropdataPdfService {
           startY: this.currentY,
           head: [["Metric", ...yearHeaders]],
           body: [valueRow],
-          theme: "grid",
-          headStyles: {
-            fillColor: [27, 162, 255],
-            textColor: 255,
-            fontStyle: "bold",
-          },
-          styles: { fontSize: 8 },
-          margin: { left: this.margin, right: this.margin },
+          ...this.tableStyles(),
           columnStyles: {
             0: { halign: "left" },
             ...Object.fromEntries(
@@ -1325,26 +1243,62 @@ export class PropdataPdfService {
   private addSectionHeader(title: string): void {
     this.checkPageBreak(30);
 
-    // Remove blue background, just add text
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(14);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text(title, this.margin, this.currentY + 8);
+    const bandH = 14;
+    // Full-width blue band
+    this.doc.setFillColor(...BLUE);
+    this.doc.rect(0, this.currentY, this.pageWidth, bandH, "F");
 
-    this.currentY += 20;
+    // White title text
+    this.doc.setTextColor(255, 255, 255);
+    this.doc.setFontSize(11);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text(title.toUpperCase(), this.margin, this.currentY + bandH - 4);
+
+    this.doc.setTextColor(...DARK_TEXT);
+    this.doc.setFont("helvetica", "normal");
+    this.currentY += bandH + 8;
   }
 
   private addSubsectionHeader(title: string): void {
     this.checkPageBreak(20);
 
-    this.doc.setFontSize(12);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(27, 162, 255);
-    this.doc.text(title, this.margin, this.currentY);
+    // 3pt blue left accent bar
+    this.doc.setFillColor(...BLUE);
+    this.doc.rect(this.margin, this.currentY - 7, 3, 10, "F");
 
-    this.doc.setTextColor(0, 0, 0);
+    this.doc.setFontSize(10);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.setTextColor(...DARK_TEXT);
+    this.doc.text(title, this.margin + 7, this.currentY);
+
+    this.doc.setTextColor(...DARK_TEXT);
     this.doc.setFont("helvetica", "normal");
     this.currentY += 10;
+  }
+
+  /** Shared autoTable style options for a consistent, premium table look */
+  private tableStyles() {
+    return {
+      theme: "grid" as const,
+      headStyles: {
+        fillColor: BLUE,
+        textColor: [255, 255, 255] as [number, number, number],
+        fontStyle: "bold" as const,
+        fontSize: 8,
+        cellPadding: 3,
+      },
+      styles: {
+        fontSize: 8,
+        cellPadding: 2.5,
+        lineColor: [220, 228, 240] as [number, number, number],
+        lineWidth: 0.3,
+        textColor: DARK_TEXT,
+      },
+      alternateRowStyles: {
+        fillColor: LIGHT_BLUE,
+      },
+      margin: { left: this.margin, right: this.margin },
+    };
   }
 
   private addWrappedText(text: string, x: number, maxWidth: number): void {
@@ -1397,10 +1351,11 @@ export class PropdataPdfService {
     const chartX = this.margin + 15; // Space for y-axis labels
     const chartY = this.currentY;
 
-    // Draw chart background
-    this.doc.setFillColor(248, 249, 250);
+    // Draw chart background with border
+    this.doc.setFillColor(248, 250, 255);
     this.doc.rect(chartX, chartY, chartWidth, chartHeight, "F");
-    this.doc.setDrawColor(200, 200, 200);
+    this.doc.setDrawColor(...RULE);
+    this.doc.setLineWidth(0.4);
     this.doc.rect(chartX, chartY, chartWidth, chartHeight, "S");
 
     // Extract data points
@@ -1416,7 +1371,8 @@ export class PropdataPdfService {
     const scale = chartHeight / maxValue;
 
     // Draw grid lines
-    this.doc.setDrawColor(220, 220, 220);
+    this.doc.setDrawColor(210, 220, 235);
+    this.doc.setLineWidth(0.2);
     for (let i = 1; i <= 4; i++) {
       const y = chartY + (chartHeight * i) / 4;
       this.doc.line(chartX, y, chartX + chartWidth, y);
@@ -1430,7 +1386,7 @@ export class PropdataPdfService {
 
     // Plot equity line (green)
     this.doc.setDrawColor(34, 197, 94); // Green
-    this.doc.setLineWidth(0.5);
+    this.doc.setLineWidth(1.5);
 
     for (let i = 0; i < years.length - 1; i++) {
       const x1 = chartX + (chartWidth * i) / (years.length - 1);
@@ -1442,18 +1398,18 @@ export class PropdataPdfService {
 
       // Add data point circles
       this.doc.setFillColor(34, 197, 94);
-      this.doc.circle(x1, y1, 1, "F");
+      this.doc.circle(x1, y1, 1.8, "F");
     }
 
     // Last point
     const lastX = chartX + chartWidth;
     const lastY =
       chartY + chartHeight - equityData[equityData.length - 1] * scale;
-    this.doc.circle(lastX, lastY, 1, "F");
+    this.doc.circle(lastX, lastY, 1.8, "F");
 
     // Plot balance line (red)
     this.doc.setDrawColor(239, 68, 68); // Red
-    this.doc.setLineWidth(0.5);
+    this.doc.setLineWidth(1.5);
 
     for (let i = 0; i < years.length - 1; i++) {
       const x1 = chartX + (chartWidth * i) / (years.length - 1);
@@ -1465,13 +1421,13 @@ export class PropdataPdfService {
 
       // Add data point circles
       this.doc.setFillColor(239, 68, 68);
-      this.doc.circle(x1, y1, 1, "F");
+      this.doc.circle(x1, y1, 1.8, "F");
     }
 
     // Last point
     const lastBalanceY =
       chartY + chartHeight - balanceData[balanceData.length - 1] * scale;
-    this.doc.circle(lastX, lastBalanceY, 1, "F");
+    this.doc.circle(lastX, lastBalanceY, 1.8, "F");
 
     // Add year labels on x-axis
     this.doc.setTextColor(100, 100, 100);
@@ -1549,77 +1505,56 @@ By using this report, you acknowledge that the calculations and projections are 
     const totalPages = this.doc.getNumberOfPages();
     const currentYear = new Date().getFullYear();
 
+    // Load logo once for footer reuse
+    let footerLogoBase64: string | null = null;
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const logoPath = path.join(process.cwd(), "client", "public", "proply-logo-auth.png");
+      if (fs.existsSync(logoPath)) {
+        footerLogoBase64 = fs.readFileSync(logoPath).toString("base64");
+      }
+    } catch { /* use text fallback */ }
+
+    const footerH = 22;
+    const footerY = this.pageHeight - footerH;
+
     for (let i = 1; i <= totalPages; i++) {
       this.doc.setPage(i);
 
-      // Footer line
-      this.doc.setDrawColor(27, 162, 255);
-      this.doc.line(
-        this.margin,
-        this.pageHeight - 25,
-        this.pageWidth - this.margin,
-        this.pageHeight - 25,
-      );
+      // Dark navy footer band
+      this.doc.setFillColor(...NAVY);
+      this.doc.rect(0, footerY, this.pageWidth, footerH, "F");
 
-      // Add Proply logo on the left - keep original footer logic
-      try {
-        const fs = await import("fs");
-        const path = await import("path");
-        const logoPath = path.join(
-          process.cwd(),
-          "client",
-          "public",
-          "proply-logo-auth.png",
-        );
+      // Thin blue accent strip at the top of footer
+      this.doc.setFillColor(...BLUE);
+      this.doc.rect(0, footerY, this.pageWidth, 2, "F");
 
-        if (fs.existsSync(logoPath)) {
-          const logoBuffer = fs.readFileSync(logoPath);
-          const logoBase64 = logoBuffer.toString("base64");
-
-          // Logo dimensions for footer - smaller than header
-          const logoHeight = 8;
-          const logoAspectRatio = 868 / 229; // Same aspect ratio as header
-          const logoWidth = logoHeight * logoAspectRatio;
-
-          this.doc.addImage(
-            logoBase64,
-            "PNG",
-            this.margin,
-            this.pageHeight - 20,
-            logoWidth,
-            logoHeight,
-          );
-        } else {
-          // Fallback: Add text-based branding
-          this.doc.setFontSize(8);
-          this.doc.setFont("helvetica", "bold");
-          this.doc.setTextColor(27, 162, 255);
-          this.doc.text("proply", this.margin, this.pageHeight - 15);
-        }
-      } catch (error) {
-        console.log("Could not add footer logo:", error);
-        // Fallback: Add text-based branding
+      // Logo on the left inside footer
+      if (footerLogoBase64) {
+        const logoH = 8;
+        const logoW = logoH * (868 / 229);
+        this.doc.addImage(footerLogoBase64, "PNG", this.margin, footerY + (footerH - logoH) / 2, logoW, logoH);
+      } else {
         this.doc.setFontSize(8);
         this.doc.setFont("helvetica", "bold");
-        this.doc.setTextColor(27, 162, 255);
-        this.doc.text("proply", this.margin, this.pageHeight - 15);
+        this.doc.setTextColor(255, 255, 255);
+        this.doc.text("PROPLY", this.margin, footerY + 13);
       }
 
-      // Center copyright text
-      this.doc.setFontSize(8);
-      this.doc.setTextColor(107, 114, 128);
+      // Center copyright
+      this.doc.setFontSize(7);
+      this.doc.setFont("helvetica", "normal");
+      this.doc.setTextColor(180, 200, 230);
       const copyrightText = `© ${currentYear} Proply Tech (Pty) Ltd. All rights reserved.`;
       const textWidth = this.doc.getTextWidth(copyrightText);
-      const centerX = (this.pageWidth - textWidth) / 2;
-
-      this.doc.text(copyrightText, centerX, this.pageHeight - 15);
+      this.doc.text(copyrightText, (this.pageWidth - textWidth) / 2, footerY + 14);
 
       // Page number on the right
-      this.doc.text(
-        `Page ${i} of ${totalPages}`,
-        this.pageWidth - this.margin - 20,
-        this.pageHeight - 15,
-      );
+      this.doc.setTextColor(180, 200, 230);
+      const pageText = `Page ${i} of ${totalPages}`;
+      const pageTextWidth = this.doc.getTextWidth(pageText);
+      this.doc.text(pageText, this.pageWidth - this.margin - pageTextWidth, footerY + 14);
     }
 
     // Reset to first page after footer processing
