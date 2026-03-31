@@ -229,6 +229,7 @@ export class PropdataPdfShiftService {
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       @page { size: A4; margin: 28mm 0 16mm 0; }
+      @page :first { margin-top: 0; }
 
       :root {
         --blue:       #1ba2ff;
@@ -374,7 +375,7 @@ export class PropdataPdfShiftService {
       .badge-green { background: var(--green-bg); color: #16a34a; }
 
       /* ── Disclaimer + Footer (last page) ── */
-      .last-page { break-before: always; page-break-before: always; display: flex; flex-direction: column; min-height: 253mm; }
+      .last-page { break-before: always; page-break-before: always; display: flex; flex-direction: column; min-height: 244mm; }
       .last-page-spacer { flex: 1; }
       .disclaimer-section { padding: 22px 42px 18px; background: var(--surface); border-top: 1px solid var(--border); }
       .disclaimer-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); margin-bottom: 8px; }
