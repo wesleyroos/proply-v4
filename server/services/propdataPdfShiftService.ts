@@ -78,21 +78,15 @@ export class PropdataPdfShiftService {
 
     // Agency logo
     let agencyLogoDataUri: string | null = null;
-    const branchId = property.branchId;
-    console.log(`Agency logo lookup — branchId: ${branchId}`);
-    if (branchId) {
+    if (property.branchId) {
       const branch = await db.query.agencyBranches.findFirst({
-        where: eq(agencyBranches.id, branchId),
+        where: eq(agencyBranches.id, property.branchId),
       });
-      console.log(`Branch found: ${!!branch}, logoUrl: ${branch?.logoUrl}`);
       if (branch?.logoUrl) {
-        // Try as local file first
-        agencyLogoDataUri = await this.fileToDataUri(branch.logoUrl);
-        // If file not found locally, try as URL
-        if (!agencyLogoDataUri && branch.logoUrl.startsWith("http")) {
-          agencyLogoDataUri = await this.urlToDataUri(branch.logoUrl);
-        }
-        console.log("Agency logo loaded:", !!agencyLogoDataUri, "from", branch.logoUrl);
+        const port = process.env.PORT || "8080";
+        const logoUrl = `http://localhost:${port}${branch.logoUrl}`;
+        agencyLogoDataUri = await this.urlToDataUri(logoUrl);
+        console.log("Agency logo loaded:", !!agencyLogoDataUri, "from", logoUrl);
       }
     }
 
@@ -765,7 +759,7 @@ ${disclaimerHtml}
         landscape: false,
         use_print: false,
         format:    "A4",
-        margin:    { top: "10mm", bottom: "10mm", left: "0mm", right: "0mm" },
+        margin:    { top: "20mm", bottom: "16mm", left: "0mm", right: "0mm" },
       }),
     });
 
