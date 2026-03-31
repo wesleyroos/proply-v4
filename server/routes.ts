@@ -3666,6 +3666,112 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Save valuation report
+  // Helper: compute all three financial analysis blobs from valuation data + financing params.
+  // Called at save time so the data is always present when the PDF is generated.
+  function computeFinancialAnalysisData(
+    vd: any,
+    propertyPrice: number,
+    depositPct: number,   // e.g. 20
+    interestPct: number,  // e.g. 11.75
+    loanTermYrs: number,  // e.g. 20
+  ) {
+    // --- 1. Annual property appreciation ---
+    const components = vd?.propertyAppreciation?.components;
+    const appreciationRate = components
+      ? (components.baseSuburbRate?.rate || 0) +
+        (components.locationPremium?.adjustment || 0) +
+        (components.propertyTypeModifier?.adjustment || 0) +
+        (components.visualConditionAdjustment?.adjustment || 0) +
+        (components.levyImpact?.adjustment || 0)
+      : (vd?.propertyAppreciation?.annualAppreciationRate || 8.0);
+
+    const annualPropertyAppreciationData = {
+      baseSuburbRate: vd?.propertyAppreciation?.suburbAppreciationRate || 8.0,
+      propertyAdjustments: vd?.propertyAppreciation?.adjustments || {},
+      finalAppreciationRate: appreciationRate,
+      yearlyValues: [1, 2, 3, 4, 5, 10, 20].reduce((acc: any, yr) => {
+        acc[`year${yr}`] = propertyPrice * Math.pow(1 + appreciationRate / 100, yr);
+        return acc;
+      }, {}),
+      reasoning: vd?.propertyAppreciation?.reasoning || "Standard market appreciation",
+    };
+
+    // --- 2. Cashflow analysis ---
+    // Use rentalPerformance (PriceLabs percentile data) if available, fall back to rentalEstimates
+    const strPercentiles = vd?.rentalPerformance?.shortTerm;
+    const ltrData = vd?.rentalPerformance?.longTerm || vd?.rentalEstimates?.longTerm;
+
+    const buildTrajectory = (baseAnnual: number) =>
+      [1, 2, 3, 4, 5].reduce((acc: any, yr) => {
+        const revenue = baseAnnual * Math.pow(1.08, yr - 1);
+        acc[`year${yr}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        return acc;
+      }, {});
+
+    // Build per-percentile short-term trajectory
+    let shortTermTrajectory: any = null;
+    if (strPercentiles) {
+      shortTermTrajectory = {};
+      for (const key of ["percentile25", "percentile50", "percentile75", "percentile90"]) {
+        const annual = strPercentiles[key]?.annual;
+        if (annual) shortTermTrajectory[key] = buildTrajectory(annual);
+      }
+      // Also include a single "selected" trajectory at percentile50 for backwards compat
+      const base50 = strPercentiles.percentile50?.annual;
+      if (base50) {
+        Object.assign(shortTermTrajectory, buildTrajectory(base50));
+      }
+    }
+
+    const ltrMinRental = ltrData?.minRental ?? ltrData?.minMonthlyRental;
+    const ltrMaxRental = ltrData?.maxRental ?? ltrData?.maxMonthlyRental;
+    const longTermTrajectory = (ltrMinRental != null && ltrMaxRental != null)
+      ? buildTrajectory(((ltrMinRental + ltrMaxRental) / 2) * 12)
+      : null;
+
+    const cashflowAnalysisData = {
+      revenueGrowthTrajectory: { shortTerm: shortTermTrajectory, longTerm: longTermTrajectory },
+      recommendedStrategy: shortTermTrajectory && longTermTrajectory
+        ? ((strPercentiles?.percentile50?.annual || 0) > ((ltrMinRental || 0) + (ltrMaxRental || 0)) / 2 * 12
+            ? "shortTerm" : "longTerm")
+        : (shortTermTrajectory ? "shortTerm" : "longTerm"),
+      strategyReasoning: "Based on gross rental yields comparison",
+    };
+
+    // --- 3. Financing analysis ---
+    const depFrac = depositPct / 100;
+    const intFrac = interestPct / 100;
+    const loanTermMonths = loanTermYrs * 12;
+    const depositAmount = propertyPrice * depFrac;
+    const loanAmount = propertyPrice * (1 - depFrac);
+    const monthlyRate = intFrac / 12;
+    const monthlyPayment = monthlyRate > 0
+      ? (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, loanTermMonths))) /
+        (Math.pow(1 + monthlyRate, loanTermMonths) - 1)
+      : loanAmount / loanTermMonths;
+
+    const yearlyMetrics = [1, 2, 3, 4, 5, 10, 20].reduce((acc: any, yr) => {
+      let balance = loanAmount;
+      let principalPaid = 0;
+      const months = Math.min(yr * 12, loanTermMonths);
+      for (let m = 0; m < months; m++) {
+        const interest = balance * monthlyRate;
+        const principal = monthlyPayment - interest;
+        principalPaid += principal;
+        balance -= principal;
+      }
+      acc[`year${yr}`] = { monthlyPayment, equityBuildup: principalPaid, remainingBalance: Math.max(0, balance) };
+      return acc;
+    }, {});
+
+    const financingAnalysisData = {
+      financingParameters: { depositAmount, depositPercentage: depositPct, loanAmount, interestRate: interestPct, loanTerm: loanTermYrs, monthlyPayment },
+      yearlyMetrics,
+    };
+
+    return { annualPropertyAppreciationData, cashflowAnalysisData, financingAnalysisData };
+  }
+
   app.post("/api/valuation-reports", async (req, res) => {
     try {
       if (!req.user) {
@@ -3674,52 +3780,57 @@ export function registerRoutes(app: Express): Server {
 
       const { propertyId, address, price, bedrooms, bathrooms, floorSize, landSize, propertyType, parkingSpaces, valuationData, imagesAnalyzed } = req.body;
 
-      // Calculate price per square meter
       const pricePerSquareMeter = price && floorSize ? price / floorSize : null;
 
-      // Check if valuation already exists for this property and user
+      // Compute financial data once, server-side, from the valuation data
+      const financialData = computeFinancialAnalysisData(
+        valuationData,
+        parseFloat(price) || 0,
+        20,    // default deposit %
+        11.75, // default interest rate %
+        20,    // default loan term years
+      );
+
       const existingValuation = await db.query.valuationReports.findFirst({
         where: and(eq(valuationReports.propertyId, propertyId), eq(valuationReports.userId, req.user.id))
       });
 
       if (existingValuation) {
-        // Update existing valuation - preserve financial analysis data if it exists
-        const updateData: any = {
-          address,
-          price: price?.toString(),
-          bedrooms,
-          bathrooms,
-          floorSize: floorSize?.toString(),
-          landSize: landSize?.toString(),
-          propertyType,
-          parkingSpaces,
-          pricePerSquareMeter: pricePerSquareMeter?.toString(),
-          valuationData,
-          imagesAnalyzed,
-          updatedAt: new Date()
-        };
+        // Preserve manually-adjusted financing params if they exist
+        const depPct = existingValuation.currentDepositPercentage
+          ? parseFloat(existingValuation.currentDepositPercentage.toString()) : 20;
+        const intPct = existingValuation.currentInterestRate
+          ? parseFloat(existingValuation.currentInterestRate.toString()) : 11.75;
+        const termYrs = existingValuation.currentLoanTerm ?? 20;
 
-        // Only update financial data fields if they don't exist (preserve existing calculations)
-        if (!existingValuation.cashflowAnalysisData) {
-          updateData.cashflowAnalysisData = null;
-        }
-        if (!existingValuation.financingAnalysisData) {
-          updateData.financingAnalysisData = null;
-        }
-        if (!existingValuation.annualPropertyAppreciationData) {
-          updateData.annualPropertyAppreciationData = null;
-        }
-
-        console.log('Preserving existing financial data for property', propertyId);
+        // Recompute with saved financing params if they differ from defaults
+        const recomputed = (depPct !== 20 || intPct !== 11.75 || termYrs !== 20)
+          ? computeFinancialAnalysisData(valuationData, parseFloat(price) || 0, depPct, intPct, termYrs)
+          : financialData;
 
         const [updatedValuation] = await db.update(valuationReports)
-          .set(updateData)
+          .set({
+            address,
+            price: price?.toString(),
+            bedrooms: bedrooms != null ? Math.floor(parseFloat(bedrooms)) : null,
+            bathrooms: bathrooms != null ? Math.floor(parseFloat(bathrooms)) : null,
+            floorSize: floorSize?.toString(),
+            landSize: landSize?.toString(),
+            propertyType,
+            parkingSpaces,
+            pricePerSquareMeter: pricePerSquareMeter?.toString(),
+            valuationData,
+            imagesAnalyzed,
+            annualPropertyAppreciationData: recomputed.annualPropertyAppreciationData,
+            cashflowAnalysisData: recomputed.cashflowAnalysisData,
+            financingAnalysisData: recomputed.financingAnalysisData,
+            updatedAt: new Date()
+          })
           .where(eq(valuationReports.id, existingValuation.id))
           .returning();
 
         res.json(updatedValuation);
       } else {
-        // Create new valuation
         const [newValuation] = await db.insert(valuationReports)
           .values({
             userId: req.user.id,
@@ -3734,7 +3845,10 @@ export function registerRoutes(app: Express): Server {
             parkingSpaces,
             pricePerSquareMeter: pricePerSquareMeter?.toString(),
             valuationData,
-            imagesAnalyzed: imagesAnalyzed || 0
+            imagesAnalyzed: imagesAnalyzed || 0,
+            annualPropertyAppreciationData: financialData.annualPropertyAppreciationData,
+            cashflowAnalysisData: financialData.cashflowAnalysisData,
+            financingAnalysisData: financialData.financingAnalysisData,
           })
           .returning();
 
