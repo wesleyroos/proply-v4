@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock, History, ChevronDown, ChevronUp, Image, Settings } from "lucide-react";
+import { Loader2, Search, ArrowUpDown, RefreshCw, Home, Bed, Bath, Car, Binary, Calendar, DollarSign, Database, Eye, Clock, History, ChevronDown, ChevronUp, Image, Settings, Building2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -107,7 +107,7 @@ export default function PropdataListingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>("all");
   const [agentFilter, setAgentFilter] = useState<string>("all");
-  const [agencyFilter, setAgencyFilter] = useState<string>("all");
+  const [agencyFilter, setAgencyFilter] = useState<string>("");
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetailListing | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isQuickSyncing, setIsQuickSyncing] = useState(false);
@@ -132,6 +132,10 @@ export default function PropdataListingsPage() {
     enabled: !!user?.isAdmin,
   });
 
+  // For admins, require an agency to be selected before loading listings
+  const isAdmin = !!(user?.isAdmin);
+  const agencySelected = !isAdmin || (agencyFilter !== "" && agencyFilter !== "all");
+
   // Query to fetch PropData listings from database
   const { data: listings, isLoading, error, refetch } = useQuery<PropdataListing[]>({
     queryKey: ['/api/propdata/listings', agencyFilter],
@@ -147,7 +151,7 @@ export default function PropdataListingsPage() {
       }
       return response.json();
     },
-    enabled: !!(user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin'), // Allow all admin types
+    enabled: !!(user?.isAdmin || user?.role === 'franchise_admin' || user?.role === 'branch_admin') && agencySelected,
   });
 
   // Query to fetch sync status and last sync information
@@ -658,13 +662,12 @@ export default function PropdataListingsPage() {
               </SelectContent>
             </Select>
 
-            {user?.isAdmin && agenciesData && agenciesData.length > 1 && (
+            {user?.isAdmin && agenciesData && agenciesData.length > 0 && (
               <Select value={agencyFilter} onValueChange={(val) => { setAgencyFilter(val); setCurrentPage(1); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Agency" />
+                <SelectTrigger className={!agencySelected ? "border-primary ring-1 ring-primary" : ""}>
+                  <SelectValue placeholder="Select an agency..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Agencies</SelectItem>
                   {agenciesData.map((agency) => (
                     <SelectItem key={agency.id} value={agency.id}>
                       {agency.name}
@@ -679,7 +682,7 @@ export default function PropdataListingsPage() {
               setStatusFilter("all");
               setPropertyTypeFilter("all");
               setAgentFilter("all");
-              setAgencyFilter("all");
+              setAgencyFilter("");
               setSortConfig({ field: 'createdAt', direction: 'desc' });
             }}>
               Clear Filters
@@ -696,7 +699,13 @@ export default function PropdataListingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {!agencySelected ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+              <Building2 className="h-12 w-12 text-muted-foreground/40" />
+              <p className="text-lg font-medium text-muted-foreground">Select an agency to view listings</p>
+              <p className="text-sm text-muted-foreground/60">Use the agency filter above to get started.</p>
+            </div>
+          ) : isLoading ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
