@@ -65,11 +65,12 @@ export default function BlogPage() {
             {/* Sold Prices Article Card */}
             <Link href="/blog/how-to-check-what-a-property-sold-for-south-africa">
               <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
-                <div className="relative h-48 bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center">
-                  <div className="text-center px-4">
-                    <div className="text-4xl mb-2">🔍</div>
-                    <p className="text-white/70 text-xs font-medium uppercase tracking-wider">Sold Prices</p>
-                  </div>
+                <div className="relative h-48">
+                  <img
+                    src="/images/blog/how-to-check-sold-prices-hero.jpg"
+                    alt="Signing a property sale agreement"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
                 </div>
                 <CardContent className="flex-1 p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
@@ -1270,10 +1271,14 @@ function SoldPricesBlogPost() {
       <PublicHeader />
 
       {/* Hero */}
-      <div className="relative h-[50vh] min-h-[380px] bg-gradient-to-br from-emerald-700 to-teal-900 flex items-center">
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}
+      <div className="relative h-[50vh] min-h-[380px]">
+        <img
+          src="/images/blog/how-to-check-sold-prices-hero.jpg"
+          alt="Signing a property sale agreement"
+          className="absolute inset-0 w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="relative h-full flex items-center">
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-emerald-300 text-sm font-semibold uppercase tracking-widest mb-4">Property Research · South Africa</p>
           <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
@@ -1283,6 +1288,7 @@ function SoldPricesBlogPost() {
             Asking prices are just the starting point. Here's how to find out what properties really change hands for — before you make an offer.
           </p>
           <p className="text-emerald-300 text-sm mt-6">April 14, 2026 · 7 min read</p>
+        </div>
         </div>
       </div>
 
