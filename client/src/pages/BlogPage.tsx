@@ -58,11 +58,12 @@ export default function BlogPage() {
             {/* Property24 vs Lightstone Article Card */}
             <Link href="/blog/property24-vs-lightstone-which-report-should-you-use">
               <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
-                <div className="relative h-48 bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center">
-                  <div className="text-center px-4">
-                    <p className="text-white font-bold text-lg tracking-tight">Property24 <span className="text-white/60 font-normal text-base">vs</span> Lightstone</p>
-                    <p className="text-white/60 text-xs font-medium uppercase tracking-wider mt-1">Which report do you need?</p>
-                  </div>
+                <div className="relative h-48">
+                  <img
+                    src="/images/blog/property24-vs-lightstone-hero.jpg"
+                    alt="South African suburb aerial view at sunset"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
                 </div>
                 <CardContent className="flex-1 p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
@@ -1034,10 +1035,14 @@ function Property24VsLightstoneBlogPost() {
       <PublicHeader />
 
       {/* Hero */}
-      <div className="relative h-[50vh] min-h-[380px] bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center">
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}
+      <div className="relative h-[50vh] min-h-[380px]">
+        <img
+          src="/images/blog/property24-vs-lightstone-hero.jpg"
+          alt="South African suburb aerial view at sunset"
+          className="absolute inset-0 w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="relative h-full flex items-center">
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-blue-300 text-sm font-semibold uppercase tracking-widest mb-4">Property Research · South Africa</p>
           <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
@@ -1047,6 +1052,7 @@ function Property24VsLightstoneBlogPost() {
             Both platforms give you property data — but they answer very different questions. Here's how to use each one at the right stage of your buying process.
           </p>
           <p className="text-blue-300 text-sm mt-6">April 7, 2026 · 7 min read</p>
+        </div>
         </div>
       </div>
 
