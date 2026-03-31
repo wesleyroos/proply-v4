@@ -311,7 +311,7 @@ export class PropdataPdfShiftService {
       }
 
       /* ── Sections ── */
-      .section { padding: 26px 42px 22px; border-bottom: 1px solid var(--border); }
+      .section { padding: 30px 42px 28px; border-bottom: 1px solid var(--border); }
       .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
       .section-accent { width: 3px; height: 20px; background: var(--blue); border-radius: 2px; flex-shrink: 0; }
       .section-title { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); }
@@ -345,14 +345,14 @@ export class PropdataPdfShiftService {
       tbody tr.hl td { background: var(--blue-faint); font-weight: 600; color: var(--ink); }
 
       /* ── Page break control ── */
-      .section { break-inside: auto; }
-      .section-header { break-after: avoid; }
-      .subsection-title { break-after: avoid; }
-      table { break-inside: avoid; }
-      .mini-stats { break-inside: avoid; }
-      .hero-stats-grid { break-inside: avoid; }
-      .chart-wrap { break-inside: avoid; break-before: auto; }
-      .media-row-wrapper { break-inside: avoid; }
+      .section-header { break-after: avoid; page-break-after: avoid; }
+      .subsection-title { break-after: avoid; page-break-after: avoid; margin-bottom: 12px; }
+      table { break-inside: avoid; page-break-inside: avoid; }
+      .mini-stats { break-inside: avoid; page-break-inside: avoid; }
+      .hero-stats-grid { break-inside: avoid; page-break-inside: avoid; }
+      .chart-wrap { break-inside: avoid; page-break-inside: avoid; margin-top: 8px; }
+      .media-row-wrapper { break-inside: avoid; page-break-inside: avoid; }
+      .financial-section { break-before: always; page-break-before: always; }
 
       /* ── Badge ── */
       .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; }
@@ -403,7 +403,7 @@ export class PropdataPdfShiftService {
     const apprRate   = rd?.annualPropertyAppreciationData?.finalAppreciationRate;
     const proj10yr   = rd?.annualPropertyAppreciationData?.yearlyValues?.year10;
 
-    // ── Map ──
+    // ── Map — use direct URL (PDFShift fetches it; avoids base64 bloat) ──
     let mapContent = `<div class="media-placeholder">📍 Map unavailable</div>`;
     if (p.address) {
       try {
@@ -411,22 +411,17 @@ export class PropdataPdfShiftService {
         const geoData = await geoRes.json();
         if (geoData.results?.[0]?.geometry) {
           const { lat, lng } = geoData.results[0].geometry.location;
-          const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=600x420&maptype=roadmap&markers=color:0x1ba2ff%7C${lat},${lng}&key=${process.env.VITE_GOOGLE_MAPS_API_KEY}`;
-          const mapUri = await this.urlToDataUri(mapUrl);
-          if (mapUri) mapContent = `<img src="${mapUri}" alt="Map"/><div class="media-label">Location Map</div>`;
+          const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=400x280&format=jpg&maptype=roadmap&markers=color:0x1ba2ff%7C${lat},${lng}&key=${process.env.VITE_GOOGLE_MAPS_API_KEY}`;
+          mapContent = `<img src="${mapUrl}" alt="Map"/><div class="media-label">Location Map</div>`;
         }
       } catch { /* placeholder */ }
     }
 
-    // ── Property image ──
+    // ── Property image — use direct URL (PDFShift fetches it; avoids base64 bloat) ──
     let imgContent = `<div class="media-placeholder">🏠 No image available</div>`;
     const imageUrl = p.images?.[0] || p.imageUrls?.[0] || p.mainImage || p.primaryImage;
     if (imageUrl) {
-      try {
-        const uri = await this.urlToDataUri(imageUrl);
-        const src = uri || imageUrl;
-        imgContent = `<img src="${src}" alt="Property"/><div class="media-label">Property</div>`;
-      } catch { /* placeholder */ }
+      imgContent = `<img src="${imageUrl}" alt="Property"/><div class="media-label">Property</div>`;
     }
 
     // ── Agency logo (left, no box) ──
@@ -531,7 +526,7 @@ export class PropdataPdfShiftService {
     // ── Financial Analysis section ──
     let financialHtml = "";
     if (rd?.financingAnalysisData || rd?.cashflowAnalysisData || rd?.annualPropertyAppreciationData) {
-      financialHtml = `<div class="section"><div class="section-header"><div class="section-accent"></div><span class="section-title">Financial Analysis</span><div class="section-rule"></div></div>`;
+      financialHtml = `<div class="section financial-section"><div class="section-header"><div class="section-accent"></div><span class="section-title">Financial Analysis</span><div class="section-rule"></div></div>`;
 
       if (rd?.financingAnalysisData) {
         const fin = rd.financingAnalysisData.financingParameters;
