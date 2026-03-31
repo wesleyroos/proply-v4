@@ -373,7 +373,7 @@ export class PropdataPdfShiftService {
       .badge-green { background: var(--green-bg); color: #16a34a; }
 
       /* ── Disclaimer + Footer (last page) ── */
-      .last-page { display: flex; flex-direction: column; min-height: calc(100vh - 44mm); }
+      .last-page { display: flex; flex-direction: column; break-before: always; page-break-before: always; height: 253mm; }
       .last-page-spacer { flex: 1; }
       .disclaimer-section { padding: 22px 42px 18px; background: var(--surface); border-top: 1px solid var(--border); }
       .disclaimer-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); margin-bottom: 8px; }
