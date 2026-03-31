@@ -97,7 +97,6 @@ export const agencyBranches = pgTable("agency_branches", {
   apiKey: text("api_key"), // Encrypted API key for direct integrations (e.g. Prospr)
   apiBaseUrl: text("api_base_url"), // Optional base URL override for direct integrations
   logoUrl: text("logo_url"), // Path to uploaded agency logo
-  primaryColor: text("primary_color"), // Brand colour used in reports (e.g. "#1ba2ff")
   // Company information fields
   companyName: text("company_name"),
   vatNumber: text("vat_number"),
