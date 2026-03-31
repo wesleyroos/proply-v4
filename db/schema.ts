@@ -88,12 +88,14 @@ export const agencyBranches = pgTable("agency_branches", {
   franchiseName: text("franchise_name").notNull(), // e.g., "Sotheby's", "NOX", "Pam Golding"
   slug: text("slug").notNull(), // e.g., "sothebys", "nox", "pam-golding"
   branchName: text("branch_name").notNull(), // e.g., "Sotheby's Atlantic Seaboard"
-  propdataFranchiseId: text("propdata_franchise_id").notNull(), // PropData franchise ID
-  propdataBranchId: text("propdata_branch_id").notNull().unique(), // PropData branch ID
-  provider: text("provider").default("PropData").notNull(), // Syndication platform
+  propdataFranchiseId: text("propdata_franchise_id"), // PropData franchise ID (null for direct integrations)
+  propdataBranchId: text("propdata_branch_id").unique(), // PropData branch ID (null for direct integrations)
+  provider: text("provider").default("PropData").notNull(), // Syndication platform: PropData, Prospr
   status: text("status").default("active").notNull(), // active, inactive
   autoSyncEnabled: boolean("auto_sync_enabled").default(true).notNull(),
   syncFrequency: text("sync_frequency").default("5 minutes").notNull(),
+  apiKey: text("api_key"), // Encrypted API key for direct integrations (e.g. Prospr)
+  apiBaseUrl: text("api_base_url"), // Optional base URL override for direct integrations
   logoUrl: text("logo_url"), // Path to uploaded agency logo
   // Company information fields
   companyName: text("company_name"),
@@ -133,6 +135,20 @@ export const propdataListings = pgTable("propdata_listings", {
   specialLevy: decimal("special_levy", { precision: 10, scale: 2 }),
   homeOwnerLevy: decimal("home_owner_levy", { precision: 10, scale: 2 }),
 
+  // Direct integration fields (Prospr etc.)
+  provider: text("provider").default("PropData").notNull(), // PropData or Prospr
+  title: text("title"), // Listing title (Prospr provides this; PropData uses address)
+  priceText: text("price_text"), // Human-readable price text (e.g. "Price on Application")
+  ratesAndTaxes: decimal("rates_and_taxes", { precision: 10, scale: 2 }),
+  // Short-term rental estimates
+  strMonthlyRevenue: decimal("str_monthly_revenue", { precision: 12, scale: 2 }),
+  strAnnualRevenue: decimal("str_annual_revenue", { precision: 12, scale: 2 }),
+  strOccupancyRate: decimal("str_occupancy_rate", { precision: 5, scale: 2 }),
+  strAvgDailyRate: decimal("str_avg_daily_rate", { precision: 10, scale: 2 }),
+  // Long-term rental estimates
+  ltrMonthlyRent: decimal("ltr_monthly_rent", { precision: 12, scale: 2 }),
+  ltrAnnualRent: decimal("ltr_annual_rent", { precision: 12, scale: 2 }),
+
   listingDate: timestamp("listing_date"), // When the property was actually listed (mandate_start_date)
   lastModified: timestamp("last_modified").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -143,6 +159,8 @@ export const syncTracking = pgTable("sync_tracking", {
   id: serial("id").primaryKey(),
   syncType: text("sync_type").notNull(), // 'quick' or 'full'
   status: text("status").notNull(), // 'running', 'completed', 'failed'
+  agencyId: integer("agency_id"), // Which agency was synced (null = all)
+  provider: text("provider"), // 'PropData' or 'Prospr' (null = all)
   startedAt: timestamp("started_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
   newListings: integer("new_listings").default(0),

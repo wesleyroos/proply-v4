@@ -78,6 +78,8 @@ interface PropdataListing {
   franchiseName?: string;
   branchName?: string;
   agencyId?: number; // For compatibility with PropertyDetailModal
+  provider?: string; // "PropData" or "Prospr"
+  title?: string; // Listing title (Prospr provides this)
   // Valuation report information
   reportGenerated?: string;
   reportId?: number;
@@ -766,8 +768,11 @@ export default function PropdataListingsPage() {
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             <Home className="h-4 w-4 text-muted-foreground" />
-                            {listing.address}
+                            {listing.title || listing.address}
                           </div>
+                          {listing.title && listing.address && listing.title !== listing.address && (
+                            <div className="text-xs text-muted-foreground mt-0.5">{listing.address}</div>
+                          )}
                           <div className="text-xs text-muted-foreground mt-1">
                             ID: {listing.propdataId}
                           </div>
@@ -892,13 +897,14 @@ export default function PropdataListingsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm">
+                          <div className="text-sm space-y-1">
                             {listing.franchiseName ? (
                               <div>
                                 <div className="font-medium text-xs">{listing.franchiseName}</div>
                                 {listing.branchName && (
                                   <div className="text-xs text-muted-foreground">{listing.branchName}</div>
-                                )}</div>
+                                )}
+                              </div>
                             ) : listing.branchId ? (
                               <Badge variant="secondary" className="text-xs">
                                 Branch {listing.branchId}
@@ -906,6 +912,11 @@ export default function PropdataListingsPage() {
                             ) : (
                               <Badge variant="outline" className="text-xs">
                                 Sotheby's International Realty
+                              </Badge>
+                            )}
+                            {listing.provider && listing.provider !== "PropData" && (
+                              <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
+                                {listing.provider}
                               </Badge>
                             )}
                           </div>

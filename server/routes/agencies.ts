@@ -6,6 +6,9 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { getBranchesClient } from "../services/propdata/branchesClient";
+import { ProsprClient } from "../services/prospr/client";
+import { autoSyncService } from "../services/autoSync";
+import { encrypt } from "../utils/encryption";
 
 const router = Router();
 
@@ -206,17 +209,31 @@ router.post("/agencies/:agencyId/sync", async (req, res) => {
     const { agencyId } = req.params;
     const { forceFullSync = false } = req.body;
 
-    // Currently only supporting Sotheby's (PropData)
-    if (agencyId !== "sothebys") {
-      return res.status(400).json({ error: "Unsupported agency" });
+    // Look up agency by slug or numeric ID
+    let agency;
+    const numericId = parseInt(agencyId, 10);
+    if (!isNaN(numericId)) {
+      const [row] = await db.select().from(agencyBranches).where(eq(agencyBranches.id, numericId)).limit(1);
+      agency = row;
+    } else {
+      const [row] = await db.select().from(agencyBranches).where(eq(agencyBranches.slug, agencyId)).limit(1);
+      agency = row;
     }
 
-    // Trigger the existing PropData sync
-    const syncUrl = forceFullSync 
+    if (!agency && agencyId !== "sothebys") {
+      return res.status(404).json({ error: "Agency not found" });
+    }
+
+    if (agency?.provider === "Prospr") {
+      const result = await autoSyncService.performSyncForAgency(agency.id);
+      return res.json(result);
+    }
+
+    // PropData agency — use existing sync endpoints
+    const syncUrl = forceFullSync
       ? "/api/propdata/listings/sync"
       : "/api/propdata/listings/quick-sync";
 
-    // Forward the request to the existing sync endpoint
     const response = await fetch(`http://localhost:5000${syncUrl}`, {
       method: 'POST',
       headers: {
@@ -413,6 +430,77 @@ router.post("/agencies/add-integration", async (req, res) => {
     return res.status(500).json({
       error: "Failed to add agency integration",
       details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// POST /api/agencies/add-direct-integration - Add a direct (non-PropData) agency integration
+router.post("/agencies/add-direct-integration", async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const { provider, agencyName, branchName, apiKey, apiBaseUrl } = req.body;
+
+    if (!provider?.trim() || !agencyName?.trim() || !branchName?.trim() || !apiKey?.trim()) {
+      return res.status(400).json({ error: "provider, agencyName, branchName, and apiKey are required" });
+    }
+
+    if (provider !== "Prospr") {
+      return res.status(400).json({ error: `Unsupported provider: ${provider}` });
+    }
+
+    // Validate the API key
+    const prosprClient = new ProsprClient(apiKey.trim(), apiBaseUrl?.trim() || undefined);
+    const isValid = await prosprClient.validateApiKey();
+    if (!isValid) {
+      return res.status(400).json({ error: "Invalid API key — authentication failed" });
+    }
+
+    const effectiveFranchiseName = agencyName.trim();
+    const slug = effectiveFranchiseName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+    // Check for duplicate slug
+    const [existingBySlug] = await db.select().from(agencyBranches).where(eq(agencyBranches.slug, slug)).limit(1);
+    if (existingBySlug) {
+      return res.status(400).json({ error: "An agency with this name is already integrated" });
+    }
+
+    const encryptedKey = encrypt(apiKey.trim());
+
+    await db.insert(agencyBranches).values({
+      franchiseName: effectiveFranchiseName,
+      slug,
+      branchName: branchName.trim(),
+      propdataFranchiseId: null,
+      propdataBranchId: null,
+      provider: "Prospr",
+      status: "active",
+      autoSyncEnabled: true,
+      syncFrequency: "5 minutes",
+      apiKey: encryptedKey,
+      apiBaseUrl: apiBaseUrl?.trim() || null,
+    });
+
+    // Trigger an initial sync in the background
+    const [newAgency] = await db.select().from(agencyBranches).where(eq(agencyBranches.slug, slug)).limit(1);
+    if (newAgency) {
+      autoSyncService.performSyncForAgency(newAgency.id).catch((err) => {
+        console.error(`Initial sync failed for ${effectiveFranchiseName}:`, err);
+      });
+    }
+
+    return res.json({
+      success: true,
+      franchiseName: effectiveFranchiseName,
+      message: `Successfully integrated ${effectiveFranchiseName} via ${provider}`,
+    });
+  } catch (error) {
+    console.error("Error adding direct integration:", error);
+    return res.status(500).json({
+      error: "Failed to add direct integration",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 });

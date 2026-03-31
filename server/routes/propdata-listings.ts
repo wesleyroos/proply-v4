@@ -49,6 +49,16 @@ router.get("/propdata/listings", async (req, res) => {
         specialLevy: propdataListings.specialLevy,
         homeOwnerLevy: propdataListings.homeOwnerLevy,
         branchId: propdataListings.branchId,
+        provider: propdataListings.provider,
+        title: propdataListings.title,
+        priceText: propdataListings.priceText,
+        ratesAndTaxes: propdataListings.ratesAndTaxes,
+        strMonthlyRevenue: propdataListings.strMonthlyRevenue,
+        strAnnualRevenue: propdataListings.strAnnualRevenue,
+        strOccupancyRate: propdataListings.strOccupancyRate,
+        strAvgDailyRate: propdataListings.strAvgDailyRate,
+        ltrMonthlyRent: propdataListings.ltrMonthlyRent,
+        ltrAnnualRent: propdataListings.ltrAnnualRent,
         // Add valuation report information
         reportGenerated: valuationReports.createdAt,
         reportId: valuationReports.id,
@@ -72,11 +82,19 @@ router.get("/propdata/listings", async (req, res) => {
         .where(eq(agencyBranches.id, req.user.franchiseId))
         .orderBy(desc(propdataListings.listingDate));
     } else {
-      // System admins see all properties, with optional agency filter
+      // System admins see all properties, with optional agency/provider filter
       const agencySlug = req.query.agency as string | undefined;
+      const providerFilter = req.query.provider as string | undefined;
+      const conditions = [];
       if (agencySlug && agencySlug !== 'all') {
+        conditions.push(eq(agencyBranches.slug, agencySlug));
+      }
+      if (providerFilter && providerFilter !== 'all') {
+        conditions.push(eq(propdataListings.provider, providerFilter));
+      }
+      if (conditions.length > 0) {
         listings = await query
-          .where(eq(agencyBranches.slug, agencySlug))
+          .where(conditions.length === 1 ? conditions[0] : and(...conditions))
           .orderBy(desc(propdataListings.listingDate));
       } else {
         listings = await query.orderBy(desc(propdataListings.listingDate));

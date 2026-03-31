@@ -1,9 +1,12 @@
 import { db } from "@db";
 import { propdataListings, syncTracking, agencyBranches } from "@db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql, and } from "drizzle-orm";
 import { ListingsClient } from "./propdata/listingsClient";
 import { AgentsClient } from "./propdata/agentsClient";
 import { FilesClient } from "./propdata/filesClient";
+import { ProsprClient } from "./prospr/client";
+import { mapProsprToListing } from "./prospr/mapper";
+import { decrypt } from "../utils/encryption";
 
 
 class AutoSyncService {
@@ -283,7 +286,21 @@ class AutoSyncService {
         })
         .where(eq(syncTracking.id, syncRecord.id));
 
-      console.log(`Quick sync completed: ${newCount} new, ${updatedCount} updated, ${errorCount} errors`);
+      console.log(`PropData quick sync completed: ${newCount} new, ${updatedCount} updated, ${errorCount} errors`);
+
+      // Also sync any active Prospr agencies
+      try {
+        const prosprResult = await this.syncProsprListings();
+        newCount += prosprResult.newListings;
+        updatedCount += prosprResult.updatedListings;
+        errorCount += prosprResult.errors;
+        if (prosprResult.newListings > 0 || prosprResult.updatedListings > 0) {
+          console.log(`Prospr sync: ${prosprResult.newListings} new, ${prosprResult.updatedListings} updated, ${prosprResult.errors} errors`);
+        }
+      } catch (prosprErr) {
+        console.error("Prospr sync failed:", prosprErr);
+        errorCount++;
+      }
 
       return {
         success: true,
@@ -316,6 +333,150 @@ class AutoSyncService {
     } finally {
       this.isRunning = false;
     }
+  }
+
+  /** Sync all active Prospr agencies. Returns aggregate counts. */
+  private async syncProsprListings(): Promise<{ newListings: number; updatedListings: number; errors: number }> {
+    let newCount = 0;
+    let updatedCount = 0;
+    let errorCount = 0;
+
+    const prosprAgencies = await db
+      .select()
+      .from(agencyBranches)
+      .where(and(eq(agencyBranches.provider, "Prospr"), eq(agencyBranches.status, "active"), eq(agencyBranches.autoSyncEnabled, true)));
+
+    for (const agency of prosprAgencies) {
+      if (!agency.apiKey) {
+        console.warn(`Prospr agency ${agency.id} (${agency.franchiseName}) has no API key, skipping`);
+        continue;
+      }
+
+      try {
+        const apiKey = decrypt(agency.apiKey);
+        const prosprClient = new ProsprClient(apiKey, agency.apiBaseUrl ?? undefined);
+
+        // Get latest lastModified for this branch for incremental sync
+        const [latestListing] = await db
+          .select({ lastModified: propdataListings.lastModified })
+          .from(propdataListings)
+          .where(eq(propdataListings.branchId, agency.id))
+          .orderBy(desc(propdataListings.lastModified))
+          .limit(1);
+
+        const updatedSince = latestListing
+          ? new Date(new Date(latestListing.lastModified).getTime() - 60 * 60 * 1000).toISOString()
+          : undefined;
+
+        const properties = await prosprClient.fetchAllProperties(
+          { updated_since: updatedSince },
+          5
+        );
+
+        console.log(`Prospr sync for ${agency.franchiseName}: ${properties.length} properties`);
+
+        for (const property of properties) {
+          try {
+            const [existing] = await db
+              .select({ id: propdataListings.id, address: propdataListings.address, addressManuallyEdited: propdataListings.addressManuallyEdited })
+              .from(propdataListings)
+              .where(eq(propdataListings.propdataId, property.id))
+              .limit(1);
+
+            const listingData = mapProsprToListing(property, agency.id);
+
+            // Preserve manually edited address
+            if (existing?.addressManuallyEdited) {
+              listingData.address = existing.address;
+            }
+
+            if (existing) {
+              await db.update(propdataListings).set(listingData).where(eq(propdataListings.propdataId, property.id));
+              updatedCount++;
+            } else {
+              await db.insert(propdataListings).values({ ...listingData, createdAt: new Date() });
+              newCount++;
+            }
+          } catch (propErr) {
+            console.error(`Error processing Prospr property ${property.id}:`, propErr);
+            errorCount++;
+          }
+        }
+      } catch (agencyErr) {
+        console.error(`Error syncing Prospr agency ${agency.id}:`, agencyErr);
+        errorCount++;
+      }
+    }
+
+    return { newListings: newCount, updatedListings: updatedCount, errors: errorCount };
+  }
+
+  /** Sync a single agency by ID, dispatching to the correct provider. */
+  async performSyncForAgency(agencyId: number): Promise<{ success: boolean; newListings: number; updatedListings: number; errors: number; message?: string }> {
+    const [agency] = await db.select().from(agencyBranches).where(eq(agencyBranches.id, agencyId)).limit(1);
+    if (!agency) {
+      return { success: false, newListings: 0, updatedListings: 0, errors: 0, message: "Agency not found" };
+    }
+
+    if (agency.provider === "Prospr") {
+      if (!agency.apiKey) {
+        return { success: false, newListings: 0, updatedListings: 0, errors: 0, message: "Agency has no API key configured" };
+      }
+
+      const [syncRecord] = await db.insert(syncTracking).values({
+        syncType: "quick",
+        status: "running",
+        agencyId: agency.id,
+        provider: "Prospr",
+      }).returning({ id: syncTracking.id });
+
+      let newCount = 0;
+      let updatedCount = 0;
+      let errorCount = 0;
+
+      try {
+        const apiKey = decrypt(agency.apiKey);
+        const prosprClient = new ProsprClient(apiKey, agency.apiBaseUrl ?? undefined);
+
+        const properties = await prosprClient.fetchAllProperties({}, 10);
+        console.log(`Manual Prospr sync for ${agency.franchiseName}: ${properties.length} properties`);
+
+        for (const property of properties) {
+          try {
+            const [existing] = await db
+              .select({ id: propdataListings.id, address: propdataListings.address, addressManuallyEdited: propdataListings.addressManuallyEdited })
+              .from(propdataListings)
+              .where(eq(propdataListings.propdataId, property.id))
+              .limit(1);
+
+            const listingData = mapProsprToListing(property, agency.id);
+            if (existing?.addressManuallyEdited) {
+              listingData.address = existing.address;
+            }
+
+            if (existing) {
+              await db.update(propdataListings).set(listingData).where(eq(propdataListings.propdataId, property.id));
+              updatedCount++;
+            } else {
+              await db.insert(propdataListings).values({ ...listingData, createdAt: new Date() });
+              newCount++;
+            }
+          } catch (propErr) {
+            console.error(`Error processing Prospr property ${property.id}:`, propErr);
+            errorCount++;
+          }
+        }
+
+        await db.update(syncTracking).set({ status: "completed", completedAt: new Date(), newListings: newCount, updatedListings: updatedCount, errors: errorCount }).where(eq(syncTracking.id, syncRecord.id));
+        return { success: true, newListings: newCount, updatedListings: updatedCount, errors: errorCount };
+      } catch (err) {
+        await db.update(syncTracking).set({ status: "failed", completedAt: new Date(), errors: errorCount + 1, errorMessage: err instanceof Error ? err.message : "Unknown error" }).where(eq(syncTracking.id, syncRecord.id));
+        return { success: false, newListings: newCount, updatedListings: updatedCount, errors: errorCount + 1, message: err instanceof Error ? err.message : "Unknown error" };
+      }
+    }
+
+    // PropData agency — delegate to existing quick sync (which handles all PropData agencies)
+    return this.performQuickSync();
   }
 
   async getLastSyncInfo() {
