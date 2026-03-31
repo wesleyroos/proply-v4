@@ -258,11 +258,11 @@ export class PropdataPdfShiftService {
       .report-header {
         display: flex; align-items: center; justify-content: space-between;
         padding: 22px 42px 20px;
-        border-bottom: 3px solid var(--blue);
+        border-bottom: 5px solid var(--blue);
       }
       .header-left { display: flex; align-items: center; gap: 18px; }
       .header-divider { width: 1px; height: 30px; background: var(--border); }
-      .report-type { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); }
+      .report-type { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); }
       .report-date { font-size: 10px; color: var(--muted); margin-top: 2px; }
       .agency-logo-wrapper img { height: 44px; max-width: 160px; object-fit: contain; }
       .powered-by { display: flex; align-items: center; gap: 7px; }
@@ -373,7 +373,7 @@ export class PropdataPdfShiftService {
       .badge-green { background: var(--green-bg); color: #16a34a; }
 
       /* ── Disclaimer + Footer (last page) ── */
-      .last-page { display: flex; flex-direction: column; min-height: 160mm; }
+      .last-page { display: flex; flex-direction: column; min-height: calc(100vh - 44mm); }
       .last-page-spacer { flex: 1; }
       .disclaimer-section { padding: 22px 42px 18px; background: var(--surface); border-top: 1px solid var(--border); }
       .disclaimer-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); margin-bottom: 8px; }
@@ -643,11 +643,11 @@ export class PropdataPdfShiftService {
       <div class="section-header"><div class="section-accent"></div><span class="section-title">Additional Details</span><div class="section-rule"></div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
         <div>
-          ${p.agent || p.agentName ? `
+          ${p.agentName || p.agent ? `
             <div class="subsection-title" style="margin-top:0;">Agent Information</div>
-            <p class="body-text" style="margin-bottom:2px;">${esc(p.agent?.name || p.agentName || "")}</p>
-            ${p.agent?.phone ? `<p class="body-text" style="margin-bottom:2px;">${esc(p.agent.phone)}</p>` : ""}
-            ${p.agent?.email ? `<p class="body-text" style="margin-bottom:0;">${esc(p.agent.email)}</p>` : ""}
+            <p class="body-text" style="margin-bottom:2px;">${esc(p.agentName || p.agent?.name || "")}</p>
+            ${(p.agentPhone || p.agent?.phone) ? `<p class="body-text" style="margin-bottom:2px;">${esc(p.agentPhone || p.agent?.phone)}</p>` : ""}
+            ${(p.agentEmail || p.agent?.email) ? `<p class="body-text" style="margin-bottom:0;">${esc(p.agentEmail || p.agent?.email)}</p>` : ""}
           ` : ""}
         </div>
         <div>
