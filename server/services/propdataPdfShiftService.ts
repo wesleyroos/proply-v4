@@ -83,10 +83,12 @@ export class PropdataPdfShiftService {
         where: eq(agencyBranches.id, property.branchId),
       });
       if (branch?.logoUrl) {
-        const port = process.env.PORT || "8080";
-        const logoUrl = `http://localhost:${port}${branch.logoUrl}`;
-        agencyLogoDataUri = await this.urlToDataUri(logoUrl);
-        console.log("Agency logo loaded:", !!agencyLogoDataUri, "from", logoUrl);
+        const absolutePath = path.join(
+          process.cwd(), "public",
+          branch.logoUrl.replace("/static-assets/", "").replace(/^\//, "")
+        );
+        agencyLogoDataUri = await this.fileToDataUri(absolutePath, true);
+        console.log("Agency logo loaded:", !!agencyLogoDataUri, "from", absolutePath);
       }
     }
 
@@ -246,12 +248,10 @@ export class PropdataPdfShiftService {
       .header-divider { width: 1px; height: 30px; background: var(--border); }
       .report-type { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); }
       .report-date { font-size: 10px; color: var(--muted); margin-top: 2px; }
-      .agency-logo-wrapper {
-        display: flex; align-items: center; gap: 8px;
-        padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
-      }
-      .agency-logo-wrapper img { height: 30px; max-width: 130px; object-fit: contain; }
-      .agency-name { font-size: 11px; font-weight: 700; color: var(--ink); }
+      .agency-logo-wrapper img { height: 44px; max-width: 160px; object-fit: contain; }
+      .powered-by { display: flex; align-items: center; gap: 7px; }
+      .powered-by-text { font-size: 8px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); white-space: nowrap; }
+      .powered-by img { height: 22px; object-fit: contain; }
 
       /* ── Hero ── */
       .property-hero {
@@ -343,6 +343,16 @@ export class PropdataPdfShiftService {
       tbody tr:nth-child(even) td { background: #fafbfc; }
       tbody tr.hl td { background: var(--blue-faint); font-weight: 600; color: var(--ink); }
 
+      /* ── Page break control ── */
+      .section { break-inside: auto; }
+      .section-header { break-after: avoid; }
+      .subsection-title { break-after: avoid; }
+      table { break-inside: avoid; }
+      .mini-stats { break-inside: avoid; }
+      .hero-stats-grid { break-inside: avoid; }
+      .chart-wrap { break-inside: avoid; break-before: auto; }
+      .media-row-wrapper { break-inside: avoid; }
+
       /* ── Badge ── */
       .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; }
       .badge-green { background: var(--green-bg); color: #16a34a; }
@@ -418,15 +428,18 @@ export class PropdataPdfShiftService {
       } catch { /* placeholder */ }
     }
 
-    // ── Agency logo ──
+    // ── Agency logo (left, no box) ──
     const agencyLogoHtml = data.agencyLogoDataUri
       ? `<div class="agency-logo-wrapper"><img src="${data.agencyLogoDataUri}" alt="Agency"/></div>`
       : "";
 
-    // ── Proply logo ──
-    const proplyLogoHtml = data.proplyLogoDataUri
-      ? `<img src="${data.proplyLogoDataUri}" alt="Proply" style="height:28px;object-fit:contain;">`
-      : `<span style="font-size:16px;font-weight:900;color:#0d1b2a;">proply</span>`;
+    // ── Powered by Proply (right) ──
+    const proplyLogoHtml = `<div class="powered-by">
+      <span class="powered-by-text">Powered by</span>
+      ${data.proplyLogoDataUri
+        ? `<img src="${data.proplyLogoDataUri}" alt="Proply">`
+        : `<span style="font-size:13px;font-weight:900;color:#0d1b2a;">proply</span>`}
+    </div>`;
 
     // ── Valuation section ──
     let valuationHtml = "";
@@ -551,7 +564,7 @@ export class PropdataPdfShiftService {
 
           financialHtml += `<div class="subsection-title">Equity Build-up vs. Remaining Loan Balance</div>`;
           financialHtml += `<p class="body-text" style="margin-bottom:12px;">Loan paydown and equity accumulation over the mortgage term</p>`;
-          financialHtml += `<div style="margin-bottom:20px;">${this.buildEquityChart(ym)}</div>`;
+          financialHtml += `<div class="chart-wrap" style="margin-bottom:20px;">${this.buildEquityChart(ym)}</div>`;
         }
       }
 
@@ -672,14 +685,14 @@ export class PropdataPdfShiftService {
 
 <div class="report-header">
   <div class="header-left">
-    ${proplyLogoHtml}
+    ${agencyLogoHtml}
     <div class="header-divider"></div>
     <div>
       <div class="report-type">Property Investment Report</div>
       <div class="report-date">${dateStr}</div>
     </div>
   </div>
-  ${agencyLogoHtml}
+  ${proplyLogoHtml}
 </div>
 
 <div class="property-hero">
