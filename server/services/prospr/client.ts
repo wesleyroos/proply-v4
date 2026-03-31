@@ -85,14 +85,19 @@ export class ProsprClient {
     await this.client.post("/webhooks/property-enrichment", payload);
   }
 
-  /** Validate the API key by fetching 1 property. Throws on auth failure. */
-  async validateApiKey(): Promise<boolean> {
+  /** Validate the API key by fetching 1 property. Returns {valid, error} — never throws. */
+  async validateApiKey(): Promise<{ valid: boolean; error?: string }> {
     try {
       await this.fetchProperties({ limit: 1 });
-      return true;
+      return { valid: true };
     } catch (err: any) {
-      if (err?.response?.status === 401 || err?.response?.status === 403) return false;
-      throw err;
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        return { valid: false, error: "Invalid API key — authentication failed" };
+      }
+      // Network error, timeout, etc. — surface the real message
+      const msg = err?.message || "Unknown error";
+      return { valid: false, error: `Could not reach Prospr API: ${msg}` };
     }
   }
 }

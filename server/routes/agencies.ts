@@ -453,9 +453,9 @@ router.post("/agencies/add-direct-integration", async (req, res) => {
 
     // Validate the API key
     const prosprClient = new ProsprClient(apiKey.trim(), apiBaseUrl?.trim() || undefined);
-    const isValid = await prosprClient.validateApiKey();
-    if (!isValid) {
-      return res.status(400).json({ error: "Invalid API key — authentication failed" });
+    const { valid, error: validationError } = await prosprClient.validateApiKey();
+    if (!valid) {
+      return res.status(400).json({ error: validationError || "API key validation failed" });
     }
 
     const effectiveFranchiseName = agencyName.trim();
