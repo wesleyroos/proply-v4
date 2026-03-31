@@ -285,7 +285,8 @@ export class PropdataPdfShiftService {
       .hero-stat .stat-sub   { font-size: 9px; color: var(--muted); margin-top: 3px; }
 
       /* ── Stat bar ── */
-      .stat-bar { display: grid; grid-template-columns: repeat(8,1fr); border-bottom: 1px solid var(--border); }
+      .stat-bar-wrapper { padding: 0 42px; border-bottom: 1px solid var(--border); }
+      .stat-bar { display: grid; grid-template-columns: repeat(8,1fr); }
       .stat-bar-item { padding: 13px 0 13px 18px; border-right: 1px solid var(--border); }
       .stat-bar-item:last-child { border-right: none; }
       .stat-bar-item .s-label { font-size: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--label); margin-bottom: 5px; }
@@ -725,7 +726,7 @@ export class PropdataPdfShiftService {
   </div>
 </div>
 
-<div class="stat-bar">${statBar}</div>
+<div class="stat-bar-wrapper"><div class="stat-bar">${statBar}</div></div>
 
 <div class="media-row-wrapper">
   <div class="media-row">
@@ -738,8 +739,8 @@ ${valuationHtml}
 ${rentalHtml}
 ${financialHtml}
 ${detailsHtml}
-${footerHtml}
 ${disclaimerHtml}
+${footerHtml}
 
 </body>
 </html>`;
