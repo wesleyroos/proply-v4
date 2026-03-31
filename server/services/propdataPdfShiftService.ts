@@ -327,12 +327,12 @@ export class PropdataPdfShiftService {
       }
 
       /* ── Sections ── */
-      .section { padding: 30px 42px 28px; border-bottom: 1px solid var(--border); }
+      .section { padding: 22px 42px 20px; border-bottom: 1px solid var(--border); }
       .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
       .section-accent { width: 3px; height: 20px; background: var(--blue); border-radius: 2px; flex-shrink: 0; }
       .section-title { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); }
       .section-rule { flex: 1; height: 1px; background: var(--border); }
-      .subsection-title { font-size: 11.5px; font-weight: 600; color: var(--ink); margin: 18px 0 10px; }
+      .subsection-title { font-size: 11.5px; font-weight: 600; color: var(--ink); margin: 14px 0 8px; }
       .subsection-title:first-child { margin-top: 0; }
       .body-text { font-size: 11px; color: var(--body); line-height: 1.75; margin-bottom: 14px; }
 
@@ -362,20 +362,18 @@ export class PropdataPdfShiftService {
 
       /* ── Page break control ── */
       .section-header { break-after: avoid; page-break-after: avoid; }
-      .subsection-title { break-after: avoid; page-break-after: avoid; margin-bottom: 12px; }
-      table { break-inside: avoid; page-break-inside: avoid; }
+      .subsection-title { break-after: avoid; page-break-after: avoid; margin-bottom: 10px; }
       .mini-stats { break-inside: avoid; page-break-inside: avoid; }
       .hero-stats-grid { break-inside: avoid; page-break-inside: avoid; }
       .chart-wrap { break-inside: avoid; page-break-inside: avoid; margin-top: 8px; }
       .media-row-wrapper { break-inside: avoid; page-break-inside: avoid; }
-      .financial-section { break-before: always; page-break-before: always; }
 
       /* ── Badge ── */
       .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; }
       .badge-green { background: var(--green-bg); color: #16a34a; }
 
       /* ── Disclaimer + Footer (last page) ── */
-      .last-page { break-before: always; page-break-before: always; display: flex; flex-direction: column; min-height: 244mm; }
+      .last-page { display: flex; flex-direction: column; min-height: 160mm; }
       .last-page-spacer { flex: 1; }
       .disclaimer-section { padding: 22px 42px 18px; background: var(--surface); border-top: 1px solid var(--border); }
       .disclaimer-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); margin-bottom: 8px; }
@@ -546,7 +544,7 @@ export class PropdataPdfShiftService {
     // ── Financial Analysis section ──
     let financialHtml = "";
     if (rd?.financingAnalysisData || rd?.cashflowAnalysisData || rd?.annualPropertyAppreciationData) {
-      financialHtml = `<div class="section financial-section"><div class="section-header"><div class="section-accent"></div><span class="section-title">Financial Analysis</span><div class="section-rule"></div></div>`;
+      financialHtml = `<div class="section"><div class="section-header"><div class="section-accent"></div><span class="section-title">Financial Analysis</span><div class="section-rule"></div></div>`;
 
       if (rd?.financingAnalysisData) {
         const fin = rd.financingAnalysisData.financingParameters;
