@@ -22,6 +22,13 @@ export default function BlogPage() {
     return <DealScoreBlogPost />;
   }
 
+  if (
+    match &&
+    params?.slug === "lightstone-property-reports-explained"
+  ) {
+    return <LightstoneBlogPost />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <PublicHeader />
@@ -106,8 +113,37 @@ export default function BlogPage() {
               </CardContent>
             </Card>
 
+            {/* Lightstone Article Card */}
+            <Card className="overflow-hidden flex flex-col">
+              <div className="relative h-48 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                <div className="text-center px-4">
+                  <div className="text-4xl mb-2">🏠</div>
+                  <p className="text-white/70 text-xs font-medium uppercase tracking-wider">Property Data</p>
+                </div>
+              </div>
+              <CardContent className="flex-1 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                  <Link href="/blog/lightstone-property-reports-explained">
+                    Lightstone Property Reports Explained: What You Get and What It Costs
+                  </Link>
+                </h2>
+                <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+                  A full breakdown of what a Lightstone property report contains, what it costs, and how Proply gives you the same data plus a complete investment analysis in one place.
+                </p>
+                <div className="mt-auto flex items-center justify-between">
+                  <div className="text-sm text-gray-500">March 31, 2026</div>
+                  <Link href="/blog/lightstone-property-reports-explained">
+                    <Button variant="outline" size="sm">
+                      Read More
+                      <span className="ml-2">→</span>
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Placeholder cards for future articles */}
-            {[1, 2, 3].map((i) => (
+            {[1, 2].map((i) => (
               <Card
                 key={i}
                 className="overflow-hidden flex flex-col opacity-50"
@@ -760,6 +796,207 @@ function DealScoreBlogPost() {
           <div className="mt-12 border-t pt-8">
             <p className="text-sm text-gray-500">
               Published on January 15, 2025 • Last updated January 15, 2025
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <PublicFooter />
+    </div>
+  );
+}
+
+function LightstoneBlogPost() {
+  return (
+    <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Lightstone Property Reports Explained: What You Get and What It Costs | Proply</title>
+        <meta
+          name="description"
+          content="A complete guide to Lightstone property reports — what data they contain, what a Lightstone valuation costs, and how Proply gives you the same insights plus a full investment analysis."
+        />
+        <meta name="keywords" content="lightstone property report, lightstone valuation cost, lightstone report South Africa, property valuation South Africa" />
+      </Helmet>
+
+      <PublicHeader />
+
+      {/* Hero */}
+      <div className="relative h-[50vh] min-h-[380px] bg-gradient-to-br from-slate-800 to-slate-950 flex items-center">
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}
+        />
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-slate-400 text-sm font-semibold uppercase tracking-widest mb-4">Property Data · South Africa</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+            Lightstone Property Reports Explained: What You Get and What It Costs
+          </h1>
+          <p className="text-slate-300 text-lg">
+            Everything you need to know about Lightstone reports — and a smarter way to get the same data with a full investment analysis built in.
+          </p>
+          <p className="text-slate-500 text-sm mt-6">March 31, 2026 · 8 min read</p>
+        </div>
+      </div>
+
+      {/* Article */}
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="prose prose-lg prose-slate mx-auto">
+
+          <p className="lead">
+            If you've ever looked seriously at buying property in South Africa, someone has probably told you to "get a Lightstone report" before making an offer. But what is a Lightstone property report, what does it actually tell you, and is it worth paying for? This guide breaks it all down — and shows you where it falls short for serious investors.
+          </p>
+
+          <h2>What Is Lightstone?</h2>
+          <p>
+            Lightstone is a South African property data and analytics company that aggregates information from the Deeds Office, municipal records, and other sources to provide detailed property intelligence. Their reports are widely used by banks, conveyancing attorneys, estate agents, and property investors across the country.
+          </p>
+          <p>
+            When a bank processes a home loan, they almost always order a Lightstone valuation to verify the property's worth. When an estate agent prices a listing, Lightstone data is often the starting point. It's become the de facto standard for property data in South Africa.
+          </p>
+
+          <h2>What Does a Lightstone Property Report Contain?</h2>
+          <p>
+            A full Lightstone property report typically covers the following sections:
+          </p>
+
+          <h3>1. Property Details</h3>
+          <p>
+            The basics: erf size, floor area, property type (freehold, sectional title, estate), municipal valuation, and the Deeds Office registration details. This section confirms what you're legally buying.
+          </p>
+
+          <h3>2. Ownership History</h3>
+          <p>
+            A record of every registered owner going back several years, with transfer dates and purchase prices. This tells you how many times the property has changed hands and what previous buyers paid — useful context for negotiation.
+          </p>
+
+          <h3>3. Bond Information</h3>
+          <p>
+            Details of any existing bonds (mortgages) registered against the property, including the bondholder (bank) and the bond amount. This helps you understand the seller's financial position and any encumbrances on the title.
+          </p>
+
+          <h3>4. Sales History & Price Trends</h3>
+          <p>
+            A graph and table showing the property's transaction history and how its value has tracked over time. If the property sold for R1.2m in 2018 and the seller is asking R2.4m today, the sales history gives you hard data to evaluate that ask.
+          </p>
+
+          <h3>5. Automated Valuation Model (AVM)</h3>
+          <p>
+            This is often the headline feature — Lightstone's algorithm-generated estimate of the property's current market value, expressed as a range (e.g. R1.8m–R2.1m). The AVM draws on comparable sales in the area and statistical modelling. It's a useful sanity check but not a substitute for a physical valuation, especially in areas with limited recent sales.
+          </p>
+
+          <h3>6. Area & Suburb Statistics</h3>
+          <p>
+            Contextual data about the suburb: median property prices, average price per square metre, total number of transactions in the area over the past 12 months, and a breakdown of property types. This helps you understand whether you're buying in a liquid, active market or a thin one.
+          </p>
+
+          <h3>7. Comparable Sales</h3>
+          <p>
+            A list of recent sales of similar properties nearby, with addresses, sale dates, and prices. This is the closest thing to a real-world valuation check — if three similar properties on the same street sold for R1.9m in the last six months, you have a solid benchmark.
+          </p>
+
+          <h2>What Does a Lightstone Report Cost?</h2>
+          <p>
+            Lightstone offers both free and paid report options, depending on how much detail you need. A basic property search on their consumer platform gives you limited information for free. A full Lightstone property report — including the AVM, ownership history, bond details, and comparables — typically costs in the range of R59 to R150 per report, depending on the report type and whether you access it through a subscription or on a per-report basis.
+          </p>
+          <p>
+            Professional users (attorneys, estate agents, financial institutions) access Lightstone through API integrations or enterprise subscriptions that bundle reports at a lower per-unit cost but require a volume commitment.
+          </p>
+          <p>
+            For a private buyer doing due diligence on a single property, you're likely looking at roughly R100 for a comprehensive report. That's a reasonable spend before committing to a multi-million rand purchase — but it's worth understanding what the report doesn't give you.
+          </p>
+
+          <h2>What a Lightstone Report Doesn't Tell You</h2>
+          <p>
+            Lightstone is excellent at answering the question: <em>"What is this property worth?"</em> It's much less useful for answering: <em>"Is this a good investment?"</em>
+          </p>
+          <p>
+            A Lightstone report gives you no information about:
+          </p>
+          <ul>
+            <li><strong>Rental yield</strong> — what you could realistically earn from renting the property out</li>
+            <li><strong>Cash flow projections</strong> — whether the property will be positively or negatively geared after bond repayments, levies, rates, and management fees</li>
+            <li><strong>Return on investment</strong> — how long it will take to recoup your deposit and transaction costs</li>
+            <li><strong>Comparable rental rates</strong> — what similar properties in the area are actually renting for</li>
+            <li><strong>Capital growth projections</strong> — modelled appreciation scenarios over 5, 10, or 20 years</li>
+          </ul>
+          <p>
+            In other words, Lightstone tells you what the property is worth today. It doesn't tell you whether buying it at that price makes financial sense for your goals.
+          </p>
+
+          <h2>How Proply Builds on Lightstone Data</h2>
+          <p>
+            Proply was built specifically to fill this gap. When you run a property through Proply's Property Analyzer, you get the core property data — including Lightstone-sourced valuation and suburb intelligence — combined with a full investment analysis that most property buyers never do before signing an offer to purchase.
+          </p>
+          <p>
+            In a single report, Proply gives you:
+          </p>
+          <ul>
+            <li><strong>Property valuation data</strong> powered by Lightstone — the same AVM and comparable sales data</li>
+            <li><strong>Rental income estimates</strong> based on actual comparable rentals in the suburb</li>
+            <li><strong>Cash flow analysis</strong> — your estimated monthly position after bond, rates, levies, and management fees</li>
+            <li><strong>Net Operating Income (NOI)</strong> projections over 1, 5, 10, and 20 years</li>
+            <li><strong>Capital growth modelling</strong> showing projected property value and equity build-up over time</li>
+            <li><strong>Gross and net yield</strong> calculated automatically</li>
+            <li><strong>PDF export</strong> — a professionally formatted report you can share with a financial advisor, accountant, or business partner</li>
+          </ul>
+          <p>
+            For estate agents, Proply also offers a Rent Compare tool that benchmarks a property's rental potential against actual comparable listings and recent lease agreements in the area — far more granular than anything a standard Lightstone report provides.
+          </p>
+
+          <h2>Lightstone vs Proply: Which Should You Use?</h2>
+          <p>
+            The honest answer is that they serve different purposes, and serious investors should use both — or use Proply, which incorporates the underlying Lightstone data.
+          </p>
+          <p>
+            If you're an attorney processing a transfer or a bank underwriting a bond, a Lightstone report is exactly what you need. If you're a buyer or investor trying to figure out whether a property is worth buying at the asking price and what it will actually return, you need the kind of analysis Proply provides.
+          </p>
+          <p>
+            The Lightstone report tells you the price. Proply tells you whether that price makes sense.
+          </p>
+
+          {/* CTA Box */}
+          <div className="not-prose my-10 rounded-2xl bg-slate-900 p-8 text-white">
+            <h3 className="text-xl font-bold mb-2">Run a full property investment analysis</h3>
+            <p className="text-slate-300 text-sm mb-6">
+              Get Lightstone valuation data plus cash flow projections, yield calculations, and a shareable PDF report — all in one place.
+            </p>
+            <a
+              href="/register"
+              className="inline-block bg-white text-slate-900 font-semibold px-6 py-3 rounded-lg text-sm hover:bg-slate-100 transition-colors"
+            >
+              Try Proply Free →
+            </a>
+          </div>
+
+          <h2>Frequently Asked Questions</h2>
+
+          <h3>How accurate is a Lightstone valuation?</h3>
+          <p>
+            Lightstone's AVM (Automated Valuation Model) is generally accurate in high-volume residential suburbs where there are plenty of comparable sales. In areas with low transaction volumes, unique properties, or significant variation in condition and finishes, the AVM range can be wide and less reliable. It should always be treated as a starting point for pricing discussions, not a definitive valuation.
+          </p>
+
+          <h3>Can I get a free Lightstone property report?</h3>
+          <p>
+            Lightstone offers limited free data on their consumer platform, but a full report — including ownership history, bond details, the AVM, and comparable sales — requires payment. Proply's free tier includes a property analysis with Lightstone-sourced valuation data included.
+          </p>
+
+          <h3>What is the difference between a Lightstone report and a bank valuation?</h3>
+          <p>
+            A bank valuation is conducted by a registered valuer who physically inspects the property. It's a professional opinion of value that takes condition, improvements, and local knowledge into account. A Lightstone report is data-driven and algorithm-based — faster and cheaper, but not a substitute for a physical inspection. Banks typically use Lightstone data to pre-screen properties before ordering a formal valuation.
+          </p>
+
+          <h3>Do estate agents use Lightstone?</h3>
+          <p>
+            Yes, almost universally. Estate agents use Lightstone's comparable sales data to price listings and to support their mandate presentations to sellers. Many agents also use it to run CMAs (Comparative Market Analyses) for buyers. Proply is increasingly used by agents who want to add rental yield and investment metrics to their client presentations.
+          </p>
+
+          <h3>How do I get a Lightstone property report?</h3>
+          <p>
+            You can purchase a Lightstone report directly through their consumer portal at lightstone.co.za. Alternatively, many estate agents and conveyancers can pull a report on your behalf. Proply incorporates Lightstone valuation data as part of its property analysis — so you get the property intelligence plus the investment analysis in a single report.
+          </p>
+
+          <div className="mt-12 border-t pt-8">
+            <p className="text-sm text-gray-500">
+              Published on March 31, 2026 · Written by the Proply Team
             </p>
           </div>
         </div>
