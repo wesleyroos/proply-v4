@@ -842,7 +842,7 @@ function LightstoneBlogPost() {
         <div className="prose prose-lg prose-slate mx-auto">
 
           <p className="lead">
-            If you've ever looked seriously at buying property in South Africa, someone has probably told you to "get a Lightstone report" before making an offer. But what is a Lightstone property report, what does it actually tell you, and is it worth paying for? This guide breaks it all down — and shows you where it falls short for serious investors.
+            If you've ever looked seriously at buying property in South Africa, someone has probably told you to "get a Lightstone report" before making an offer. But what is a Lightstone property report, what does it actually tell you, and is it worth paying for? This guide breaks down exactly what you get — and how tools like Proply use that same data as the foundation for a complete investment analysis.
           </p>
 
           <h2>What Is Lightstone?</h2>
@@ -880,7 +880,7 @@ function LightstoneBlogPost() {
 
           <h3>5. Automated Valuation Model (AVM)</h3>
           <p>
-            This is often the headline feature — Lightstone's algorithm-generated estimate of the property's current market value, expressed as a range (e.g. R1.8m–R2.1m). The AVM draws on comparable sales in the area and statistical modelling. It's a useful sanity check but not a substitute for a physical valuation, especially in areas with limited recent sales.
+            This is often the headline feature — Lightstone's algorithm-generated estimate of the property's current market value, expressed as a range (e.g. R1.8m–R2.1m). The AVM draws on comparable sales in the area and statistical modelling. It gives you a reliable, data-driven benchmark for any property discussion, and is the same valuation method used by banks and financial institutions across the country.
           </p>
 
           <h3>6. Area & Suburb Statistics</h3>
@@ -901,37 +901,18 @@ function LightstoneBlogPost() {
             Professional users (attorneys, estate agents, financial institutions) access Lightstone through API integrations or enterprise subscriptions that bundle reports at a lower per-unit cost but require a volume commitment.
           </p>
           <p>
-            For a private buyer doing due diligence on a single property, you're likely looking at roughly R100 for a comprehensive report. That's a reasonable spend before committing to a multi-million rand purchase — but it's worth understanding what the report doesn't give you.
+            For a private buyer doing due diligence on a single property, you're likely looking at roughly R100 for a comprehensive report. It's a worthwhile spend before committing to a multi-million rand purchase — and it's the same data that underpins most professional property decisions in South Africa.
           </p>
 
-          <h2>What a Lightstone Report Doesn't Tell You</h2>
+          <h2>Lightstone as the Foundation for Investment Analysis</h2>
           <p>
-            Lightstone is excellent at answering the question: <em>"What is this property worth?"</em> It's much less useful for answering: <em>"Is this a good investment?"</em>
+            Lightstone is purpose-built to answer one critical question: <em>"What is this property worth?"</em> It does this exceptionally well. The valuation data, sales history, and suburb intelligence that Lightstone provides form the foundation of sound property decision-making in South Africa.
           </p>
           <p>
-            A Lightstone report gives you no information about:
-          </p>
-          <ul>
-            <li><strong>Rental yield</strong> — what you could realistically earn from renting the property out</li>
-            <li><strong>Cash flow projections</strong> — whether the property will be positively or negatively geared after bond repayments, levies, rates, and management fees</li>
-            <li><strong>Return on investment</strong> — how long it will take to recoup your deposit and transaction costs</li>
-            <li><strong>Comparable rental rates</strong> — what similar properties in the area are actually renting for</li>
-            <li><strong>Capital growth projections</strong> — modelled appreciation scenarios over 5, 10, or 20 years</li>
-          </ul>
-          <p>
-            In other words, Lightstone tells you what the property is worth today. It doesn't tell you whether buying it at that price makes financial sense for your goals.
-          </p>
-
-          <h2>How Proply Builds on Lightstone Data</h2>
-          <p>
-            Proply was built specifically to fill this gap. When you run a property through Proply's Property Analyzer, you get the core property data — including Lightstone-sourced valuation and suburb intelligence — combined with a full investment analysis that most property buyers never do before signing an offer to purchase.
-          </p>
-          <p>
-            In a single report, Proply gives you:
+            For investors who want to go a step further and layer investment analysis on top of that foundation, tools like Proply use Lightstone data as the starting point and extend it with:
           </p>
           <ul>
-            <li><strong>Property valuation data</strong> powered by Lightstone — the same AVM and comparable sales data</li>
-            <li><strong>Rental income estimates</strong> based on actual comparable rentals in the suburb</li>
+            <li><strong>Rental income estimates</strong> based on comparable rentals in the suburb</li>
             <li><strong>Cash flow analysis</strong> — your estimated monthly position after bond, rates, levies, and management fees</li>
             <li><strong>Net Operating Income (NOI)</strong> projections over 1, 5, 10, and 20 years</li>
             <li><strong>Capital growth modelling</strong> showing projected property value and equity build-up over time</li>
@@ -939,18 +920,15 @@ function LightstoneBlogPost() {
             <li><strong>PDF export</strong> — a professionally formatted report you can share with a financial advisor, accountant, or business partner</li>
           </ul>
           <p>
-            For estate agents, Proply also offers a Rent Compare tool that benchmarks a property's rental potential against actual comparable listings and recent lease agreements in the area — far more granular than anything a standard Lightstone report provides.
+            For estate agents, Proply also offers a Rent Compare tool that benchmarks a property's rental potential against actual comparable listings and recent lease agreements in the area — giving agents a powerful value-add for landlord clients.
           </p>
 
-          <h2>Lightstone vs Proply: Which Should You Use?</h2>
+          <h2>Using Lightstone and Proply Together</h2>
           <p>
-            The honest answer is that they serve different purposes, and serious investors should use both — or use Proply, which incorporates the underlying Lightstone data.
+            The two serve complementary purposes and work best together. Lightstone gives you the verified property data and market context. Proply takes that data and helps you model the investment case — so you can go into any property decision with both a clear picture of what the property is worth and a realistic view of what it will return.
           </p>
           <p>
-            If you're an attorney processing a transfer or a bank underwriting a bond, a Lightstone report is exactly what you need. If you're a buyer or investor trying to figure out whether a property is worth buying at the asking price and what it will actually return, you need the kind of analysis Proply provides.
-          </p>
-          <p>
-            The Lightstone report tells you the price. Proply tells you whether that price makes sense.
+            Whether you're a first-time buyer, a seasoned investor building a portfolio, or an estate agent advising clients, combining solid property data with a thorough investment analysis is the best way to make confident, well-informed decisions.
           </p>
 
           {/* CTA Box */}
@@ -971,7 +949,7 @@ function LightstoneBlogPost() {
 
           <h3>How accurate is a Lightstone valuation?</h3>
           <p>
-            Lightstone's AVM (Automated Valuation Model) is generally accurate in high-volume residential suburbs where there are plenty of comparable sales. In areas with low transaction volumes, unique properties, or significant variation in condition and finishes, the AVM range can be wide and less reliable. It should always be treated as a starting point for pricing discussions, not a definitive valuation.
+            Lightstone's AVM (Automated Valuation Model) is widely regarded as one of the most reliable automated valuation tools available in South Africa. It performs particularly well in high-volume residential suburbs with plentiful comparable sales data. Like any data-driven valuation model, it works best as part of a broader due diligence process — which is why banks, attorneys, and serious investors use it alongside other inputs when making final decisions.
           </p>
 
           <h3>Can I get a free Lightstone property report?</h3>
