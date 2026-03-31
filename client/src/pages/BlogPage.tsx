@@ -49,99 +49,93 @@ export default function BlogPage() {
           {/* Articles Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Lightstone Article Card */}
-            <Card className="overflow-hidden flex flex-col">
-              <div className="relative h-48">
-                <img
-                  src="/images/blog/lightstone-property-reports-hero.jpg"
-                  alt="South African suburb aerial view"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
-              <CardContent className="flex-1 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                  <Link href="/blog/lightstone-property-reports-explained">
+            <Link href="/blog/lightstone-property-reports-explained">
+              <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
+                <div className="relative h-48">
+                  <img
+                    src="/images/blog/lightstone-property-reports-hero.jpg"
+                    alt="South African suburb aerial view"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                <CardContent className="flex-1 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
                     Lightstone Property Reports Explained: What You Get and What It Costs
-                  </Link>
-                </h2>
-                <p className="text-gray-600 mb-4 text-sm line-clamp-3">
-                  A full breakdown of what a Lightstone property report contains, what it costs, and how Proply gives you the same data plus a complete investment analysis in one place.
-                </p>
-                <div className="mt-auto flex items-center justify-between">
-                  <div className="text-sm text-gray-500">March 31, 2026</div>
-                  <Link href="/blog/lightstone-property-reports-explained">
+                  </h2>
+                  <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+                    A full breakdown of what a Lightstone property report contains, what it costs, and how Proply gives you the same data plus a complete investment analysis in one place.
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="text-sm text-gray-500">March 31, 2026</div>
                     <Button variant="outline" size="sm">
                       Read More
                       <span className="ml-2">→</span>
                     </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
 
             {/* Deal Score Article Card */}
-            <Card className="overflow-hidden flex flex-col">
-              <div className="relative h-48">
-                <img
-                  src="/static-assets/images/blog/Deal Score - Stop Guessing Hero 2.jpg"
-                  alt="Property Deal Analysis"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
-              <CardContent className="flex-1 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                  <Link href="/blog/stop-guessing-start-scoring-your-property-deals">
+            <Link href="/blog/stop-guessing-start-scoring-your-property-deals">
+              <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
+                <div className="relative h-48">
+                  <img
+                    src="/static-assets/images/blog/Deal Score - Stop Guessing Hero 2.jpg"
+                    alt="Property Deal Analysis"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                <CardContent className="flex-1 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
                     Stop Guessing. Start Scoring Your Property Deals
-                  </Link>
-                </h2>
-                <p className="text-gray-600 mb-4 text-sm line-clamp-3">
-                  Most buyers overpay or under-research. Here's why every SA
-                  property decision deserves a Deal Score — and how R89 could
-                  save you R150,000.
-                </p>
-                <div className="mt-auto flex items-center justify-between">
-                  <div className="text-sm text-gray-500">January 15, 2025</div>
-                  <Link href="/blog/stop-guessing-start-scoring-your-property-deals">
+                  </h2>
+                  <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+                    Most buyers overpay or under-research. Here's why every SA
+                    property decision deserves a Deal Score — and how R89 could
+                    save you R150,000.
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="text-sm text-gray-500">January 15, 2025</div>
                     <Button variant="outline" size="sm">
                       Read More
                       <span className="ml-2">→</span>
                     </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
 
             {/* Cape Town Article Card */}
-            <Card className="overflow-hidden flex flex-col">
-              <div className="relative h-48">
-                <img
-                  src="/images/blog/sophie-pascarella-de-klerk-cape-town-view.jpg"
-                  alt="Cape Town Rental Property"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
-              <CardContent className="flex-1 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                  <Link href="/blog/introduction-to-investing-in-short-term-rentals-cape-town">
+            <Link href="/blog/introduction-to-investing-in-short-term-rentals-cape-town">
+              <Card className="overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
+                <div className="relative h-48">
+                  <img
+                    src="/images/blog/sophie-pascarella-de-klerk-cape-town-view.jpg"
+                    alt="Cape Town Rental Property"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                <CardContent className="flex-1 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
                     Introduction to Investing in Short-Term Rental Properties in
                     Cape Town
-                  </Link>
-                </h2>
-                <p className="text-gray-600 mb-4 text-sm line-clamp-3">
-                  Discover the opportunities and challenges of investing in Cape
-                  Town's thriving short-term rental market. Learn about location
-                  selection, property management, and ROI optimization.
-                </p>
-                <div className="mt-auto flex items-center justify-between">
-                  <div className="text-sm text-gray-500">December 28, 2024</div>
-                  <Link href="/blog/introduction-to-investing-in-short-term-rentals-cape-town">
+                  </h2>
+                  <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+                    Discover the opportunities and challenges of investing in Cape
+                    Town's thriving short-term rental market. Learn about location
+                    selection, property management, and ROI optimization.
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="text-sm text-gray-500">December 28, 2024</div>
                     <Button variant="outline" size="sm">
                       Read More
                       <span className="ml-2">→</span>
                     </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
 
             {/* Placeholder cards for future articles */}
             {[1, 2].map((i) => (
