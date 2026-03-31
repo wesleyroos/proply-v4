@@ -2701,7 +2701,7 @@ export function registerRoutes(app: Express): Server {
       const { propertyId } = req.params;
       console.log(`Generating PDF report for property ${propertyId}`);
       
-      const { PropdataPdfService } = await import('./services/propdataPdfService.js');
+      const { PropdataPdfShiftService: PropdataPdfService } = await import('./services/propdataPdfShiftService.js');
       const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
       
       // Log download activity
