@@ -12,6 +12,7 @@ import {
 import { eq, desc } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
+import sharp from "sharp";
 
 interface PropertyPdfData {
   property: any;
@@ -134,6 +135,20 @@ export class PropdataPdfShiftService {
       const buf  = Buffer.from(await res.arrayBuffer());
       const ct   = res.headers.get("content-type") || "image/jpeg";
       return `data:${ct.split(";")[0].trim()};base64,${buf.toString("base64")}`;
+    } catch { return null; }
+  }
+
+  // ─── Fetch, resize and compress image → small base64 JPEG ─────────────────
+  private async fetchCompressedImage(url: string, width = 800): Promise<string | null> {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const buf = Buffer.from(await res.arrayBuffer());
+      const compressed = await sharp(buf)
+        .resize({ width, withoutEnlargement: true })
+        .jpeg({ quality: 72, progressive: true })
+        .toBuffer();
+      return `data:image/jpeg;base64,${compressed.toString("base64")}`;
     } catch { return null; }
   }
 
@@ -358,12 +373,12 @@ export class PropdataPdfShiftService {
       .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; }
       .badge-green { background: var(--green-bg); color: #16a34a; }
 
-      /* ── Disclaimer ── */
-      .disclaimer-section { padding: 22px 42px; background: var(--surface); border-top: 1px solid var(--border); }
+      /* ── Disclaimer + Footer (last page) ── */
+      .last-page { break-before: always; page-break-before: always; display: flex; flex-direction: column; min-height: 220mm; }
+      .last-page-spacer { flex: 1; }
+      .disclaimer-section { padding: 22px 42px 18px; background: var(--surface); border-top: 1px solid var(--border); }
       .disclaimer-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); margin-bottom: 8px; }
       .disclaimer-text { font-size: 9px; color: var(--label); line-height: 1.8; }
-
-      /* ── Footer ── */
       .report-footer {
         display: flex; align-items: center; justify-content: space-between;
         padding: 13px 42px; border-top: 1px solid var(--border);
@@ -403,7 +418,7 @@ export class PropdataPdfShiftService {
     const apprRate   = rd?.annualPropertyAppreciationData?.finalAppreciationRate;
     const proj10yr   = rd?.annualPropertyAppreciationData?.yearlyValues?.year10;
 
-    // ── Map — use direct URL (PDFShift fetches it; avoids base64 bloat) ──
+    // ── Map — fetch and compress to keep PDF size small ──
     let mapContent = `<div class="media-placeholder">📍 Map unavailable</div>`;
     if (p.address) {
       try {
@@ -411,17 +426,21 @@ export class PropdataPdfShiftService {
         const geoData = await geoRes.json();
         if (geoData.results?.[0]?.geometry) {
           const { lat, lng } = geoData.results[0].geometry.location;
-          const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=400x280&format=jpg&maptype=roadmap&markers=color:0x1ba2ff%7C${lat},${lng}&key=${process.env.VITE_GOOGLE_MAPS_API_KEY}`;
-          mapContent = `<img src="${mapUrl}" alt="Map"/><div class="media-label">Location Map</div>`;
+          const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=600x400&format=jpg&maptype=roadmap&markers=color:0x1ba2ff%7C${lat},${lng}&key=${process.env.VITE_GOOGLE_MAPS_API_KEY}`;
+          const mapUri = await this.fetchCompressedImage(mapUrl, 600);
+          if (mapUri) mapContent = `<img src="${mapUri}" alt="Map"/><div class="media-label">Location Map</div>`;
         }
       } catch { /* placeholder */ }
     }
 
-    // ── Property image — use direct URL (PDFShift fetches it; avoids base64 bloat) ──
+    // ── Property image — fetch and compress to keep PDF size small ──
     let imgContent = `<div class="media-placeholder">🏠 No image available</div>`;
     const imageUrl = p.images?.[0] || p.imageUrls?.[0] || p.mainImage || p.primaryImage;
     if (imageUrl) {
-      imgContent = `<img src="${imageUrl}" alt="Property"/><div class="media-label">Property</div>`;
+      try {
+        const imgUri = await this.fetchCompressedImage(imageUrl, 800);
+        if (imgUri) imgContent = `<img src="${imgUri}" alt="Property"/><div class="media-label">Property</div>`;
+      } catch { /* placeholder */ }
     }
 
     // ── Agency logo (left, no box) ──
@@ -733,9 +752,12 @@ export class PropdataPdfShiftService {
 ${valuationHtml}
 ${rentalHtml}
 ${financialHtml}
-${detailsHtml}
-${disclaimerHtml}
-${footerHtml}
+<div class="last-page">
+  ${detailsHtml}
+  <div class="last-page-spacer"></div>
+  ${disclaimerHtml}
+  ${footerHtml}
+</div>
 
 </body>
 </html>`;
@@ -768,7 +790,7 @@ ${footerHtml}
         landscape: false,
         use_print: false,
         format:    "A4",
-        margin:    { top: "20mm", bottom: "16mm", left: "0mm", right: "0mm" },
+        margin:    { top: "28mm", bottom: "16mm", left: "0mm", right: "0mm" },
       }),
     });
 
