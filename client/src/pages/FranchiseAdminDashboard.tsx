@@ -170,7 +170,7 @@ export default function FranchiseAdminDashboard() {
                         </TableCell>
                         <TableCell>
                           <Button size="sm" variant="outline" asChild>
-                            <a href={`/properties`} target="_blank" rel="noopener noreferrer">
+                            <a href={`/report/${listing.propdata_id}`} target="_blank" rel="noopener noreferrer">
                               View
                             </a>
                           </Button>
