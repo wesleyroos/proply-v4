@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { db } from "../../db";
 import { adminInvitations, users, agencyBranches } from "../../db/schema";
-import { eq, and, isNull, gt } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { eq, and, isNull, gt, inArray } from "drizzle-orm";
 import { requireAdmin, requireRole } from "../auth";
 import { createId } from '@paralleldrive/cuid2';
 import { sendAdminInvitationEmail } from "../utils/admin-emails";
@@ -141,9 +140,6 @@ router.post("/", requireAdmin, async (req, res) => {
 // Get pending invitations
 router.get("/", requireAdmin, async (req, res) => {
   try {
-    const franchiseBranches = alias(agencyBranches, 'franchise_branches');
-    const branchBranches = alias(agencyBranches, 'branch_branches');
-
     const rows = await db
       .select({
         id: adminInvitations.id,
@@ -153,8 +149,6 @@ router.get("/", requireAdmin, async (req, res) => {
         role: adminInvitations.role,
         franchiseId: adminInvitations.franchiseId,
         branchId: adminInvitations.branchId,
-        franchiseName: franchiseBranches.franchiseName,
-        branchName: branchBranches.branchName,
         expiresAt: adminInvitations.expiresAt,
         usedAt: adminInvitations.usedAt,
         createdAt: adminInvitations.createdAt,
@@ -167,12 +161,30 @@ router.get("/", requireAdmin, async (req, res) => {
       })
       .from(adminInvitations)
       .leftJoin(users, eq(adminInvitations.invitedBy, users.id))
-      .leftJoin(franchiseBranches, eq(adminInvitations.franchiseId, franchiseBranches.id))
-      .leftJoin(branchBranches, eq(adminInvitations.branchId, branchBranches.id))
       .where(isNull(adminInvitations.usedAt))
       .orderBy(adminInvitations.createdAt);
 
-    res.json(rows);
+    // Enrich with branch/franchise names
+    const branchIds = [...new Set([
+      ...rows.map(r => r.franchiseId),
+      ...rows.map(r => r.branchId),
+    ].filter((id): id is number => id !== null))];
+
+    const branches = branchIds.length > 0
+      ? await db.select({ id: agencyBranches.id, franchiseName: agencyBranches.franchiseName, branchName: agencyBranches.branchName })
+          .from(agencyBranches)
+          .where(inArray(agencyBranches.id, branchIds))
+      : [];
+
+    const branchMap = new Map(branches.map(b => [b.id, b]));
+
+    const enriched = rows.map(r => ({
+      ...r,
+      franchiseName: r.franchiseId ? (branchMap.get(r.franchiseId)?.franchiseName ?? null) : null,
+      branchName: r.branchId ? (branchMap.get(r.branchId)?.branchName ?? null) : null,
+    }));
+
+    res.json(enriched);
   } catch (error) {
     console.error('Error fetching invitations:', error);
     res.status(500).json({ error: "Failed to fetch invitations" });
