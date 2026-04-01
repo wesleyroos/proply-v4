@@ -89,6 +89,16 @@ router.post("/", requireAdmin, async (req, res) => {
 
     // Send invitation email
     try {
+      let agencyName = 'Platform';
+      if (agencyId) {
+        const branch = await db
+          .select({ franchiseName: agencyBranches.franchiseName })
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, parseInt(agencyId)))
+          .limit(1);
+        agencyName = branch[0]?.franchiseName || 'Agency';
+      }
+
       await sendAdminInvitationEmail({
         email,
         firstName,
@@ -96,7 +106,7 @@ router.post("/", requireAdmin, async (req, res) => {
         role,
         token,
         expiresAt,
-        agencyName: agencyId ? 'Agency' : 'Platform', // TODO: Get actual agency name
+        agencyName,
         invitedBy: `${(req.user as any).firstName} ${(req.user as any).lastName}`,
       });
     } catch (emailError) {

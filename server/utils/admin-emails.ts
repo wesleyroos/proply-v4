@@ -25,7 +25,7 @@ export async function sendAdminInvitationEmail(data: AdminInvitationEmailData): 
   
   let baseUrl;
   if (isProduction) {
-    baseUrl = process.env.FRONTEND_URL || 'https://proply.co.za';
+    baseUrl = process.env.FRONTEND_URL || 'https://app.proply.co.za';
   } else if (replitDevDomain) {
     // In Replit development, use the dev domain
     baseUrl = `https://${replitDevDomain}`;

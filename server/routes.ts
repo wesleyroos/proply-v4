@@ -202,7 +202,8 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/api/property-analyzer/shared/") || // Public shared analysis
       req.path.startsWith("/api/properties/shared/") || // Public shared rent compare analysis
 
-      req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept") // Admin invitation acceptance
+      (req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept")) || // Admin invitation acceptance
+      (req.path.startsWith("/admin/invitations/") && req.method === "GET" && req.path.includes("/details")) // Admin invitation details (public)
     ) {
       return next();
     }
