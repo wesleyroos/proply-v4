@@ -292,12 +292,15 @@ interface AgencyDetailModalProps {
 }
 
 function AgencyColorPicker({ agencyId, agencyName, currentColor }: { agencyId: number; agencyName: string; currentColor?: string | null }) {
-  const [color, setColor] = useState(currentColor || "#1ba2ff");
+  const [color, setColor] = useState(currentColor || "");
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const isValid = /^#[0-9a-fA-F]{6}$/.test(color);
+
   const handleSave = async () => {
+    if (!isValid) return;
     setSaving(true);
     try {
       const res = await fetch(`/api/agencies/${agencyId}/primary-color`, {
@@ -318,26 +321,22 @@ function AgencyColorPicker({ agencyId, agencyName, currentColor }: { agencyId: n
 
   return (
     <div className="flex items-center gap-2">
-      <div
-        className="relative w-8 h-8 rounded-md border border-slate-200 overflow-hidden flex-shrink-0 cursor-pointer"
-        style={{ background: color }}
-        title="Pick brand color"
-      >
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-          className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-        />
-      </div>
+      <div className="w-6 h-6 rounded border border-slate-200 flex-shrink-0" style={{ background: isValid ? color : "#e2e8f0" }} />
+      <Input
+        value={color}
+        onChange={(e) => setColor(e.target.value)}
+        placeholder="#1ba2ff"
+        className="h-8 w-28 text-xs font-mono"
+        maxLength={7}
+      />
       <Button
         variant="outline"
         size="sm"
         onClick={handleSave}
-        disabled={saving}
+        disabled={saving || !isValid}
         className="h-8 text-xs"
       >
-        {saving ? "Saving…" : "Save Color"}
+        {saving ? "Saving…" : "Save"}
       </Button>
     </div>
   );
