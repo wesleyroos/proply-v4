@@ -353,34 +353,7 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
-    if (req.isAuthenticated()) {
-      const user = req.user;
-      const userData = {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        userType: user.userType,
-        company: user.company,
-        companyLogo: user.companyLogo,
-        subscriptionStatus: user.subscriptionStatus,
-        subscriptionExpiryDate: user.subscriptionExpiryDate,
-        isAdmin: user.isAdmin,
-        role: user.role,
-        branchId: user.branchId,
-        franchiseId: user.franchiseId,
-        pendingDowngrade: user.pendingDowngrade,
-        subscriptionStartDate: user.subscriptionStartDate,
-        subscriptionNextBillingDate: user.subscriptionNextBillingDate,
-        vatNumber: user.vatNumber,
-        registrationNumber: user.registrationNumber,
-        businessAddress: user.businessAddress
-      };
-      return res.json(userData);
-    }
-    res.status(401).send("Not logged in");
-  });
+  // GET /api/user is handled by the comprehensive endpoint in routes.ts (includes product flags, etc.)
 
   // Add new password reset endpoints
   app.post("/api/forgot-password", async (req, res) => {
