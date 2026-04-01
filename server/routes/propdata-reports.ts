@@ -2,12 +2,11 @@ import { Router } from 'express';
 import { PropdataPdfShiftService as PropdataPdfService } from '../services/propdataPdfShiftService';
 import { SimplePdfTest } from '../services/simplePdfTest';
 import { sendEmail, generatePropertyReportEmailTemplate } from '../services/emailService';
-import { createId } from '@paralleldrive/cuid2';
 import fs from 'fs/promises';
 import path from 'path';
 import { db } from '../../db';
 import { propdataListings, valuationReports, rentalPerformanceData, agencyBranches } from '../../db/schema';
-import { eq, sql, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { logReportActivity } from './report-activity';
 import { ReportMappingService } from '../services/reportMappingService';
 
@@ -123,28 +122,10 @@ router.post('/send/:propertyId', async (req, res) => {
       return res.status(404).json({ error: 'Property not found' });
     }
 
-    // PDF generation reads pre-saved financial data from database
-    console.log(`Reading pre-saved financial data for property ${propertyId}`);
-    
-    // Generate PDF using saved financial data
-    const pdfBuffer = await PropdataPdfService.generateReport(propertyId);
-    
-    // Create unique report ID and store PDF temporarily
-    const reportId = createId();
-    await ensureTempDirectory();
-    
-    // Store mapping between report ID and property ID for activity tracking
-    ReportMappingService.storeReportMapping(reportId, propertyId);
-    
+    // Link to the web preview page (recipient clicks to view report and download PDF)
+    const baseUrl = process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : '';
+    const downloadUrl = `${baseUrl}/report/${propertyId}`;
     const filename = `Proply_Report_${propertyId}_${new Date().toISOString().split('T')[0]}.pdf`;
-    const filePath = path.join(PDF_STORAGE_PATH, `${reportId}.pdf`);
-    
-    // Save PDF to temporary storage
-    await fs.writeFile(filePath, pdfBuffer);
-    
-    // Create download URL - always use HTTPS and redirect to success page
-    const baseUrl = process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : 'https://a4d7da24-d166-4fff-8662-9d0679a39a39-00-1pwkvx9mwpc4.picard.replit.dev';
-    const downloadUrl = `${baseUrl}/download/${reportId}`;
     
     // Send email using the new email service
     const emailHtml = generatePropertyReportEmailTemplate(
@@ -189,16 +170,10 @@ router.post('/send/:propertyId', async (req, res) => {
       return res.status(500).json({ error: 'Failed to send some emails' });
     }
     
-    // Note: File cleanup handled by periodic cleanup job or manual deletion
-    // 30 days = 2,592,000,000ms which exceeds Node.js setTimeout max (2^31-1 = 2,147,483,647ms)
-    console.log(`PDF stored at: ${filePath} - expires after 30 days`);
-    
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Report generated and sent successfully',
-      reportId,
       downloadUrl,
-      expiresIn: '30 days'
     });
     
   } catch (error) {
@@ -286,44 +261,11 @@ router.get('/download/:reportId', async (req, res) => {
 });
 
 
-// Create a preview session for a property (no email sent) — returns a reportId + URL
-router.post('/create-preview/:propertyId', async (req, res) => {
+// Public endpoint — returns all data needed to render the web report preview page
+router.get('/report-data/:propertyId', async (req, res) => {
   try {
     const { propertyId } = req.params;
     if (!propertyId) return res.status(400).json({ error: 'Property ID is required' });
-
-    const reportId = createId();
-    ReportMappingService.storeReportMapping(reportId, propertyId);
-
-    // Persist to DB so mapping survives server restarts
-    try {
-      await logReportActivity({
-        propertyId,
-        reportId,
-        activityType: 'sent',
-        recipientEmail: 'preview',
-        ipAddress: req.ip || 'unknown',
-        userAgent: req.get('User-Agent') || 'unknown',
-      });
-    } catch { /* non-critical */ }
-
-    const baseUrl = process.env.NODE_ENV === 'production' ? 'https://app.proply.co.za' : '';
-    const previewUrl = `${baseUrl}/download/${reportId}`;
-
-    res.json({ reportId, previewUrl });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create preview' });
-  }
-});
-
-// Public endpoint — returns all data needed to render the web preview page
-router.get('/preview-data/:reportId', async (req, res) => {
-  try {
-    const { reportId } = req.params;
-    if (!reportId) return res.status(400).json({ error: 'Report ID is required' });
-
-    const propertyId = await ReportMappingService.getPropertyIdFromReportId(reportId);
-    if (!propertyId) return res.status(404).json({ error: 'Report not found' });
 
     const property = await db.query.propdataListings.findFirst({
       where: eq(propdataListings.propdataId, propertyId)
@@ -394,7 +336,7 @@ router.get('/preview-data/:reportId', async (req, res) => {
       } : null,
     });
   } catch (error) {
-    console.error('Error fetching preview data:', error);
+    console.error('Error fetching report data:', error);
     res.status(500).json({ error: 'Failed to fetch report data' });
   }
 });

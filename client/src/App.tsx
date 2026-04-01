@@ -54,8 +54,7 @@ import OnevapRiskIndexPage from "./pages/OnevapRiskIndexPage";
 import OnevapResidentialRiskIndexPage from "./pages/OnevapResidentialRiskIndexPage";
 import AgentsPage from "./pages/AgentsPage";
 import PropdataListingsPage from "./pages/PropdataListingsPage";
-import DownloadSuccessPage from "./pages/DownloadSuccessPage";
-import PropertyReportPage from "./pages/PropertyReportPage";
+import ReportPreviewPage from "./pages/ReportPreviewPage";
 import AcceptInvitationPage from "./pages/AcceptInvitationPage";
 
 
@@ -258,8 +257,8 @@ function App() {
                 <AgentsPage />
               </PageTransition>
             )} />
-            <Route path="/download/:reportId" component={() => (
-              <PropertyReportPage />
+            <Route path="/report/:propertyId" component={() => (
+              <ReportPreviewPage />
             )} />
             <Route path="/admin/accept-invitation" component={() => (
               <PageTransition>

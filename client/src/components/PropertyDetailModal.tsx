@@ -1235,20 +1235,9 @@ export default function PropertyDetailModal({
     setShowSendReportDialog(true);
   };
 
-  const handlePreviewReport = async () => {
+  const handlePreviewReport = () => {
     if (!property) return;
-    try {
-      const res = await fetch(`/api/propdata-reports/create-preview/${property.propdataId}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to create preview");
-      const { previewUrl } = await res.json();
-      window.open(previewUrl, "_blank");
-    } catch (error) {
-      console.error("Error opening preview:", error);
-      alert("Failed to open preview. Please try again.");
-    }
+    window.open(`/report/${property.propdataId}`, "_blank");
   };
 
   const handleConfirmSendReport = async () => {
