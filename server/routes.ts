@@ -123,6 +123,7 @@ import propdataReportsRouter from './routes/propdata-reports';
 import reportActivityRouter from './routes/report-activity';
 import adminInvitationsRouter from './routes/admin-invitations';
 import branchAdminRouter from './routes/branch-admin';
+import franchiseAdminRouter from './routes/franchise-admin';
 import agencyProfileRouter from './routes/agency-profile';
 
 // Extend Express.User to include our schema
@@ -2696,6 +2697,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api', agenciesRouter);
   app.use('/api/admin/invitations', adminInvitationsRouter);
   app.use('/api', branchAdminRouter);
+  app.use('/api/franchise', franchiseAdminRouter);
   app.use('/api', agencyProfileRouter);
   app.use('/api/propdata-debug', propdataDebugRouter);
   // PDF reports routes - integrated directly to avoid Vite routing conflicts
