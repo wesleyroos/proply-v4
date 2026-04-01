@@ -43,10 +43,11 @@ const invitationSchema = z.object({
 type InvitationForm = z.infer<typeof invitationSchema>;
 
 interface Agency {
-  id: number;
+  id: string;
   franchiseName: string;
   branchName: string;
   slug: string;
+  mainBranchId: number | null;
 }
 
 interface AdminInvitationModalProps {
@@ -90,15 +91,16 @@ export function AdminInvitationModal({ trigger, onSuccess, open: controlledOpen,
 
   const invitationMutation = useMutation({
     mutationFn: async (data: InvitationForm) => {
-      const selectedAgency = agencies?.find(a => a.id.toString() === data.agencyId);
+      const selectedAgency = agencies?.find(a => a.id === data.agencyId);
       if (!selectedAgency) throw new Error("Agency not found");
+      if (!selectedAgency.mainBranchId) throw new Error("Agency has no branch configured");
 
       const payload = {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
         role: data.role,
-        agencyId: data.agencyId,
+        agencyId: selectedAgency.mainBranchId.toString(),
       };
 
       const response = await fetch("/api/admin/invitations", {
