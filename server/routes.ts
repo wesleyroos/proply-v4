@@ -256,11 +256,17 @@ export function registerRoutes(app: Express): Server {
       let productRentCompareEnabled = false;
       const agencyBranchId = user.franchiseId || user.branchId;
       if (agencyBranchId && (user.role === 'franchise_admin' || user.role === 'branch_admin')) {
-        const branch = await db.query.agencyBranches.findFirst({
-          where: eq(agencyBranches.id, agencyBranchId)
-        });
+        const [branch] = await db
+          .select({
+            productAnalyzerEnabled: agencyBranches.productAnalyzerEnabled,
+            productRentCompareEnabled: agencyBranches.productRentCompareEnabled,
+          })
+          .from(agencyBranches)
+          .where(eq(agencyBranches.id, agencyBranchId))
+          .limit(1);
         productAnalyzerEnabled = branch?.productAnalyzerEnabled ?? false;
         productRentCompareEnabled = branch?.productRentCompareEnabled ?? false;
+        console.log(`Product flags for branch ${agencyBranchId}:`, { productAnalyzerEnabled, productRentCompareEnabled });
       }
 
       // Return user data with role-based fields
@@ -3308,38 +3314,27 @@ export function registerRoutes(app: Express): Server {
         .groupBy(reportGenerations.reportType)
         .orderBy(sql`COUNT(*) DESC`);
 
-      // Get invoice history from persistent agency_invoices table
+      // Get invoice history from agency_invoices table (using actual schema)
       const invoicesQuery = await db.execute(
-        sql`SELECT 
-          ai.id,
-          ai.invoice_number,
-          abc.billing_period,
-          abc.report_count,
-          ai.total_amount,
-          ai.issue_date,
-          ai.status,
-          ai.paid_at
-        FROM agency_invoices ai 
-        INNER JOIN agency_billing_cycles abc ON ai.billing_cycle_id = abc.id
-        WHERE ai.agency_branch_id = ${agencyBranch.id}
-        ORDER BY ai.issue_date DESC`
+        sql`SELECT id, invoice_id, month, year, report_count, amount, invoice_date, status, paid_at
+            FROM agency_invoices
+            WHERE agency_id = ${agencyIdentifier} OR agency_name = ${agencyName}
+            ORDER BY invoice_date DESC`
       );
 
       const invoices = invoicesQuery.rows.map((invoice: any) => {
-        // Parse billing period to get month name
-        const [year, month] = invoice.billing_period.split('-');
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthName = `${monthNames[parseInt(month) - 1]} ${year}`;
-        
+        const monthName = `${monthNames[parseInt(invoice.month) - 1]} ${invoice.year}`;
+        const billingPeriod = `${invoice.year}-${String(invoice.month).padStart(2, '0')}`;
         return {
-          id: invoice.invoice_number,
-          month: invoice.billing_period,
+          id: invoice.invoice_id,
+          month: billingPeriod,
           monthName,
           reportCount: invoice.report_count,
-          amount: parseFloat(invoice.total_amount),
-          invoiceDate: new Date(invoice.issue_date).toISOString().split('T')[0],
+          amount: parseFloat(invoice.amount),
+          invoiceDate: new Date(invoice.invoice_date).toISOString().split('T')[0],
           status: invoice.status === 'pending' ? 'upcoming' : invoice.status,
-          dueDate: new Date(invoice.issue_date).toISOString().split('T')[0] // Use issue date as billing date
+          dueDate: new Date(invoice.invoice_date).toISOString().split('T')[0],
         };
       });
 
