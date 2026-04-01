@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import PropertyMap from "../components/PropertyMap";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -92,6 +93,50 @@ function MiniCard({ label, value, sub, valueColor }: { label: string; value: str
       <div className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1.5">{label}</div>
       <div className="text-[15px] font-bold leading-tight" style={{ color: valueColor || "#0d1b2a" }}>{value}</div>
       {sub && <div className="text-[11px] text-slate-400 mt-1">{sub}</div>}
+    </div>
+  );
+}
+
+// ─── Image Gallery ────────────────────────────────────────────────────────────
+function ImageGallery({ images }: { images: string[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const mainImg = images[activeIndex];
+  const thumbs = images.slice(0, 5);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="relative w-full rounded-xl overflow-hidden bg-slate-100" style={{ aspectRatio: "16/10" }}>
+        <img src={mainImg} alt="Property" className="w-full h-full object-cover" />
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={() => setActiveIndex((i) => (i - 1 + images.length) % images.length)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors text-sm"
+            >‹</button>
+            <button
+              onClick={() => setActiveIndex((i) => (i + 1) % images.length)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors text-sm"
+            >›</button>
+            <div className="absolute bottom-2 right-2 bg-black/40 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+              {activeIndex + 1} / {images.length}
+            </div>
+          </>
+        )}
+      </div>
+      {thumbs.length > 1 && (
+        <div className="grid grid-cols-5 gap-1">
+          {thumbs.map((img, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              className={`rounded-lg overflow-hidden border-2 transition-all ${i === activeIndex ? "border-slate-700 opacity-100" : "border-transparent opacity-60 hover:opacity-90"}`}
+              style={{ aspectRatio: "1" }}
+            >
+              <img src={img} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -303,6 +348,29 @@ export default function ReportPreviewPage() {
                 <StatPill label="Appreciation Rate" value={`${apprRate}% / yr`} sub="Annual estimate" accent="#7c3aed" />
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* ── Images + Map ── */}
+      {(p.images?.length || p.address) && (
+        <section className="bg-white border-b border-slate-200">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Images */}
+              {p.images && p.images.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <ImageGallery images={p.images as string[]} />
+                </div>
+              )}
+              {/* Map */}
+              <div className={p.images && p.images.length > 0 ? "h-full min-h-[260px]" : "h-80"}>
+                <PropertyMap
+                  address={p.address}
+                  mapClassName="w-full h-full rounded-xl overflow-hidden border border-slate-100"
+                />
+              </div>
+            </div>
           </div>
         </section>
       )}
