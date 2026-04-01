@@ -1,288 +1,182 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useUser, usePermissions } from "@/hooks/use-user";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Building2,
-  Users,
-  FileText,
-  DollarSign,
-  TrendingUp,
-  Calendar,
-  Mail,
-  BarChart3,
-  AlertCircle,
-  CheckCircle,
-  Loader2,
-} from "lucide-react";
-import { format } from "date-fns";
+import { Progress } from "@/components/ui/progress";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Building2, FileText, TrendingUp, AlertCircle, CheckCircle, Send, Download, Loader2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
-interface FranchiseMetrics {
-  totalBranches: number;
-  totalAgents: number;
-  reportsGenerated: number;
-  totalRevenue: number;
-  monthlyGrowth: number;
-}
-
-interface BranchPerformance {
-  id: number;
-  branchName: string;
-  agentCount: number;
-  reportsThisMonth: number;
-  revenue: number;
-  lastActivity: string;
-  status: 'active' | 'inactive' | 'warning';
-}
-
-interface RecentActivity {
-  id: number;
-  type: 'report_generated' | 'agent_added' | 'billing_update';
-  description: string;
-  branchName: string;
-  timestamp: string;
-  status: 'success' | 'warning' | 'error';
+function StatCard({ title, value, sub, icon: Icon }: { title: string; value: React.ReactNode; sub?: string; icon: React.ElementType }) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function FranchiseAdminDashboard() {
   const { user } = useUser();
   const { isFranchiseAdmin } = usePermissions();
+  const fid = user?.franchiseId;
 
-  // Redirect if not franchise admin
   if (!isFranchiseAdmin()) {
     return (
       <div className="p-8">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-destructive">Access denied. Franchise admin privileges required.</p>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="pt-6"><p className="text-destructive">Access denied.</p></CardContent></Card>
       </div>
     );
   }
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery<FranchiseMetrics>({
-    queryKey: ["/api/franchise/metrics", user?.franchiseId],
-    queryFn: async () => {
-      const response = await fetch(`/api/franchise/${user?.franchiseId}/metrics`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to fetch metrics");
-      return response.json();
-    },
-    enabled: !!user?.franchiseId,
+  const fetchOpts = { credentials: "include" as const };
+
+  const { data: metrics, isLoading: metricsLoading } = useQuery({
+    queryKey: ["/api/franchise/metrics", fid],
+    queryFn: () => fetch(`/api/franchise/${fid}/metrics`, fetchOpts).then(r => r.json()),
+    enabled: !!fid,
   });
 
-  const { data: branches, isLoading: branchesLoading } = useQuery<BranchPerformance[]>({
-    queryKey: ["/api/franchise/branches", user?.franchiseId],
-    queryFn: async () => {
-      const response = await fetch(`/api/franchise/${user?.franchiseId}/branches`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to fetch branches");
-      return response.json();
-    },
-    enabled: !!user?.franchiseId,
+  const { data: noReports = [], isLoading: noReportsLoading } = useQuery<any[]>({
+    queryKey: ["/api/franchise/listings-without-reports", fid],
+    queryFn: () => fetch(`/api/franchise/${fid}/listings-without-reports`, fetchOpts).then(r => r.json()),
+    enabled: !!fid,
   });
 
-  const { data: recentActivity, isLoading: activityLoading } = useQuery<RecentActivity[]>({
-    queryKey: ["/api/franchise/activity", user?.franchiseId],
-    queryFn: async () => {
-      const response = await fetch(`/api/franchise/${user?.franchiseId}/activity`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to fetch activity");
-      return response.json();
-    },
-    enabled: !!user?.franchiseId,
+  const { data: leaderboard = [], isLoading: leaderboardLoading } = useQuery<any[]>({
+    queryKey: ["/api/franchise/agent-leaderboard", fid],
+    queryFn: () => fetch(`/api/franchise/${fid}/agent-leaderboard`, fetchOpts).then(r => r.json()),
+    enabled: !!fid,
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'warning': return 'bg-yellow-100 text-yellow-800';
-      case 'inactive': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const { data: activity = [], isLoading: activityLoading } = useQuery<any[]>({
+    queryKey: ["/api/franchise/activity", fid],
+    queryFn: () => fetch(`/api/franchise/${fid}/activity`, fetchOpts).then(r => r.json()),
+    enabled: !!fid,
+  });
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'report_generated': return <FileText className="w-4 h-4" />;
-      case 'agent_added': return <Users className="w-4 h-4" />;
-      case 'billing_update': return <DollarSign className="w-4 h-4" />;
-      default: return <AlertCircle className="w-4 h-4" />;
-    }
-  };
+  const { data: chartData = [] } = useQuery<any[]>({
+    queryKey: ["/api/franchise/reports-per-month", fid],
+    queryFn: () => fetch(`/api/franchise/${fid}/reports-per-month`, fetchOpts).then(r => r.json()),
+    enabled: !!fid,
+  });
 
   if (metricsLoading) {
     return (
-      <div className="p-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin" />
-        </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
+  const coveragePct = metrics?.coveragePct ?? 0;
+
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Franchise Dashboard</h1>
-          <p className="text-muted-foreground">
-            Overview and management for all franchise locations
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Building2 className="w-3 h-3" />
-            Franchise Admin
-          </Badge>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p className="text-muted-foreground text-sm">Your Proply report overview</p>
       </div>
 
-      {/* Metrics Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Branches</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics?.totalBranches || 0}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Agents</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics?.totalAgents || 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reports Generated</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics?.reportsGenerated || 0}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              R{metrics?.totalRevenue?.toLocaleString() || 0}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Growth</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {metrics?.monthlyGrowth ? `+${metrics.monthlyGrowth}%` : '0%'}
-            </div>
-            <p className="text-xs text-muted-foreground">vs last month</p>
-          </CardContent>
-        </Card>
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Active Listings" value={metrics?.activeListings ?? 0} icon={Building2} />
+        <StatCard title="Reports Generated" value={metrics?.totalReports ?? 0} sub="All time" icon={FileText} />
+        <StatCard title="This Month" value={metrics?.reportsThisMonth ?? 0} sub="Reports generated" icon={TrendingUp} />
+        <StatCard
+          title="Report Coverage"
+          value={`${coveragePct}%`}
+          sub={`${metrics?.listingsWithReport ?? 0} of ${metrics?.activeListings ?? 0} active listings`}
+          icon={CheckCircle}
+        />
       </div>
 
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="branches" className="space-y-4">
+      {/* Coverage bar */}
+      <Card>
+        <CardContent className="pt-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Report coverage across active listings</span>
+            <span className="text-sm text-muted-foreground">{coveragePct}%</span>
+          </div>
+          <Progress value={coveragePct} className="h-3" />
+          <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-500" /> {metrics?.listingsWithReport ?? 0} with report</span>
+            <span className="flex items-center gap-1"><AlertCircle className="w-3 h-3 text-orange-400" /> {metrics?.listingsWithoutReport ?? 0} missing</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="missing" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="branches">Branch Performance</TabsTrigger>
+          <TabsTrigger value="missing">Missing Reports ({metrics?.listingsWithoutReport ?? 0})</TabsTrigger>
+          <TabsTrigger value="agents">Agent Leaderboard</TabsTrigger>
           <TabsTrigger value="activity">Recent Activity</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="billing">Billing Overview</TabsTrigger>
+          <TabsTrigger value="chart">Reports Over Time</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="branches" className="space-y-4">
+        {/* Listings without reports */}
+        <TabsContent value="missing">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Branch Performance
+              <CardTitle className="flex items-center gap-2 text-base">
+                <AlertCircle className="w-4 h-4 text-orange-400" />
+                Active listings without a Proply report
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {branchesLoading ? (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="w-6 h-6 animate-spin" />
+              {noReportsLoading ? (
+                <div className="flex justify-center p-6"><Loader2 className="w-5 h-5 animate-spin" /></div>
+              ) : noReports.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-500" />
+                  All active listings have reports. Great work!
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Branch Name</TableHead>
-                      <TableHead>Agents</TableHead>
-                      <TableHead>Reports (Month)</TableHead>
-                      <TableHead>Revenue</TableHead>
-                      <TableHead>Last Activity</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>Address</TableHead>
+                      <TableHead>Agent</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Listed</TableHead>
+                      <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {branches?.map((branch) => (
-                      <TableRow key={branch.id}>
-                        <TableCell className="font-medium">
-                          {branch.branchName}
+                    {noReports.map((listing: any) => (
+                      <TableRow key={listing.propdata_id}>
+                        <TableCell className="font-medium max-w-[200px] truncate">{listing.address}</TableCell>
+                        <TableCell className="text-sm">{listing.agent_name || "—"}</TableCell>
+                        <TableCell className="text-sm">{listing.property_type || "—"}</TableCell>
+                        <TableCell className="text-sm">
+                          {listing.price ? `R${Number(listing.price).toLocaleString()}` : "—"}
                         </TableCell>
-                        <TableCell>{branch.agentCount}</TableCell>
-                        <TableCell>{branch.reportsThisMonth}</TableCell>
-                        <TableCell>R{branch.revenue.toLocaleString()}</TableCell>
-                        <TableCell>
-                          {format(new Date(branch.lastActivity), "MMM d, yyyy")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(branch.status)}>
-                            {branch.status}
-                          </Badge>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {listing.listing_date
+                            ? formatDistanceToNow(new Date(listing.listing_date), { addSuffix: true })
+                            : "—"}
                         </TableCell>
                         <TableCell>
-                          <Button size="sm" variant="outline">
-                            View Details
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={`/properties`} target="_blank" rel="noopener noreferrer">
+                              View
+                            </a>
                           </Button>
                         </TableCell>
                       </TableRow>
-                    )) || (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8">
-                          No branch data available
-                        </TableCell>
-                      </TableRow>
-                    )}
+                    ))}
                   </TableBody>
                 </Table>
               )}
@@ -290,84 +184,107 @@ export default function FranchiseAdminDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="activity" className="space-y-4">
+        {/* Agent leaderboard */}
+        <TabsContent value="agents">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Recent Activity
-              </CardTitle>
+              <CardTitle className="text-base">Agent Report Coverage</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {leaderboardLoading ? (
+                <div className="flex justify-center p-6"><Loader2 className="w-5 h-5 animate-spin" /></div>
+              ) : leaderboard.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">No agent data yet</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Agent</TableHead>
+                      <TableHead>Active Listings</TableHead>
+                      <TableHead>Reports</TableHead>
+                      <TableHead>Coverage</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {leaderboard.map((agent: any, i: number) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium">{agent.agent_name}</TableCell>
+                        <TableCell>{agent.active_listings}</TableCell>
+                        <TableCell>{agent.reports_generated}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Progress value={parseInt(agent.coverage_pct)} className="h-2 w-20" />
+                            <span className="text-sm">{agent.coverage_pct}%</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Recent activity */}
+        <TabsContent value="activity">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Recent Report Activity</CardTitle>
             </CardHeader>
             <CardContent>
               {activityLoading ? (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                </div>
+                <div className="flex justify-center p-6"><Loader2 className="w-5 h-5 animate-spin" /></div>
+              ) : activity.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">No activity yet</p>
               ) : (
-                <div className="space-y-4">
-                  {recentActivity?.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                      <div className="mt-1">
-                        {getActivityIcon(activity.type)}
+                <div className="space-y-3">
+                  {activity.map((item: any) => (
+                    <div key={item.id} className="flex items-center gap-3 py-2 border-b last:border-0">
+                      <div className="flex-shrink-0">
+                        {item.activity_type === "sent"
+                          ? <Send className="w-4 h-4 text-blue-500" />
+                          : <Download className="w-4 h-4 text-green-500" />}
                       </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{activity.description}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {activity.branchName} • {format(new Date(activity.timestamp), "MMM d, h:mm a")}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.address}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.activity_type === "sent"
+                            ? `Sent to ${item.recipient_email}`
+                            : "Downloaded"}
+                          {item.agent_name ? ` · ${item.agent_name}` : ""}
                         </p>
                       </div>
-                      <Badge variant={activity.status === 'success' ? 'default' : 'destructive'}>
-                        {activity.status}
-                      </Badge>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
+                        {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
+                      </span>
                     </div>
-                  )) || (
-                    <div className="text-center py-8">
-                      <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">No recent activity</p>
-                    </div>
-                  )}
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-4">
+        {/* Chart */}
+        <TabsContent value="chart">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Franchise Analytics
-              </CardTitle>
+              <CardTitle className="text-base">Reports Generated Per Month</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <BarChart3 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Advanced analytics coming soon</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Detailed performance charts and insights across all branches
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="billing" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5" />
-                Billing Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <DollarSign className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Detailed billing reports coming soon</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Track costs and usage across all franchise locations
-                </p>
-              </div>
+              {chartData.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">No report data yet</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Bar dataKey="reports" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
