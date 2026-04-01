@@ -82,8 +82,10 @@ class AutoSyncService {
     try {
       console.log("Starting automated quick sync...");
 
-      const listingsClient = new ListingsClient();
-      const agentsClient = new AgentsClient();
+      // ── PropData sync (isolated — failure must not prevent Prospr sync) ──
+      try {
+        const listingsClient = new ListingsClient();
+        const agentsClient = new AgentsClient();
 
       // Get timestamp of most recent listing for incremental sync
       const [latestListing] = await db
@@ -288,7 +290,12 @@ class AutoSyncService {
 
       console.log(`PropData quick sync completed: ${newCount} new, ${updatedCount} updated, ${errorCount} errors`);
 
-      // Also sync any active Prospr agencies
+      } catch (propdataErr) {
+        console.error("PropData quick sync failed:", propdataErr);
+        errorCount++;
+      }
+
+      // Sync active Prospr agencies (always runs, independent of PropData)
       try {
         const prosprResult = await this.syncProsprListings();
         newCount += prosprResult.newListings;
