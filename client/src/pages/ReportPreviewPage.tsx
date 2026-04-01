@@ -3,9 +3,8 @@ import PropertyMap from "../components/PropertyMap";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
-  AreaChart,
+  ComposedChart,
   Area,
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -243,7 +242,7 @@ export default function ReportPreviewPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             {branch?.logoUrl && (
-              <img src={branch.logoUrl} alt={branch.franchiseName} className="h-7 w-auto object-contain flex-shrink-0" />
+              <img src={branch.logoUrl} alt={branch.franchiseName} className="h-10 w-auto object-contain flex-shrink-0" />
             )}
             <div className="hidden sm:flex flex-col min-w-0">
               <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 leading-none">
@@ -558,7 +557,7 @@ export default function ReportPreviewPage() {
                 <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Equity Build-up vs. Remaining Balance</h3>
                 <p className="text-xs text-slate-400 mb-4">Loan paydown and equity accumulation over the mortgage term</p>
                 <ResponsiveContainer width="100%" height={220}>
-                  <AreaChart data={equityChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <ComposedChart data={equityChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={accentColor} stopOpacity={0.15} />
@@ -577,7 +576,7 @@ export default function ReportPreviewPage() {
                     <Legend wrapperStyle={{ fontSize: 12, color: "#64748b" }} formatter={(value) => value === "equity" ? "Equity Built" : "Remaining Balance"} />
                     <Area type="monotone" dataKey="equity" stroke={accentColor} strokeWidth={2.5} fill="url(#equityGrad)" dot={{ r: 3, fill: "white", stroke: accentColor, strokeWidth: 2 }} />
                     <Line type="monotone" dataKey="balance" stroke="#94a3b8" strokeWidth={2.5} dot={{ r: 3, fill: "white", stroke: "#94a3b8", strokeWidth: 2 }} />
-                  </AreaChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             )}

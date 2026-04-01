@@ -135,6 +135,7 @@ router.get("/agencies", async (req, res) => {
             errorMessage: lastSync.errorMessage
           } : null,
           logoUrl: mainBranch?.logoUrl || null,
+          primaryColor: mainBranch?.primaryColor || null,
           franchiseName: mainBranch?.franchiseName || franchise.name,
           branchName: mainBranch?.branchName || null,
           mainBranchId: mainBranch?.id || null,
@@ -628,6 +629,40 @@ router.delete("/agencies/:agencyId/logo", async (req, res) => {
       error: "Failed to remove logo", 
       details: error instanceof Error ? error.message : "Unknown error"
     });
+  }
+});
+
+// PATCH /api/agencies/:agencyId/primary-color - Set agency brand color
+router.patch("/agencies/:agencyId/primary-color", async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const agencyId = parseInt(req.params.agencyId);
+    if (isNaN(agencyId)) {
+      return res.status(400).json({ error: "Invalid agency ID" });
+    }
+
+    const { primaryColor } = req.body;
+    if (!primaryColor || typeof primaryColor !== 'string') {
+      return res.status(400).json({ error: "primaryColor is required" });
+    }
+
+    // Basic hex color validation
+    if (!/^#[0-9a-fA-F]{6}$/.test(primaryColor)) {
+      return res.status(400).json({ error: "Invalid color format. Use #RRGGBB" });
+    }
+
+    await db
+      .update(agencyBranches)
+      .set({ primaryColor, updatedAt: new Date() })
+      .where(eq(agencyBranches.id, agencyId));
+
+    return res.json({ success: true, primaryColor });
+  } catch (error) {
+    console.error("Error updating agency primary color:", error);
+    return res.status(500).json({ error: "Failed to update primary color" });
   }
 });
 

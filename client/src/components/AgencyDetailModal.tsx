@@ -232,6 +232,7 @@ interface Agency {
   status: 'active' | 'syncing' | 'error' | 'inactive';
   lastSync: string | null;
   logoUrl?: string | null;
+  primaryColor?: string | null;
   franchiseName?: string;
   branchName?: string;
   mainBranchId?: string;
@@ -288,6 +289,58 @@ interface AgencyDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStatsClick: (agencyName: string) => void;
+}
+
+function AgencyColorPicker({ agencyId, agencyName, currentColor }: { agencyId: number; agencyName: string; currentColor?: string | null }) {
+  const [color, setColor] = useState(currentColor || "#1ba2ff");
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/agencies/${agencyId}/primary-color`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ primaryColor: color }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      queryClient.invalidateQueries({ queryKey: ["/api/agencies"] });
+      toast({ title: "Brand color saved", description: `Primary color updated for ${agencyName}.` });
+    } catch {
+      toast({ title: "Save failed", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className="relative w-8 h-8 rounded-md border border-slate-200 overflow-hidden flex-shrink-0 cursor-pointer"
+        style={{ background: color }}
+        title="Pick brand color"
+      >
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+        />
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleSave}
+        disabled={saving}
+        className="h-8 text-xs"
+      >
+        {saving ? "Saving…" : "Save Color"}
+      </Button>
+    </div>
+  );
 }
 
 export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: AgencyDetailModalProps) {
@@ -684,11 +737,18 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                   </Button>
 
                   {agency.mainBranchId && (
-                    <AgencyLogoUpload
-                      agencyId={parseInt(agency.mainBranchId)}
-                      agencyName={agency.franchiseName || agency.name}
-                      currentLogoUrl={agency.logoUrl}
-                    />
+                    <>
+                      <AgencyLogoUpload
+                        agencyId={parseInt(agency.mainBranchId)}
+                        agencyName={agency.franchiseName || agency.name}
+                        currentLogoUrl={agency.logoUrl}
+                      />
+                      <AgencyColorPicker
+                        agencyId={parseInt(agency.mainBranchId)}
+                        agencyName={agency.franchiseName || agency.name}
+                        currentColor={agency.primaryColor}
+                      />
+                    </>
                   )}
                 </div>
               </CardContent>
