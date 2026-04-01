@@ -3217,11 +3217,12 @@ export function registerRoutes(app: Express): Server {
         }
         
         // For branch/franchise admins, verify they're accessing their own agency
-        if (user.branchId) {
+        const userBranchId = user.branchId || user.franchiseId;
+        if (userBranchId) {
           const userAgencyBranch = await db.query.agencyBranches.findFirst({
-            where: eq(agencyBranches.id, user.branchId)
+            where: eq(agencyBranches.id, userBranchId)
           });
-          
+
           if (!userAgencyBranch || userAgencyBranch.slug !== agencyId) {
             return res.status(403).json({ error: 'Access denied - can only view your own agency data' });
           }
@@ -3876,6 +3877,44 @@ export function registerRoutes(app: Express): Server {
             financingAnalysisData: financialData.financingAnalysisData,
           })
           .returning();
+
+        // Track usage for agency billing and report stats if property belongs to a branch
+        try {
+          const listing = await db.query.propdataListings.findFirst({
+            where: eq(propdataListings.propdataId, propertyId)
+          });
+          if (listing?.branchId) {
+            const branch = await db.query.agencyBranches.findFirst({
+              where: eq(agencyBranches.id, listing.branchId)
+            });
+
+            // Always write to reportGenerations so usage stats are visible
+            if (branch) {
+              await db.insert(reportGenerations).values({
+                agencyId: `${branch.franchiseName}-${branch.branchName}`,
+                agencyName: branch.franchiseName,
+                propertyId,
+                reportType: 'valuation',
+                userId: req.user.id,
+              });
+            }
+
+            // Only increment billing cycle if billing is enabled
+            const [billingSettings] = await db
+              .select()
+              .from(agencyBillingSettings)
+              .where(and(
+                eq(agencyBillingSettings.agencyBranchId, listing.branchId),
+                eq(agencyBillingSettings.billingEnabled, true)
+              ))
+              .limit(1);
+            if (billingSettings) {
+              await trackAgencyReportUsage(listing.branchId, req.user.id, address || propertyId);
+            }
+          }
+        } catch (billingError) {
+          console.error('Failed to track billing usage for valuation report:', billingError);
+        }
 
         res.json(newValuation);
       }
