@@ -98,6 +98,8 @@ export const agencyBranches = pgTable("agency_branches", {
   apiBaseUrl: text("api_base_url"), // Optional base URL override for direct integrations
   logoUrl: text("logo_url"), // Path to uploaded agency logo
   primaryColor: text("primary_color"), // Brand colour used in reports (e.g. "#1ba2ff")
+  productAnalyzerEnabled: boolean("product_analyzer_enabled").notNull().default(false),
+  productRentCompareEnabled: boolean("product_rent_compare_enabled").notNull().default(false),
   // Company information fields
   companyName: text("company_name"),
   vatNumber: text("vat_number"),

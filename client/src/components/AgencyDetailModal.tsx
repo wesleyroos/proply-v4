@@ -28,7 +28,9 @@ import {
   TrendingDown,
   Activity,
   TestTube,
+  ToggleLeft,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { AgencyLogoUpload } from "./AgencyLogoUpload";
@@ -233,6 +235,8 @@ interface Agency {
   lastSync: string | null;
   logoUrl?: string | null;
   primaryColor?: string | null;
+  productAnalyzerEnabled?: boolean;
+  productRentCompareEnabled?: boolean;
   franchiseName?: string;
   branchName?: string;
   mainBranchId?: string;
@@ -338,6 +342,68 @@ function AgencyColorPicker({ agencyId, agencyName, currentColor }: { agencyId: n
       >
         {saving ? "Saving…" : "Save"}
       </Button>
+    </div>
+  );
+}
+
+function AgencyProductToggles({ agencyId, agencyName, analyzerEnabled, rentCompareEnabled }: {
+  agencyId: number;
+  agencyName: string;
+  analyzerEnabled: boolean;
+  rentCompareEnabled: boolean;
+}) {
+  const [analyzer, setAnalyzer] = useState(analyzerEnabled);
+  const [rentCompare, setRentCompare] = useState(rentCompareEnabled);
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const save = async (nextAnalyzer: boolean, nextRentCompare: boolean) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/agencies/${agencyId}/products`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ productAnalyzerEnabled: nextAnalyzer, productRentCompareEnabled: nextRentCompare }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      queryClient.invalidateQueries({ queryKey: ["/api/agencies"] });
+      toast({ title: "Products updated", description: `Product access updated for ${agencyName}.` });
+    } catch {
+      toast({ title: "Save failed", variant: "destructive" });
+      // revert
+      setAnalyzer(analyzerEnabled);
+      setRentCompare(rentCompareEnabled);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggle = (product: "analyzer" | "rentCompare") => {
+    const nextAnalyzer = product === "analyzer" ? !analyzer : analyzer;
+    const nextRentCompare = product === "rentCompare" ? !rentCompare : rentCompare;
+    setAnalyzer(nextAnalyzer);
+    setRentCompare(nextRentCompare);
+    save(nextAnalyzer, nextRentCompare);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium">Property Analyzer</p>
+          <p className="text-xs text-muted-foreground">AI-powered investment analysis tool</p>
+        </div>
+        <Switch checked={analyzer} onCheckedChange={() => toggle("analyzer")} disabled={saving} />
+      </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium">Rent Compare</p>
+          <p className="text-xs text-muted-foreground">Rental market comparison tool</p>
+        </div>
+        <Switch checked={rentCompare} onCheckedChange={() => toggle("rentCompare")} disabled={saving} />
+      </div>
     </div>
   );
 }
@@ -752,6 +818,25 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                 </div>
               </CardContent>
             </Card>
+
+            {agency.mainBranchId && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <ToggleLeft className="h-4 w-4" />
+                    Products
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AgencyProductToggles
+                    agencyId={parseInt(agency.mainBranchId)}
+                    agencyName={agency.franchiseName || agency.name}
+                    analyzerEnabled={agency.productAnalyzerEnabled ?? false}
+                    rentCompareEnabled={agency.productRentCompareEnabled ?? false}
+                  />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="usage" className="mt-6 space-y-6">

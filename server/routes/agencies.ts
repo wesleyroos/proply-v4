@@ -136,6 +136,8 @@ router.get("/agencies", async (req, res) => {
           } : null,
           logoUrl: mainBranch?.logoUrl || null,
           primaryColor: mainBranch?.primaryColor || null,
+          productAnalyzerEnabled: mainBranch?.productAnalyzerEnabled ?? false,
+          productRentCompareEnabled: mainBranch?.productRentCompareEnabled ?? false,
           franchiseName: mainBranch?.franchiseName || franchise.name,
           branchName: mainBranch?.branchName || null,
           mainBranchId: mainBranch?.id || null,
@@ -663,6 +665,36 @@ router.patch("/agencies/:agencyId/primary-color", async (req, res) => {
   } catch (error) {
     console.error("Error updating agency primary color:", error);
     return res.status(500).json({ error: "Failed to update primary color" });
+  }
+});
+
+// PATCH /api/agencies/:agencyId/products - Toggle products for an agency
+router.patch("/agencies/:agencyId/products", async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const agencyId = parseInt(req.params.agencyId);
+    if (isNaN(agencyId)) {
+      return res.status(400).json({ error: "Invalid agency ID" });
+    }
+
+    const { productAnalyzerEnabled, productRentCompareEnabled } = req.body;
+
+    await db
+      .update(agencyBranches)
+      .set({
+        productAnalyzerEnabled: Boolean(productAnalyzerEnabled),
+        productRentCompareEnabled: Boolean(productRentCompareEnabled),
+        updatedAt: new Date(),
+      })
+      .where(eq(agencyBranches.id, agencyId));
+
+    return res.json({ success: true, productAnalyzerEnabled, productRentCompareEnabled });
+  } catch (error) {
+    console.error("Error updating agency products:", error);
+    return res.status(500).json({ error: "Failed to update products" });
   }
 });
 
