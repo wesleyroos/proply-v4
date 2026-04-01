@@ -733,6 +733,8 @@ export const rolePermissions = pgTable("role_permissions", {
 export const adminInvitations = pgTable("admin_invitations", {
   id: serial("id").primaryKey(),
   email: text("email").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
   role: text("role").notNull(),
   agencyId: text("agency_id"), // Store PropData agency ID as string
   franchiseId: integer("franchise_id").references(() => agencyBranches.id),

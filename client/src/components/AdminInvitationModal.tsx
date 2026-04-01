@@ -112,11 +112,19 @@ export function AdminInvitationModal({ trigger, onSuccess, open: controlledOpen,
       if (!response.ok) throw new Error(result.error || "Failed to send invitation");
       return result;
     },
-    onSuccess: () => {
-      toast({
-        title: "Invitation Sent",
-        description: "Admin invitation has been sent successfully.",
-      });
+    onSuccess: (result) => {
+      if (result.emailSent === false) {
+        toast({
+          title: "Invitation Created — Email Failed",
+          description: result.message || "Invitation saved but email could not be sent. Check server logs.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Invitation Sent",
+          description: "Admin invitation has been sent successfully.",
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/admin/invitations"] });
       form.reset();
       setOpen(false);

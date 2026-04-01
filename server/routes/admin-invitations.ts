@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "../../db";
 import { adminInvitations, users, agencyBranches } from "../../db/schema";
 import { eq, and, isNull, gt } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { requireAdmin, requireRole } from "../auth";
 import { createId } from '@paralleldrive/cuid2';
 import { sendAdminInvitationEmail } from "../utils/admin-emails";
@@ -75,12 +76,19 @@ router.post("/", requireAdmin, async (req, res) => {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 
+    // agencyId from the modal is the branch integer ID (from agencyBranches.id)
+    const branchIdInt = agencyId ? parseInt(agencyId) : null;
+
     const invitation = await db
       .insert(adminInvitations)
       .values({
         email,
+        firstName,
+        lastName,
         role,
         agencyId: agencyId || null,
+        franchiseId: role === 'franchise_admin' ? branchIdInt : null,
+        branchId: role === 'branch_admin' ? branchIdInt : null,
         token,
         invitedBy: (req.user as any).id,
         expiresAt,
@@ -88,34 +96,39 @@ router.post("/", requireAdmin, async (req, res) => {
       .returning();
 
     // Send invitation email
-    try {
-      let agencyName = 'Platform';
-      if (agencyId) {
-        const branch = await db
-          .select({ franchiseName: agencyBranches.franchiseName })
-          .from(agencyBranches)
-          .where(eq(agencyBranches.id, parseInt(agencyId)))
-          .limit(1);
-        agencyName = branch[0]?.franchiseName || 'Agency';
-      }
+    let agencyName = 'Platform';
+    if (branchIdInt) {
+      const branch = await db
+        .select({ franchiseName: agencyBranches.franchiseName })
+        .from(agencyBranches)
+        .where(eq(agencyBranches.id, branchIdInt))
+        .limit(1);
+      agencyName = branch[0]?.franchiseName || 'Agency';
+    }
 
-      await sendAdminInvitationEmail({
-        email,
-        firstName,
-        lastName,
-        role,
-        token,
-        expiresAt,
-        agencyName,
-        invitedBy: `${(req.user as any).firstName} ${(req.user as any).lastName}`,
+    const emailSent = await sendAdminInvitationEmail({
+      email,
+      firstName,
+      lastName,
+      role,
+      token,
+      expiresAt,
+      agencyName,
+      invitedBy: `${(req.user as any).firstName} ${(req.user as any).lastName}`,
+    });
+
+    if (!emailSent) {
+      console.error(`Invitation created but email failed to send to ${email}`);
+      return res.json({
+        message: "Invitation created but email failed to send. Check SENDGRID_API_KEY.",
+        emailSent: false,
+        invitation: invitation[0]
       });
-    } catch (emailError) {
-      console.error('Failed to send invitation email:', emailError);
-      // Don't fail the request if email fails, but log it
     }
 
     res.json({
       message: "Invitation sent successfully",
+      emailSent: true,
       invitation: invitation[0]
     });
 
@@ -128,13 +141,20 @@ router.post("/", requireAdmin, async (req, res) => {
 // Get pending invitations
 router.get("/", requireAdmin, async (req, res) => {
   try {
-    const invitations = await db
+    const franchiseBranches = alias(agencyBranches, 'franchise_branches');
+    const branchBranches = alias(agencyBranches, 'branch_branches');
+
+    const rows = await db
       .select({
         id: adminInvitations.id,
         email: adminInvitations.email,
+        firstName: adminInvitations.firstName,
+        lastName: adminInvitations.lastName,
         role: adminInvitations.role,
         franchiseId: adminInvitations.franchiseId,
         branchId: adminInvitations.branchId,
+        franchiseName: franchiseBranches.franchiseName,
+        branchName: branchBranches.branchName,
         expiresAt: adminInvitations.expiresAt,
         usedAt: adminInvitations.usedAt,
         createdAt: adminInvitations.createdAt,
@@ -147,10 +167,12 @@ router.get("/", requireAdmin, async (req, res) => {
       })
       .from(adminInvitations)
       .leftJoin(users, eq(adminInvitations.invitedBy, users.id))
+      .leftJoin(franchiseBranches, eq(adminInvitations.franchiseId, franchiseBranches.id))
+      .leftJoin(branchBranches, eq(adminInvitations.branchId, branchBranches.id))
       .where(isNull(adminInvitations.usedAt))
       .orderBy(adminInvitations.createdAt);
 
-    res.json(invitations);
+    res.json(rows);
   } catch (error) {
     console.error('Error fetching invitations:', error);
     res.status(500).json({ error: "Failed to fetch invitations" });
