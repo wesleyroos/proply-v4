@@ -277,10 +277,10 @@ export default function ReportPreviewPage() {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-12">
           {p.propertyType && (
             <span
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-              style={{ background: `${accentColor}30`, color: accentColor }}
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4 text-white"
+              style={{ background: "rgba(255,255,255,0.18)" }}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: accentColor }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
               {p.propertyType}
             </span>
           )}
