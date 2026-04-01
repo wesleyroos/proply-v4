@@ -43,35 +43,30 @@ export default function Sidebar() {
     },
   ];
 
-  // Add user-specific tools only for regular users and system admins (not agency admins)
-  if (
-    (user?.role === "user" || user?.isAdmin) &&
-    user?.role !== "franchise_admin" &&
-    user?.role !== "branch_admin"
-  ) {
+  const isAgencyAdmin = user?.role === "franchise_admin" || user?.role === "branch_admin";
+  const isRegularOrSysAdmin = (user?.role === "user" || user?.isAdmin) && !isAgencyAdmin;
+
+  // Regular/system admin users always get all tools
+  if (isRegularOrSysAdmin) {
     navItems.push(
-      {
-        title: "Property Analyzer",
-        icon: Calculator,
-        href: "/dashboard/property-analyzer",
-      },
-      {
-        title: "Rent Compare",
-        icon: Building2,
-        href: "/dashboard/rent-compare",
-      },
-      {
-        title: "Properties",
-        icon: Library,
-        href: "/properties",
-      },
-      {
-        title: "Deal Score",
-        icon: ExternalLink,
-        href: "https://dealscore.co.za",
-        external: true,
-      },
+      { title: "Property Analyzer", icon: Calculator, href: "/dashboard/property-analyzer" },
+      { title: "Rent Compare", icon: Building2, href: "/dashboard/rent-compare" },
+      { title: "Properties", icon: Library, href: "/properties" },
+      { title: "Deal Score", icon: ExternalLink, href: "https://dealscore.co.za", external: true },
     );
+  }
+
+  // Agency admins get tools based on their agency's product flags
+  if (isAgencyAdmin) {
+    if ((user as any)?.productAnalyzerEnabled) {
+      navItems.push({ title: "Property Analyzer", icon: Calculator, href: "/dashboard/property-analyzer" });
+    }
+    if ((user as any)?.productRentCompareEnabled) {
+      navItems.push({ title: "Rent Compare", icon: Building2, href: "/dashboard/rent-compare" });
+    }
+    if ((user as any)?.productAnalyzerEnabled || (user as any)?.productRentCompareEnabled) {
+      navItems.push({ title: "Properties", icon: Library, href: "/properties" });
+    }
   }
 
   // Add PropData Listings for all admin types

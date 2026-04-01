@@ -251,6 +251,18 @@ export function registerRoutes(app: Express): Server {
         .where(eq(users.id, req.user.id))
         .limit(1);
 
+      // Look up product flags from their agency branch
+      let productAnalyzerEnabled = false;
+      let productRentCompareEnabled = false;
+      const agencyBranchId = user.franchiseId || user.branchId;
+      if (agencyBranchId && (user.role === 'franchise_admin' || user.role === 'branch_admin')) {
+        const branch = await db.query.agencyBranches.findFirst({
+          where: eq(agencyBranches.id, agencyBranchId)
+        });
+        productAnalyzerEnabled = branch?.productAnalyzerEnabled ?? false;
+        productRentCompareEnabled = branch?.productRentCompareEnabled ?? false;
+      }
+
       // Return user data with role-based fields
       const normalizedUser = {
         ...user,
@@ -261,6 +273,8 @@ export function registerRoutes(app: Express): Server {
         vatNumber: user.vatNumber,
         registrationNumber: user.registrationNumber,
         businessAddress: user.businessAddress,
+        productAnalyzerEnabled,
+        productRentCompareEnabled,
       };
 
       console.log("Fetched user data:", {
