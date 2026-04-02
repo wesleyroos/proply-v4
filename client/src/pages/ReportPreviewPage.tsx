@@ -410,8 +410,9 @@ export default function ReportPreviewPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+      <section className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 py-6">
+        <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 sm:px-8 py-8">
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {p.propertyType && (
               <span
@@ -510,12 +511,14 @@ export default function ReportPreviewPage() {
             )}
           </div>
         </div>
+        </div>
       </section>
 
       {/* ── Key metrics strip ── */}
       {(ltrYieldRange || strYieldRange || apprRate) && (
-        <section className="bg-white border-b border-slate-200">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5 grid grid-cols-2 sm:grid-cols-3 divide-x divide-slate-100 gap-y-4">
+        <section className="bg-slate-50 px-4 sm:px-6 pb-6">
+          <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 sm:px-8 py-5 grid grid-cols-2 sm:grid-cols-3 divide-x divide-slate-100 gap-y-4">
             {ltrYieldRange && (
               <div className="px-4 first:pl-0">
                 <StatPill label="LTR Gross Yield" value={ltrYieldRange} sub="Long-term rental" accent={accentColor} />
@@ -532,26 +535,29 @@ export default function ReportPreviewPage() {
               </div>
             )}
           </div>
+          </div>
         </section>
       )}
 
       {/* ── Images + Map ── */}
       {(p.images?.length || p.address) && (
-        <section className="bg-white border-b border-slate-200">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Images */}
-              {p.images && p.images.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <ImageGallery images={p.images as string[]} />
+        <section className="bg-slate-50 px-4 sm:px-6 pb-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Images */}
+                {p.images && p.images.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <ImageGallery images={p.images as string[]} />
+                  </div>
+                )}
+                {/* Map */}
+                <div className={p.images && p.images.length > 0 ? "h-full min-h-[260px]" : "h-80"}>
+                  <PropertyMap
+                    address={p.address}
+                    mapClassName="w-full h-full rounded-xl overflow-hidden border border-slate-100"
+                  />
                 </div>
-              )}
-              {/* Map */}
-              <div className={p.images && p.images.length > 0 ? "h-full min-h-[260px]" : "h-80"}>
-                <PropertyMap
-                  address={p.address}
-                  mapClassName="w-full h-full rounded-xl overflow-hidden border border-slate-100"
-                />
               </div>
             </div>
           </div>
