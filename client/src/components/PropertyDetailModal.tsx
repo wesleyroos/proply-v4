@@ -378,22 +378,32 @@ export default function PropertyDetailModal({
   // Auto-initialize selection (deselect outliers) when comparable sales data loads
   useEffect(() => {
     if (!comparableSalesData) return;
-    function initSelection(rows: any[], setter: (s: Set<number>) => void) {
-      if (!rows.length) return;
-      const sqmVals = rows.map((r: any) => (r.pricePerSqM != null && r.pricePerSqM > 0 ? r.pricePerSqM : null));
-      const valid = sqmVals.filter((v: number | null): v is number => v !== null);
-      let outlierSet = new Set<number>();
+    function csOutliersInit(rows: any[]): Set<number> {
+      const vals = rows.map((r: any) => (r.pricePerSqM != null && r.pricePerSqM > 0 ? r.pricePerSqM : null));
+      const valid = vals.filter((v: number | null): v is number => v !== null);
+      if (valid.length < 2) return new Set();
+      const sorted = [...valid].sort((a: number, b: number) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+      const lo = median * 0.45;
+      const hi = median * 2.2;
+      let iqrLo = -Infinity, iqrHi = Infinity;
       if (valid.length >= 4) {
-        const sorted = [...valid].sort((a: number, b: number) => a - b);
         const q1 = sorted[Math.floor(sorted.length * 0.25)];
         const q3 = sorted[Math.floor(sorted.length * 0.75)];
         const iqr = q3 - q1;
-        rows.forEach((r: any, i: number) => {
-          if (r.pricePerSqM != null && (r.pricePerSqM < q1 - 1.5 * iqr || r.pricePerSqM > q3 + 1.5 * iqr)) {
-            outlierSet.add(i);
-          }
-        });
+        iqrLo = q1 - 1.5 * iqr;
+        iqrHi = q3 + 1.5 * iqr;
       }
+      const outlierSet = new Set<number>();
+      vals.forEach((v: number | null, i: number) => {
+        if (v !== null && (v < lo || v > hi || v < iqrLo || v > iqrHi)) outlierSet.add(i);
+      });
+      return outlierSet;
+    }
+    function initSelection(rows: any[], setter: (s: Set<number>) => void) {
+      if (!rows.length) return;
+      const outlierSet = csOutliersInit(rows);
       setter(new Set(rows.map((_: any, i: number) => i).filter((i: number) => !outlierSet.has(i))));
     }
     initSelection(comparableSalesData.titleDeedProperties, setCsKfSelected);
@@ -3512,12 +3522,21 @@ export default function PropertyDetailModal({
                   function csOutliers(rows: any[]): boolean[] {
                     const vals = rows.map((r: any) => (r.pricePerSqM != null && r.pricePerSqM > 0 ? r.pricePerSqM : null));
                     const valid = vals.filter((v: number | null): v is number => v !== null);
-                    if (valid.length < 4) return rows.map(() => false);
+                    if (valid.length < 2) return rows.map(() => false);
                     const sorted = [...valid].sort((a: number, b: number) => a - b);
-                    const q1 = sorted[Math.floor(sorted.length * 0.25)];
-                    const q3 = sorted[Math.floor(sorted.length * 0.75)];
-                    const iqr = q3 - q1;
-                    return vals.map((v: number | null) => v !== null && (v < q1 - 1.5 * iqr || v > q3 + 1.5 * iqr));
+                    const mid = Math.floor(sorted.length / 2);
+                    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+                    const lo = median * 0.45;
+                    const hi = median * 2.2;
+                    let iqrLo = -Infinity, iqrHi = Infinity;
+                    if (valid.length >= 4) {
+                      const q1 = sorted[Math.floor(sorted.length * 0.25)];
+                      const q3 = sorted[Math.floor(sorted.length * 0.75)];
+                      const iqr = q3 - q1;
+                      iqrLo = q1 - 1.5 * iqr;
+                      iqrHi = q3 + 1.5 * iqr;
+                    }
+                    return vals.map((v: number | null) => v !== null && (v < lo || v > hi || v < iqrLo || v > iqrHi));
                   }
 
                   const kfRows = comparableSalesData!.titleDeedProperties;

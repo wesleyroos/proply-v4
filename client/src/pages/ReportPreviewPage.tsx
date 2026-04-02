@@ -236,18 +236,34 @@ function ImageGallery({ images }: { images: string[] }) {
 }
 
 // ─── Outlier Detection ────────────────────────────────────────────────────────
-// Returns a boolean[] where true = outlier, using IQR on R/m² values
+// Returns a boolean[] where true = outlier.
+// Uses median-ratio (works for any count ≥ 2) then IQR for larger sets.
 function detectOutliers(rows: any[]): boolean[] {
   const sqmValues = rows.map((r) => (r.pricePerSqM != null && r.pricePerSqM > 0 ? r.pricePerSqM : null));
   const valid = sqmValues.filter((v): v is number => v !== null);
-  if (valid.length < 4) return rows.map(() => false);
+  if (valid.length < 2) return rows.map(() => false);
+
   const sorted = [...valid].sort((a, b) => a - b);
-  const q1 = sorted[Math.floor(sorted.length * 0.25)];
-  const q3 = sorted[Math.floor(sorted.length * 0.75)];
-  const iqr = q3 - q1;
-  const lo = q1 - 1.5 * iqr;
-  const hi = q3 + 1.5 * iqr;
-  return sqmValues.map((v) => v !== null && (v < lo || v > hi));
+  const mid = Math.floor(sorted.length / 2);
+  const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+
+  // Flag anything < 45% or > 220% of the median (catches classic data-entry errors)
+  const lo = median * 0.45;
+  const hi = median * 2.2;
+
+  // For 4+ values also apply IQR and take the union
+  let iqrLo = -Infinity, iqrHi = Infinity;
+  if (valid.length >= 4) {
+    const q1 = sorted[Math.floor(sorted.length * 0.25)];
+    const q3 = sorted[Math.floor(sorted.length * 0.75)];
+    const iqr = q3 - q1;
+    iqrLo = q1 - 1.5 * iqr;
+    iqrHi = q3 + 1.5 * iqr;
+  }
+
+  return sqmValues.map((v) =>
+    v !== null && (v < lo || v > hi || v < iqrLo || v > iqrHi)
+  );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -403,19 +419,41 @@ export default function ReportPreviewPage() {
           style={{ background: `linear-gradient(135deg, ${accentColor}55 0%, #0d1b2a99 100%)` }}
         />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-12">
-          {p.propertyType && (
-            <span
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4 text-white"
-              style={{ background: "rgba(255,255,255,0.18)" }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
-              {p.propertyType}
-            </span>
-          )}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {p.propertyType && (
+              <span
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white"
+                style={{ background: "rgba(255,255,255,0.18)" }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
+                {p.propertyType}
+              </span>
+            )}
+            {p.status && (
+              <span
+                className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white border ${
+                  p.status.toLowerCase() === 'evaluation'
+                    ? 'border-amber-300/60 bg-amber-400/20'
+                    : p.status.toLowerCase() === 'sold'
+                    ? 'border-red-300/60 bg-red-400/20'
+                    : p.status.toLowerCase().includes('offer')
+                    ? 'border-orange-300/60 bg-orange-400/20'
+                    : 'border-white/20 bg-white/10'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  p.status.toLowerCase() === 'evaluation' ? 'bg-amber-300' :
+                  p.status.toLowerCase() === 'sold' ? 'bg-red-300' :
+                  p.status.toLowerCase().includes('offer') ? 'bg-orange-300' : 'bg-green-300'
+                }`} />
+                {p.status}
+              </span>
+            )}
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight tracking-tight mb-3">
             {p.address}
           </h1>
-          {p.status === 'evaluation' ? (
+          {p.status?.toLowerCase() === 'evaluation' ? (
             (() => {
               const conservative = vd?.valuations?.find((v: any) => /conserv/i.test(v.type))?.value;
               const optimistic = vd?.valuations?.find((v: any) => /optim/i.test(v.type))?.value;
