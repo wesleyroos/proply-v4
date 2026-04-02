@@ -27,6 +27,8 @@ export async function upsertComparableSales(
     const saleDate = p.saleDate ? String(p.saleDate).substring(0, 10) : null;
 
     try {
+      const initialIds = triggeringPropertyId ? JSON.stringify([triggeringPropertyId]) : '[]';
+
       await db.execute(sql`
         INSERT INTO comparable_sales (
           address_normalised, address, suburb, city, erf_number,
@@ -53,22 +55,23 @@ export async function upsertComparableSales(
           ${p.source ?? 'knowledgeFactory'},
           ${p.titleDeedNo ?? null},
           1,
-          ${triggeringPropertyId ? JSON.stringify([triggeringPropertyId]) : '[]'},
+          ${initialIds}::jsonb,
           now(),
           now()
         )
         ON CONFLICT (address_normalised, sale_date, sale_price)
         DO UPDATE SET
-          seen_count   = comparable_sales.seen_count + 1,
-          last_seen_at = now(),
-          property_ids = CASE
-            WHEN ${triggeringPropertyId ?? null} IS NOT NULL
-              AND NOT (comparable_sales.property_ids @> ${triggeringPropertyId ? `'"${triggeringPropertyId}"'` : "'null'"}::jsonb)
-            THEN comparable_sales.property_ids || ${triggeringPropertyId ? `'"${triggeringPropertyId}"'::jsonb` : "'null'::jsonb"}
-            ELSE comparable_sales.property_ids
+          seen_count    = comparable_sales.seen_count + 1,
+          last_seen_at  = now(),
+          property_ids  = CASE
+            WHEN ${triggeringPropertyId ?? ''}::text = ''
+            THEN comparable_sales.property_ids
+            WHEN comparable_sales.property_ids @> ('"' || ${triggeringPropertyId ?? ''}::text || '"')::jsonb
+            THEN comparable_sales.property_ids
+            ELSE comparable_sales.property_ids || ('"' || ${triggeringPropertyId ?? ''}::text || '"')::jsonb
           END,
-          latitude     = COALESCE(comparable_sales.latitude,  ${p.latitude ?? null}),
-          longitude    = COALESCE(comparable_sales.longitude, ${p.longitude ?? null}),
+          latitude      = COALESCE(comparable_sales.latitude,  ${p.latitude ?? null}),
+          longitude     = COALESCE(comparable_sales.longitude, ${p.longitude ?? null}),
           price_per_sqm = COALESCE(comparable_sales.price_per_sqm, ${p.pricePerSqM ? Math.round(p.pricePerSqM) : null})
       `);
     } catch (err) {

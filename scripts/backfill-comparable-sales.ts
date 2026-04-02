@@ -22,7 +22,7 @@ async function main() {
   const reports = await db
     .select({
       id: valuationReports.id,
-      propdataId: valuationReports.propdataId,
+      propertyId: valuationReports.propertyId,
       comparableSalesData: valuationReports.comparableSalesData,
     })
     .from(valuationReports)
@@ -53,9 +53,9 @@ async function main() {
       continue;
     }
 
-    await upsertComparableSales(kfProps, report.propdataId ?? undefined);
-    upserted += kfProps.length;
+    await upsertComparableSales(kfProps, report.propertyId ?? undefined);
     processed++;
+    upserted += kfProps.length;
 
     if (processed % 50 === 0) {
       console.log(`  processed ${processed} reports, upserted ${upserted} records so far…`);
