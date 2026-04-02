@@ -14,7 +14,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Download, Bed, Bath, Car, Maximize2, MapPin, Calendar, Phone, Mail, User, Building2, TrendingUp, Home } from "lucide-react";
+import { Download, Bed, Bath, Car, Maximize2, MapPin, Calendar, Phone, Mail, User, Building2, TrendingUp, Home, ChevronDown } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ReportData {
@@ -89,6 +89,35 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
       <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ background: color }} />
       <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-800">{title}</h2>
       <div className="flex-1 h-px bg-slate-100" />
+    </div>
+  );
+}
+
+function AccordionSection({ title, color, open, onToggle, children }: {
+  title: string;
+  color: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 px-6 sm:px-8 py-5 text-left hover:bg-slate-50/60 transition-colors"
+      >
+        <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ background: color }} />
+        <span className="text-[11px] font-black uppercase tracking-widest text-slate-800 flex-1">{title}</span>
+        <ChevronDown
+          className="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-200"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        />
+      </button>
+      {open && (
+        <div className="px-6 sm:px-8 pb-8 pt-1 border-t border-slate-100">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -286,6 +315,17 @@ export default function ReportPreviewPage() {
   // Comparable sales selection state (auto-deselects outliers on first load)
   const [csSelected, setCsSelected] = useState<Set<number>>(new Set());
   const [csInitialized, setCsInitialized] = useState(false);
+
+  // Accordion open/closed state — all open by default
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    valuation: true,
+    rental: true,
+    comparables: true,
+    financial: true,
+    details: true,
+  });
+  const toggleSection = (key: string) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   useEffect(() => {
     if (data && !csInitialized) {
@@ -569,8 +609,7 @@ export default function ReportPreviewPage() {
 
         {/* Valuation Analysis */}
         {vd && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
-            <SectionHeader title="Valuation Analysis" color={accentColor} />
+          <AccordionSection title="Valuation Analysis" color={accentColor} open={openSections.valuation} onToggle={() => toggleSection('valuation')}>
             {vd.summary && <p className="text-sm text-slate-600 leading-relaxed mb-6">{vd.summary}</p>}
             {vd.valuations?.length > 0 && (
               <div className="mb-6">
@@ -603,13 +642,12 @@ export default function ReportPreviewPage() {
                 <p className="text-sm text-slate-600 leading-relaxed">{vd.marketContext}</p>
               </div>
             )}
-          </div>
+          </AccordionSection>
         )}
 
         {/* Rental Performance */}
         {vd?.rentalPerformance && (ltr || str) && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
-            <SectionHeader title="Rental Performance Analysis" color={accentColor} />
+          <AccordionSection title="Rental Performance Analysis" color={accentColor} open={openSections.rental} onToggle={() => toggleSection('rental')}>
             {ltr && (
               <div className="mb-8">
                 <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Long-Term Rental</h3>
@@ -682,7 +720,7 @@ export default function ReportPreviewPage() {
                 )}
               </div>
             )}
-          </div>
+          </AccordionSection>
         )}
 
         {/* Comparable Sales */}
@@ -717,8 +755,7 @@ export default function ReportPreviewPage() {
           };
 
           return (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
-              <SectionHeader title="Comparable Sales" color={accentColor} />
+            <AccordionSection title="Comparable Sales" color={accentColor} open={openSections.comparables} onToggle={() => toggleSection('comparables')}>
 
               {/* Map */}
               <ComparableSalesMap
@@ -839,14 +876,13 @@ export default function ReportPreviewPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </AccordionSection>
           );
         })()}
 
         {/* Financial Analysis */}
         {(rd?.financingAnalysisData || rd?.cashflowAnalysisData || rd?.annualPropertyAppreciationData) && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
-            <SectionHeader title="Financial Analysis" color={accentColor} />
+          <AccordionSection title="Financial Analysis" color={accentColor} open={openSections.financial} onToggle={() => toggleSection('financial')}>
 
             {rd?.financingAnalysisData?.financingParameters && (
               <div className="mb-8">
@@ -1042,12 +1078,11 @@ export default function ReportPreviewPage() {
                 </div>
               );
             })()}
-          </div>
+          </AccordionSection>
         )}
 
         {/* Additional Details */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
-          <SectionHeader title="Additional Details" color={accentColor} />
+        <AccordionSection title="Additional Details" color={accentColor} open={openSections.details} onToggle={() => toggleSection('details')}>
           <div className="grid sm:grid-cols-2 gap-8">
             {(p.agentName || p.agentEmail || p.agentPhone) && (
               <div>
@@ -1097,7 +1132,7 @@ export default function ReportPreviewPage() {
           <p className="text-[11px] text-slate-400 mt-6 pt-6 border-t border-slate-100">
             Report generated {dateStr} by Proply Tech (Pty) Ltd.
           </p>
-        </div>
+        </AccordionSection>
       </main>
 
       {/* ── Footer ── */}
