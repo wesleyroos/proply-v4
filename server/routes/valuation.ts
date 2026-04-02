@@ -253,9 +253,24 @@ router.post("/generate-valuation-report", async (req, res) => {
       parkingSpaces,
       floorSize,
       landSize,
-      currentListingPrice: price,
       location: location || {}
     };
+
+    // Fetch existing comparable sales from DB for this property (if available)
+    let existingComparableSales: any = null;
+    if (propertyId) {
+      try {
+        const existingReport = await db.query.valuationReports.findFirst({
+          where: eq(valuationReports.propertyId, propertyId),
+          orderBy: [desc(valuationReports.updatedAt)],
+        });
+        if (existingReport?.comparableSalesData) {
+          existingComparableSales = existingReport.comparableSalesData;
+        }
+      } catch (e) {
+        // Non-fatal — proceed without comparables
+      }
+    }
 
     // Detect city and location type from address
     const addressLower = address.toLowerCase();
@@ -355,8 +370,39 @@ router.post("/generate-valuation-report", async (req, res) => {
 - Factor in property condition, finishes, and local market dynamics`;
     }
 
+    // Build comparable sales context string for the prompt
+    let comparableSalesContext = '';
+    if (existingComparableSales) {
+      const allComps: any[] = [
+        ...(existingComparableSales.titleDeedProperties || []),
+        ...(existingComparableSales.properties || []),
+      ].filter((p: any) => p.salePrice > 0);
+
+      if (allComps.length > 0) {
+        const validSqm = allComps.filter((p: any) => p.pricePerSqM > 0);
+        const avgSqm = validSqm.length > 0
+          ? Math.round(validSqm.reduce((s: number, p: any) => s + p.pricePerSqM, 0) / validSqm.length)
+          : null;
+        const avgPrice = Math.round(allComps.reduce((s: number, p: any) => s + p.salePrice, 0) / allComps.length);
+
+        const compRows = allComps.slice(0, 10).map((p: any) =>
+          `  - ${p.address || 'Nearby property'}: R${p.salePrice.toLocaleString('en-ZA')}, ${p.size ? `${p.size}m²` : '?m²'}, ${p.bedrooms || '?'} bed${p.pricePerSqM ? `, R${Math.round(p.pricePerSqM).toLocaleString('en-ZA')}/m²` : ''}${p.saleDate ? `, sold ${p.saleDate}` : ''}`
+        ).join('\n');
+
+        comparableSalesContext = `
+COMPARABLE SALES DATA (recent nearby sales — use as primary anchors for your valuation):
+${compRows}
+Average sale price across comparables: R${avgPrice.toLocaleString('en-ZA')}${avgSqm ? `\nAverage price per m²: R${avgSqm.toLocaleString('en-ZA')}/m²` : ''}
+
+CRITICAL: Weight these comparable sales heavily. Your valuations must be anchored to and consistent with the price levels shown above. Do not deviate materially from the comparable sale price range without strong justification.
+`;
+      }
+    }
+
     // Create the prompt for OpenAI
     const prompt = `You are a professional property valuer in South Africa with expertise across all major markets. Analyze this property and provide a comprehensive valuation report.
+
+IMPORTANT: You are providing an INDEPENDENT valuation. Do not ask for or consider any asking price — your assessment must be based solely on the property's characteristics, location, and comparable market evidence below.
 
 Property Details:
 - Address: ${address}
@@ -366,15 +412,14 @@ Property Details:
 - Parking Spaces: ${parkingSpaces || 'Not specified'}
 - Floor Size: ${floorSize ? `${floorSize}m²` : 'Not specified'}
 - Land Size: ${landSize ? `${landSize}m²` : 'Not specified'}
-- Current Listing Price: R${price?.toLocaleString('en-ZA') || 'Not specified'}
 - Monthly Levy: R${monthlyLevy?.toLocaleString('en-ZA') || 'Not specified'}
 - Location: ${location?.suburb || ''} ${location?.city || ''} ${location?.province || ''}
+${comparableSalesContext}
 
 ${locationContext}
 
 CRITICAL VALUATION GUIDANCE:
 ${marketRates}
-- Always consider the asking price as a market indicator - if significantly above your calculation, reassess for premium factors
 - Modern finishes, secure parking, and desirable locations add substantial value
 
 IMPORTANT: For rental estimates, consider the specific property characteristics:${rentalGuidance}
@@ -462,7 +507,7 @@ FOR PROPERTY APPRECIATION ANALYSIS:
 4. VISUAL CONDITION: Assess renovation needs, finishes quality, and marketability from images. Dated properties typically lag market by 0.5-1.5%
 5. LOCATION PREMIUM: Consider proximity to transport, amenities, views, security. Premium locations can add 0.3-0.8% annually
 
-Use current property price as baseline for 5-year projections with compound annual growth.
+Use your midline valuation estimate as the baseline for 5-year projections with compound annual growth.
 
 CRITICAL: Rental estimates MUST vary based on:
 1. NUMBER OF BEDROOMS: ${bedrooms} bedrooms should determine base rental range
@@ -471,7 +516,7 @@ CRITICAL: Rental estimates MUST vary based on:
 4. VISUAL CONDITION: Use image analysis to adjust rental estimates up/down by 10-30%
 5. PARKING AVAILABILITY: ${parkingSpaces || 0} parking spaces add premium
 
-IMPORTANT RENTAL BASELINE: Many property agents use a rule of thumb where monthly rental = 0.6% of purchase price (R${Math.round(price * 0.006).toLocaleString()} for this property). Use this as a baseline reference point and adjust based on the specific property characteristics and market conditions. If the property warrants it, this 0.6% figure can serve as a midpoint for your rental range.
+IMPORTANT RENTAL BASELINE: Many South African property agents use a rule of thumb where monthly rental ≈ 0.6% of market value. Use your midline valuation estimate as the basis for this calculation and adjust based on location, condition, and amenities.
 
 Provide realistic South African Rand valuations and rental estimates based on current South African property market rates. For rental estimates, consider standard 12-month lease terms and factor in visual property condition, finishes, and overall tenant appeal.
 
@@ -577,11 +622,11 @@ ${premiumImageContext}
 
     // Call OpenAI API
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4.1", // GPT-4.1: OpenAI's latest model (April 2025), stronger reasoning and vision
       messages,
       response_format: { type: "json_object" },
       max_tokens: 1500,
-      temperature: 0.7,
+      temperature: 0.4, // Lower temperature for more consistent, reproducible valuations
     });
 
     const reportContent = response.choices[0].message.content;
