@@ -492,6 +492,10 @@ router.post("/generate-valuation-report", async (req, res) => {
 
     // Build comparable sales context string for the prompt
     let comparableSalesContext = '';
+    let compSqmMin: number | null = null;
+    let compSqmMax: number | null = null;
+    let compSqmAvg: number | null = null;
+
     if (existingComparableSales) {
       const allComps: any[] = [
         ...(existingComparableSales.titleDeedProperties || []),
@@ -500,49 +504,56 @@ router.post("/generate-valuation-report", async (req, res) => {
 
       if (allComps.length > 0) {
         const validSqm = allComps.filter((p: any) => p.pricePerSqM > 0);
-        const avgSqm = validSqm.length > 0
-          ? Math.round(validSqm.reduce((s: number, p: any) => s + p.pricePerSqM, 0) / validSqm.length)
-          : null;
+        const sqmValues = validSqm.map((p: any) => p.pricePerSqM).sort((a: number, b: number) => a - b);
+
+        if (sqmValues.length > 0) {
+          // Strip top and bottom 10% to remove outliers before computing bounds
+          const trimCount = Math.max(1, Math.floor(sqmValues.length * 0.1));
+          const trimmed = sqmValues.length > 4
+            ? sqmValues.slice(trimCount, sqmValues.length - trimCount)
+            : sqmValues;
+          compSqmMin = Math.round(trimmed[0]);
+          compSqmMax = Math.round(trimmed[trimmed.length - 1]);
+          compSqmAvg = Math.round(trimmed.reduce((s: number, v: number) => s + v, 0) / trimmed.length);
+        }
+
         const avgPrice = Math.round(allComps.reduce((s: number, p: any) => s + p.salePrice, 0) / allComps.length);
 
-        const compRows = allComps.slice(0, 10).map((p: any) =>
+        const compRows = allComps.slice(0, 12).map((p: any) =>
           `  - ${p.address || 'Nearby property'}: R${p.salePrice.toLocaleString('en-ZA')}, ${p.size ? `${p.size}m²` : '?m²'}, ${p.bedrooms || '?'} bed${p.pricePerSqM ? `, R${Math.round(p.pricePerSqM).toLocaleString('en-ZA')}/m²` : ''}${p.saleDate ? `, sold ${p.saleDate}` : ''}`
         ).join('\n');
 
         comparableSalesContext = `
-COMPARABLE SALES DATA (recent nearby sales — use as primary anchors for your valuation):
+COMPARABLE SALES DATA (title deed records — these are the ground truth for this property's market):
 ${compRows}
-Average sale price across comparables: R${avgPrice.toLocaleString('en-ZA')}${avgSqm ? `\nAverage price per m²: R${avgSqm.toLocaleString('en-ZA')}/m²` : ''}
+Average sale price: R${avgPrice.toLocaleString('en-ZA')}${compSqmAvg ? `\nR/m² range (trimmed): R${compSqmMin?.toLocaleString('en-ZA')} – R${compSqmMax?.toLocaleString('en-ZA')}/m² | Average: R${compSqmAvg.toLocaleString('en-ZA')}/m²` : ''}
 
-CRITICAL: Weight these comparable sales heavily. Your valuations must be anchored to and consistent with the price levels shown above. Do not deviate materially from the comparable sale price range without strong justification.
+HARD CONSTRAINT — YOUR R/m² MUST STAY WITHIN THE COMPARABLE RANGE:
+${compSqmMin && compSqmMax ? `The comparable sales establish a market R/m² range of R${compSqmMin.toLocaleString('en-ZA')} – R${compSqmMax.toLocaleString('en-ZA')}/m² for this location. Your Conservative, Midline, and Optimistic R/m² values MUST all fall within this range. The finishesRating determines WHERE within this range (bottom = Rating 1, top = Rating 5). A Premium (4/5) property uses the upper portion of THIS range — not a generic premium rate from your training data. Do not use any R/m² figure outside R${compSqmMin.toLocaleString('en-ZA')} – R${compSqmMax.toLocaleString('en-ZA')}/m².` : 'Weight these comparable sales heavily. Your valuations must be consistent with the price levels shown above.'}
 `;
       }
     }
 
-    // Build asking price context
+    // Build asking price context — secondary validation check
     const impliedSqm = price && price > 0 && floorSize && floorSize > 0
       ? Math.round(price / floorSize)
       : null;
 
     const askingPriceContext = price && price > 0
       ? `
-ASKING PRICE (primary market signal):
+ASKING PRICE (secondary validation):
 The seller is asking R${price.toLocaleString('en-ZA')} for this property.${impliedSqm ? ` This implies R${impliedSqm.toLocaleString('en-ZA')}/m².` : ''}
-
-This asking price was set by an agent with direct market knowledge. Treat it as a strong anchor:
-- Your Midline valuation should normally sit within ±15% of the asking price unless the comparable sales data provides compelling evidence for a larger gap.
-- If your independent R/m² analysis produces a value more than 20% above the asking price, this most likely means your R/m² rate is too high for this specific building/location — not that the property is 20% underpriced. Recalibrate.
-- If your analysis produces a value materially BELOW the asking price, flag this clearly in marketContext and explain whether the property appears overpriced or whether there are premium factors not captured by the comparables.
-- Your Conservative estimate should not exceed the asking price unless there is strong evidence of underpricing.
+${impliedSqm && compSqmMin && compSqmMax ? `Note: the asking price R/m² of R${impliedSqm.toLocaleString('en-ZA')}/m² ${impliedSqm < compSqmMin ? 'falls BELOW the comparable range — the property may be underpriced or the comparables include larger/more premium stock' : impliedSqm > compSqmMax ? 'sits ABOVE the comparable range — the property may be overpriced relative to recent sales' : 'falls within the comparable range, consistent with market evidence'}.` : ''}
+Use your comparable-derived valuation as the primary output. In marketContext, comment on whether the asking price appears well-supported, optimistic, or conservative relative to the comparable evidence.
 `
       : `
-ASKING PRICE: No asking price has been set (valuation exercise). Rely entirely on the comparable sales data and your knowledge of current market conditions to determine value.
+ASKING PRICE: No asking price set (valuation exercise). Derive value entirely from comparable sales and market fundamentals.
 `;
 
     // Create the prompt for OpenAI
     const prompt = `You are a professional property valuer in South Africa with expertise across all major markets. Analyze this property and provide a comprehensive valuation report.
 
-You are providing an evidence-based valuation grounded in comparable sales and market fundamentals. Where an asking price is provided, treat it as a strong market signal set by an agent with local knowledge — your valuation should be anchored to it unless the comparable sales data provides clear, specific evidence to justify a material deviation.
+You are providing an evidence-based valuation grounded in comparable sales. The comparable sales data is your ground truth — your R/m² must stay within the range those sales establish. The finishesRating from visual analysis determines where within that range the subject property sits. Your general knowledge of area prices is a fallback only when no comparable data is provided.
 
 Property Details:
 - Address: ${address}
@@ -560,8 +571,8 @@ ${locationContext}
 
 CRITICAL VALUATION GUIDANCE:
 ${marketRates}
-- Your finishesRating (1–5) must directly set the price per m² tier used in valuation formulas. Do not default to median R/m² for a well-presented property — a Rating 4 or 5 must use the upper range of comparables, not the midpoint.
-- Modern finishes, secure parking, and desirable locations add substantial value
+- The finishesRating (1–5) determines your POSITION within the comparable R/m² range — it does not override or expand that range. Rating 1 = bottom of comparable range, Rating 3 = midpoint, Rating 5 = top of comparable range. Never use an R/m² figure outside what the comparable sales support.
+- Modern finishes, secure parking, and desirable locations add substantial value — but only up to the ceiling the comparables establish
 
 IMPORTANT: For rental estimates, consider the specific property characteristics:${rentalGuidance}
 - Modern finishes and secure parking add 15-25% to rental values
