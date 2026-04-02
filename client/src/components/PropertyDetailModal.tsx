@@ -169,6 +169,19 @@ export default function PropertyDetailModal({
   const [imagesPerView, setImagesPerView] = useState(4);
   const [showAllImages, setShowAllImages] = useState(false);
   
+  // Recalculate total appreciation from components to avoid AI rounding errors
+  const calcTotalAppreciationRate = (appreciation: any): number => {
+    if (!appreciation?.components) return appreciation?.annualAppreciationRate || 8.0;
+    const c = appreciation.components;
+    return parseFloat((
+      (c.baseSuburbRate?.rate || 0) +
+      (c.propertyTypeModifier?.adjustment || 0) +
+      (c.levyImpact?.adjustment || 0) +
+      (c.visualConditionAdjustment?.adjustment || 0) +
+      (c.locationPremium?.adjustment || 0)
+    ).toFixed(1));
+  };
+
   // Progress modal state
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [progressSteps, setProgressSteps] = useState([
@@ -815,18 +828,6 @@ export default function PropertyDetailModal({
     const propertyPrice = getEffectivePrice();
 
     // 1. ANNUAL PROPERTY APPRECIATION DATA
-    // Recalculate total appreciation from components to avoid AI rounding errors
-    const calcTotalAppreciationRate = (appreciation: any): number => {
-      if (!appreciation?.components) return appreciation?.annualAppreciationRate || 8.0;
-      const c = appreciation.components;
-      return parseFloat((
-        (c.baseSuburbRate?.rate || 0) +
-        (c.propertyTypeModifier?.adjustment || 0) +
-        (c.levyImpact?.adjustment || 0) +
-        (c.visualConditionAdjustment?.adjustment || 0) +
-        (c.locationPremium?.adjustment || 0)
-      ).toFixed(1));
-    };
     const totalAppreciationRate = calcTotalAppreciationRate(valuationReport.propertyAppreciation);
 
     const annualAppreciationData = {
