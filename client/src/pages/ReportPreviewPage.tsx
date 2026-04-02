@@ -220,47 +220,111 @@ function MiniCard({ label, value, sub, valueColor }: { label: string; value: str
   );
 }
 
+// ─── Image Lightbox ───────────────────────────────────────────────────────────
+function Lightbox({ images, startIndex, onClose }: { images: string[]; startIndex: number; onClose: () => void }) {
+  const [index, setIndex] = useState(startIndex);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") setIndex((i) => (i - 1 + images.length) % images.length);
+      if (e.key === "ArrowRight") setIndex((i) => (i + 1) % images.length);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [images.length, onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+      onClick={onClose}
+    >
+      {/* Previous */}
+      <button
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-xl z-10"
+        onClick={(e) => { e.stopPropagation(); setIndex((i) => (i - 1 + images.length) % images.length); }}
+      >‹</button>
+
+      {/* Image */}
+      <img
+        src={images[index]}
+        alt={`Photo ${index + 1}`}
+        className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+
+      {/* Next */}
+      <button
+        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-xl z-10"
+        onClick={(e) => { e.stopPropagation(); setIndex((i) => (i + 1) % images.length); }}
+      >›</button>
+
+      {/* Counter */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs font-semibold px-3 py-1 rounded-full">
+        {index + 1} / {images.length}
+      </div>
+
+      {/* Close */}
+      <button
+        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors text-lg"
+        onClick={onClose}
+      >✕</button>
+    </div>
+  );
+}
+
 // ─── Image Gallery ────────────────────────────────────────────────────────────
 function ImageGallery({ images }: { images: string[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const mainImg = images[activeIndex];
   const thumbs = images.slice(0, 5);
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="relative w-full rounded-xl overflow-hidden bg-slate-100" style={{ aspectRatio: "16/10" }}>
-        <img src={mainImg} alt="Property" className="w-full h-full object-cover" />
-        {images.length > 1 && (
-          <>
-            <button
-              onClick={() => setActiveIndex((i) => (i - 1 + images.length) % images.length)}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors text-sm"
-            >‹</button>
-            <button
-              onClick={() => setActiveIndex((i) => (i + 1) % images.length)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors text-sm"
-            >›</button>
-            <div className="absolute bottom-2 right-2 bg-black/40 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-              {activeIndex + 1} / {images.length}
-            </div>
-          </>
+    <>
+      {lightboxIndex !== null && (
+        <Lightbox images={images} startIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+      )}
+      <div className="flex flex-col gap-1.5">
+        <div
+          className="relative w-full rounded-xl overflow-hidden bg-slate-100 cursor-zoom-in"
+          style={{ aspectRatio: "16/10" }}
+          onClick={() => setLightboxIndex(activeIndex)}
+        >
+          <img src={mainImg} alt="Property" className="w-full h-full object-cover" />
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setActiveIndex((i) => (i - 1 + images.length) % images.length); }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors text-sm"
+              >‹</button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setActiveIndex((i) => (i + 1) % images.length); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors text-sm"
+              >›</button>
+              <div className="absolute bottom-2 right-2 bg-black/40 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                {activeIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
+        </div>
+        {thumbs.length > 1 && (
+          <div className="grid grid-cols-5 gap-1">
+            {thumbs.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveIndex(i)}
+                onDoubleClick={() => setLightboxIndex(i)}
+                className={`rounded-lg overflow-hidden border-2 transition-all ${i === activeIndex ? "border-slate-700 opacity-100" : "border-transparent opacity-60 hover:opacity-90"}`}
+                style={{ aspectRatio: "1" }}
+              >
+                <img src={img} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
         )}
       </div>
-      {thumbs.length > 1 && (
-        <div className="grid grid-cols-5 gap-1">
-          {thumbs.map((img, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveIndex(i)}
-              className={`rounded-lg overflow-hidden border-2 transition-all ${i === activeIndex ? "border-slate-700 opacity-100" : "border-transparent opacity-60 hover:opacity-90"}`}
-              style={{ aspectRatio: "1" }}
-            >
-              <img src={img} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
