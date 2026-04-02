@@ -711,12 +711,29 @@ ${premiumImageContext}
 
 **RENTAL IMPACT**: Apply the same quality tier to rental estimates. Rating 4–5 properties command the top 20-30% of the rental range for their bedroom count and location.`;
       
-      console.log(`Running batched image analysis across ${images.length} images...`);
-      const qualityScores = await analyzeAllImagesInBatches(images, openai);
+      const validImages = await filterValidImages(images);
+      const SINGLE_CALL_LIMIT = 15;
 
-      if (qualityScores) {
-        const ratingLabel = ['', 'Basic', 'Standard', 'Good', 'Premium', 'Luxury'][Math.round(qualityScores.overall)] || 'Good';
-        const qualitySummary = `VISUAL QUALITY ASSESSMENT (derived from ${qualityScores.imageCount} property images analysed in batches):
+      if (validImages.length === 0) {
+        console.log('No valid images found for analysis');
+      } else if (validImages.length <= SINGLE_CALL_LIMIT) {
+        // ≤15 images: single holistic call — model sees everything at once
+        console.log(`Sending ${validImages.length} images in a single holistic call`);
+        messages.push({
+          role: "user",
+          content: [
+            { type: "text", text: imageAnalysisPrompt },
+            ...validImages.map((url: string) => ({ type: "image_url" as const, image_url: { url } }))
+          ]
+        });
+      } else {
+        // >15 images: batch scoring pass, inject averaged scores as text
+        console.log(`${validImages.length} images — running batched analysis (batches of 10)...`);
+        const qualityScores = await analyzeAllImagesInBatches(validImages, openai);
+
+        if (qualityScores) {
+          const ratingLabel = ['', 'Basic', 'Standard', 'Good', 'Premium', 'Luxury'][Math.round(qualityScores.overall)] || 'Good';
+          const qualitySummary = `VISUAL QUALITY ASSESSMENT (derived from all ${qualityScores.imageCount} property images analysed in batches):
 
 Dimension scores (1–5):
 - Finishes & Materials: ${qualityScores.finishes}
@@ -728,14 +745,13 @@ Dimension scores (1–5):
 
 Key observation: ${qualityScores.justification}
 
-${imageAnalysisPrompt.split('STEP 2')[1] ? 'STEP 2' + imageAnalysisPrompt.split('STEP 2')[1] : ''}
+${'STEP 2' + imageAnalysisPrompt.split('STEP 2')[1]}
 
 Your finishesRating in the JSON output MUST be ${Math.round(qualityScores.overall)} (${ratingLabel}) unless the text description of the property provides strong evidence to revise it.`;
 
-        messages.push({ role: "user", content: qualitySummary });
-        console.log(`Batch image analysis complete: overall=${qualityScores.overall} (${ratingLabel}) from ${qualityScores.imageCount} images`);
-      } else {
-        console.log('No valid images found for analysis');
+          messages.push({ role: "user", content: qualitySummary });
+          console.log(`Batch analysis complete: overall=${qualityScores.overall} (${ratingLabel}) from ${qualityScores.imageCount} images`);
+        }
       }
     }
 
