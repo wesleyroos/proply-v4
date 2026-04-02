@@ -410,47 +410,40 @@ export default function ReportPreviewPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="relative bg-slate-900 overflow-hidden" style={{ minHeight: 340 }}>
-        {heroImage && (
-          <img src={heroImage} alt="Property" className="absolute inset-0 w-full h-full object-cover opacity-40" />
-        )}
-        <div
-          className="absolute inset-0"
-          style={{ background: `linear-gradient(135deg, ${accentColor}55 0%, #0d1b2a99 100%)` }}
-        />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-12">
+      <section className="bg-white border-b border-slate-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {p.propertyType && (
               <span
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white"
-                style={{ background: "rgba(255,255,255,0.18)" }}
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+                style={{ background: `${accentColor}18`, color: accentColor }}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: accentColor }} />
                 {p.propertyType}
               </span>
             )}
             {p.status && (
               <span
-                className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white border ${
+                className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${
                   /evaluation|valuation/i.test(p.status)
-                    ? 'border-amber-300/60 bg-amber-400/20'
+                    ? 'border-slate-200 bg-slate-50 text-slate-500'
                     : p.status.toLowerCase() === 'sold'
-                    ? 'border-red-300/60 bg-red-400/20'
+                    ? 'border-red-100 bg-red-50 text-red-500'
                     : p.status.toLowerCase().includes('offer')
-                    ? 'border-orange-300/60 bg-orange-400/20'
-                    : 'border-white/20 bg-white/10'
+                    ? 'border-orange-100 bg-orange-50 text-orange-500'
+                    : 'border-slate-200 bg-slate-50 text-slate-500'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${
-                  /evaluation|valuation/i.test(p.status) ? 'bg-amber-300' :
-                  p.status.toLowerCase() === 'sold' ? 'bg-red-300' :
-                  p.status.toLowerCase().includes('offer') ? 'bg-orange-300' : 'bg-green-300'
+                  /evaluation|valuation/i.test(p.status) ? 'bg-slate-400' :
+                  p.status.toLowerCase() === 'sold' ? 'bg-red-400' :
+                  p.status.toLowerCase().includes('offer') ? 'bg-orange-400' : 'bg-slate-400'
                 }`} />
                 {p.status}
               </span>
             )}
           </div>
-          <h1 className="text-lg sm:text-xl font-extrabold text-white/90 leading-tight tracking-tight mb-3">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight tracking-tight mb-4">
             {p.address}
           </h1>
           {/evaluation|valuation/i.test(p.status ?? '') ? (
@@ -464,12 +457,12 @@ export default function ReportPreviewPage() {
               if (!hasRange && !hasMidline) return null;
               return (
                 <div className="mb-6">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#86efac' }}>Midline Estimate</div>
-                  <div className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: '#4ade80' }}>
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Midline Estimate</div>
+                  <div className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ color: accentColor }}>
                     {fmt(hasMidline ? midline : (hasRange ? (conservative + optimistic) / 2 : null))}
                   </div>
                   {hasRange && (
-                    <div className="text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                    <div className="text-xs text-slate-400 mt-1.5">
                       Range: {fmt(conservative)} – {fmt(optimistic)}
                     </div>
                   )}
@@ -479,38 +472,38 @@ export default function ReportPreviewPage() {
           ) : (
             p.price && Number(p.price) > 0 && (
               <div className="mb-6">
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Asking Price</div>
-                <div className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{fmt(p.price)}</div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Asking Price</div>
+                <div className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ color: accentColor }}>{fmt(p.price)}</div>
               </div>
             )
           )}
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             {p.bedrooms != null && (
-              <div className="flex items-center gap-2 text-white/80">
+              <div className="flex items-center gap-2 text-slate-500">
                 <Bed className="w-4 h-4" />
                 <span className="text-sm font-semibold">{p.bedrooms} Bedrooms</span>
               </div>
             )}
             {p.bathrooms != null && (
-              <div className="flex items-center gap-2 text-white/80">
+              <div className="flex items-center gap-2 text-slate-500">
                 <Bath className="w-4 h-4" />
                 <span className="text-sm font-semibold">{p.bathrooms} Bathrooms</span>
               </div>
             )}
             {p.garages != null && (
-              <div className="flex items-center gap-2 text-white/80">
+              <div className="flex items-center gap-2 text-slate-500">
                 <Car className="w-4 h-4" />
                 <span className="text-sm font-semibold">{p.garages} Garages</span>
               </div>
             )}
             {p.floorSize != null && (
-              <div className="flex items-center gap-2 text-white/80">
+              <div className="flex items-center gap-2 text-slate-500">
                 <Maximize2 className="w-4 h-4" />
                 <span className="text-sm font-semibold">{p.floorSize} m² Floor</span>
               </div>
             )}
             {p.erfSize != null && (
-              <div className="flex items-center gap-2 text-white/80">
+              <div className="flex items-center gap-2 text-slate-500">
                 <Maximize2 className="w-4 h-4" />
                 <span className="text-sm font-semibold">{p.erfSize} m² Erf</span>
               </div>
