@@ -1190,7 +1190,7 @@ export default function PropertyDetailModal({
           property.monthlyLevy ||
           property.sectionalTitleLevy ||
           property.homeOwnerLevy,
-        images: propertyImages.slice(0, 10), // Analyze first 10 images for comprehensive coverage
+        images: propertyImages.slice(0, 20), // Analyze up to 20 images for comprehensive visual assessment
         location: property.location,
         propertyId: property.propdataId, // Use PropData property ID for rental data persistence
       };

@@ -38,7 +38,7 @@ async function validateImageSize(imageUrl: string): Promise<boolean> {
 async function filterValidImages(images: string[]): Promise<string[]> {
   const validImages: string[] = [];
   
-  for (const imageUrl of images.slice(0, 10)) {
+  for (const imageUrl of images.slice(0, 20)) {
     const isValid = await validateImageSize(imageUrl);
     if (isValid) {
       validImages.push(imageUrl);
