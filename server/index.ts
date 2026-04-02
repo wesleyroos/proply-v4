@@ -6,10 +6,14 @@ import aiRouter from './routes/ai';
 import './services/autoSync'; // Initialize auto-sync service
 import { startAutomatedBilling } from './billing/automated-billing';
 import fs from "fs";
-import path from "path";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 import { db } from "../db";
 import { propdataListings } from "../db/schema";
 import { eq } from "drizzle-orm";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 
