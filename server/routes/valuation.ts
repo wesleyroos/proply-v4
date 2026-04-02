@@ -519,23 +519,30 @@ CRITICAL: Weight these comparable sales heavily. Your valuations must be anchore
       }
     }
 
-    // Build asking price context — shown as market information, not an anchor
+    // Build asking price context
+    const impliedSqm = price && price > 0 && floorSize && floorSize > 0
+      ? Math.round(price / floorSize)
+      : null;
+
     const askingPriceContext = price && price > 0
       ? `
-ASKING PRICE CONTEXT (market information only):
-The seller is asking R${price.toLocaleString('en-ZA')} for this property.
-This is provided as one market data point — do NOT anchor your valuation to it. Derive your Conservative, Midline, and Optimistic values independently from the comparable sales above and your knowledge of current market conditions.
-However, once you have your evidence-based range, acknowledge this asking price in your marketContext field: if your range is materially lower, explain what factors might justify a premium (e.g., scarcity, demand pressure in this specific micro-location, emotional buyer appeal) and whether the asking price is achievable or optimistic. If your range aligns with or exceeds the asking price, note that it appears well-supported.
+ASKING PRICE (primary market signal):
+The seller is asking R${price.toLocaleString('en-ZA')} for this property.${impliedSqm ? ` This implies R${impliedSqm.toLocaleString('en-ZA')}/m².` : ''}
+
+This asking price was set by an agent with direct market knowledge. Treat it as a strong anchor:
+- Your Midline valuation should normally sit within ±15% of the asking price unless the comparable sales data provides compelling evidence for a larger gap.
+- If your independent R/m² analysis produces a value more than 20% above the asking price, this most likely means your R/m² rate is too high for this specific building/location — not that the property is 20% underpriced. Recalibrate.
+- If your analysis produces a value materially BELOW the asking price, flag this clearly in marketContext and explain whether the property appears overpriced or whether there are premium factors not captured by the comparables.
+- Your Conservative estimate should not exceed the asking price unless there is strong evidence of underpricing.
 `
       : `
-ASKING PRICE CONTEXT:
-No asking price has been set for this property (valuation exercise). Rely entirely on the comparable sales data and your knowledge of current market conditions to determine value.
+ASKING PRICE: No asking price has been set (valuation exercise). Rely entirely on the comparable sales data and your knowledge of current market conditions to determine value.
 `;
 
     // Create the prompt for OpenAI
     const prompt = `You are a professional property valuer in South Africa with expertise across all major markets. Analyze this property and provide a comprehensive valuation report.
 
-You are providing an evidence-based independent valuation. Your Conservative/Midline/Optimistic values must be derived from comparable sales and market fundamentals — not from the asking price. However, you should acknowledge and reconcile any gap between your valuation and the asking price in your commentary.
+You are providing an evidence-based valuation grounded in comparable sales and market fundamentals. Where an asking price is provided, treat it as a strong market signal set by an agent with local knowledge — your valuation should be anchored to it unless the comparable sales data provides clear, specific evidence to justify a material deviation.
 
 Property Details:
 - Address: ${address}
