@@ -410,8 +410,8 @@ export default function ReportPreviewPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 py-6">
-        <div className="max-w-4xl mx-auto">
+      <section className="bg-slate-50 py-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 sm:px-8 py-8">
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {p.propertyType && (
@@ -516,8 +516,8 @@ export default function ReportPreviewPage() {
 
       {/* ── Key metrics strip ── */}
       {(ltrYieldRange || strYieldRange || apprRate) && (
-        <section className="bg-slate-50 px-4 sm:px-6 pb-6">
-          <div className="max-w-4xl mx-auto">
+        <section className="bg-slate-50 pb-6">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 sm:px-8 py-5 grid grid-cols-2 sm:grid-cols-3 divide-x divide-slate-100 gap-y-4">
             {ltrYieldRange && (
               <div className="px-4 first:pl-0">
@@ -541,8 +541,8 @@ export default function ReportPreviewPage() {
 
       {/* ── Images + Map ── */}
       {(p.images?.length || p.address) && (
-        <section className="bg-slate-50 px-4 sm:px-6 pb-6">
-          <div className="max-w-4xl mx-auto">
+        <section className="bg-slate-50 pb-6">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Images */}
