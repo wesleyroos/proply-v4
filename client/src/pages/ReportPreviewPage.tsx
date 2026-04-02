@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { initGoogleMaps } from "../lib/maps";
 import PropertyMap from "../components/PropertyMap";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -92,6 +93,94 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
   );
 }
 
+function ComparableSalesMap({ subjectAddress, properties }: {
+  subjectAddress: string;
+  properties: Array<{ address: string; latitude?: number; longitude?: number; salePrice?: number }>;
+}) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const init = async () => {
+      try {
+        await initGoogleMaps();
+        if (!isMounted || !mapRef.current) return;
+
+        const map = new google.maps.Map(mapRef.current, {
+          zoom: 14,
+          center: { lat: -33.918861, lng: 18.4233 },
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          gestureHandling: 'cooperative',
+        });
+
+        // Geocode subject property and add primary marker
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: subjectAddress }, (results: any, status: any) => {
+          if (!isMounted) return;
+          if (status === 'OK' && results?.[0]) {
+            const pos = results[0].geometry.location;
+            map.setCenter(pos);
+            new google.maps.Marker({
+              map,
+              position: pos,
+              title: subjectAddress,
+              label: { text: '★', color: 'white', fontSize: '14px' },
+              icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 14,
+                fillColor: '#1e40af',
+                fillOpacity: 1,
+                strokeColor: 'white',
+                strokeWeight: 2,
+              },
+            });
+          }
+        });
+
+        // Plot comparable sales that have coordinates
+        const plotted = properties.filter(p => p.latitude && p.longitude);
+        plotted.forEach((p, i) => {
+          const pos = { lat: p.latitude!, lng: p.longitude! };
+          const marker = new google.maps.Marker({
+            map,
+            position: pos,
+            title: p.address,
+            label: { text: String(i + 1), color: 'white', fontSize: '11px', fontWeight: 'bold' },
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 10,
+              fillColor: '#64748b',
+              fillOpacity: 0.9,
+              strokeColor: 'white',
+              strokeWeight: 1.5,
+            },
+          });
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<div style="font-size:12px;max-width:200px">
+              <div style="font-weight:600">${p.address}</div>
+              ${p.salePrice ? `<div style="color:#1e40af;font-weight:700">R${p.salePrice.toLocaleString()}</div>` : ''}
+            </div>`,
+          });
+          marker.addListener('click', () => infoWindow.open(map, marker));
+        });
+      } catch (e) {
+        if (isMounted) setError('Map unavailable');
+      }
+    };
+
+    init();
+    return () => { isMounted = false; };
+  }, [subjectAddress, properties]);
+
+  if (error) return null;
+
+  return <div ref={mapRef} className="w-full rounded-xl overflow-hidden border border-slate-100" style={{ height: 320 }} />;
+}
+
 function MiniCard({ label, value, sub, valueColor }: { label: string; value: string; sub?: string; valueColor?: string }) {
   return (
     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
@@ -146,6 +235,21 @@ function ImageGallery({ images }: { images: string[] }) {
   );
 }
 
+// ─── Outlier Detection ────────────────────────────────────────────────────────
+// Returns a boolean[] where true = outlier, using IQR on R/m² values
+function detectOutliers(rows: any[]): boolean[] {
+  const sqmValues = rows.map((r) => (r.pricePerSqM != null && r.pricePerSqM > 0 ? r.pricePerSqM : null));
+  const valid = sqmValues.filter((v): v is number => v !== null);
+  if (valid.length < 4) return rows.map(() => false);
+  const sorted = [...valid].sort((a, b) => a - b);
+  const q1 = sorted[Math.floor(sorted.length * 0.25)];
+  const q3 = sorted[Math.floor(sorted.length * 0.75)];
+  const iqr = q3 - q1;
+  const lo = q1 - 1.5 * iqr;
+  const hi = q3 + 1.5 * iqr;
+  return sqmValues.map((v) => v !== null && (v < lo || v > hi));
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ReportPreviewPage() {
   const [location] = useLocation();
@@ -162,6 +266,23 @@ export default function ReportPreviewPage() {
     enabled: !!propertyId,
     staleTime: Infinity,
   });
+
+  // Comparable sales selection state (auto-deselects outliers on first load)
+  const [csSelected, setCsSelected] = useState<Set<number>>(new Set());
+  const [csInitialized, setCsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (data && !csInitialized) {
+      const cs = data.valuationReport?.comparableSalesData;
+      const rows = cs?.titleDeedProperties?.length ? cs.titleDeedProperties : cs?.properties ?? [];
+      if (rows.length > 0) {
+        const outlierFlags = detectOutliers(rows);
+        const initial = new Set(rows.map((_: any, i: number) => i).filter((i: number) => !outlierFlags[i]));
+        setCsSelected(initial);
+        setCsInitialized(true);
+      }
+    }
+  }, [data, csInitialized]);
 
   const accentColor = data?.branch?.primaryColor || "#1ba2ff";
 
@@ -294,11 +415,26 @@ export default function ReportPreviewPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight tracking-tight mb-3">
             {p.address}
           </h1>
-          {p.price && (
-            <div className="mb-6">
-              <div className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Asking Price</div>
-              <div className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{fmt(p.price)}</div>
-            </div>
+          {p.status === 'evaluation' ? (
+            (() => {
+              const conservative = vd?.valuations?.find((v: any) => /conserv/i.test(v.type))?.value;
+              const optimistic = vd?.valuations?.find((v: any) => /optim/i.test(v.type))?.value;
+              return (conservative || optimistic) ? (
+                <div className="mb-6">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Estimated Valuation</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                    {conservative ? fmt(conservative) : "—"} – {optimistic ? fmt(optimistic) : "—"}
+                  </div>
+                </div>
+              ) : null;
+            })()
+          ) : (
+            p.price && Number(p.price) > 0 && (
+              <div className="mb-6">
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Asking Price</div>
+                <div className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{fmt(p.price)}</div>
+              </div>
+            )
           )}
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             {p.bedrooms != null && (
@@ -507,25 +643,83 @@ export default function ReportPreviewPage() {
           const cs = data.valuationReport?.comparableSalesData;
           const rows = cs?.titleDeedProperties?.length ? cs.titleDeedProperties : cs?.properties ?? [];
           if (!rows.length) return null;
+
+          const outlierFlags = detectOutliers(rows);
+          const allSelected = rows.every((_: any, i: number) => csSelected.has(i));
+          const selectedRows = rows.filter((_: any, i: number) => csSelected.has(i));
+          const avgPrice = selectedRows.length > 0
+            ? Math.round(selectedRows.reduce((s: number, r: any) => s + (r.salePrice ?? 0), 0) / selectedRows.length)
+            : 0;
+          const sqmRows = selectedRows.filter((r: any) => r.pricePerSqM != null && r.pricePerSqM > 0);
+          const avgSqm = sqmRows.length > 0
+            ? Math.round(sqmRows.reduce((s: number, r: any) => s + r.pricePerSqM, 0) / sqmRows.length)
+            : 0;
+
+          const toggleRow = (i: number) => {
+            setCsSelected((prev) => {
+              const next = new Set(prev);
+              next.has(i) ? next.delete(i) : next.add(i);
+              return next;
+            });
+          };
+          const toggleAll = () => {
+            setCsSelected(allSelected ? new Set() : new Set(rows.map((_: any, i: number) => i)));
+          };
+          const deselectOutliers = () => {
+            setCsSelected(new Set(rows.map((_: any, i: number) => i).filter((i: number) => !outlierFlags[i])));
+          };
+
           return (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
               <SectionHeader title="Comparable Sales" color={accentColor} />
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-slate-500">
-                  {cs?.dataSource === "knowledgeFactory"
-                    ? "Title deed records from the Deeds Office"
-                    : "AI-estimated comparable sales"}
-                </p>
-                {(cs?.averageSalePrice ?? 0) > 0 && (
-                  <span className="text-xs font-semibold text-slate-700">
-                    Avg: R{cs!.averageSalePrice.toLocaleString()}
-                  </span>
-                )}
+
+              {/* Map */}
+              <ComparableSalesMap
+                subjectAddress={p.address}
+                properties={rows.map((r: any) => ({
+                  address: r.address,
+                  latitude: r.latitude,
+                  longitude: r.longitude,
+                  salePrice: r.salePrice,
+                }))}
+              />
+
+              {/* Controls + averages */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mt-4 mb-3">
+                <div className="flex items-center gap-3">
+                  <p className="text-xs text-slate-500">
+                    {cs?.dataSource === "knowledgeFactory"
+                      ? "Title deed records — Deeds Office"
+                      : "AI-estimated comparable sales"}
+                  </p>
+                  {outlierFlags.some(Boolean) && (
+                    <button
+                      onClick={deselectOutliers}
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                    >
+                      Deselect outliers
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 text-xs font-semibold text-slate-700">
+                  {avgPrice > 0 && <span>Avg price: R{avgPrice.toLocaleString()}</span>}
+                  {avgSqm > 0 && <span>Avg R/m²: R{avgSqm.toLocaleString()}</span>}
+                  <span className="text-slate-400 font-normal">{csSelected.size}/{rows.length} selected</span>
+                </div>
               </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-slate-100">
+                      <th className="py-2 px-2 w-8">
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          onChange={toggleAll}
+                          className="rounded border-slate-300 cursor-pointer"
+                        />
+                      </th>
                       <th className="text-left py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Address</th>
                       <th className="text-right py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Sale Price</th>
                       <th className="text-right py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Size</th>
@@ -534,35 +728,57 @@ export default function ReportPreviewPage() {
                       {cs?.dataSource === "knowledgeFactory" && (
                         <th className="text-right py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Distance</th>
                       )}
-
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((p: any, i: number) => (
-                      <tr key={i} className="border-b border-slate-50 last:border-0">
-                        <td className="py-2 px-3">
-                          <div className="font-medium text-slate-800">{p.address}</div>
-                          {p.suburb && <div className="text-slate-400">{p.suburb}</div>}
-                        </td>
-                        <td className="py-2 px-3 text-right font-semibold text-slate-800">
-                          R{p.salePrice?.toLocaleString() ?? "—"}
-                        </td>
-                        <td className="py-2 px-3 text-right text-slate-500">{p.size ? `${p.size}m²` : "—"}</td>
-                        <td className="py-2 px-3 text-right text-slate-500">
-                          {p.pricePerSqM ? `R${p.pricePerSqM.toLocaleString()}` : "—"}
-                        </td>
-                        <td className="py-2 px-3 text-right text-slate-500">
-                          {p.saleDate
-                            ? new Date(p.saleDate).toLocaleDateString("en-ZA", { year: "numeric", month: "short" })
-                            : "—"}
-                        </td>
-                        {cs?.dataSource === "knowledgeFactory" && (
-                          <td className="py-2 px-3 text-right text-slate-500">
-                            {p.distanceKM != null ? `${p.distanceKM.toFixed(1)} km` : "—"}
+                    {rows.map((r: any, i: number) => {
+                      const isOutlier = outlierFlags[i];
+                      const isSelected = csSelected.has(i);
+                      return (
+                        <tr
+                          key={i}
+                          className={`border-b border-slate-50 last:border-0 cursor-pointer transition-colors ${
+                            isOutlier
+                              ? "bg-red-50/60 hover:bg-red-50"
+                              : isSelected
+                              ? "hover:bg-slate-50/50"
+                              : "opacity-50 hover:opacity-70"
+                          }`}
+                          onClick={() => toggleRow(i)}
+                        >
+                          <td className="py-2 px-2" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleRow(i)}
+                              className="rounded border-slate-300 cursor-pointer"
+                            />
                           </td>
-                        )}
-                      </tr>
-                    ))}
+                          <td className="py-2 px-3">
+                            <div className={`font-medium ${isOutlier ? "text-red-700" : "text-slate-800"}`}>{r.address}</div>
+                            {r.suburb && <div className="text-slate-400">{r.suburb}</div>}
+                            {isOutlier && <div className="text-[10px] text-red-500 font-semibold mt-0.5">Possible outlier</div>}
+                          </td>
+                          <td className={`py-2 px-3 text-right font-semibold ${isOutlier ? "text-red-700" : "text-slate-800"}`}>
+                            R{r.salePrice?.toLocaleString() ?? "—"}
+                          </td>
+                          <td className="py-2 px-3 text-right text-slate-500">{r.size ? `${r.size}m²` : "—"}</td>
+                          <td className={`py-2 px-3 text-right font-semibold ${isOutlier ? "text-red-600" : "text-slate-500"}`}>
+                            {r.pricePerSqM ? `R${r.pricePerSqM.toLocaleString()}` : "—"}
+                          </td>
+                          <td className="py-2 px-3 text-right text-slate-500">
+                            {r.saleDate
+                              ? new Date(r.saleDate).toLocaleDateString("en-ZA", { year: "numeric", month: "short" })
+                              : "—"}
+                          </td>
+                          {cs?.dataSource === "knowledgeFactory" && (
+                            <td className="py-2 px-3 text-right text-slate-500">
+                              {r.distanceKM != null ? `${r.distanceKM.toFixed(1)} km` : "—"}
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

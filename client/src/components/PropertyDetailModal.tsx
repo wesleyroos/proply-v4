@@ -364,6 +364,9 @@ export default function PropertyDetailModal({
   } | null>(null);
   const [isFetchingComparableSales, setIsFetchingComparableSales] = useState(false);
   const [comparableSalesError, setComparableSalesError] = useState<string | null>(null);
+  // Row selection for outlier filtering
+  const [csKfSelected, setCsKfSelected] = useState<Set<number>>(new Set());
+  const [csAiSelected, setCsAiSelected] = useState<Set<number>>(new Set());
 
   // Populate from DB when loaded
   useEffect(() => {
@@ -371,6 +374,31 @@ export default function PropertyDetailModal({
       setComparableSalesData(savedComparableSales);
     }
   }, [savedComparableSales]);
+
+  // Auto-initialize selection (deselect outliers) when comparable sales data loads
+  useEffect(() => {
+    if (!comparableSalesData) return;
+    function initSelection(rows: any[], setter: (s: Set<number>) => void) {
+      if (!rows.length) return;
+      const sqmVals = rows.map((r: any) => (r.pricePerSqM != null && r.pricePerSqM > 0 ? r.pricePerSqM : null));
+      const valid = sqmVals.filter((v: number | null): v is number => v !== null);
+      let outlierSet = new Set<number>();
+      if (valid.length >= 4) {
+        const sorted = [...valid].sort((a: number, b: number) => a - b);
+        const q1 = sorted[Math.floor(sorted.length * 0.25)];
+        const q3 = sorted[Math.floor(sorted.length * 0.75)];
+        const iqr = q3 - q1;
+        rows.forEach((r: any, i: number) => {
+          if (r.pricePerSqM != null && (r.pricePerSqM < q1 - 1.5 * iqr || r.pricePerSqM > q3 + 1.5 * iqr)) {
+            outlierSet.add(i);
+          }
+        });
+      }
+      setter(new Set(rows.map((_: any, i: number) => i).filter((i: number) => !outlierSet.has(i))));
+    }
+    initSelection(comparableSalesData.titleDeedProperties, setCsKfSelected);
+    initSelection(comparableSalesData.properties, setCsAiSelected);
+  }, [comparableSalesData]);
 
   const fetchComparableSales = async () => {
     if (!property) return;
@@ -3479,148 +3507,270 @@ export default function PropertyDetailModal({
                     </Button>
                   </CardContent>
                 </Card>
-              ) : (
-                <div className="space-y-4">
-                  {/* Summary card */}
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center justify-between text-base">
-                        <span className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4" />
-                          {comparableSalesData.dataSource === "knowledgeFactory"
-                            ? "Title Deed Records"
-                            : "AI-Estimated Comparable Sales"}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={comparableSalesData.dataSource === "knowledgeFactory" ? "default" : "secondary"}>
-                            {comparableSalesData.dataSource === "knowledgeFactory" ? "Deeds Office Data" : "AI Estimate"}
-                          </Badge>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => { setComparableSalesData(null); setComparableSalesError(null); }}
-                          >
-                            Refresh
-                          </Button>
-                        </div>
-                      </CardTitle>
-                      {comparableSalesData.averageSalePrice > 0 && (
-                        <CardDescription>
-                          Average sale price:{" "}
-                          <span className="font-semibold text-foreground">
-                            R{comparableSalesData.averageSalePrice.toLocaleString()}
-                          </span>
-                          {Number(property?.price) > 0 && comparableSalesData.averageSalePrice > 0 && (
-                            <span className={`ml-2 text-xs font-medium ${Number(property.price) > comparableSalesData.averageSalePrice ? "text-amber-600" : "text-green-600"}`}>
-                              {Number(property.price) > comparableSalesData.averageSalePrice
-                                ? `+${Math.round(((Number(property.price) - comparableSalesData.averageSalePrice) / comparableSalesData.averageSalePrice) * 100)}% above avg`
-                                : `${Math.round(((Number(property.price) - comparableSalesData.averageSalePrice) / comparableSalesData.averageSalePrice) * 100)}% below avg`}
+              ) : (() => {
+                  // Compute outlier flags + selected-row averages
+                  function csOutliers(rows: any[]): boolean[] {
+                    const vals = rows.map((r: any) => (r.pricePerSqM != null && r.pricePerSqM > 0 ? r.pricePerSqM : null));
+                    const valid = vals.filter((v: number | null): v is number => v !== null);
+                    if (valid.length < 4) return rows.map(() => false);
+                    const sorted = [...valid].sort((a: number, b: number) => a - b);
+                    const q1 = sorted[Math.floor(sorted.length * 0.25)];
+                    const q3 = sorted[Math.floor(sorted.length * 0.75)];
+                    const iqr = q3 - q1;
+                    return vals.map((v: number | null) => v !== null && (v < q1 - 1.5 * iqr || v > q3 + 1.5 * iqr));
+                  }
+
+                  const kfRows = comparableSalesData!.titleDeedProperties;
+                  const aiRows = comparableSalesData!.properties;
+                  const activeRows = kfRows.length > 0 ? kfRows : aiRows;
+                  const activeSelected = kfRows.length > 0 ? csKfSelected : csAiSelected;
+                  const setActiveSelected = kfRows.length > 0 ? setCsKfSelected : setCsAiSelected;
+
+                  const kfOutliers = csOutliers(kfRows);
+                  const aiOutliers = csOutliers(aiRows);
+
+                  const selRows = activeRows.filter((_: any, i: number) => activeSelected.has(i));
+                  const avgPrice = selRows.length > 0
+                    ? Math.round(selRows.reduce((s: number, r: any) => s + (r.salePrice ?? 0), 0) / selRows.length)
+                    : 0;
+                  const sqmRows = selRows.filter((r: any) => r.pricePerSqM != null && r.pricePerSqM > 0);
+                  const avgSqm = sqmRows.length > 0
+                    ? Math.round(sqmRows.reduce((s: number, r: any) => s + r.pricePerSqM, 0) / sqmRows.length)
+                    : 0;
+
+                  const hasOutliers = (kfRows.length > 0 ? kfOutliers : aiOutliers).some(Boolean);
+
+                  return (
+                    <div className="space-y-4">
+                      {/* Summary card */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="flex items-center justify-between text-base">
+                            <span className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4" />
+                              {comparableSalesData!.dataSource === "knowledgeFactory"
+                                ? "Title Deed Records"
+                                : "AI-Estimated Comparable Sales"}
                             </span>
-                          )}
-                        </CardDescription>
+                            <div className="flex items-center gap-2">
+                              {hasOutliers && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 border-red-200 hover:bg-red-50"
+                                  onClick={() => {
+                                    const outlierFlags = kfRows.length > 0 ? kfOutliers : aiOutliers;
+                                    setActiveSelected(new Set(activeRows.map((_: any, i: number) => i).filter((i: number) => !outlierFlags[i])));
+                                  }}
+                                >
+                                  Deselect outliers
+                                </Button>
+                              )}
+                              <Badge variant={comparableSalesData!.dataSource === "knowledgeFactory" ? "default" : "secondary"}>
+                                {comparableSalesData!.dataSource === "knowledgeFactory" ? "Deeds Office Data" : "AI Estimate"}
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => { setComparableSalesData(null); setComparableSalesError(null); }}
+                              >
+                                Refresh
+                              </Button>
+                            </div>
+                          </CardTitle>
+                          <CardDescription className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                            {avgPrice > 0 && (
+                              <span>
+                                Avg sale price:{" "}
+                                <span className="font-semibold text-foreground">R{avgPrice.toLocaleString()}</span>
+                                {Number(property?.price) > 0 && (
+                                  <span className={`ml-2 text-xs font-medium ${Number(property!.price) > avgPrice ? "text-amber-600" : "text-green-600"}`}>
+                                    {Number(property!.price) > avgPrice
+                                      ? `+${Math.round(((Number(property!.price) - avgPrice) / avgPrice) * 100)}% above avg`
+                                      : `${Math.round(((Number(property!.price) - avgPrice) / avgPrice) * 100)}% below avg`}
+                                  </span>
+                                )}
+                              </span>
+                            )}
+                            {avgSqm > 0 && (
+                              <span>
+                                Avg R/m²:{" "}
+                                <span className="font-semibold text-foreground">R{avgSqm.toLocaleString()}</span>
+                              </span>
+                            )}
+                            <span className="text-muted-foreground">{activeSelected.size}/{activeRows.length} selected</span>
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+
+                      {/* Title deed properties table (KF data) */}
+                      {kfRows.length > 0 && (
+                        <Card>
+                          <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="border-b bg-muted/50">
+                                    <th className="py-3 px-3 w-10">
+                                      <input
+                                        type="checkbox"
+                                        checked={kfRows.every((_: any, i: number) => csKfSelected.has(i))}
+                                        onChange={() => {
+                                          const allOn = kfRows.every((_: any, i: number) => csKfSelected.has(i));
+                                          setCsKfSelected(allOn ? new Set() : new Set(kfRows.map((_: any, i: number) => i)));
+                                        }}
+                                        className="cursor-pointer"
+                                      />
+                                    </th>
+                                    <th className="text-left py-3 px-4 font-medium">Address</th>
+                                    <th className="text-right py-3 px-4 font-medium">Sale Price</th>
+                                    <th className="text-right py-3 px-4 font-medium">Size</th>
+                                    <th className="text-right py-3 px-4 font-medium">R/m²</th>
+                                    <th className="text-right py-3 px-4 font-medium">Sale Date</th>
+                                    <th className="text-right py-3 px-4 font-medium">Distance</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {kfRows.map((r: any, i: number) => {
+                                    const isOutlier = kfOutliers[i];
+                                    const isSelected = csKfSelected.has(i);
+                                    return (
+                                      <tr
+                                        key={i}
+                                        className={`border-b last:border-0 cursor-pointer transition-colors ${
+                                          isOutlier
+                                            ? "bg-red-50 hover:bg-red-100"
+                                            : isSelected
+                                            ? "hover:bg-muted/30"
+                                            : "opacity-50 hover:opacity-70"
+                                        }`}
+                                        onClick={() => setCsKfSelected((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; })}
+                                      >
+                                        <td className="py-3 px-3" onClick={(e) => e.stopPropagation()}>
+                                          <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={() => setCsKfSelected((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; })}
+                                            className="cursor-pointer"
+                                          />
+                                        </td>
+                                        <td className="py-3 px-4">
+                                          <div className={`font-medium ${isOutlier ? "text-red-700" : ""}`}>{r.address}</div>
+                                          {r.suburb && <div className="text-xs text-muted-foreground">{r.suburb}</div>}
+                                          {isOutlier && <div className="text-xs text-red-500 font-medium">Possible outlier</div>}
+                                        </td>
+                                        <td className={`py-3 px-4 text-right font-medium ${isOutlier ? "text-red-700" : ""}`}>
+                                          R{r.salePrice?.toLocaleString() ?? "—"}
+                                        </td>
+                                        <td className="py-3 px-4 text-right text-muted-foreground">
+                                          {r.size ? `${r.size}m²` : "—"}
+                                        </td>
+                                        <td className={`py-3 px-4 text-right font-semibold ${isOutlier ? "text-red-600" : "text-muted-foreground"}`}>
+                                          {r.pricePerSqM ? `R${r.pricePerSqM.toLocaleString()}` : "—"}
+                                        </td>
+                                        <td className="py-3 px-4 text-right text-muted-foreground">
+                                          {r.saleDate
+                                            ? new Date(r.saleDate).toLocaleDateString("en-ZA", { year: "numeric", month: "short" })
+                                            : "—"}
+                                        </td>
+                                        <td className="py-3 px-4 text-right text-muted-foreground">
+                                          {r.distanceKM != null ? `${r.distanceKM.toFixed(1)} km` : "—"}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </CardContent>
+                        </Card>
                       )}
-                    </CardHeader>
-                  </Card>
 
-                  {/* Title deed properties table (KF data) */}
-                  {comparableSalesData.titleDeedProperties.length > 0 && (
-                    <Card>
-                      <CardContent className="p-0">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="border-b bg-muted/50">
-                                <th className="text-left py-3 px-4 font-medium">Address</th>
-                                <th className="text-right py-3 px-4 font-medium">Sale Price</th>
-                                <th className="text-right py-3 px-4 font-medium">Size</th>
-                                <th className="text-right py-3 px-4 font-medium">R/m²</th>
-                                <th className="text-right py-3 px-4 font-medium">Sale Date</th>
-                                <th className="text-right py-3 px-4 font-medium">Distance</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {comparableSalesData.titleDeedProperties.map((p: any, i: number) => (
-                                <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
-                                  <td className="py-3 px-4">
-                                    <div className="font-medium">{p.address}</div>
-                                    {p.suburb && <div className="text-xs text-muted-foreground">{p.suburb}</div>}
-                                  </td>
-                                  <td className="py-3 px-4 text-right font-medium">
-                                    R{p.salePrice?.toLocaleString() ?? "—"}
-                                  </td>
-                                  <td className="py-3 px-4 text-right text-muted-foreground">
-                                    {p.size ? `${p.size}m²` : "—"}
-                                  </td>
-                                  <td className="py-3 px-4 text-right text-muted-foreground">
-                                    {p.pricePerSqM ? `R${p.pricePerSqM.toLocaleString()}` : "—"}
-                                  </td>
-                                  <td className="py-3 px-4 text-right text-muted-foreground">
-                                    {p.saleDate
-                                      ? new Date(p.saleDate).toLocaleDateString("en-ZA", { year: "numeric", month: "short" })
-                                      : "—"}
-                                  </td>
-                                  <td className="py-3 px-4 text-right text-muted-foreground">
-                                    {p.distanceKM != null ? `${p.distanceKM.toFixed(1)} km` : "—"}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* OpenAI fallback properties */}
-                  {comparableSalesData.properties.length > 0 && (
-                    <Card>
-                      <CardContent className="p-0">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="border-b bg-muted/50">
-                                <th className="text-left py-3 px-4 font-medium">Address</th>
-                                <th className="text-right py-3 px-4 font-medium">Sale Price</th>
-                                <th className="text-right py-3 px-4 font-medium">Size</th>
-                                <th className="text-right py-3 px-4 font-medium">R/m²</th>
-                                <th className="text-right py-3 px-4 font-medium">Bedrooms</th>
-                                <th className="text-right py-3 px-4 font-medium">Sale Date</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {comparableSalesData.properties.map((p: any, i: number) => (
-                                <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
-                                  <td className="py-3 px-4">
-                                    <div className="font-medium">{p.address}</div>
-                                    <Badge variant="outline" className="text-xs mt-1">
-                                      {typeof p.similarity === "number" ? `${p.similarity}% match` : p.similarity}
-                                    </Badge>
-                                  </td>
-                                  <td className="py-3 px-4 text-right font-medium">
-                                    R{p.salePrice?.toLocaleString() ?? "—"}
-                                  </td>
-                                  <td className="py-3 px-4 text-right text-muted-foreground">
-                                    {p.size ? `${p.size}m²` : "—"}
-                                  </td>
-                                  <td className="py-3 px-4 text-right text-muted-foreground">
-                                    {p.pricePerSqM ? `R${p.pricePerSqM.toLocaleString()}` : "—"}
-                                  </td>
-                                  <td className="py-3 px-4 text-right text-muted-foreground">
-                                    {p.bedrooms ?? "—"}
-                                  </td>
-                                  <td className="py-3 px-4 text-right text-muted-foreground">
-                                    {p.saleDate ?? "—"}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              )}
+                      {/* OpenAI fallback properties */}
+                      {aiRows.length > 0 && (
+                        <Card>
+                          <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="border-b bg-muted/50">
+                                    <th className="py-3 px-3 w-10">
+                                      <input
+                                        type="checkbox"
+                                        checked={aiRows.every((_: any, i: number) => csAiSelected.has(i))}
+                                        onChange={() => {
+                                          const allOn = aiRows.every((_: any, i: number) => csAiSelected.has(i));
+                                          setCsAiSelected(allOn ? new Set() : new Set(aiRows.map((_: any, i: number) => i)));
+                                        }}
+                                        className="cursor-pointer"
+                                      />
+                                    </th>
+                                    <th className="text-left py-3 px-4 font-medium">Address</th>
+                                    <th className="text-right py-3 px-4 font-medium">Sale Price</th>
+                                    <th className="text-right py-3 px-4 font-medium">Size</th>
+                                    <th className="text-right py-3 px-4 font-medium">R/m²</th>
+                                    <th className="text-right py-3 px-4 font-medium">Bedrooms</th>
+                                    <th className="text-right py-3 px-4 font-medium">Sale Date</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {aiRows.map((r: any, i: number) => {
+                                    const isOutlier = aiOutliers[i];
+                                    const isSelected = csAiSelected.has(i);
+                                    return (
+                                      <tr
+                                        key={i}
+                                        className={`border-b last:border-0 cursor-pointer transition-colors ${
+                                          isOutlier
+                                            ? "bg-red-50 hover:bg-red-100"
+                                            : isSelected
+                                            ? "hover:bg-muted/30"
+                                            : "opacity-50 hover:opacity-70"
+                                        }`}
+                                        onClick={() => setCsAiSelected((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; })}
+                                      >
+                                        <td className="py-3 px-3" onClick={(e) => e.stopPropagation()}>
+                                          <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={() => setCsAiSelected((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; })}
+                                            className="cursor-pointer"
+                                          />
+                                        </td>
+                                        <td className="py-3 px-4">
+                                          <div className={`font-medium ${isOutlier ? "text-red-700" : ""}`}>{r.address}</div>
+                                          <Badge variant="outline" className="text-xs mt-1">
+                                            {typeof r.similarity === "number" ? `${r.similarity}% match` : r.similarity}
+                                          </Badge>
+                                          {isOutlier && <div className="text-xs text-red-500 font-medium mt-1">Possible outlier</div>}
+                                        </td>
+                                        <td className={`py-3 px-4 text-right font-medium ${isOutlier ? "text-red-700" : ""}`}>
+                                          R{r.salePrice?.toLocaleString() ?? "—"}
+                                        </td>
+                                        <td className="py-3 px-4 text-right text-muted-foreground">
+                                          {r.size ? `${r.size}m²` : "—"}
+                                        </td>
+                                        <td className={`py-3 px-4 text-right font-semibold ${isOutlier ? "text-red-600" : "text-muted-foreground"}`}>
+                                          {r.pricePerSqM ? `R${r.pricePerSqM.toLocaleString()}` : "—"}
+                                        </td>
+                                        <td className="py-3 px-4 text-right text-muted-foreground">
+                                          {r.bedrooms ?? "—"}
+                                        </td>
+                                        <td className="py-3 px-4 text-right text-muted-foreground">
+                                          {r.saleDate ?? "—"}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  );
+                })()}
             </TabsContent>
           </Tabs>
         </DialogContent>
