@@ -660,7 +660,7 @@ ${premiumImageContext}
       model: "gpt-5.1", // gpt-5.1: latest flagship model, best reasoning and vision
       messages,
       response_format: { type: "json_object" },
-      max_tokens: 1500,
+      max_completion_tokens: 1500,
       temperature: 0.4, // Lower temperature for more consistent, reproducible valuations
     });
 

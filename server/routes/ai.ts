@@ -68,7 +68,7 @@ Remember, the Rent Compare tool is designed to bridge the trust gap between owne
         }
       ],
       temperature: 0.7,
-      max_tokens: 500
+      max_completion_tokens: 500
     });
 
     res.json({ advice: response.choices[0].message.content });

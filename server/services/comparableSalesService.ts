@@ -166,7 +166,7 @@ Your response should be based on realistic market data for the area, with sale p
         },
       ],
       temperature: 0.3, // Lower temperature for more deterministic/factual responses
-      max_tokens: 2000, // Allow plenty of tokens for the detailed response
+      max_completion_tokens: 2000, // Allow plenty of tokens for the detailed response
       response_format: { type: "json_object" },
     });
 
