@@ -750,10 +750,20 @@ export default function ReportPreviewPage() {
                     </button>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-xs font-semibold text-slate-700">
-                  {avgPrice > 0 && <span>Avg price: R{avgPrice.toLocaleString()}</span>}
-                  {avgSqm > 0 && <span>Avg R/m²: R{avgSqm.toLocaleString()}</span>}
-                  <span className="text-slate-400 font-normal">{csSelected.size}/{rows.length} selected</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {avgPrice > 0 && (
+                    <div className="flex flex-col items-center px-3 py-1.5 rounded-lg bg-slate-900 text-white min-w-[90px]">
+                      <span className="text-[9px] font-semibold uppercase tracking-widest text-white/50 leading-none mb-0.5">Avg Price</span>
+                      <span className="text-xs font-bold leading-none">R{avgPrice.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {avgSqm > 0 && (
+                    <div className="flex flex-col items-center px-3 py-1.5 rounded-lg bg-slate-900 text-white min-w-[90px]">
+                      <span className="text-[9px] font-semibold uppercase tracking-widest text-white/50 leading-none mb-0.5">Avg R/m²</span>
+                      <span className="text-xs font-bold leading-none">R{avgSqm.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <span className="text-[11px] text-slate-400 ml-1">{csSelected.size}/{rows.length} selected</span>
                 </div>
               </div>
 
