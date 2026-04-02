@@ -632,8 +632,8 @@ ${premiumImageContext}
             UPDATE rental_performance_data 
             SET 
               address = ${address},
-              bedrooms = ${bedrooms},
-              bathrooms = ${bathrooms},
+              bedrooms = ${Math.round(Number(bedrooms))},
+              bathrooms = ${Math.round(Number(bathrooms))},
               property_type = ${propertyType},
               price = ${price?.toString()},
               short_term_data = ${JSON.stringify(rentalPerformance.shortTerm)},
@@ -657,7 +657,7 @@ ${premiumImageContext}
               long_term_min_yield, long_term_max_yield, long_term_reasoning,
               images_analyzed, analysis_model
             ) VALUES (
-              ${req.user.id}, ${propertyIdToUse}, ${address}, ${bedrooms}, ${bathrooms}, 
+              ${req.user.id}, ${propertyIdToUse}, ${address}, ${Math.round(Number(bedrooms))}, ${Math.round(Number(bathrooms))},
               ${propertyType}, ${price?.toString()}, ${JSON.stringify(rentalPerformance.shortTerm)},
               ${rentalPerformance.longTerm?.minRental?.toString()}, ${rentalPerformance.longTerm?.maxRental?.toString()},
               ${rentalPerformance.longTerm?.minYield?.toString()}, ${rentalPerformance.longTerm?.maxYield?.toString()},
@@ -827,34 +827,22 @@ ${premiumImageContext}
         }, {} as Record<string, { monthlyPayment: number; equityBuildup: number; remainingBalance: number }>)
       };
 
-      // Save to database directly using SQL to avoid schema conflicts
+      // Update the existing rental_performance_data record with financial analysis data
+      // (The record was already created/updated above when saving shortTerm/longTerm data)
       await db.execute(sql`
-        INSERT INTO rental_performance_data (
-          property_id, user_id, address, 
-          annual_property_appreciation_data, cashflow_analysis_data, financing_analysis_data,
-          current_deposit_percentage, current_interest_rate, current_loan_term,
-          current_deposit_amount, current_loan_amount, current_monthly_repayment,
-          created_at, updated_at
-        ) VALUES (
-          ${propertyIdToUse}, ${req.user.id}, ${address},
-          ${JSON.stringify(annualPropertyAppreciationData)}, 
-          ${JSON.stringify(cashflowAnalysisData)}, 
-          ${JSON.stringify(financingAnalysisData)},
-          ${depositPercentage.toString()}, ${interestRate.toString()}, ${loanTermYears},
-          ${depositAmount.toString()}, ${loanAmount.toString()}, ${monthlyPayment.toString()},
-          NOW(), NOW()
-        )
-        ON CONFLICT (property_id, user_id) DO UPDATE SET
-          annual_property_appreciation_data = excluded.annual_property_appreciation_data,
-          cashflow_analysis_data = excluded.cashflow_analysis_data,
-          financing_analysis_data = excluded.financing_analysis_data,
-          current_deposit_percentage = excluded.current_deposit_percentage,
-          current_interest_rate = excluded.current_interest_rate,
-          current_loan_term = excluded.current_loan_term,
-          current_deposit_amount = excluded.current_deposit_amount,
-          current_loan_amount = excluded.current_loan_amount,
-          current_monthly_repayment = excluded.current_monthly_repayment,
+        UPDATE rental_performance_data
+        SET
+          annual_property_appreciation_data = ${JSON.stringify(annualPropertyAppreciationData)},
+          cashflow_analysis_data = ${JSON.stringify(cashflowAnalysisData)},
+          financing_analysis_data = ${JSON.stringify(financingAnalysisData)},
+          current_deposit_percentage = ${depositPercentage.toString()},
+          current_interest_rate = ${interestRate.toString()},
+          current_loan_term = ${loanTermYears},
+          current_deposit_amount = ${depositAmount.toString()},
+          current_loan_amount = ${loanAmount.toString()},
+          current_monthly_repayment = ${monthlyPayment.toString()},
           updated_at = NOW()
+        WHERE property_id = ${propertyIdToUse} AND user_id = ${req.user.id}
       `);
 
       console.log('Successfully saved financial analysis data with all percentiles for property', propertyIdToUse);

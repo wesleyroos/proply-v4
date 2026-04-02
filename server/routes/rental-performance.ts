@@ -118,17 +118,21 @@ export async function fetchPriceLabsData(
   userId?: number,
 ): Promise<ShortTermRentalData> {
   try {
+    // Ensure bedrooms/bathrooms are integers (DB may return "4.0" as a string)
+    const bedroomsInt = Math.round(Number(bedrooms));
+    const bathroomsInt = Math.round(Number(bathrooms));
+
     // Construct the PriceLabs Revenue Estimator API URL with query parameters
     const apiUrl = new URL("https://api.pricelabs.co/v1/revenue/estimator");
     apiUrl.searchParams.set("version", "2");
     apiUrl.searchParams.set("address", address);
     apiUrl.searchParams.set("currency", "ZAR"); // South African Rand
-    apiUrl.searchParams.set("bedroom_category", bedrooms.toString());
+    apiUrl.searchParams.set("bedroom_category", bedroomsInt.toString());
 
     // Add bathroom filter if available
-    if (bathrooms > 0) {
+    if (bathroomsInt > 0) {
       const filters = JSON.stringify({
-        bathroom: { gt: bathrooms - 1 },
+        bathroom: { gt: bathroomsInt - 1 },
       });
       apiUrl.searchParams.set("filters", filters);
     }
@@ -143,7 +147,7 @@ export async function fetchPriceLabsData(
     });
 
     // Extract data from PriceLabs response format
-    const bedroomData = data.KPIsByBedroomCategory?.[bedrooms.toString()];
+    const bedroomData = data.KPIsByBedroomCategory?.[bedroomsInt.toString()];
 
     if (!bedroomData) {
       throw new Error("No data available for this bedroom category");
