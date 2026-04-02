@@ -59,35 +59,33 @@ interface QualityScores {
   imageCount: number;
 }
 
-// Analyse all images in batches of 10, return averaged quality scores
+// Analyse all images with parallel batching + synthesis for maximum accuracy
 async function analyzeAllImagesInBatches(images: string[], openaiClient: OpenAI): Promise<QualityScores | null> {
   const BATCH_SIZE = 10;
-  const valid = await filterValidImages(images);
-  if (valid.length === 0) return null;
+  if (images.length === 0) return null;
 
-  const batchPrompt = `Score this property batch on each dimension (1–5):
-- finishes: Countertops, flooring, cabinetry, fixtures (1=basic, 5=bespoke/designer)
-- condition: Wear, upkeep, renovation needs (1=needs work, 5=immaculate)
-- layout: Space, ceiling height, natural light, flow (1=cramped, 5=exceptional)
-- views: Mountain/ocean/city/garden/privacy (1=none, 5=panoramic premium)
-- amenities: Pool, braai, balcony, garage, security (1=none, 5=fully featured)
-- overall: Overall quality rating (1=Basic, 2=Standard, 3=Good, 4=Premium, 5=Luxury)
+  const batchPrompt = `You are assessing a batch of property photos. Score what you can see on each dimension (1–5):
+- finishes: Countertops, flooring, cabinetry, fixtures, fittings (1=builder's basic, 5=bespoke/designer)
+- condition: Evidence of wear, renovation needs, upkeep quality (1=needs work, 5=immaculate/new)
+- layout: Space, ceiling heights, natural light, flow (1=cramped/dated, 5=exceptional)
+- views: Mountain/ocean/city/garden views, privacy (1=none visible, 5=panoramic premium)
+- amenities: Pool, braai, balcony, garage, security visible (1=none, 5=fully featured)
+- overall: Holistic quality rating (1=Basic, 2=Standard, 3=Good, 4=Premium, 5=Luxury)
 
-Respond ONLY with valid JSON: {"finishes":N,"condition":N,"layout":N,"views":N,"amenities":N,"overall":N,"justification":"one sentence"}`;
+Note which rooms/areas these images cover. Be precise — this feeds directly into the property valuation.
+Respond ONLY with valid JSON: {"finishes":N,"condition":N,"layout":N,"views":N,"amenities":N,"overall":N,"justification":"2 sentences noting what you saw and any standout features or concerns","roomsCovered":"brief list"}`;
 
   const batches: string[][] = [];
-  for (let i = 0; i < valid.length; i += BATCH_SIZE) {
-    batches.push(valid.slice(i, i + BATCH_SIZE));
+  for (let i = 0; i < images.length; i += BATCH_SIZE) {
+    batches.push(images.slice(i, i + BATCH_SIZE));
   }
 
-  console.log(`Analysing ${valid.length} images in ${batches.length} batch(es) of up to ${BATCH_SIZE}`);
+  console.log(`Scoring ${images.length} images across ${batches.length} parallel batch(es)`);
 
-  const results: Array<Omit<QualityScores, 'justification' | 'imageCount'> & { justification: string }> = [];
-
-  for (let b = 0; b < batches.length; b++) {
-    const batch = batches[b];
-    try {
-      const resp = await openaiClient.chat.completions.create({
+  // Run all batches in parallel
+  const batchResults = await Promise.allSettled(
+    batches.map((batch, b) =>
+      openaiClient.chat.completions.create({
         model: "gpt-5.1",
         messages: [{
           role: "user",
@@ -97,25 +95,67 @@ Respond ONLY with valid JSON: {"finishes":N,"condition":N,"layout":N,"views":N,"
           ]
         }],
         response_format: { type: "json_object" },
-        max_completion_tokens: 300,
+        max_completion_tokens: 400,
         temperature: 0.2,
-      });
-      const content = resp.choices[0].message.content;
-      if (content) {
+      }).then(resp => {
+        const content = resp.choices[0].message.content;
+        if (!content) throw new Error('Empty response');
         const parsed = JSON.parse(content);
-        results.push(parsed);
-        console.log(`Batch ${b + 1}/${batches.length} scored: overall=${parsed.overall}`);
-      }
-    } catch (err) {
-      console.warn(`Image batch ${b + 1} scoring failed, skipping:`, err);
-    }
+        console.log(`Batch ${b + 1}/${batches.length} scored: overall=${parsed.overall} — ${parsed.roomsCovered || ''}`);
+        return parsed;
+      })
+    )
+  );
+
+  const succeeded = batchResults
+    .filter((r): r is PromiseFulfilledResult<any> => r.status === 'fulfilled')
+    .map(r => r.value);
+
+  batchResults.forEach((r, i) => {
+    if (r.status === 'rejected') console.warn(`Batch ${i + 1} failed:`, r.reason);
+  });
+
+  if (succeeded.length === 0) return null;
+
+  // If only one batch succeeded, return it directly
+  if (succeeded.length === 1) {
+    return { ...succeeded[0], imageCount: images.length };
   }
 
-  if (results.length === 0) return null;
+  // Synthesis call: reason across all batch results to produce a holistic assessment
+  const synthesisPrompt = `You have received quality assessments from ${succeeded.length} batches of property photos (${images.length} images total). Synthesise these into a single accurate overall assessment.
 
-  // Average numeric scores across batches
-  const avg = (key: keyof Omit<QualityScores, 'justification' | 'imageCount'>) =>
-    Math.round((results.reduce((s, r) => s + (r[key] as number), 0) / results.length) * 10) / 10;
+Batch results:
+${succeeded.map((r, i) => `Batch ${i + 1} (images ${i * BATCH_SIZE + 1}–${Math.min((i + 1) * BATCH_SIZE, images.length)}):
+  Rooms/areas: ${r.roomsCovered || 'not specified'}
+  Finishes: ${r.finishes}, Condition: ${r.condition}, Layout: ${r.layout}, Views: ${r.views}, Amenities: ${r.amenities}, Overall: ${r.overall}
+  Notes: ${r.justification}`).join('\n\n')}
+
+Synthesise these into final scores. Do NOT simply average — reason about which batches covered which rooms and weight accordingly. For example: if the kitchen (batch 1) scores 5 on finishes but bathrooms (batch 2) score 3, the property finishes are 4 overall. If one batch captured views and another didn't, weight the views score from the batch that saw them.
+
+Respond ONLY with valid JSON: {"finishes":N,"condition":N,"layout":N,"views":N,"amenities":N,"overall":N,"justification":"2-3 sentences summarising the property quality across all images"}`;
+
+  try {
+    const synthesis = await openaiClient.chat.completions.create({
+      model: "gpt-5.1",
+      messages: [{ role: "user", content: synthesisPrompt }],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 400,
+      temperature: 0.2,
+    });
+    const content = synthesis.choices[0].message.content;
+    if (content) {
+      const result = JSON.parse(content);
+      console.log(`Synthesis complete: overall=${result.overall} from ${images.length} images`);
+      return { ...result, imageCount: images.length };
+    }
+  } catch (err) {
+    console.warn('Synthesis call failed, falling back to weighted average:', err);
+  }
+
+  // Fallback: weighted average if synthesis fails
+  const avg = (key: string) =>
+    Math.round((succeeded.reduce((s: number, r: any) => s + (r[key] as number), 0) / succeeded.length) * 10) / 10;
 
   return {
     finishes: avg('finishes'),
@@ -124,8 +164,8 @@ Respond ONLY with valid JSON: {"finishes":N,"condition":N,"layout":N,"views":N,"
     views: avg('views'),
     amenities: avg('amenities'),
     overall: avg('overall'),
-    justification: results[results.length - 1].justification,
-    imageCount: valid.length,
+    justification: succeeded.map((r: any) => r.justification).join(' '),
+    imageCount: images.length,
   };
 }
 
