@@ -34,11 +34,10 @@ async function validateImageSize(imageUrl: string): Promise<boolean> {
   }
 }
 
-// Function to filter valid images for OpenAI
+// Filter valid images (no hard cap — caller decides how many to pass)
 async function filterValidImages(images: string[]): Promise<string[]> {
   const validImages: string[] = [];
-  
-  for (const imageUrl of images.slice(0, 10)) {
+  for (const imageUrl of images) {
     const isValid = await validateImageSize(imageUrl);
     if (isValid) {
       validImages.push(imageUrl);
@@ -46,8 +45,88 @@ async function filterValidImages(images: string[]): Promise<string[]> {
       console.log('Skipping oversized image:', imageUrl);
     }
   }
-  
   return validImages;
+}
+
+interface QualityScores {
+  finishes: number;
+  condition: number;
+  layout: number;
+  views: number;
+  amenities: number;
+  overall: number;
+  justification: string;
+  imageCount: number;
+}
+
+// Analyse all images in batches of 10, return averaged quality scores
+async function analyzeAllImagesInBatches(images: string[], openaiClient: OpenAI): Promise<QualityScores | null> {
+  const BATCH_SIZE = 10;
+  const valid = await filterValidImages(images);
+  if (valid.length === 0) return null;
+
+  const batchPrompt = `Score this property batch on each dimension (1–5):
+- finishes: Countertops, flooring, cabinetry, fixtures (1=basic, 5=bespoke/designer)
+- condition: Wear, upkeep, renovation needs (1=needs work, 5=immaculate)
+- layout: Space, ceiling height, natural light, flow (1=cramped, 5=exceptional)
+- views: Mountain/ocean/city/garden/privacy (1=none, 5=panoramic premium)
+- amenities: Pool, braai, balcony, garage, security (1=none, 5=fully featured)
+- overall: Overall quality rating (1=Basic, 2=Standard, 3=Good, 4=Premium, 5=Luxury)
+
+Respond ONLY with valid JSON: {"finishes":N,"condition":N,"layout":N,"views":N,"amenities":N,"overall":N,"justification":"one sentence"}`;
+
+  const batches: string[][] = [];
+  for (let i = 0; i < valid.length; i += BATCH_SIZE) {
+    batches.push(valid.slice(i, i + BATCH_SIZE));
+  }
+
+  console.log(`Analysing ${valid.length} images in ${batches.length} batch(es) of up to ${BATCH_SIZE}`);
+
+  const results: Array<Omit<QualityScores, 'justification' | 'imageCount'> & { justification: string }> = [];
+
+  for (let b = 0; b < batches.length; b++) {
+    const batch = batches[b];
+    try {
+      const resp = await openaiClient.chat.completions.create({
+        model: "gpt-5.1",
+        messages: [{
+          role: "user",
+          content: [
+            { type: "text", text: batchPrompt },
+            ...batch.map(url => ({ type: "image_url" as const, image_url: { url } }))
+          ]
+        }],
+        response_format: { type: "json_object" },
+        max_completion_tokens: 300,
+        temperature: 0.2,
+      });
+      const content = resp.choices[0].message.content;
+      if (content) {
+        const parsed = JSON.parse(content);
+        results.push(parsed);
+        console.log(`Batch ${b + 1}/${batches.length} scored: overall=${parsed.overall}`);
+      }
+    } catch (err) {
+      console.warn(`Image batch ${b + 1} scoring failed, skipping:`, err);
+    }
+  }
+
+  if (results.length === 0) return null;
+
+  // Average numeric scores across batches
+  const avg = (key: keyof Omit<QualityScores, 'justification' | 'imageCount'>) =>
+    Math.round((results.reduce((s, r) => s + (r[key] as number), 0) / results.length) * 10) / 10;
+
+  return {
+    finishes: avg('finishes'),
+    condition: avg('condition'),
+    layout: avg('layout'),
+    views: avg('views'),
+    amenities: avg('amenities'),
+    overall: avg('overall'),
+    justification: results[results.length - 1].justification,
+    imageCount: valid.length,
+  };
 }
 
 // Function to calculate and save all financial data after valuation generation
@@ -632,26 +711,31 @@ ${premiumImageContext}
 
 **RENTAL IMPACT**: Apply the same quality tier to rental estimates. Rating 4–5 properties command the top 20-30% of the rental range for their bedroom count and location.`;
       
-      console.log('Validating images for OpenAI analysis:', images.length, 'images');
-      
-      // Filter out oversized images to prevent OpenAI API failures
-      const validImages = await filterValidImages(images);
-      
-      if (validImages.length > 0) {
-        console.log('Sending images to OpenAI for visual analysis:', validImages.length, 'valid images');
-        
-        messages.push({
-          role: "user",
-          content: [
-            { type: "text", text: imageAnalysisPrompt },
-            ...validImages.map((imageUrl: string) => ({
-              type: "image_url",
-              image_url: { url: imageUrl }
-            }))
-          ]
-        });
+      console.log(`Running batched image analysis across ${images.length} images...`);
+      const qualityScores = await analyzeAllImagesInBatches(images, openai);
+
+      if (qualityScores) {
+        const ratingLabel = ['', 'Basic', 'Standard', 'Good', 'Premium', 'Luxury'][Math.round(qualityScores.overall)] || 'Good';
+        const qualitySummary = `VISUAL QUALITY ASSESSMENT (derived from ${qualityScores.imageCount} property images analysed in batches):
+
+Dimension scores (1–5):
+- Finishes & Materials: ${qualityScores.finishes}
+- Condition & Maintenance: ${qualityScores.condition}
+- Layout & Space: ${qualityScores.layout}
+- Views & Outlook: ${qualityScores.views}
+- Amenities Visible: ${qualityScores.amenities}
+- OVERALL finishesRating: ${qualityScores.overall} (${ratingLabel})
+
+Key observation: ${qualityScores.justification}
+
+${imageAnalysisPrompt.split('STEP 2')[1] ? 'STEP 2' + imageAnalysisPrompt.split('STEP 2')[1] : ''}
+
+Your finishesRating in the JSON output MUST be ${Math.round(qualityScores.overall)} (${ratingLabel}) unless the text description of the property provides strong evidence to revise it.`;
+
+        messages.push({ role: "user", content: qualitySummary });
+        console.log(`Batch image analysis complete: overall=${qualityScores.overall} (${ratingLabel}) from ${qualityScores.imageCount} images`);
       } else {
-        console.log('No valid images found for OpenAI analysis - all images too large or inaccessible');
+        console.log('No valid images found for analysis');
       }
     }
 
