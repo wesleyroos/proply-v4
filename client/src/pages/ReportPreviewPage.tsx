@@ -464,15 +464,14 @@ export default function ReportPreviewPage() {
               if (!hasRange && !hasMidline) return null;
               return (
                 <div className="mb-6">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-amber-300/70 mb-1">Estimated Valuation</div>
-                  <div className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-300">
-                    {hasRange
-                      ? <>{fmt(conservative)} – {fmt(optimistic)}</>
-                      : fmt(midline)
-                    }
+                  <div className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#86efac' }}>Midline Estimate</div>
+                  <div className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: '#4ade80' }}>
+                    {fmt(hasMidline ? midline : (hasRange ? (conservative + optimistic) / 2 : null))}
                   </div>
-                  {hasRange && midline && midline > 0 && (
-                    <div className="text-xs text-white/40 mt-1">Midline estimate: {fmt(midline)}</div>
+                  {hasRange && (
+                    <div className="text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                      Range: {fmt(conservative)} – {fmt(optimistic)}
+                    </div>
                   )}
                 </div>
               );
@@ -583,7 +582,7 @@ export default function ReportPreviewPage() {
                       <tr className="bg-slate-50 border-b border-slate-100">
                         <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Estimate Type</th>
                         <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Formula</th>
-                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Valuation</th>
+                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Valuation</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -591,7 +590,7 @@ export default function ReportPreviewPage() {
                         <tr key={i} className="border-b border-slate-50 last:border-0">
                           <td className="px-4 py-3 font-semibold text-slate-800">{v.type}</td>
                           <td className="px-4 py-3 text-center text-slate-500 text-xs">{v.formula || "N/A"}</td>
-                          <td className="px-4 py-3 text-right font-bold" style={{ color: accentColor }}>{fmt(v.value)}</td>
+                          <td className="px-4 py-3 text-right font-bold whitespace-nowrap" style={{ color: accentColor }}>{fmt(v.value)}</td>
                         </tr>
                       ))}
                     </tbody>
