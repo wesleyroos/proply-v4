@@ -192,63 +192,57 @@ export default function MarketDataPage() {
   const activeFilterCount = Object.values(appliedFilters).filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="p-8 space-y-8">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-5">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-slate-900">Market Data</h1>
-          </div>
-          <p className="text-sm text-slate-500 ml-11">
-            Title deed sale records sourced from Knowledge Factory
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Market Data</h1>
+          <p className="text-muted-foreground">
+            Title deed sale records sourced from Knowledge Factory.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6 space-y-5">
-        {/* Stats bar */}
-        {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: "Total Records", value: stats.total?.toLocaleString() ?? "—", icon: Database },
-              { label: "Suburbs", value: stats.suburbs?.toLocaleString() ?? "—", icon: MapPin },
-              { label: "Avg Sale Price", value: fmt(stats.avg_price), icon: DollarSign },
-              { label: "Avg R/m²", value: stats.avg_price_per_sqm ? `R ${stats.avg_price_per_sqm.toLocaleString("en-ZA")}` : "—", icon: Maximize2 },
-            ].map((s) => (
-              <div key={s.label} className="bg-white rounded-xl border border-slate-100 px-4 py-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
-                  <s.icon className="h-4 w-4 text-slate-400" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{s.label}</p>
-                  <p className="text-sm font-bold text-slate-800">{s.value}</p>
-                </div>
+      {/* Stats bar */}
+      {stats && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { label: "Total Records", value: stats.total?.toLocaleString() ?? "0", icon: Database },
+            { label: "Suburbs", value: stats.suburbs?.toLocaleString() ?? "0", icon: MapPin },
+            { label: "Avg Sale Price", value: fmt(stats.avg_price), icon: DollarSign },
+            { label: "Avg R/m²", value: stats.avg_price_per_sqm ? `R ${stats.avg_price_per_sqm.toLocaleString("en-ZA")}` : "—", icon: Maximize2 },
+          ].map((s) => (
+            <div key={s.label} className="bg-white rounded-xl border px-4 py-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
+                <s.icon className="h-4 w-4 text-slate-400" />
               </div>
-            ))}
-          </div>
-        )}
+              <div>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="text-lg font-bold">{s.value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
         {/* Filter panel */}
-        <div className="bg-white rounded-xl border border-slate-100">
+        <div className="bg-white rounded-xl border">
           <button
             onClick={() => setFiltersOpen((o) => !o)}
-            className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-slate-700"
+            className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold"
           >
             <span className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-slate-400" />
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
               Filters
               {activeFilterCount > 0 && (
                 <Badge variant="secondary" className="ml-1 text-xs">{activeFilterCount} active</Badge>
               )}
             </span>
-            {filtersOpen ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+            {filtersOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
           </button>
 
           {filtersOpen && (
-            <div className="px-5 pb-5 border-t border-slate-100 pt-4">
+            <div className="px-5 pb-5 border-t pt-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 <div>
                   <label className="text-xs font-medium text-slate-500 mb-1 block">Suburb</label>
@@ -320,7 +314,7 @@ export default function MarketDataPage() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
-                <Button onClick={applyFilters} size="sm" className="bg-indigo-600 hover:bg-indigo-700">
+                <Button onClick={applyFilters} size="sm">
                   <Search className="h-3.5 w-3.5 mr-1.5" />
                   Apply Filters
                 </Button>
@@ -335,37 +329,37 @@ export default function MarketDataPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-xl border overflow-hidden">
           {(isLoading || isFetching) && (
-            <div className="flex items-center gap-2 px-5 py-3 bg-indigo-50 border-b border-indigo-100">
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-500" />
-              <span className="text-xs text-indigo-600">Loading…</span>
+            <div className="flex items-center gap-2 px-5 py-3 border-b">
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Loading…</span>
             </div>
           )}
 
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50">
-                  <TableHead className="text-xs font-semibold text-slate-500 whitespace-nowrap">Address</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500">Suburb</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500">Type</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500 text-right">Beds</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500 text-right">Size m²</TableHead>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap">Address</TableHead>
+                  <TableHead>Suburb</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Beds</TableHead>
+                  <TableHead className="text-right">Size m²</TableHead>
                   <TableHead
-                    className="text-xs font-semibold text-slate-500 text-right cursor-pointer select-none"
+                    className="text-right cursor-pointer select-none"
                     onClick={() => toggleSort("salePrice")}
                   >
                     Sale Price <SortIcon field="salePrice" />
                   </TableHead>
                   <TableHead
-                    className="text-xs font-semibold text-slate-500 text-right cursor-pointer select-none"
+                    className="text-right cursor-pointer select-none"
                     onClick={() => toggleSort("pricePerSqm")}
                   >
                     R/m² <SortIcon field="pricePerSqm" />
                   </TableHead>
                   <TableHead
-                    className="text-xs font-semibold text-slate-500 text-right cursor-pointer select-none whitespace-nowrap"
+                    className="text-right cursor-pointer select-none whitespace-nowrap"
                     onClick={() => toggleSort("saleDate")}
                   >
                     Sale Date <SortIcon field="saleDate" />
@@ -375,35 +369,35 @@ export default function MarketDataPage() {
               <TableBody>
                 {sorted.length === 0 && !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-sm text-slate-400 py-12">
-                      No records found. Try adjusting your filters.
+                    <TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-12">
+                      No records found. Records are populated automatically as comparable sales are fetched from Knowledge Factory.
                     </TableCell>
                   </TableRow>
                 )}
                 {sorted.map((row) => {
                   const ptLabel = PROPERTY_TYPES.find((t) => t.value === row.propertyType)?.label ?? row.propertyType ?? "—";
                   return (
-                    <TableRow key={row.id} className="hover:bg-slate-50 transition-colors">
-                      <TableCell className="text-xs text-slate-700 max-w-[220px] truncate" title={row.address}>
+                    <TableRow key={row.id}>
+                      <TableCell className="text-sm max-w-[220px] truncate" title={row.address}>
                         {row.address}
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500">{row.suburb ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{row.suburb ?? "—"}</TableCell>
                       <TableCell>
-                        <span className="text-xs bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">{ptLabel}</span>
+                        <span className="text-xs bg-muted text-muted-foreground rounded px-1.5 py-0.5">{ptLabel}</span>
                       </TableCell>
-                      <TableCell className="text-xs text-right text-slate-600">
+                      <TableCell className="text-sm text-right">
                         {row.bedrooms ? parseFloat(row.bedrooms) : "—"}
                       </TableCell>
-                      <TableCell className="text-xs text-right text-slate-600">
-                        {row.floorSize ? `${row.floorSize}` : "—"}
+                      <TableCell className="text-sm text-right">
+                        {row.floorSize ?? "—"}
                       </TableCell>
-                      <TableCell className="text-xs text-right font-semibold text-slate-800 whitespace-nowrap">
+                      <TableCell className="text-sm text-right font-semibold whitespace-nowrap">
                         {fmt(row.salePrice)}
                       </TableCell>
-                      <TableCell className="text-xs text-right text-slate-600 whitespace-nowrap">
+                      <TableCell className="text-sm text-right whitespace-nowrap">
                         {row.pricePerSqm ? `R ${row.pricePerSqm.toLocaleString("en-ZA")}` : "—"}
                       </TableCell>
-                      <TableCell className="text-xs text-right text-slate-500 whitespace-nowrap">
+                      <TableCell className="text-sm text-right text-muted-foreground whitespace-nowrap">
                         {fmtDate(row.saleDate)}
                       </TableCell>
                     </TableRow>
@@ -415,8 +409,8 @@ export default function MarketDataPage() {
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
-              <p className="text-xs text-slate-400">
+            <div className="flex items-center justify-between px-5 py-3 border-t">
+              <p className="text-xs text-muted-foreground">
                 {((pagination.page - 1) * pagination.limit + 1).toLocaleString()}–
                 {Math.min(pagination.page * pagination.limit, pagination.total).toLocaleString()} of{" "}
                 {pagination.total.toLocaleString()} records
@@ -444,7 +438,6 @@ export default function MarketDataPage() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
