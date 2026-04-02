@@ -400,10 +400,23 @@ CRITICAL: Weight these comparable sales heavily. Your valuations must be anchore
       }
     }
 
+    // Build asking price context — shown as market information, not an anchor
+    const askingPriceContext = price && price > 0
+      ? `
+ASKING PRICE CONTEXT (market information only):
+The seller is asking R${price.toLocaleString('en-ZA')} for this property.
+This is provided as one market data point — do NOT anchor your valuation to it. Derive your Conservative, Midline, and Optimistic values independently from the comparable sales above and your knowledge of current market conditions.
+However, once you have your evidence-based range, acknowledge this asking price in your marketContext field: if your range is materially lower, explain what factors might justify a premium (e.g., scarcity, demand pressure in this specific micro-location, emotional buyer appeal) and whether the asking price is achievable or optimistic. If your range aligns with or exceeds the asking price, note that it appears well-supported.
+`
+      : `
+ASKING PRICE CONTEXT:
+No asking price has been set for this property (valuation exercise). Rely entirely on the comparable sales data and your knowledge of current market conditions to determine value.
+`;
+
     // Create the prompt for OpenAI
     const prompt = `You are a professional property valuer in South Africa with expertise across all major markets. Analyze this property and provide a comprehensive valuation report.
 
-IMPORTANT: You are providing an INDEPENDENT valuation. Do not ask for or consider any asking price — your assessment must be based solely on the property's characteristics, location, and comparable market evidence below.
+You are providing an evidence-based independent valuation. Your Conservative/Midline/Optimistic values must be derived from comparable sales and market fundamentals — not from the asking price. However, you should acknowledge and reconcile any gap between your valuation and the asking price in your commentary.
 
 Property Details:
 - Address: ${address}
@@ -415,7 +428,7 @@ Property Details:
 - Land Size: ${landSize ? `${landSize}m²` : 'Not specified'}
 - Monthly Levy: R${monthlyLevy?.toLocaleString('en-ZA') || 'Not specified'}
 - Location: ${location?.suburb || ''} ${location?.city || ''} ${location?.province || ''}
-${comparableSalesContext}
+${comparableSalesContext}${askingPriceContext}
 
 ${locationContext}
 
@@ -449,7 +462,7 @@ Based on current South African property market conditions and the specifications
     }
   ],
   "features": "Analysis of property features and their impact on value (2-3 sentences)",
-  "marketContext": "Current market conditions and location factors affecting valuation (2-3 sentences)",
+  "marketContext": "Current market conditions, location factors, and — if an asking price was provided — your assessment of whether it is achievable, optimistic, or conservative relative to your evidence-based valuation range. If there is a gap, explain what market factors (scarcity, demand, micro-location premium) might justify it or not.",
   "rentalEstimates": {
     "longTerm": {
       "minMonthlyRental": numeric_value,
