@@ -675,6 +675,85 @@ export class PropdataPdfShiftService {
       <div class="footer-right">Confidential</div>
     </div>`;
 
+    // ── Comparable Sales section ──
+    let comparableSalesHtml = "";
+    const csData = (vr as any)?.comparableSalesData;
+    if (csData) {
+      const rows: any[] = csData.titleDeedProperties?.length ? csData.titleDeedProperties : csData.properties ?? [];
+      if (rows.length) {
+        // IQR + median-ratio outlier detection (same algorithm as web)
+        const sqmVals = rows.map((r: any) => (r.pricePerSqM != null && r.pricePerSqM > 0 ? r.pricePerSqM : null));
+        const valid = sqmVals.filter((v: number | null): v is number => v !== null);
+        let outlierFlags = rows.map(() => false);
+        if (valid.length >= 2) {
+          const sorted = [...valid].sort((a: number, b: number) => a - b);
+          const mid = Math.floor(sorted.length / 2);
+          const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+          const lo = median * 0.45, hi = median * 2.2;
+          let iqrLo = -Infinity, iqrHi = Infinity;
+          if (valid.length >= 4) {
+            const q1 = sorted[Math.floor(sorted.length * 0.25)];
+            const q3 = sorted[Math.floor(sorted.length * 0.75)];
+            const iqr = q3 - q1;
+            iqrLo = q1 - 1.5 * iqr;
+            iqrHi = q3 + 1.5 * iqr;
+          }
+          outlierFlags = sqmVals.map((v: number | null) => v !== null && (v < lo || v > hi || v < iqrLo || v > iqrHi));
+        }
+
+        const nonOutlierRows = rows.filter((_: any, i: number) => !outlierFlags[i]);
+        const avgPrice = nonOutlierRows.length > 0
+          ? Math.round(nonOutlierRows.reduce((s: number, r: any) => s + (r.salePrice ?? 0), 0) / nonOutlierRows.length)
+          : 0;
+        const sqmRows = nonOutlierRows.filter((r: any) => r.pricePerSqM != null && r.pricePerSqM > 0);
+        const avgSqm = sqmRows.length > 0
+          ? Math.round(sqmRows.reduce((s: number, r: any) => s + r.pricePerSqM, 0) / sqmRows.length)
+          : 0;
+
+        const isKf = csData.dataSource === "knowledgeFactory";
+
+        const tableRows = rows.map((r: any, i: number) => {
+          const isOutlier = outlierFlags[i];
+          const rowBg = isOutlier ? ' style="background:#fff5f5;"' : '';
+          const redCell = isOutlier ? ' style="color:#dc2626;font-weight:700;"' : '';
+          return `<tr${rowBg}>
+            <td>
+              <div style="font-weight:600;${isOutlier ? 'color:#dc2626;' : ''}">${esc(r.address || "—")}</div>
+              ${r.suburb ? `<div style="font-size:9px;color:#94a3b8;">${esc(r.suburb)}</div>` : ""}
+              ${isOutlier ? `<div style="font-size:9px;color:#dc2626;font-weight:700;">Possible outlier</div>` : ""}
+            </td>
+            <td class="r b"${redCell}>${fmt(r.salePrice)}</td>
+            <td class="r">${r.size ? `${r.size}m²` : "—"}</td>
+            <td class="r"${redCell}>${r.pricePerSqM ? `R${r.pricePerSqM.toLocaleString()}` : "—"}</td>
+            <td class="r">${r.saleDate ? new Date(r.saleDate).toLocaleDateString("en-ZA", { year: "numeric", month: "short" }) : "—"}</td>
+            ${isKf ? `<td class="r">${r.distanceKM != null ? `${r.distanceKM.toFixed(1)} km` : "—"}</td>` : ""}
+          </tr>`;
+        }).join("");
+
+        comparableSalesHtml = `<div class="section">
+          <div class="section-header"><div class="section-accent"></div><span class="section-title">Comparable Sales</span><div class="section-rule"></div></div>
+          <p class="body-text" style="margin-bottom:14px;">${isKf ? "Title deed records from the Deeds Office" : "AI-estimated comparable sales"}</p>
+          ${(avgPrice > 0 || avgSqm > 0) ? `<div class="mini-stats c4" style="margin-bottom:16px;">
+            ${avgPrice > 0 ? this.miniCard("Avg Sale Price", fmt(avgPrice), "Outliers excluded") : ""}
+            ${avgSqm > 0 ? this.miniCard("Avg R/m²", `R${avgSqm.toLocaleString()}`, "Outliers excluded") : ""}
+          </div>` : ""}
+          <table>
+            <thead>
+              <tr>
+                <th>Address</th>
+                <th class="r">Sale Price</th>
+                <th class="r">Size</th>
+                <th class="r">R/m²</th>
+                <th class="r">Sale Date</th>
+                ${isKf ? `<th class="r">Distance</th>` : ""}
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>`;
+      }
+    }
+
     // ── Stat bar ──
     const statBar = [
       { label: "Bedrooms",     value: p.bedrooms      != null ? String(p.bedrooms)      : "N/A" },
@@ -710,10 +789,21 @@ export class PropdataPdfShiftService {
 </div>
 
 <div class="property-hero">
-  <div class="property-badge">${esc(p.propertyType || "Residential")} · For Sale</div>
+  <div class="property-badge">${esc(p.propertyType || "Residential")} · ${esc(p.status || "For Sale")}</div>
   <h1 class="property-address">${esc(p.address || "Address not available")}</h1>
-  <div class="price-label">Asking Price</div>
-  <div class="price-value">${fmt(p.price)}</div>
+  ${(() => {
+    if (/valuation|evaluation/i.test(p.status ?? "")) {
+      const vals: any[] = vd?.valuations ?? [];
+      const conservative = vals.find((v: any) => /conserv/i.test(v.type ?? ""))?.value ?? null;
+      const optimistic   = vals.find((v: any) => /optim/i.test(v.type ?? ""))?.value ?? null;
+      const midline      = vals.find((v: any) => /midline|mid/i.test(v.type ?? ""))?.value ?? null;
+      const hasRange     = conservative != null && optimistic != null && conservative > 0 && optimistic > 0;
+      const hasMidline   = midline != null && midline > 0;
+      if (hasRange) return `<div class="price-label">Estimated Valuation</div><div class="price-value">${fmt(conservative)} – ${fmt(optimistic)}</div>`;
+      if (hasMidline) return `<div class="price-label">Estimated Valuation</div><div class="price-value">${fmt(midline)}</div>`;
+    }
+    return `<div class="price-label">Asking Price</div><div class="price-value">${fmt(p.price)}</div>`;
+  })()}
 
   <div class="hero-stats-grid">
     <div class="hero-stat">
@@ -750,6 +840,7 @@ export class PropdataPdfShiftService {
 
 ${valuationHtml}
 ${rentalHtml}
+${comparableSalesHtml}
 ${financialHtml}
 <div class="last-page">
   ${detailsHtml}
