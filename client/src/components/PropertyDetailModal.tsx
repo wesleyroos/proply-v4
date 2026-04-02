@@ -3419,13 +3419,37 @@ export default function PropertyDetailModal({
                       {/* Compact Additional Information Table */}
                       {(valuationReport.summary ||
                         valuationReport.features ||
-                        valuationReport.marketContext) && (
+                        valuationReport.marketContext ||
+                        valuationReport.finishesRating) && (
                         <div className="space-y-2">
                           <h4 className="font-medium text-xs text-gray-700">
                             Additional Analysis
                           </h4>
                           <table className="w-full text-xs border rounded-lg">
                             <tbody>
+                              {valuationReport.finishesRating && (
+                                <tr className="border-b hover:bg-gray-50">
+                                  <td className="py-2 px-3 font-medium text-xs w-32">
+                                    Finishes Quality
+                                  </td>
+                                  <td className="py-2 px-3 text-xs">
+                                    <div className="flex items-center gap-2">
+                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                        valuationReport.finishesRating >= 5 ? 'bg-purple-100 text-purple-800' :
+                                        valuationReport.finishesRating >= 4 ? 'bg-blue-100 text-blue-800' :
+                                        valuationReport.finishesRating >= 3 ? 'bg-green-100 text-green-800' :
+                                        valuationReport.finishesRating >= 2 ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-gray-100 text-gray-700'
+                                      }`}>
+                                        {'★'.repeat(valuationReport.finishesRating)}{'☆'.repeat(5 - valuationReport.finishesRating)} {valuationReport.finishesRatingLabel || ''}
+                                      </span>
+                                      {valuationReport.finishesRatingJustification && (
+                                        <span className="text-muted-foreground">{valuationReport.finishesRatingJustification}</span>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
                               {valuationReport.summary && (
                                 <tr className="border-b hover:bg-gray-50">
                                   <td className="py-2 px-3 font-medium text-xs w-32">

@@ -434,6 +434,7 @@ ${locationContext}
 
 CRITICAL VALUATION GUIDANCE:
 ${marketRates}
+- Your finishesRating (1–5) must directly set the price per m² tier used in valuation formulas. Do not default to median R/m² for a well-presented property — a Rating 4 or 5 must use the upper range of comparables, not the midpoint.
 - Modern finishes, secure parking, and desirable locations add substantial value
 
 IMPORTANT: For rental estimates, consider the specific property characteristics:${rentalGuidance}
@@ -461,6 +462,9 @@ Based on current South African property market conditions and the specifications
       "value": numeric_value_in_rands
     }
   ],
+  "finishesRating": numeric_value_1_to_5,
+  "finishesRatingLabel": "Basic | Standard | Good | Premium | Luxury",
+  "finishesRatingJustification": "One sentence explaining the key visual factors that determined this rating",
   "features": "Analysis of property features and their impact on value (2-3 sentences)",
   "marketContext": "Current market conditions, location factors, and — if an asking price was provided — your assessment of whether it is achievable, optimistic, or conservative relative to your evidence-based valuation range. If there is a gap, explain what market factors (scarcity, demand, micro-location premium) might justify it or not.",
   "rentalEstimates": {
@@ -596,20 +600,37 @@ ENSURE rental estimates are property-specific and NOT generic ranges, and includ
         }
       }
 
-      const imageAnalysisPrompt = `VISUAL PROPERTY ANALYSIS: I'm providing property images for comprehensive visual assessment. Use these images to adjust both VALUATION and RENTAL estimates based on actual property condition.
+      const imageAnalysisPrompt = `VISUAL PROPERTY ANALYSIS: Before finalising your valuation numbers, assess the property quality from the images below.
 
-CRITICAL: For ${isPremiumLocation ? 'PREMIUM LOCATION' : 'standard location'} properties, assess:
-- **Finishes Quality**: Modern/luxury finishes justify premium rates (up to 30% above base rates)
-- **Condition & Maintenance**: Well-maintained properties command higher values
-- **Views & Natural Light**: Ocean/mountain views add significant rental and sale premiums
-- **Layout Efficiency**: Open-plan, well-designed spaces increase appeal
-- **Amenities Visible**: Pool, balcony, secure parking areas impact value significantly
+STEP 1 — RATE THE PROPERTY QUALITY (this directly determines the price per m² tier used in your valuation formulas):
+
+Score 1–5 on each dimension, then produce an overall finishesRating (1–5):
+- **Finishes & Materials**: Countertops, flooring, cabinetry, fixtures, fittings (1=builder's basic, 5=bespoke/designer)
+- **Condition & Maintenance**: Evidence of wear, renovation needs, cleanliness, upkeep (1=needs work, 5=immaculate/new)
+- **Layout & Space**: Open plan, ceiling heights, natural light, flow (1=cramped/dated, 5=exceptional layout)
+- **Views & Outlook**: Mountain/ocean/city views, garden, privacy (1=no view, 5=panoramic premium)
+- **Amenities Visible**: Pool, braai area, balcony, garage, security (1=none, 5=fully featured)
+
+Overall finishesRating:
+  1 = Basic (builder's spec, dated, needs work)
+  2 = Standard (average condition, neutral finishes)
+  3 = Good (modern finishes, well maintained)
+  4 = Premium (high-end finishes, excellent condition)
+  5 = Luxury (bespoke/designer, exceptional throughout)
+
+STEP 2 — APPLY QUALITY TO PRICE PER M²:
+The finishesRating must directly shift where in the market R/m² range your valuation sits:
+  Rating 1 (Basic):   Use the bottom 10-15% of the comparable R/m² range for this area
+  Rating 2 (Standard): Use around the 30th percentile
+  Rating 3 (Good):    Use the median (50th percentile)
+  Rating 4 (Premium): Use the 70th–80th percentile — do NOT default to median for a well-presented property
+  Rating 5 (Luxury):  Use the top 15-20% of the range — top-of-market R/m²
+
+This means a Rating 4 or 5 property in Gardens/Cape Town should have Conservative/Midline/Optimistic values materially higher than a Rating 2 property of the same size on the same street.
 
 ${premiumImageContext}
 
-**VALUATION IMPACT**: Use images to determine if property justifies asking price or if significant adjustments needed. Premium finishes and condition can support higher per-square-meter rates.
-
-**RENTAL IMPACT**: Quality finishes and condition directly affect rental pricing - adjust estimates based on visual assessment of tenant appeal and market positioning.`;
+**RENTAL IMPACT**: Apply the same quality tier to rental estimates. Rating 4–5 properties command the top 20-30% of the rental range for their bedroom count and location.`;
       
       console.log('Validating images for OpenAI analysis:', images.length, 'images');
       
