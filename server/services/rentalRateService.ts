@@ -41,7 +41,7 @@ export async function getRentalRate(address: string, propertySize: number, bedro
     
     // First API call - rental market expert perspective (lower range)
     const response1 = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.1", // gpt-5.1: latest flagship model
       temperature: 0.1,
       messages: [
         {
@@ -57,7 +57,7 @@ export async function getRentalRate(address: string, propertySize: number, bedro
 
     // Second API call - property manager perspective (higher range)
     const response2 = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.1", // gpt-5.1: latest flagship model
       temperature: 0.1,
       messages: [
         {
@@ -130,7 +130,7 @@ export async function getSuburbSentiment(suburb: string): Promise<SuburbSentimen
   try {
     // Use the same OpenAI instance that works for rental rate
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.1", // gpt-5.1: latest flagship model
       temperature: 0.7,
       messages: [
         {

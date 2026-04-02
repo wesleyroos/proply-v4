@@ -657,7 +657,7 @@ ${premiumImageContext}
 
     // Call OpenAI API
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // gpt-4o: vision + JSON mode, reliable and available
+      model: "gpt-5.1", // gpt-5.1: latest flagship model, best reasoning and vision
       messages,
       response_format: { type: "json_object" },
       max_tokens: 1500,

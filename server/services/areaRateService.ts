@@ -73,7 +73,7 @@ export async function getAreaRate(address: string, propertyType: string = 'apart
     
     // First API call with more specific prompt
     const response1 = await openai.chat.completions.create({
-      model: "gpt-4o", // Using the latest model
+      model: "gpt-5.1", // gpt-5.1: latest flagship model
       temperature: 0.1,
       messages: [
         {
@@ -89,7 +89,7 @@ export async function getAreaRate(address: string, propertyType: string = 'apart
 
     // Second API call with different context but still property-type aware
     const response2 = await openai.chat.completions.create({
-      model: "gpt-4o", // Using the latest model
+      model: "gpt-5.1", // gpt-5.1: latest flagship model
       temperature: 0.1,
       messages: [
         {
@@ -156,7 +156,7 @@ export async function getDealAnalysis(dealData: {
     console.log('Generating deal analysis for:', dealData.address);
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // Using the latest model
+      model: "gpt-5.1", // gpt-5.1: latest flagship model
       temperature: 0.7,
       messages: [
         {

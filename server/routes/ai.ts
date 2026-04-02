@@ -56,7 +56,7 @@ Remember, the Rent Compare tool is designed to bridge the trust gap between owne
     }
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.1", // gpt-5.1: latest flagship model
       messages: [
         {
           role: "system",
