@@ -184,6 +184,8 @@ export default function PropertyDetailModal({
 
   // Progress modal state
   const [showProgressModal, setShowProgressModal] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [progressSteps, setProgressSteps] = useState([
     { id: 'analyze', label: 'Analyzing property details', status: 'pending' },
     { id: 'images', label: 'Processing property images', status: 'pending' },
@@ -1169,8 +1171,10 @@ export default function PropertyDetailModal({
 
     // Reset and show progress modal
     resetProgress();
+    setElapsedSeconds(0);
     setShowProgressModal(true);
     setIsGeneratingReport(true);
+    timerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
     
     try {
       // Step 1: Analyzing property details
@@ -1316,6 +1320,7 @@ export default function PropertyDetailModal({
       alert("Failed to generate valuation report. Please try again.");
     } finally {
       setIsGeneratingReport(false);
+      if (timerRef.current) clearInterval(timerRef.current);
       // Close progress modal after a delay
       setTimeout(() => {
         setShowProgressModal(false);
@@ -4428,9 +4433,14 @@ export default function PropertyDetailModal({
                 }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              {progressSteps.filter(s => s.status === 'completed').length} of {progressSteps.length} tasks completed
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-500">
+                {progressSteps.filter(s => s.status === 'completed').length} of {progressSteps.length} steps completed
+              </p>
+              <p className="text-xs font-mono text-gray-500">
+                {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:{(elapsedSeconds % 60).toString().padStart(2, '0')}
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
