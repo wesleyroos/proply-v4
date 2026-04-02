@@ -432,7 +432,7 @@ export default function ReportPreviewPage() {
             {p.status && (
               <span
                 className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white border ${
-                  p.status.toLowerCase() === 'evaluation'
+                  /evaluation|valuation/i.test(p.status)
                     ? 'border-amber-300/60 bg-amber-400/20'
                     : p.status.toLowerCase() === 'sold'
                     ? 'border-red-300/60 bg-red-400/20'
@@ -442,7 +442,7 @@ export default function ReportPreviewPage() {
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${
-                  p.status.toLowerCase() === 'evaluation' ? 'bg-amber-300' :
+                  /evaluation|valuation/i.test(p.status) ? 'bg-amber-300' :
                   p.status.toLowerCase() === 'sold' ? 'bg-red-300' :
                   p.status.toLowerCase().includes('offer') ? 'bg-orange-300' : 'bg-green-300'
                 }`} />
@@ -453,7 +453,7 @@ export default function ReportPreviewPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight tracking-tight mb-3">
             {p.address}
           </h1>
-          {p.status?.toLowerCase() === 'evaluation' ? (
+          {/evaluation|valuation/i.test(p.status ?? '') ? (
             (() => {
               const vals: any[] = vd?.valuations ?? [];
               const conservative = vals.find((v: any) => /conserv/i.test(v.type ?? ''))?.value ?? null;
