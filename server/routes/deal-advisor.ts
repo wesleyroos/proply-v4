@@ -1,8 +1,54 @@
 import express from "express";
+import fetch from "node-fetch";
+import { db } from "../../db";
+import { propdataListings } from "../../db/schema";
+import { eq } from "drizzle-orm";
 import { getComparableSales } from "../services/comparableSalesService";
-// import { findComparableProperties, scrapeProperty24 } from "../services/property24Scraper"; // Temporarily disabled
+import { getComparableSalesByCoordinates, KnowledgeFactoryProperty } from "../services/knowledgeFactoryService";
 
 const router = express.Router();
+
+/**
+ * Geocode an address string to lat/lng using Google's Geocoding API.
+ * Returns null if the address can't be resolved — callers should handle gracefully.
+ */
+async function geocodeAddress(address: string): Promise<{ latitude: number; longitude: number } | null> {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const params = new URLSearchParams({
+      address,
+      key: apiKey,
+      components: 'country:ZA',
+    });
+    const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${params}`);
+    const data = await response.json() as any;
+
+    if (data.status !== 'OK' || !data.results?.[0]?.geometry?.location) {
+      return null;
+    }
+
+    const { lat, lng } = data.results[0].geometry.location;
+    return { latitude: lat, longitude: lng };
+  } catch {
+    return null;
+  }
+}
+
+// Map common property type labels to Knowledge Factory single-letter codes
+const KF_PROPERTY_TYPE_MAP: Record<string, string> = {
+  sectional_title: 'S',
+  apartment: 'S',
+  flat: 'S',
+  house: 'F',
+  freehold: 'F',
+  townhouse: 'F',
+  farm: 'A',
+  agricultural: 'A',
+  agricultural_holding: 'H',
+  gated_community: 'C',
+};
 
 // Endpoint to get comparable sales data
 router.post("/comparable-sales", async (req, res) => {
@@ -14,8 +60,9 @@ router.post("/comparable-sales", async (req, res) => {
       propertyType,
       propertyCondition,
       luxuryRating,
-      bypassAuth = false, // Allow public access with explicit flag
-      useOpenAI = false, // Flag to force OpenAI usage for testing
+      coordinates: providedCoordinates,
+      propdataId,
+      bypassAuth = false,
     } = req.body;
 
     // Check authentication unless bypassed
@@ -34,12 +81,10 @@ router.post("/comparable-sales", async (req, res) => {
       });
     }
 
-    // Convert to appropriate types
     const size = Number(propertySize);
     const beds = Number(bedrooms);
     const luxury = luxuryRating ? Number(luxuryRating) : undefined;
 
-    // Validate conversions
     if (isNaN(size) || isNaN(beds) || (luxury !== undefined && isNaN(luxury))) {
       return res.status(400).json({
         success: false,
@@ -47,74 +92,89 @@ router.post("/comparable-sales", async (req, res) => {
       });
     }
 
-    console.log(`Finding comparable sales for ${address} (${propertyType || 'apartment'}, ${beds} beds, ${size}m²)`);
+    console.log(`Finding comparable sales for ${address} (${propertyType || 'property'}, ${beds} beds, ${size}m²)`);
 
-    // STEP 1: Try to get real property listings using Property24 scraper
-    let comparableProperties = [];
+    // STEP 1: Get real title deed data from Knowledge Factory
+    let titleDeedProperties: any[] = [];
     let averageSalePrice = 0;
-    let dataSource = "property24";
-    
-    // If not forcing OpenAI, try the Property24 scraper first
-    if (!useOpenAI) {
-      try {
-        console.log(`Trying to find comparable properties in ${address} using Property24 scraper`);
-        
-        // const scrapedProperties = await findComparableProperties(
-        //   address,
-        //   size,
-        //   beds,
-        //   propertyType || 'apartment',
-        //   15
-        // );
-        const scrapedProperties = []; // Temporarily disabled
-        
-        if (scrapedProperties.length > 0) {
-          // Successfully found scraped properties! Use them.
-          comparableProperties = scrapedProperties;
-          
-          // Calculate average sale price
-          const totalPrice = comparableProperties.reduce((sum, p) => sum + p.salePrice, 0);
-          averageSalePrice = Math.round(totalPrice / comparableProperties.length);
-          
-          console.log(`Success! Using ${comparableProperties.length} real property listings from Property24`);
-        } else {
-          console.log("No comparable properties found from Property24 scraper - will fall back to OpenAI");
-        }
-      } catch (scrapingError) {
-        console.error("Error using Property24 scraper:", scrapingError);
+    let dataSource = "openai";
+
+    try {
+      // Use provided coordinates or geocode the address
+      let coordinates = (providedCoordinates?.latitude && providedCoordinates?.longitude)
+        ? providedCoordinates
+        : await geocodeAddress(address);
+
+      // Cache geocoded coordinates back onto the listing so future requests skip this step
+      if (coordinates && !providedCoordinates?.latitude && propdataId) {
+        db.update(propdataListings)
+          .set({ location: { latitude: coordinates.latitude, longitude: coordinates.longitude } })
+          .where(eq(propdataListings.propdataId, propdataId))
+          .catch(() => {}); // fire-and-forget, non-critical
       }
-    }
-    
-    // STEP 2: If Property24 failed or returned no results, fallback to OpenAI
-    if (comparableProperties.length === 0 || useOpenAI) {
-      console.log("Falling back to OpenAI for comparable sales data");
-      dataSource = "openai";
-      
-      const comparableSalesData = await getComparableSales(
-        address,
-        size,
-        beds,
-        propertyType,
-        propertyCondition,
-        luxury
-      );
-      
-      // Use the OpenAI data
-      comparableProperties = comparableSalesData.properties;
-      averageSalePrice = comparableSalesData.averageSalePrice;
+
+      if (coordinates) {
+        const kfPropertyType = propertyType
+          ? KF_PROPERTY_TYPE_MAP[propertyType.toLowerCase()] ?? undefined
+          : undefined;
+
+        const kfProperties = await getComparableSalesByCoordinates(coordinates, kfPropertyType);
+
+        if (kfProperties.length > 0) {
+          titleDeedProperties = kfProperties.map((p: KnowledgeFactoryProperty) => ({
+            propertyId: p.propertyId,
+            address: p.address,
+            suburb: p.suburb,
+            salePrice: p.salePrice,
+            size: p.size,
+            pricePerSqM: p.pricePerSqM,
+            saleDate: p.saleDate,
+            distanceKM: p.distanceKM,
+            titleDeedNo: p.titleDeedNo,
+            propertyType: p.propertyType,
+            buyerName: p.buyerName,
+            sellerName: p.sellerName,
+            latitude: p.latitude,
+            longitude: p.longitude,
+            source: 'knowledgeFactory',
+          }));
+
+          const validPrices = titleDeedProperties.filter(p => p.salePrice > 0);
+          if (validPrices.length > 0) {
+            averageSalePrice = Math.round(
+              validPrices.reduce((sum, p) => sum + p.salePrice, 0) / validPrices.length
+            );
+          }
+
+          dataSource = "knowledgeFactory";
+          console.log(`Knowledge Factory returned ${titleDeedProperties.length} title deed records`);
+        }
+      } else {
+        console.log(`Could not resolve coordinates for "${address}" — skipping Knowledge Factory`);
+      }
+    } catch (kfError) {
+      console.error("Knowledge Factory error (non-fatal):", kfError instanceof Error ? kfError.message : kfError);
     }
 
-    // Structure the final response
-    const responseData = {
-      properties: comparableProperties,
-      averageSalePrice,
-      dataSource
-    };
-    
-    // Return the data
+    // STEP 2: Fall back to OpenAI if Knowledge Factory returned nothing
+    let comparableProperties: any[] = [];
+    if (titleDeedProperties.length === 0) {
+      console.log("No title deed data — falling back to OpenAI");
+      dataSource = "openai";
+
+      const aiData = await getComparableSales(address, size, beds, propertyType, propertyCondition, luxury);
+      comparableProperties = aiData.properties;
+      averageSalePrice = aiData.averageSalePrice;
+    }
+
     return res.json({
       success: true,
-      data: responseData,
+      data: {
+        titleDeedProperties,
+        properties: comparableProperties,
+        averageSalePrice,
+        dataSource,
+      },
     });
   } catch (error) {
     console.error("Error in comparable sales endpoint:", error);
@@ -248,125 +308,6 @@ router.post("/rental-amount", async (req, res) => {
     });
   } catch (error) {
     console.error("Error in rental amount endpoint:", error);
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-    });
-  }
-});
-
-// DEVELOPMENT ENDPOINTS - These are for testing and development only
-
-// Endpoint to directly test Property24 scraper
-router.post("/scrape-property24", async (req, res) => {
-  try {
-    const { 
-      suburb, 
-      propertyType = 'flat', 
-      minBedrooms = 0, 
-      maxBedrooms = 10,
-      bypassAuth = true  // Allow bypassing auth for development endpoints
-    } = req.body;
-    
-    // Check authentication unless bypassed
-    if (!bypassAuth && (!req.user || !req.user.id)) {
-      return res.status(401).json({
-        success: false,
-        error: "Authentication required",
-      });
-    }
-
-    // Validate suburb
-    if (!suburb) {
-      return res.status(400).json({
-        success: false,
-        error: "suburb is required",
-      });
-    }
-
-    // Run the scraper
-    console.log(`Scraping Property24 for ${suburb}, property type: ${propertyType}, beds: ${minBedrooms}-${maxBedrooms}`);
-    
-    const results = await scrapeProperty24(
-      suburb,
-      propertyType,
-      'for-sale',
-      0, // minPrice
-      0, // maxPrice (0 = no limit)
-      minBedrooms,
-      maxBedrooms
-    );
-    
-    return res.json({
-      success: true,
-      data: results,
-    });
-  } catch (error) {
-    console.error("Error in Property24 scraper test endpoint:", error);
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-    });
-  }
-});
-
-// Endpoint to test finding comparable properties
-router.post("/find-comparable", async (req, res) => {
-  try {
-    const { 
-      address, 
-      propertySize, 
-      bedrooms, 
-      propertyType,
-      bypassAuth = true  // Allow bypassing auth for development endpoints
-    } = req.body;
-    
-    // Check authentication unless bypassed
-    if (!bypassAuth && (!req.user || !req.user.id)) {
-      return res.status(401).json({
-        success: false,
-        error: "Authentication required",
-      });
-    }
-
-    // Validate required fields
-    if (!address || !propertySize || !bedrooms) {
-      return res.status(400).json({
-        success: false,
-        error: "Address, property size, and number of bedrooms are required",
-      });
-    }
-
-    // Convert to appropriate types
-    const size = Number(propertySize);
-    const beds = Number(bedrooms);
-
-    // Validate conversions
-    if (isNaN(size) || isNaN(beds)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid numeric values provided",
-      });
-    }
-
-    console.log(`Testing findComparableProperties with: ${address}, size: ${size}, beds: ${beds}, type: ${propertyType || 'apartment'}`);
-    
-    // Find comparable properties
-    const comparableProperties = await findComparableProperties(
-      address,
-      size,
-      beds,
-      propertyType || 'apartment',
-      15
-    );
-    
-    return res.json({
-      success: true,
-      count: comparableProperties.length,
-      data: comparableProperties,
-    });
-  } catch (error) {
-    console.error("Error in find comparable properties test endpoint:", error);
     return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",

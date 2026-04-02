@@ -61,6 +61,8 @@ import {
   ChevronDown,
   BarChart3,
   ExternalLink,
+  Building2,
+  ArrowUpDown,
 } from "lucide-react";
 import {
   LineChart,
@@ -342,6 +344,50 @@ export default function PropertyDetailModal({
   const [lastAddressSaveTime, setLastAddressSaveTime] = useState<number | null>(
     null,
   );
+  // Comparable sales state
+  const [comparableSalesData, setComparableSalesData] = useState<{
+    titleDeedProperties: any[];
+    properties: any[];
+    averageSalePrice: number;
+    dataSource: string;
+  } | null>(null);
+  const [isFetchingComparableSales, setIsFetchingComparableSales] = useState(false);
+  const [comparableSalesError, setComparableSalesError] = useState<string | null>(null);
+
+  const fetchComparableSales = async () => {
+    if (!property) return;
+    setIsFetchingComparableSales(true);
+    setComparableSalesError(null);
+    try {
+      const response = await fetch("/api/deal-advisor/comparable-sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          address: property.address,
+          propertySize: property.floorSize || property.landSize || 100,
+          bedrooms: property.bedrooms,
+          propertyType: property.propertyType,
+          propdataId: property.propdataId,
+          coordinates: property.location?.latitude && property.location?.longitude
+            ? { latitude: property.location.latitude, longitude: property.location.longitude }
+            : undefined,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to fetch comparable sales");
+      const result = await response.json();
+      if (result.success) {
+        setComparableSalesData(result.data);
+      } else {
+        throw new Error(result.error || "Unknown error");
+      }
+    } catch (err) {
+      setComparableSalesError(err instanceof Error ? err.message : "Failed to load comparable sales");
+    } finally {
+      setIsFetchingComparableSales(false);
+    }
+  };
+
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isFinancingModalOpen, setIsFinancingModalOpen] = useState(false);
@@ -2052,11 +2098,12 @@ export default function PropertyDetailModal({
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="valuation">Valuation</TabsTrigger>
               <TabsTrigger value="rental">Rental Performance</TabsTrigger>
               <TabsTrigger value="agent">Financials</TabsTrigger>
+              <TabsTrigger value="comparable">Comparable Sales</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
             </TabsList>
 
@@ -3378,6 +3425,176 @@ export default function PropertyDetailModal({
                     </div>
                   </CardContent>
                 </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="comparable" className="space-y-4">
+              {!comparableSalesData ? (
+                <Card>
+                  <CardContent className="py-8 text-center">
+                    <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2">Comparable Sales</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Fetch recent title deed sales records for properties near this listing to compare market values.
+                    </p>
+                    {comparableSalesError && (
+                      <p className="text-sm text-red-500 mb-4">{comparableSalesError}</p>
+                    )}
+                    <Button
+                      onClick={fetchComparableSales}
+                      disabled={isFetchingComparableSales}
+                      className="gap-2"
+                    >
+                      {isFetchingComparableSales ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4" />
+                      )}
+                      {isFetchingComparableSales ? "Fetching..." : "Fetch Comparable Sales"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {/* Summary card */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center justify-between text-base">
+                        <span className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4" />
+                          {comparableSalesData.dataSource === "knowledgeFactory"
+                            ? "Title Deed Records"
+                            : "AI-Estimated Comparable Sales"}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={comparableSalesData.dataSource === "knowledgeFactory" ? "default" : "secondary"}>
+                            {comparableSalesData.dataSource === "knowledgeFactory" ? "Deeds Office Data" : "AI Estimate"}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => { setComparableSalesData(null); setComparableSalesError(null); }}
+                          >
+                            Refresh
+                          </Button>
+                        </div>
+                      </CardTitle>
+                      {comparableSalesData.averageSalePrice > 0 && (
+                        <CardDescription>
+                          Average sale price:{" "}
+                          <span className="font-semibold text-foreground">
+                            R{comparableSalesData.averageSalePrice.toLocaleString()}
+                          </span>
+                          {property?.price && comparableSalesData.averageSalePrice > 0 && (
+                            <span className={`ml-2 text-xs font-medium ${property.price > comparableSalesData.averageSalePrice ? "text-amber-600" : "text-green-600"}`}>
+                              {property.price > comparableSalesData.averageSalePrice
+                                ? `+${Math.round(((property.price - comparableSalesData.averageSalePrice) / comparableSalesData.averageSalePrice) * 100)}% above avg`
+                                : `${Math.round(((property.price - comparableSalesData.averageSalePrice) / comparableSalesData.averageSalePrice) * 100)}% below avg`}
+                            </span>
+                          )}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                  </Card>
+
+                  {/* Title deed properties table (KF data) */}
+                  {comparableSalesData.titleDeedProperties.length > 0 && (
+                    <Card>
+                      <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b bg-muted/50">
+                                <th className="text-left py-3 px-4 font-medium">Address</th>
+                                <th className="text-right py-3 px-4 font-medium">Sale Price</th>
+                                <th className="text-right py-3 px-4 font-medium">Size</th>
+                                <th className="text-right py-3 px-4 font-medium">R/m²</th>
+                                <th className="text-right py-3 px-4 font-medium">Sale Date</th>
+                                <th className="text-right py-3 px-4 font-medium">Distance</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {comparableSalesData.titleDeedProperties.map((p: any, i: number) => (
+                                <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
+                                  <td className="py-3 px-4">
+                                    <div className="font-medium">{p.address}</div>
+                                    {p.suburb && <div className="text-xs text-muted-foreground">{p.suburb}</div>}
+                                  </td>
+                                  <td className="py-3 px-4 text-right font-medium">
+                                    R{p.salePrice?.toLocaleString() ?? "—"}
+                                  </td>
+                                  <td className="py-3 px-4 text-right text-muted-foreground">
+                                    {p.size ? `${p.size}m²` : "—"}
+                                  </td>
+                                  <td className="py-3 px-4 text-right text-muted-foreground">
+                                    {p.pricePerSqM ? `R${p.pricePerSqM.toLocaleString()}` : "—"}
+                                  </td>
+                                  <td className="py-3 px-4 text-right text-muted-foreground">
+                                    {p.saleDate
+                                      ? new Date(p.saleDate).toLocaleDateString("en-ZA", { year: "numeric", month: "short" })
+                                      : "—"}
+                                  </td>
+                                  <td className="py-3 px-4 text-right text-muted-foreground">
+                                    {p.distanceKM != null ? `${p.distanceKM.toFixed(1)} km` : "—"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* OpenAI fallback properties */}
+                  {comparableSalesData.properties.length > 0 && (
+                    <Card>
+                      <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b bg-muted/50">
+                                <th className="text-left py-3 px-4 font-medium">Address</th>
+                                <th className="text-right py-3 px-4 font-medium">Sale Price</th>
+                                <th className="text-right py-3 px-4 font-medium">Size</th>
+                                <th className="text-right py-3 px-4 font-medium">R/m²</th>
+                                <th className="text-right py-3 px-4 font-medium">Bedrooms</th>
+                                <th className="text-right py-3 px-4 font-medium">Sale Date</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {comparableSalesData.properties.map((p: any, i: number) => (
+                                <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
+                                  <td className="py-3 px-4">
+                                    <div className="font-medium">{p.address}</div>
+                                    <Badge variant="outline" className="text-xs mt-1">
+                                      {typeof p.similarity === "number" ? `${p.similarity}% match` : p.similarity}
+                                    </Badge>
+                                  </td>
+                                  <td className="py-3 px-4 text-right font-medium">
+                                    R{p.salePrice?.toLocaleString() ?? "—"}
+                                  </td>
+                                  <td className="py-3 px-4 text-right text-muted-foreground">
+                                    {p.size ? `${p.size}m²` : "—"}
+                                  </td>
+                                  <td className="py-3 px-4 text-right text-muted-foreground">
+                                    {p.pricePerSqM ? `R${p.pricePerSqM.toLocaleString()}` : "—"}
+                                  </td>
+                                  <td className="py-3 px-4 text-right text-muted-foreground">
+                                    {p.bedrooms ?? "—"}
+                                  </td>
+                                  <td className="py-3 px-4 text-right text-muted-foreground">
+                                    {p.saleDate ?? "—"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               )}
             </TabsContent>
           </Tabs>

@@ -163,6 +163,19 @@ export default function AdminPage() {
     return localStorage.getItem('payfast_sandbox_mode') === 'true';
   });
 
+  const { data: kfModeSetting } = useQuery({
+    queryKey: ["/api/system-settings/knowledge_factory_mode"],
+    enabled: !!user?.isAdmin,
+    retry: false,
+  });
+  const [isKFLiveMode, setIsKFLiveMode] = useState(false);
+  // Sync KF mode state once the setting loads
+  React.useEffect(() => {
+    if (kfModeSetting) {
+      setIsKFLiveMode((kfModeSetting as any).value === 'prod');
+    }
+  }, [kfModeSetting]);
+
   const [isInvitationModalOpen, setIsInvitationModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("users");
 
@@ -270,22 +283,54 @@ export default function AdminPage() {
   };
 
   const handleSandboxToggle = (checked: boolean) => {
-    const message = checked 
+    const message = checked
       ? "Enable PayFast sandbox mode? This will use test payment processing."
       : "Disable PayFast sandbox mode? This will use live payment processing.";
-    
+
     if (window.confirm(message)) {
       setIsSandboxMode(checked);
       localStorage.setItem('payfast_sandbox_mode', checked.toString());
       toast({
         title: checked ? "Sandbox Mode Enabled" : "Sandbox Mode Disabled",
-        description: checked 
+        description: checked
           ? "PayFast is now in test mode - no real payments will be processed."
           : "PayFast is now in live mode - real payments will be processed.",
         duration: 3000,
       });
     } else {
       setIsSandboxMode(!checked);
+    }
+  };
+
+  const handleKFModeToggle = async (checked: boolean) => {
+    const newMode = checked ? 'prod' : 'dev';
+    const message = checked
+      ? "Switch Knowledge Factory to Live mode? This will use production credentials and may incur charges."
+      : "Switch Knowledge Factory to Test mode? This will use development credentials.";
+
+    if (!window.confirm(message)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/system-settings/knowledge_factory_mode', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ value: newMode }),
+      });
+      if (!response.ok) throw new Error('Failed to update setting');
+      setIsKFLiveMode(checked);
+      queryClient.invalidateQueries({ queryKey: ["/api/system-settings/knowledge_factory_mode"] });
+      toast({
+        title: checked ? "Knowledge Factory: Live Mode" : "Knowledge Factory: Test Mode",
+        description: checked
+          ? "Now using production credentials. API calls may incur charges."
+          : "Now using development credentials. No charges will apply.",
+        duration: 4000,
+      });
+    } catch {
+      toast({ title: "Error", description: "Failed to update Knowledge Factory mode.", variant: "destructive" });
     }
   };
 
@@ -336,6 +381,28 @@ export default function AdminPage() {
                   />
                   <span className="text-sm font-medium text-yellow-800 min-w-[80px]">
                     {isSandboxMode ? "Test" : "Live"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Knowledge Factory Toggle */}
+              <div className={`flex items-center justify-between p-3 rounded-lg border ${isKFLiveMode ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
+                <div className="flex-1">
+                  <h4 className={`font-medium ${isKFLiveMode ? "text-red-800" : "text-green-800"}`}>
+                    Knowledge Factory
+                  </h4>
+                  <p className={`text-sm ${isKFLiveMode ? "text-red-700" : "text-green-700"}`}>
+                    {isKFLiveMode ? "Live — charges apply" : "Test — no charges"}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="kf-mode"
+                    checked={isKFLiveMode}
+                    onCheckedChange={handleKFModeToggle}
+                  />
+                  <span className={`text-sm font-medium min-w-[80px] ${isKFLiveMode ? "text-red-800" : "text-green-800"}`}>
+                    {isKFLiveMode ? "Live" : "Test"}
                   </span>
                 </div>
               </div>
