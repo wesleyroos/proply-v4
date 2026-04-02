@@ -17,6 +17,7 @@ import {
   Database,
   CreditCard,
   ExternalLink,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
@@ -69,7 +70,7 @@ export default function Sidebar() {
     }
   }
 
-  // Add PropData Listings for all admin types
+  // Add PropData Listings + Market Data for all admin types
   if (
     user?.isAdmin ||
     user?.role === "franchise_admin" ||
@@ -79,6 +80,11 @@ export default function Sidebar() {
       title: "Listings",
       icon: Database,
       href: "/listings",
+    });
+    navItems.push({
+      title: "Market Data",
+      icon: TrendingUp,
+      href: "/market-data/comparable-sales",
     });
   }
 

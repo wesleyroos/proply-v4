@@ -56,6 +56,7 @@ import AgentsPage from "./pages/AgentsPage";
 import PropdataListingsPage from "./pages/PropdataListingsPage";
 import ReportPreviewPage from "./pages/ReportPreviewPage";
 import AcceptInvitationPage from "./pages/AcceptInvitationPage";
+import MarketDataPage from "./pages/MarketDataPage";
 
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -297,6 +298,7 @@ function App() {
             <Route path="/transaction-history" component={() => <ProtectedRoute component={TransactionHistoryPage} />} />
             <Route path="/dashboard/control-panel" component={() => <ProtectedRoute component={ControlPanel} />} />
             <Route path="/dashboard/propdata-listings" component={() => <ProtectedRoute component={PropdataListingsPage} />} />
+            <Route path="/market-data/comparable-sales" component={() => <ProtectedRoute component={MarketDataPage} />} />
 
             <Route path="/airbnb-yield-calculator" component={() => (
               <PageTransition>

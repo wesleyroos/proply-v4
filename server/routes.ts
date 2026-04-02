@@ -107,6 +107,7 @@ import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
 import OpenAI from "openai";
 import dealAdvisorRouter from './routes/deal-advisor';
+import comparableSalesRouter from './routes/comparable-sales';
 import addressValidationRouter from './routes/address-validation';
 import trafficDataRouter from './routes/traffic-data';
 import tomtomTestRouter from './routes/tomtom-test';
@@ -2708,6 +2709,7 @@ export function registerRoutes(app: Express): Server {
   // Register property scraper routes
   app.use("/api", propertyScraper);
   app.use('/api/deal-advisor', dealAdvisorRouter);
+  app.use('/api/comparable-sales', comparableSalesRouter);
   app.use('/api/address-validation', addressValidationRouter);
   app.use('/api/traffic-data', trafficDataRouter);
   app.use('/api/tomtom-test', tomtomTestRouter);

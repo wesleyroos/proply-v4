@@ -917,3 +917,43 @@ export const insertSystemSettingSchema = createInsertSchema(systemSettings);
 export const selectSystemSettingSchema = createSelectSchema(systemSettings);
 export type InsertSystemSetting = typeof systemSettings.$inferInsert;
 export type SelectSystemSetting = typeof systemSettings.$inferSelect;
+
+// ─── Comparable Sales (Market Data) ──────────────────────────────────────────
+export const comparableSales = pgTable("comparable_sales", {
+  id: serial("id").primaryKey(),
+
+  // Identity / deduplication
+  addressNormalised: text("address_normalised").notNull(),
+  address:           text("address").notNull(),
+  suburb:            text("suburb"),
+  city:              text("city"),
+  erfNumber:         text("erf_number"),
+  latitude:          decimal("latitude",  { precision: 10, scale: 7 }),
+  longitude:         decimal("longitude", { precision: 10, scale: 7 }),
+
+  // Property attributes
+  propertyType:  text("property_type"),
+  bedrooms:      decimal("bedrooms",  { precision: 3, scale: 1 }),
+  bathrooms:     decimal("bathrooms", { precision: 3, scale: 1 }),
+  floorSize:     integer("floor_size"),
+  erfSize:       integer("erf_size"),
+
+  // Transaction
+  salePrice:    integer("sale_price").notNull(),
+  pricePerSqm:  integer("price_per_sqm"),
+  saleDate:     text("sale_date"),
+
+  // Source
+  source:       text("source").default("knowledgeFactory").notNull(),
+  titleDeedNo:  text("title_deed_no"),
+
+  // Tracking
+  seenCount:    integer("seen_count").default(1).notNull(),
+  propertyIds:  jsonb("property_ids").$type<string[]>().default([]),
+  firstSeenAt:  timestamp("first_seen_at").defaultNow().notNull(),
+  lastSeenAt:   timestamp("last_seen_at").defaultNow().notNull(),
+});
+
+export const insertComparableSaleSchema = createInsertSchema(comparableSales);
+export type InsertComparableSale = typeof comparableSales.$inferInsert;
+export type SelectComparableSale = typeof comparableSales.$inferSelect;

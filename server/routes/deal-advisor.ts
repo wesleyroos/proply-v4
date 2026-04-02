@@ -5,6 +5,7 @@ import { propdataListings } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { getComparableSales } from "../services/comparableSalesService";
 import { getComparableSalesByCoordinates, KnowledgeFactoryProperty } from "../services/knowledgeFactoryService";
+import { upsertComparableSales } from "../services/comparableSalesStore";
 
 const router = express.Router();
 
@@ -148,6 +149,11 @@ router.post("/comparable-sales", async (req, res) => {
 
           dataSource = "knowledgeFactory";
           console.log(`Knowledge Factory returned ${titleDeedProperties.length} title deed records`);
+
+          // Store all KF records in the comparable_sales table (fire-and-forget)
+          upsertComparableSales(titleDeedProperties, propdataId).catch(err =>
+            console.warn("comparable_sales background upsert failed:", err)
+          );
         }
       } else {
         console.log(`Could not resolve coordinates for "${address}" — skipping Knowledge Factory`);
