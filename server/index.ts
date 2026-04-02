@@ -5,6 +5,11 @@ import { createServer } from "net";
 import aiRouter from './routes/ai';
 import './services/autoSync'; // Initialize auto-sync service
 import { startAutomatedBilling } from './billing/automated-billing';
+import fs from "fs";
+import path from "path";
+import { db } from "../db";
+import { propdataListings } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 const app = express();
 
@@ -67,6 +72,62 @@ app.use('/static-assets', express.static('public'));
 
     res.status(status).json({ message });
     throw err;
+  });
+
+  // ── Open Graph meta tag injection for /report/:propertyId ──
+  // Must be registered before the vite/static catch-all so WhatsApp/social
+  // crawlers (which don't execute JS) receive proper OG tags.
+  app.get("/report/:propertyId", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { propertyId } = req.params;
+      const property = await db.query.propdataListings.findFirst({
+        where: eq(propdataListings.propdataId, propertyId),
+      });
+
+      // Determine index.html location (production vs dev)
+      const isDev = app.get("env") === "development";
+      const htmlPath = isDev
+        ? path.resolve(__dirname, "..", "client", "index.html")
+        : path.resolve(__dirname, "public", "index.html");
+
+      if (!fs.existsSync(htmlPath)) return next();
+
+      let html = fs.readFileSync(htmlPath, "utf-8");
+
+      if (property) {
+        const p = property as any;
+        const isValuation = /valuation|evaluation/i.test(p.status ?? "");
+        const title = isValuation
+          ? `Valuation Report: ${p.address}`
+          : `Property for Sale: ${p.address}`;
+        const description = [
+          p.bedrooms ? `${p.bedrooms} bed` : null,
+          p.bathrooms ? `${p.bathrooms} bath` : null,
+          p.floorSize ? `${p.floorSize}m²` : null,
+          p.propertyType ?? null,
+        ].filter(Boolean).join(" · ");
+        const images: string[] = Array.isArray(p.images) ? p.images : [];
+        const imageUrl = images[0] ?? "";
+        const pageUrl = `https://app.proply.co.za/report/${propertyId}`;
+
+        const ogTags = `
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="${pageUrl}" />
+    <meta property="og:title" content="${title.replace(/"/g, "&quot;")}" />
+    <meta property="og:description" content="${description.replace(/"/g, "&quot;")}" />
+    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ""}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${title.replace(/"/g, "&quot;")}" />
+    <meta name="twitter:description" content="${description.replace(/"/g, "&quot;")}" />
+    ${imageUrl ? `<meta name="twitter:image" content="${imageUrl}" />` : ""}`;
+
+        html = html.replace("</head>", `${ogTags}\n  </head>`);
+      }
+
+      res.status(200).set("Content-Type", "text/html").end(html);
+    } catch (err) {
+      next(err);
+    }
   });
 
   // importantly only setup vite in development and after
