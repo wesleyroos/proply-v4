@@ -455,16 +455,27 @@ export default function ReportPreviewPage() {
           </h1>
           {p.status?.toLowerCase() === 'evaluation' ? (
             (() => {
-              const conservative = vd?.valuations?.find((v: any) => /conserv/i.test(v.type))?.value;
-              const optimistic = vd?.valuations?.find((v: any) => /optim/i.test(v.type))?.value;
-              return (conservative || optimistic) ? (
+              const vals: any[] = vd?.valuations ?? [];
+              const conservative = vals.find((v: any) => /conserv/i.test(v.type ?? ''))?.value ?? null;
+              const optimistic = vals.find((v: any) => /optim/i.test(v.type ?? ''))?.value ?? null;
+              const midline = vals.find((v: any) => /midline|mid/i.test(v.type ?? ''))?.value ?? midlineValuation ?? null;
+              const hasRange = conservative != null && optimistic != null && conservative > 0 && optimistic > 0;
+              const hasMidline = midline != null && midline > 0;
+              if (!hasRange && !hasMidline) return null;
+              return (
                 <div className="mb-6">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Estimated Valuation</div>
                   <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                    {conservative ? fmt(conservative) : "—"} – {optimistic ? fmt(optimistic) : "—"}
+                    {hasRange
+                      ? <>{fmt(conservative)} – {fmt(optimistic)}</>
+                      : fmt(midline)
+                    }
                   </div>
+                  {hasRange && midline && midline > 0 && (
+                    <div className="text-xs text-white/50 mt-1">Midline estimate: {fmt(midline)}</div>
+                  )}
                 </div>
-              ) : null;
+              );
             })()
           ) : (
             p.price && Number(p.price) > 0 && (
