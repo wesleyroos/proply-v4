@@ -364,8 +364,6 @@ export default function PropertyDetailModal({
     averageSalePrice: number;
     dataSource: string;
   } | null>(null);
-  const [isFetchingComparableSales, setIsFetchingComparableSales] = useState(false);
-  const [comparableSalesError, setComparableSalesError] = useState<string | null>(null);
   // Row selection for outlier filtering
   const [csKfSelected, setCsKfSelected] = useState<Set<number>>(new Set());
   const [csAiSelected, setCsAiSelected] = useState<Set<number>>(new Set());
@@ -412,46 +410,6 @@ export default function PropertyDetailModal({
     initSelection(comparableSalesData.properties, setCsAiSelected);
   }, [comparableSalesData]);
 
-  const fetchComparableSales = async () => {
-    if (!property) return;
-    setIsFetchingComparableSales(true);
-    setComparableSalesError(null);
-    try {
-      const response = await fetch("/api/deal-advisor/comparable-sales", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          address: property.address,
-          propertySize: property.floorSize || property.landSize || 100,
-          bedrooms: property.bedrooms,
-          propertyType: property.propertyType,
-          propdataId: property.propdataId,
-          coordinates: property.location?.latitude && property.location?.longitude
-            ? { latitude: property.location.latitude, longitude: property.location.longitude }
-            : undefined,
-        }),
-      });
-      if (!response.ok) throw new Error("Failed to fetch comparable sales");
-      const result = await response.json();
-      if (result.success) {
-        setComparableSalesData(result.data);
-        // Persist to DB (fire-and-forget)
-        fetch(`/api/valuation-reports/${property.propdataId}/comparable-sales`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ comparableSalesData: result.data }),
-        }).catch(() => {});
-      } else {
-        throw new Error(result.error || "Unknown error");
-      }
-    } catch (err) {
-      setComparableSalesError(err instanceof Error ? err.message : "Failed to load comparable sales");
-    } finally {
-      setIsFetchingComparableSales(false);
-    }
-  };
 
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -3542,22 +3500,19 @@ export default function PropertyDetailModal({
                     <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-medium mb-2">Comparable Sales</h3>
                     <p className="text-muted-foreground mb-4">
-                      Fetch recent title deed sales records for properties near this listing to compare market values.
+                      Comparable sales are fetched automatically when you generate a report. Generate a report to see nearby title deed sales.
                     </p>
-                    {comparableSalesError && (
-                      <p className="text-sm text-red-500 mb-4">{comparableSalesError}</p>
-                    )}
                     <Button
-                      onClick={fetchComparableSales}
-                      disabled={isFetchingComparableSales}
+                      onClick={generateValuationReport}
+                      disabled={isGeneratingReport}
                       className="gap-2"
                     >
-                      {isFetchingComparableSales ? (
+                      {isGeneratingReport ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <ArrowUpDown className="h-4 w-4" />
                       )}
-                      {isFetchingComparableSales ? "Fetching..." : "Fetch Comparable Sales"}
+                      {isGeneratingReport ? "Generating..." : "Generate Report"}
                     </Button>
                   </CardContent>
                 </Card>
