@@ -380,13 +380,13 @@ export default function ReportPreviewPage() {
   const [csSelected, setCsSelected] = useState<Set<number>>(new Set());
   const [csInitialized, setCsInitialized] = useState(false);
 
-  // Accordion open/closed state — all open by default
+  // Accordion open/closed state — all closed by default
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    valuation: true,
-    rental: true,
-    comparables: true,
-    financial: true,
-    details: true,
+    valuation: false,
+    rental: false,
+    comparables: false,
+    financial: false,
+    details: false,
   });
   const toggleSection = (key: string) =>
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -427,7 +427,7 @@ export default function ReportPreviewPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center">
           <div
             className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin mx-auto mb-4"
@@ -441,7 +441,7 @@ export default function ReportPreviewPage() {
 
   if (isError || !data) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center max-w-sm px-6">
           <Home className="w-12 h-12 text-slate-300 mx-auto mb-4" />
           <h1 className="text-xl font-bold text-slate-800 mb-2">Report not found</h1>
@@ -484,7 +484,7 @@ export default function ReportPreviewPage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-100 font-sans">
       {/* ── Sticky header ── */}
       <header ref={headerRef} className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
@@ -514,19 +514,10 @@ export default function ReportPreviewPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="bg-slate-50 py-6">
+      <section className="bg-slate-100 py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 sm:px-8 py-8">
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            {p.propertyType && (
-              <span
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
-                style={{ background: `${accentColor}18`, color: accentColor }}
-              >
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: accentColor }} />
-                {p.propertyType}
-              </span>
-            )}
             {p.status && (
               <span
                 className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${
@@ -545,6 +536,15 @@ export default function ReportPreviewPage() {
                   p.status.toLowerCase().includes('offer') ? 'bg-orange-400' : 'bg-slate-400'
                 }`} />
                 {p.status}
+              </span>
+            )}
+            {p.propertyType && (
+              <span
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+                style={{ background: `${accentColor}18`, color: accentColor }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: accentColor }} />
+                {p.propertyType}
               </span>
             )}
           </div>
@@ -620,7 +620,7 @@ export default function ReportPreviewPage() {
 
       {/* ── Key metrics strip ── */}
       {(ltrYieldRange || strYieldRange || apprRate) && (
-        <section className="bg-slate-50 pb-6">
+        <section className="bg-slate-100 pb-6">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 sm:px-8 py-5 grid grid-cols-2 sm:grid-cols-3 divide-x divide-slate-100 gap-y-4">
             {ltrYieldRange && (
@@ -645,7 +645,7 @@ export default function ReportPreviewPage() {
 
       {/* ── Images + Map ── */}
       {(p.images?.length || p.address) && (
-        <section className="bg-slate-50 pb-6">
+        <section className="bg-slate-100 pb-6">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
