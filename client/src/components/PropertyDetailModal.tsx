@@ -344,7 +344,18 @@ export default function PropertyDetailModal({
   const [lastAddressSaveTime, setLastAddressSaveTime] = useState<number | null>(
     null,
   );
-  // Comparable sales state
+  // Comparable sales — load from DB, fetch fresh from KF on demand
+  const { data: savedComparableSales } = useQuery({
+    queryKey: ["/api/valuation-reports", property?.propdataId, "comparable-sales"],
+    enabled: !!property?.propdataId,
+    queryFn: async () => {
+      const res = await fetch(`/api/valuation-reports/${property!.propdataId}`, { credentials: "include" });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.comparableSalesData ?? null;
+    },
+  });
+
   const [comparableSalesData, setComparableSalesData] = useState<{
     titleDeedProperties: any[];
     properties: any[];
@@ -353,6 +364,13 @@ export default function PropertyDetailModal({
   } | null>(null);
   const [isFetchingComparableSales, setIsFetchingComparableSales] = useState(false);
   const [comparableSalesError, setComparableSalesError] = useState<string | null>(null);
+
+  // Populate from DB when loaded
+  useEffect(() => {
+    if (savedComparableSales && !comparableSalesData) {
+      setComparableSalesData(savedComparableSales);
+    }
+  }, [savedComparableSales]);
 
   const fetchComparableSales = async () => {
     if (!property) return;
@@ -378,6 +396,13 @@ export default function PropertyDetailModal({
       const result = await response.json();
       if (result.success) {
         setComparableSalesData(result.data);
+        // Persist to DB (fire-and-forget)
+        fetch(`/api/valuation-reports/${property.propdataId}/comparable-sales`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ comparableSalesData: result.data }),
+        }).catch(() => {});
       } else {
         throw new Error(result.error || "Unknown error");
       }
@@ -3485,11 +3510,11 @@ export default function PropertyDetailModal({
                           <span className="font-semibold text-foreground">
                             R{comparableSalesData.averageSalePrice.toLocaleString()}
                           </span>
-                          {property?.price && comparableSalesData.averageSalePrice > 0 && (
-                            <span className={`ml-2 text-xs font-medium ${property.price > comparableSalesData.averageSalePrice ? "text-amber-600" : "text-green-600"}`}>
-                              {property.price > comparableSalesData.averageSalePrice
-                                ? `+${Math.round(((property.price - comparableSalesData.averageSalePrice) / comparableSalesData.averageSalePrice) * 100)}% above avg`
-                                : `${Math.round(((property.price - comparableSalesData.averageSalePrice) / comparableSalesData.averageSalePrice) * 100)}% below avg`}
+                          {Number(property?.price) > 0 && comparableSalesData.averageSalePrice > 0 && (
+                            <span className={`ml-2 text-xs font-medium ${Number(property.price) > comparableSalesData.averageSalePrice ? "text-amber-600" : "text-green-600"}`}>
+                              {Number(property.price) > comparableSalesData.averageSalePrice
+                                ? `+${Math.round(((Number(property.price) - comparableSalesData.averageSalePrice) / comparableSalesData.averageSalePrice) * 100)}% above avg`
+                                : `${Math.round(((Number(property.price) - comparableSalesData.averageSalePrice) / comparableSalesData.averageSalePrice) * 100)}% below avg`}
                             </span>
                           )}
                         </CardDescription>

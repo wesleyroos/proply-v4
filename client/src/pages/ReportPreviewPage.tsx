@@ -46,6 +46,12 @@ interface ReportData {
         shortTerm?: any;
       };
     };
+    comparableSalesData?: {
+      titleDeedProperties: any[];
+      properties: any[];
+      averageSalePrice: number;
+      dataSource: string;
+    } | null;
   } | null;
   rentalData: {
     financingAnalysisData?: any;
@@ -495,6 +501,74 @@ export default function ReportPreviewPage() {
             )}
           </div>
         )}
+
+        {/* Comparable Sales */}
+        {(() => {
+          const cs = data.valuationReport?.comparableSalesData;
+          const rows = cs?.titleDeedProperties?.length ? cs.titleDeedProperties : cs?.properties ?? [];
+          if (!rows.length) return null;
+          return (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
+              <SectionHeader title="Comparable Sales" color={accentColor} />
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs text-slate-500">
+                  {cs?.dataSource === "knowledgeFactory"
+                    ? "Title deed records from the Deeds Office"
+                    : "AI-estimated comparable sales"}
+                </p>
+                {(cs?.averageSalePrice ?? 0) > 0 && (
+                  <span className="text-xs font-semibold text-slate-700">
+                    Avg: R{cs!.averageSalePrice.toLocaleString()}
+                  </span>
+                )}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Address</th>
+                      <th className="text-right py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Sale Price</th>
+                      <th className="text-right py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Size</th>
+                      <th className="text-right py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">R/m²</th>
+                      <th className="text-right py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Sale Date</th>
+                      {cs?.dataSource === "knowledgeFactory" && (
+                        <th className="text-right py-2 px-3 font-semibold text-slate-500 uppercase tracking-wider">Distance</th>
+                      )}
+
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((p: any, i: number) => (
+                      <tr key={i} className="border-b border-slate-50 last:border-0">
+                        <td className="py-2 px-3">
+                          <div className="font-medium text-slate-800">{p.address}</div>
+                          {p.suburb && <div className="text-slate-400">{p.suburb}</div>}
+                        </td>
+                        <td className="py-2 px-3 text-right font-semibold text-slate-800">
+                          R{p.salePrice?.toLocaleString() ?? "—"}
+                        </td>
+                        <td className="py-2 px-3 text-right text-slate-500">{p.size ? `${p.size}m²` : "—"}</td>
+                        <td className="py-2 px-3 text-right text-slate-500">
+                          {p.pricePerSqM ? `R${p.pricePerSqM.toLocaleString()}` : "—"}
+                        </td>
+                        <td className="py-2 px-3 text-right text-slate-500">
+                          {p.saleDate
+                            ? new Date(p.saleDate).toLocaleDateString("en-ZA", { year: "numeric", month: "short" })
+                            : "—"}
+                        </td>
+                        {cs?.dataSource === "knowledgeFactory" && (
+                          <td className="py-2 px-3 text-right text-slate-500">
+                            {p.distanceKM != null ? `${p.distanceKM.toFixed(1)} km` : "—"}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Financial Analysis */}
         {(rd?.financingAnalysisData || rd?.cashflowAnalysisData || rd?.annualPropertyAppreciationData) && (

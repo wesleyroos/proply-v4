@@ -3936,6 +3936,28 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Save comparable sales data for a property
+  app.put("/api/valuation-reports/:propertyId/comparable-sales", async (req, res) => {
+    try {
+      if (!req.user) return res.status(401).json({ error: "Authentication required" });
+      const { propertyId } = req.params;
+      const { comparableSalesData } = req.body;
+
+      await db.execute(sql`
+        UPDATE valuation_reports
+        SET comparable_sales_data = ${JSON.stringify(comparableSalesData)}::jsonb,
+            updated_at = NOW()
+        WHERE property_id = ${propertyId}
+        AND user_id = ${(req.user as any).id}
+      `);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error saving comparable sales:", error);
+      res.status(500).json({ error: "Failed to save comparable sales data" });
+    }
+  });
+
   // Get valuation report for a property
   app.get("/api/valuation-reports/:propertyId", async (req, res) => {
     try {

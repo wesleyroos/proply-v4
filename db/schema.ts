@@ -510,6 +510,9 @@ export const valuationReports = pgTable("valuation_reports", {
   annualPropertyAppreciationData: jsonb("annual_property_appreciation_data"), // Property appreciation projections
   cashflowAnalysisData: jsonb("cashflow_analysis_data"), // Revenue growth and cashflow analysis
   financingAnalysisData: jsonb("financing_analysis_data"), // Detailed financing calculations and metrics
+
+  // COMPARABLE SALES DATA - Cached title deed records from Knowledge Factory
+  comparableSalesData: jsonb("comparable_sales_data"), // Stores titleDeedProperties, averageSalePrice, dataSource
   
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),

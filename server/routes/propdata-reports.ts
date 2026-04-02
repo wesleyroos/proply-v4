@@ -325,7 +325,10 @@ router.get('/report-data/:propertyId', async (req, res) => {
         agentEmail: p.agentEmail,
         agentPhone: p.agentPhone,
       },
-      valuationReport: valuationReport ? { valuationData: valuationReport.valuationData } : null,
+      valuationReport: valuationReport ? {
+        valuationData: valuationReport.valuationData,
+        comparableSalesData: (valuationReport as any).comparableSalesData ?? null,
+      } : null,
       rentalData: mergedRentalData,
       branch: branch ? {
         franchiseName: branch.franchiseName,
