@@ -208,7 +208,8 @@ export default function ReportPreviewPage() {
   const vd = (valuationReport?.valuationData as any) || null;
   const ltr = vd?.rentalPerformance?.longTerm;
   const str = vd?.rentalPerformance?.shortTerm;
-  const price = Number(p.price) || 1;
+  const midlineValuation = vd?.valuations?.find((v: any) => v.type === "Midline (Proply est.)")?.value;
+  const price = Number(p.price) || midlineValuation || 0;
 
   const ltrYieldRange =
     ltr?.minYield != null && ltr?.maxYield != null
@@ -216,7 +217,7 @@ export default function ReportPreviewPage() {
       : null;
 
   let strYieldRange: string | null = null;
-  if (str && price) {
+  if (str && price > 0) {
     const p25 = str.percentile25?.annual ? ((str.percentile25.annual / price) * 100).toFixed(1) : null;
     const p75 = str.percentile75?.annual ? ((str.percentile75.annual / price) * 100).toFixed(1) : null;
     if (p25 && p75) strYieldRange = `${p25}% – ${p75}%`;

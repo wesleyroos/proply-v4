@@ -3710,6 +3710,9 @@ export function registerRoutes(app: Express): Server {
     interestPct: number,  // e.g. 11.75
     loanTermYrs: number,  // e.g. 20
   ) {
+    // When asking price is 0, fall back to the midline valuation estimate
+    const midlinePrice = vd?.valuations?.find((v: any) => v.type === "Midline (Proply est.)")?.value || 0;
+    propertyPrice = propertyPrice > 0 ? propertyPrice : midlinePrice;
     // --- 1. Annual property appreciation ---
     const components = vd?.propertyAppreciation?.components;
     const appreciationRate = components
@@ -3965,10 +3968,12 @@ export function registerRoutes(app: Express): Server {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const { propertyId, price, valuationReport } = req.body;
+      const { propertyId, price: rawPrice, valuationReport } = req.body;
+      const midlinePrice = valuationReport?.valuations?.find((v: any) => v.type === "Midline (Proply est.)")?.value || 0;
+      const price = (rawPrice && rawPrice > 0) ? rawPrice : midlinePrice;
 
       console.log(`Calculating financial data for property ${propertyId}`);
-      
+
       // Get current financing parameters from database or use defaults
       const existingReport = await db.execute(sql`
         SELECT current_deposit_percentage, current_interest_rate, current_loan_term
@@ -4018,14 +4023,14 @@ export function registerRoutes(app: Express): Server {
         recommendedStrategy: shortTermRevenue > (longTermRevenue || 0) ? "shortTerm" : "longTerm",
         strategyReasoning: "Automatically calculated based on available rental data",
         revenueGrowthTrajectory: {
-          shortTerm: shortTermRevenue ? {
+          shortTerm: shortTermRevenue && price > 0 ? {
             year1: { revenue: shortTermRevenue, grossYield: (shortTermRevenue / price) * 100 },
             year2: { revenue: shortTermRevenue * 1.08, grossYield: (shortTermRevenue * 1.08 / price) * 100 },
             year3: { revenue: shortTermRevenue * Math.pow(1.08, 2), grossYield: (shortTermRevenue * Math.pow(1.08, 2) / price) * 100 },
             year4: { revenue: shortTermRevenue * Math.pow(1.08, 3), grossYield: (shortTermRevenue * Math.pow(1.08, 3) / price) * 100 },
             year5: { revenue: shortTermRevenue * Math.pow(1.08, 4), grossYield: (shortTermRevenue * Math.pow(1.08, 4) / price) * 100 }
           } : null,
-          longTerm: longTermRevenue ? {
+          longTerm: longTermRevenue && price > 0 ? {
             year1: { revenue: longTermRevenue, grossYield: (longTermRevenue / price) * 100 },
             year2: { revenue: longTermRevenue * 1.08, grossYield: (longTermRevenue * 1.08 / price) * 100 },
             year3: { revenue: longTermRevenue * Math.pow(1.08, 2), grossYield: (longTermRevenue * Math.pow(1.08, 2) / price) * 100 },

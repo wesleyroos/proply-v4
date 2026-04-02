@@ -574,25 +574,32 @@ export default function PropertyDetailModal({
     return rentalData.shortTerm[selectedPercentile];
   };
 
+  const getEffectivePrice = (): number => {
+    const p = parseFloat(property?.price?.toString() || "0");
+    if (p > 0) return p;
+    return (valuationReport as any)?.valuations?.find((v: any) => v.type === "Midline (Proply est.)")?.value || 0;
+  };
+
   const calculateDynamicYield = () => {
     const selectedData = getSelectedShortTermData();
-    if (!selectedData || !property?.price || property.price === 0) return null;
+    const effectivePrice = getEffectivePrice();
+    if (!selectedData || effectivePrice <= 0) return null;
     return parseFloat(
-      ((selectedData.annual / property.price) * 100).toFixed(1),
+      ((selectedData.annual / effectivePrice) * 100).toFixed(1),
     );
   };
 
   // Calculate long-term yields dynamically based on current rental data
   const calculateLongTermYield = () => {
-    if (!rentalData?.longTerm || !property?.price || property.price === 0)
-      return { min: null, max: null };
-    const propertyPrice = parseFloat(property.price.toString());
+    if (!rentalData?.longTerm) return { min: null, max: null };
+    const effectivePrice = getEffectivePrice();
+    if (effectivePrice <= 0) return { min: null, max: null };
     const minAnnualRental = rentalData.longTerm.minRental * 12;
     const maxAnnualRental = rentalData.longTerm.maxRental * 12;
 
     return {
-      min: parseFloat(((minAnnualRental / propertyPrice) * 100).toFixed(1)),
-      max: parseFloat(((maxAnnualRental / propertyPrice) * 100).toFixed(1)),
+      min: parseFloat(((minAnnualRental / effectivePrice) * 100).toFixed(1)),
+      max: parseFloat(((maxAnnualRental / effectivePrice) * 100).toFixed(1)),
     };
   };
 
@@ -736,7 +743,7 @@ export default function PropertyDetailModal({
     if (!property || !rentalData || !valuationReport) return;
 
     const financingToUse = updatedFinancingParams || financingParams;
-    const propertyPrice = parseFloat(property.price.toString());
+    const propertyPrice = getEffectivePrice();
 
     // 1. ANNUAL PROPERTY APPRECIATION DATA
     const annualAppreciationData = {
@@ -1337,7 +1344,7 @@ export default function PropertyDetailModal({
     }
 
     // Financing parameters - using dynamic state
-    const propertyPrice = parseFloat(property.price.toString());
+    const propertyPrice = getEffectivePrice();
     const depositPercentage = financingParams.depositPercentage / 100;
     const loanToValue = 1 - depositPercentage;
     const interestRate = financingParams.interestRate / 100;
@@ -1564,7 +1571,7 @@ export default function PropertyDetailModal({
       );
     }
 
-    const propertyPrice = parseFloat(property.price.toString());
+    const propertyPrice = getEffectivePrice();
 
     // Calculate metrics for long-term strategy
     const calculateLongTermMetrics = () => {

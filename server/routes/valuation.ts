@@ -9,6 +9,10 @@ import fetch from "node-fetch";
 
 const router = Router();
 
+function getMidlineValuation(valuations?: Array<{type: string; value: number}>): number {
+  return valuations?.find(v => v.type === "Midline (Proply est.)")?.value || 0;
+}
+
 // Function to validate image size before sending to OpenAI
 async function validateImageSize(imageUrl: string): Promise<boolean> {
   try {
@@ -54,7 +58,10 @@ export async function calculateAndSaveFinancialDataAfterValuation(
   userId: number
 ) {
   console.log(`Calculating and saving financial data for property ${propertyId}`);
-  
+
+  const midlinePrice = getMidlineValuation(valuationReport.valuations);
+  const effectivePrice = propertyPrice > 0 ? propertyPrice : midlinePrice;
+
   // Get current financing parameters from database or use defaults
   const existingReport = await db.execute(sql`
     SELECT current_deposit_percentage, current_interest_rate, current_loan_term
@@ -77,7 +84,7 @@ export async function calculateAndSaveFinancialDataAfterValuation(
     yearlyValues: (() => {
       const rate = (valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0) / 100;
       return [1, 2, 3, 4, 5, 10, 20].reduce((acc, year) => {
-        acc[`year${year}`] = propertyPrice * Math.pow(1 + rate, year);
+        acc[`year${year}`] = effectivePrice * Math.pow(1 + rate, year);
         return acc;
       }, {} as Record<string, number>);
     })(),
@@ -87,45 +94,45 @@ export async function calculateAndSaveFinancialDataAfterValuation(
   // 2. CASHFLOW ANALYSIS DATA
   // Short-term revenue from PriceLabs percentile50 (median) data
   const shortTermRevenue = valuationReport.rentalPerformance?.shortTerm?.percentile50?.annual || null;
-  const longTermRevenue = valuationReport.rentalEstimates?.longTerm ? 
-    (valuationReport.rentalEstimates.longTerm.minMonthlyRental + valuationReport.rentalEstimates.longTerm.maxMonthlyRental) / 2 * 12 
+  const longTermRevenue = valuationReport.rentalEstimates?.longTerm ?
+    (valuationReport.rentalEstimates.longTerm.minMonthlyRental + valuationReport.rentalEstimates.longTerm.maxMonthlyRental) / 2 * 12
     : null;
 
   // Calculate revenue trajectories for all short-term percentiles
   const shortTermTrajectories = valuationReport.rentalPerformance?.shortTerm ? {
     percentile25: (() => {
       const baseRevenue = valuationReport.rentalPerformance.shortTerm.percentile25?.annual;
-      if (!baseRevenue) return null;
+      if (!baseRevenue || effectivePrice <= 0) return null;
       return [1, 2, 3, 4, 5].reduce((acc, year) => {
         const revenue = baseRevenue * Math.pow(1.08, year - 1);
-        acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        acc[`year${year}`] = { revenue, grossYield: (revenue / effectivePrice) * 100 };
         return acc;
       }, {} as Record<string, { revenue: number; grossYield: number }>);
     })(),
     percentile50: (() => {
       const baseRevenue = valuationReport.rentalPerformance.shortTerm.percentile50?.annual;
-      if (!baseRevenue) return null;
+      if (!baseRevenue || effectivePrice <= 0) return null;
       return [1, 2, 3, 4, 5].reduce((acc, year) => {
         const revenue = baseRevenue * Math.pow(1.08, year - 1);
-        acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        acc[`year${year}`] = { revenue, grossYield: (revenue / effectivePrice) * 100 };
         return acc;
       }, {} as Record<string, { revenue: number; grossYield: number }>);
     })(),
     percentile75: (() => {
       const baseRevenue = valuationReport.rentalPerformance.shortTerm.percentile75?.annual;
-      if (!baseRevenue) return null;
+      if (!baseRevenue || effectivePrice <= 0) return null;
       return [1, 2, 3, 4, 5].reduce((acc, year) => {
         const revenue = baseRevenue * Math.pow(1.08, year - 1);
-        acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        acc[`year${year}`] = { revenue, grossYield: (revenue / effectivePrice) * 100 };
         return acc;
       }, {} as Record<string, { revenue: number; grossYield: number }>);
     })(),
     percentile90: (() => {
       const baseRevenue = valuationReport.rentalPerformance.shortTerm.percentile90?.annual;
-      if (!baseRevenue) return null;
+      if (!baseRevenue || effectivePrice <= 0) return null;
       return [1, 2, 3, 4, 5].reduce((acc, year) => {
         const revenue = baseRevenue * Math.pow(1.08, year - 1);
-        acc[`year${year}`] = { revenue, grossYield: (revenue / propertyPrice) * 100 };
+        acc[`year${year}`] = { revenue, grossYield: (revenue / effectivePrice) * 100 };
         return acc;
       }, {} as Record<string, { revenue: number; grossYield: number }>);
     })()
@@ -136,12 +143,12 @@ export async function calculateAndSaveFinancialDataAfterValuation(
     strategyReasoning: "Automatically calculated based on available rental data",
     revenueGrowthTrajectory: {
       shortTerm: shortTermTrajectories,
-      longTerm: longTermRevenue ? {
-        year1: { revenue: longTermRevenue, grossYield: (longTermRevenue / propertyPrice) * 100 },
-        year2: { revenue: longTermRevenue * 1.08, grossYield: (longTermRevenue * 1.08 / propertyPrice) * 100 },
-        year3: { revenue: longTermRevenue * Math.pow(1.08, 2), grossYield: (longTermRevenue * Math.pow(1.08, 2) / propertyPrice) * 100 },
-        year4: { revenue: longTermRevenue * Math.pow(1.08, 3), grossYield: (longTermRevenue * Math.pow(1.08, 3) / propertyPrice) * 100 },
-        year5: { revenue: longTermRevenue * Math.pow(1.08, 4), grossYield: (longTermRevenue * Math.pow(1.08, 4) / propertyPrice) * 100 }
+      longTerm: longTermRevenue && effectivePrice > 0 ? {
+        year1: { revenue: longTermRevenue, grossYield: (longTermRevenue / effectivePrice) * 100 },
+        year2: { revenue: longTermRevenue * 1.08, grossYield: (longTermRevenue * 1.08 / effectivePrice) * 100 },
+        year3: { revenue: longTermRevenue * Math.pow(1.08, 2), grossYield: (longTermRevenue * Math.pow(1.08, 2) / effectivePrice) * 100 },
+        year4: { revenue: longTermRevenue * Math.pow(1.08, 3), grossYield: (longTermRevenue * Math.pow(1.08, 3) / effectivePrice) * 100 },
+        year5: { revenue: longTermRevenue * Math.pow(1.08, 4), grossYield: (longTermRevenue * Math.pow(1.08, 4) / effectivePrice) * 100 }
       } : null
     }
   };
@@ -151,9 +158,9 @@ export async function calculateAndSaveFinancialDataAfterValuation(
   const interestRate = Number(financingParams.current_interest_rate) / 100;
   const loanTermYears = Number(financingParams.current_loan_term);
   const loanTermMonths = loanTermYears * 12;
-  
-  const depositAmount = propertyPrice * depositPercentage;
-  const loanAmount = propertyPrice - depositAmount;
+
+  const depositAmount = effectivePrice * depositPercentage;
+  const loanAmount = effectivePrice - depositAmount;
   const monthlyInterestRate = interestRate / 12;
   
   const monthlyPayment = (loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTermMonths))) / (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
@@ -590,15 +597,16 @@ ${premiumImageContext}
     console.log('OpenAI rental estimates received:', valuationReport.rentalEstimates);
     
     // Process rental estimates from the valuation report and combine with PriceLabs data
+    const yieldBasePrice = (price && price > 0) ? price : getMidlineValuation(valuationReport.valuations);
     const rentalPerformance = {
       shortTerm: shortTermData,
       longTerm: valuationReport.rentalEstimates?.longTerm ? {
         minRental: valuationReport.rentalEstimates.longTerm.minMonthlyRental,
         maxRental: valuationReport.rentalEstimates.longTerm.maxMonthlyRental,
-        minYield: price && price > 0 ? parseFloat(((valuationReport.rentalEstimates.longTerm.minMonthlyRental * 12) / price * 100).toFixed(1)) : null,
-        maxYield: price && price > 0 ? parseFloat(((valuationReport.rentalEstimates.longTerm.maxMonthlyRental * 12) / price * 100).toFixed(1)) : null,
+        minYield: yieldBasePrice > 0 ? parseFloat(((valuationReport.rentalEstimates.longTerm.minMonthlyRental * 12) / yieldBasePrice * 100).toFixed(1)) : null,
+        maxYield: yieldBasePrice > 0 ? parseFloat(((valuationReport.rentalEstimates.longTerm.maxMonthlyRental * 12) / yieldBasePrice * 100).toFixed(1)) : null,
         managementFee: "8-10%",
-        reasoning: valuationReport.rentalEstimates.longTerm.reasoning || (price === 0 ? "Yield cannot be calculated for valuation properties (no asking price)" : "AI-generated rental estimate")
+        reasoning: valuationReport.rentalEstimates.longTerm.reasoning || (yieldBasePrice > 0 && price === 0 ? `Yield based on valuation estimate of R${yieldBasePrice.toLocaleString("en-ZA")}` : "AI-generated rental estimate")
       } : null
     };
 
@@ -681,7 +689,7 @@ ${premiumImageContext}
       console.log('Property price:', price);
 
       // Now calculate and save financial analysis data with the new percentile structure
-      const propertyPrice = price || 0;
+      const propertyPrice = (price && price > 0) ? price : getMidlineValuation(valuationReport.valuations);
       
       // 1. ANNUAL PROPERTY APPRECIATION DATA
       const annualPropertyAppreciationData = {
@@ -767,7 +775,7 @@ ${premiumImageContext}
           : "Long-term rental provides more stable returns for this property type",
         revenueGrowthTrajectory: {
           shortTerm: shortTermTrajectories,
-          longTerm: longTermRevenue ? {
+          longTerm: longTermRevenue && propertyPrice > 0 ? {
             year1: { revenue: longTermRevenue, grossYield: (longTermRevenue / propertyPrice) * 100 },
             year2: { revenue: longTermRevenue * 1.08, grossYield: (longTermRevenue * 1.08 / propertyPrice) * 100 },
             year3: { revenue: longTermRevenue * Math.pow(1.08, 2), grossYield: (longTermRevenue * Math.pow(1.08, 2) / propertyPrice) * 100 },
