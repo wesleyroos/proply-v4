@@ -815,17 +815,28 @@ export default function PropertyDetailModal({
     const propertyPrice = getEffectivePrice();
 
     // 1. ANNUAL PROPERTY APPRECIATION DATA
+    // Recalculate total appreciation from components to avoid AI rounding errors
+    const calcTotalAppreciationRate = (appreciation: any): number => {
+      if (!appreciation?.components) return appreciation?.annualAppreciationRate || 8.0;
+      const c = appreciation.components;
+      return parseFloat((
+        (c.baseSuburbRate?.rate || 0) +
+        (c.propertyTypeModifier?.adjustment || 0) +
+        (c.levyImpact?.adjustment || 0) +
+        (c.visualConditionAdjustment?.adjustment || 0) +
+        (c.locationPremium?.adjustment || 0)
+      ).toFixed(1));
+    };
+    const totalAppreciationRate = calcTotalAppreciationRate(valuationReport.propertyAppreciation);
+
     const annualAppreciationData = {
       baseSuburbRate:
         valuationReport.propertyAppreciation?.suburbAppreciationRate || 8.0,
       propertyAdjustments:
         valuationReport.propertyAppreciation?.adjustments || {},
-      finalAppreciationRate:
-        valuationReport.propertyAppreciation?.annualAppreciationRate || 8.0,
+      finalAppreciationRate: totalAppreciationRate,
       yearlyValues: (() => {
-        const rate =
-          (valuationReport.propertyAppreciation?.annualAppreciationRate ||
-            8.0) / 100;
+        const rate = totalAppreciationRate / 100;
         return [1, 2, 3, 4, 5, 10, 20].reduce(
           (acc, year) => {
             acc[`year${year}`] = propertyPrice * Math.pow(1 + rate, year);
@@ -2949,10 +2960,7 @@ export default function PropertyDetailModal({
                                 <path d="m6 9 6 6 6-6" />
                               </svg>
                               <Badge variant="secondary">
-                                {valuationReport.propertyAppreciation.annualAppreciationRate.toFixed(
-                                  1,
-                                )}
-                                %
+                                {calcTotalAppreciationRate(valuationReport.propertyAppreciation).toFixed(1)}%
                               </Badge>
                             </div>
                           </div>
@@ -3159,8 +3167,7 @@ export default function PropertyDetailModal({
                                           const baseValue =
                                             property?.price || 0;
                                           const appreciationRate =
-                                            valuationReport.propertyAppreciation
-                                              .annualAppreciationRate / 100;
+                                            calcTotalAppreciationRate(valuationReport.propertyAppreciation) / 100;
                                           const year10Value =
                                             baseValue *
                                             Math.pow(1 + appreciationRate, 10);
@@ -3175,8 +3182,7 @@ export default function PropertyDetailModal({
                                           const baseValue =
                                             property?.price || 0;
                                           const appreciationRate =
-                                            valuationReport.propertyAppreciation
-                                              .annualAppreciationRate / 100;
+                                            calcTotalAppreciationRate(valuationReport.propertyAppreciation) / 100;
                                           const year20Value =
                                             baseValue *
                                             Math.pow(1 + appreciationRate, 20);
