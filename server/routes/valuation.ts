@@ -234,7 +234,8 @@ router.post("/generate-valuation-report", async (req, res) => {
       images,
       location,
       propertyId,
-      monthlyLevy
+      monthlyLevy,
+      comparableSalesData: comparableSalesFromRequest,
     } = req.body;
 
     // Normalize property type for OpenAI to avoid confusion
@@ -256,9 +257,9 @@ router.post("/generate-valuation-report", async (req, res) => {
       location: location || {}
     };
 
-    // Fetch existing comparable sales from DB for this property (if available)
-    let existingComparableSales: any = null;
-    if (propertyId) {
+    // Use comparable sales from request body (freshly fetched by client) or fall back to DB
+    let existingComparableSales: any = comparableSalesFromRequest || null;
+    if (!existingComparableSales && propertyId) {
       try {
         const existingReport = await db.query.valuationReports.findFirst({
           where: eq(valuationReports.propertyId, propertyId),

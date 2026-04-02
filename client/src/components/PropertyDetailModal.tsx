@@ -174,6 +174,7 @@ export default function PropertyDetailModal({
   const [progressSteps, setProgressSteps] = useState([
     { id: 'analyze', label: 'Analyzing property details', status: 'pending' },
     { id: 'images', label: 'Processing property images', status: 'pending' },
+    { id: 'comparables', label: 'Fetching comparable sales data', status: 'pending' },
     { id: 'valuation', label: 'Generating valuation estimates', status: 'pending' },
     { id: 'rental', label: 'Fetching rental performance data', status: 'pending' },
     { id: 'financial', label: 'Calculating financial analysis', status: 'pending' },
@@ -195,6 +196,7 @@ export default function PropertyDetailModal({
     setProgressSteps([
       { id: 'analyze', label: 'Analyzing property details', status: 'pending' },
       { id: 'images', label: 'Processing property images', status: 'pending' },
+      { id: 'comparables', label: 'Fetching comparable sales data', status: 'pending' },
       { id: 'valuation', label: 'Generating valuation estimates', status: 'pending' },
       { id: 'rental', label: 'Fetching rental performance data', status: 'pending' },
       { id: 'financial', label: 'Calculating financial analysis', status: 'pending' },
@@ -1224,13 +1226,45 @@ export default function PropertyDetailModal({
       };
       
       updateProgressStep('analyze', 'completed');
-      
+
       // Step 2: Processing images
       updateProgressStep('images', 'processing');
       await new Promise(resolve => setTimeout(resolve, 1200));
       updateProgressStep('images', 'completed');
-      
-      // Step 3: Generating valuation estimates
+
+      // Step 3: Fetch comparable sales so they can anchor the valuation
+      updateProgressStep('comparables', 'processing');
+      let freshComparables: any = null;
+      try {
+        const compRes = await fetch("/api/deal-advisor/comparable-sales", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            address: property.address,
+            propertySize: property.floorSize || property.landSize || 100,
+            bedrooms: property.bedrooms,
+            propertyType: property.propertyType,
+            propdataId: property.propdataId,
+            coordinates: property.location?.latitude && property.location?.longitude
+              ? { latitude: property.location.latitude, longitude: property.location.longitude }
+              : undefined,
+          }),
+        });
+        if (compRes.ok) {
+          const compResult = await compRes.json();
+          if (compResult.success) {
+            freshComparables = compResult.data;
+            setComparableSalesData(compResult.data);
+          }
+        }
+        updateProgressStep('comparables', 'completed');
+      } catch (compErr) {
+        console.warn("Comparable sales fetch failed, continuing without:", compErr);
+        updateProgressStep('comparables', 'completed'); // non-fatal
+      }
+
+      // Step 4: Generating valuation estimates (with comparables included)
       updateProgressStep('valuation', 'processing');
 
       const response = await fetch("/api/generate-valuation-report", {
@@ -1239,7 +1273,7 @@ export default function PropertyDetailModal({
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(requestData),
+        body: JSON.stringify({ ...requestData, comparableSalesData: freshComparables }),
       });
 
       if (!response.ok) {
@@ -1249,14 +1283,24 @@ export default function PropertyDetailModal({
       const report = await response.json();
       updateProgressStep('valuation', 'completed');
 
-      // Save the valuation report to database 
+      // Save the valuation report to database
       // (Financial data is automatically saved during valuation generation)
       await saveValuationToDatabase(report);
+
+      // Persist comparable sales to the newly-saved valuation report (fire-and-forget)
+      if (freshComparables) {
+        fetch(`/api/valuation-reports/${property.propdataId}/comparable-sales`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ comparableSalesData: freshComparables }),
+        }).catch(() => {});
+      }
 
       // Reload data from database to ensure consistency
       await refetchValuation();
 
-      // Step 4: Fetching rental performance data
+      // Step 5: Fetching rental performance data
       updateProgressStep('rental', 'processing');
       
       // Force refresh rental data with cache invalidation
