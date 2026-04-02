@@ -450,7 +450,7 @@ export default function ReportPreviewPage() {
               </span>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight tracking-tight mb-3">
+          <h1 className="text-lg sm:text-xl font-extrabold text-white/90 leading-tight tracking-tight mb-3">
             {p.address}
           </h1>
           {/evaluation|valuation/i.test(p.status ?? '') ? (
@@ -464,15 +464,15 @@ export default function ReportPreviewPage() {
               if (!hasRange && !hasMidline) return null;
               return (
                 <div className="mb-6">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Estimated Valuation</div>
-                  <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-amber-300/70 mb-1">Estimated Valuation</div>
+                  <div className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-300">
                     {hasRange
                       ? <>{fmt(conservative)} – {fmt(optimistic)}</>
                       : fmt(midline)
                     }
                   </div>
                   {hasRange && midline && midline > 0 && (
-                    <div className="text-xs text-white/50 mt-1">Midline estimate: {fmt(midline)}</div>
+                    <div className="text-xs text-white/40 mt-1">Midline estimate: {fmt(midline)}</div>
                   )}
                 </div>
               );
@@ -752,14 +752,14 @@ export default function ReportPreviewPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   {avgPrice > 0 && (
-                    <div className="flex flex-col items-center px-3 py-1.5 rounded-lg bg-slate-900 text-white min-w-[90px]">
-                      <span className="text-[9px] font-semibold uppercase tracking-widest text-white/50 leading-none mb-0.5">Avg Price</span>
+                    <div className="flex flex-col items-center px-3 py-1.5 rounded-lg text-white min-w-[90px]" style={{ background: accentColor }}>
+                      <span className="text-[9px] font-semibold uppercase tracking-widest text-white/60 leading-none mb-0.5">Avg Price</span>
                       <span className="text-xs font-bold leading-none">R{avgPrice.toLocaleString()}</span>
                     </div>
                   )}
                   {avgSqm > 0 && (
-                    <div className="flex flex-col items-center px-3 py-1.5 rounded-lg bg-slate-900 text-white min-w-[90px]">
-                      <span className="text-[9px] font-semibold uppercase tracking-widest text-white/50 leading-none mb-0.5">Avg R/m²</span>
+                    <div className="flex flex-col items-center px-3 py-1.5 rounded-lg text-white min-w-[90px]" style={{ background: accentColor }}>
+                      <span className="text-[9px] font-semibold uppercase tracking-widest text-white/60 leading-none mb-0.5">Avg R/m²</span>
                       <span className="text-xs font-bold leading-none">R{avgSqm.toLocaleString()}</span>
                     </div>
                   )}
