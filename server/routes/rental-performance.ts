@@ -118,11 +118,6 @@ export async function fetchPriceLabsData(
   userId?: number,
 ): Promise<ShortTermRentalData> {
   try {
-    const apiKey = process.env.PRICELABS_API_KEY;
-    if (!apiKey) {
-      throw new Error("PriceLabs API key not configured");
-    }
-
     // Construct the PriceLabs Revenue Estimator API URL with query parameters
     const apiUrl = new URL("https://api.pricelabs.co/v1/revenue/estimator");
     apiUrl.searchParams.set("version", "2");
