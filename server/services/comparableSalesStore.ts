@@ -47,7 +47,7 @@ export async function upsertComparableSales(
           ${p.propertyType ?? null},
           ${p.bedrooms ?? null},
           ${p.bathrooms ?? null},
-          ${p.size ?? p.floorSize ?? null},
+          ${p.size != null ? Math.round(p.size) : p.floorSize != null ? Math.round(p.floorSize) : null},
           ${p.erfSize ?? null},
           ${p.salePrice},
           ${p.pricePerSqM ? Math.round(p.pricePerSqM) : null},
