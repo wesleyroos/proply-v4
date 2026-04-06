@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
@@ -5,7 +6,8 @@ import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, TrendingUp, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MapPin, TrendingUp, Loader2, Search, X } from "lucide-react";
 
 interface SuburbSummary {
   suburb: string;
@@ -21,6 +23,8 @@ function fmt(n: number): string {
 }
 
 export default function MarketIndexPage() {
+  const [search, setSearch] = useState("");
+
   const { data, isLoading, isError } = useQuery<{ success: boolean; data: SuburbSummary[] }>({
     queryKey: ["comparable-sales-suburbs"],
     queryFn: () => fetch("/api/comparable-sales/suburbs").then((r) => r.json()),
@@ -30,6 +34,10 @@ export default function MarketIndexPage() {
   const suburbs = data?.data ?? [];
   const totalSuburbs = suburbs.length;
   const totalSales = suburbs.reduce((sum, s) => sum + s.sale_count, 0);
+
+  const filtered = search.trim()
+    ? suburbs.filter((s) => s.suburb.toLowerCase().includes(search.toLowerCase()))
+    : suburbs;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -72,11 +80,31 @@ export default function MarketIndexPage() {
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
               Property Market Data
             </h1>
-            <p className="text-slate-600 max-w-xl">
+            <p className="text-slate-600 max-w-xl mb-6">
               Real title deed sale prices sourced from South Africa's deeds office. Browse by suburb to see median prices, R/m² and recent sales.
             </p>
+
+            {/* Search */}
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search suburb…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 pr-9 bg-slate-50"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
             {!isLoading && (
-              <div className="flex gap-6 mt-6 text-sm">
+              <div className="flex gap-6 mt-4 text-sm">
                 <div>
                   <span className="font-semibold text-slate-900">{totalSales.toLocaleString("en-ZA")}</span>
                   <span className="text-slate-500 ml-1">title deed sales</span>
@@ -102,38 +130,51 @@ export default function MarketIndexPage() {
             <p className="text-center text-slate-500 py-20">Failed to load suburb data.</p>
           )}
 
-          {!isLoading && !isError && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {suburbs.map((s) => (
-                <Link key={s.suburb} href={`/market/${s.suburbSlug}`}>
-                  <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer h-full">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-medium text-slate-900 text-sm leading-tight">
-                          {s.suburb}
-                        </h3>
-                        <Badge variant="secondary" className="text-xs ml-2 shrink-0">
-                          {s.sale_count} {s.sale_count === 1 ? "sale" : "sales"}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1 text-xs text-slate-500">
-                        {s.avg_price > 0 && (
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
-                            <span>Avg {fmt(s.avg_price)}</span>
-                          </div>
-                        )}
-                        {s.avg_price_per_sqm > 0 && (
-                          <div className="text-slate-400">
-                            {fmt(s.avg_price_per_sqm)}/m²
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+          {!isLoading && !isError && filtered.length === 0 && (
+            <p className="text-center text-slate-400 py-20">
+              No suburbs found matching "{search}"
+            </p>
+          )}
+
+          {!isLoading && !isError && filtered.length > 0 && (
+            <>
+              {search && (
+                <p className="text-sm text-slate-500 mb-4">
+                  {filtered.length} {filtered.length === 1 ? "suburb" : "suburbs"} found
+                </p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {filtered.map((s) => (
+                  <Link key={s.suburb} href={`/market/${s.suburbSlug}`}>
+                    <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer h-full">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-medium text-slate-900 text-sm leading-tight">
+                            {s.suburb}
+                          </h3>
+                          <Badge variant="secondary" className="text-xs ml-2 shrink-0">
+                            {s.sale_count} {s.sale_count === 1 ? "sale" : "sales"}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1 text-xs text-slate-500">
+                          {s.avg_price > 0 && (
+                            <div className="flex items-center gap-1">
+                              <TrendingUp className="w-3 h-3" />
+                              <span>Avg {fmt(s.avg_price)}</span>
+                            </div>
+                          )}
+                          {s.avg_price_per_sqm > 0 && (
+                            <div className="text-slate-400">
+                              {fmt(s.avg_price_per_sqm)}/m²
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </>
           )}
         </section>
       </main>

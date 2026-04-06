@@ -1,4 +1,4 @@
-import { Link, useRoute } from "wouter";
+import { Link, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
 import PublicHeader from "@/components/PublicHeader";
@@ -59,7 +59,7 @@ function titleCase(str: string): string {
 }
 
 export default function SuburbPage() {
-  const [, params] = useRoute("/market/:suburb");
+  const params = useParams<{ suburb: string }>();
   const suburbSlug = params?.suburb ?? "";
 
   const { data, isLoading, isError } = useQuery<{ success: boolean; data: SuburbDetail }>({
