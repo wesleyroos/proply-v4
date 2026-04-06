@@ -7,10 +7,18 @@ import PublicFooter from "@/components/PublicFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MapPin, TrendingUp, Loader2, Search, X } from "lucide-react";
 
 interface SuburbSummary {
   suburb: string;
+  province: string | null;
   suburbSlug: string;
   sale_count: number;
   avg_price: number;
@@ -24,6 +32,7 @@ function fmt(n: number): string {
 
 export default function MarketIndexPage() {
   const [search, setSearch] = useState("");
+  const [province, setProvince] = useState("all");
 
   const { data, isLoading, isError } = useQuery<{ success: boolean; data: SuburbSummary[] }>({
     queryKey: ["comparable-sales-suburbs"],
@@ -35,9 +44,16 @@ export default function MarketIndexPage() {
   const totalSuburbs = suburbs.length;
   const totalSales = suburbs.reduce((sum, s) => sum + s.sale_count, 0);
 
-  const filtered = search.trim()
-    ? suburbs.filter((s) => s.suburb.toLowerCase().includes(search.toLowerCase()))
-    : suburbs;
+  // Distinct provinces for the dropdown
+  const provinces = Array.from(
+    new Set(suburbs.map((s) => s.province).filter(Boolean) as string[])
+  ).sort();
+
+  const filtered = suburbs.filter((s) => {
+    const matchSearch = !search.trim() || s.suburb.toLowerCase().includes(search.toLowerCase());
+    const matchProvince = province === "all" || s.province === province;
+    return matchSearch && matchProvince;
+  });
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -84,23 +100,36 @@ export default function MarketIndexPage() {
               Real title deed sale prices sourced from South Africa's deeds office. Browse by suburb to see median prices, R/m² and recent sales.
             </p>
 
-            {/* Search */}
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Search suburb…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-9 bg-slate-50"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder="Search suburb…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 pr-9 bg-slate-50"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <Select value={province} onValueChange={setProvince}>
+                <SelectTrigger className="w-full sm:w-48 bg-slate-50">
+                  <SelectValue placeholder="All provinces" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All provinces</SelectItem>
+                  {provinces.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {!isLoading && (
@@ -132,13 +161,13 @@ export default function MarketIndexPage() {
 
           {!isLoading && !isError && filtered.length === 0 && (
             <p className="text-center text-slate-400 py-20">
-              No suburbs found matching "{search}"
+              No suburbs found{search ? ` matching "${search}"` : ""}{province !== "all" ? ` in ${province}` : ""}.
             </p>
           )}
 
           {!isLoading && !isError && filtered.length > 0 && (
             <>
-              {search && (
+              {(search || province !== "all") && (
                 <p className="text-sm text-slate-500 mb-4">
                   {filtered.length} {filtered.length === 1 ? "suburb" : "suburbs"} found
                 </p>
@@ -156,6 +185,9 @@ export default function MarketIndexPage() {
                             {s.sale_count} {s.sale_count === 1 ? "sale" : "sales"}
                           </Badge>
                         </div>
+                        {s.province && (
+                          <p className="text-xs text-slate-400 mb-1">{s.province}</p>
+                        )}
                         <div className="space-y-1 text-xs text-slate-500">
                           {s.avg_price > 0 && (
                             <div className="flex items-center gap-1">

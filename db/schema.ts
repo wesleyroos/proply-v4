@@ -927,6 +927,7 @@ export const comparableSales = pgTable("comparable_sales", {
   address:           text("address").notNull(),
   suburb:            text("suburb"),
   city:              text("city"),
+  province:          text("province"),
   erfNumber:         text("erf_number"),
   latitude:          decimal("latitude",  { precision: 10, scale: 7 }),
   longitude:         decimal("longitude", { precision: 10, scale: 7 }),

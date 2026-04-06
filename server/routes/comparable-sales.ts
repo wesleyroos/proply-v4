@@ -22,14 +22,15 @@ router.get("/suburbs", async (_req, res) => {
     const result = await db.execute(sql`
       SELECT
         suburb,
+        province,
         count(*)::int                              AS sale_count,
         round(avg(sale_price))::int                AS avg_price,
         round(avg(price_per_sqm))::int             AS avg_price_per_sqm,
         max(sale_date)                             AS latest_sale
       FROM comparable_sales
       WHERE suburb IS NOT NULL
-      GROUP BY suburb
-      ORDER BY suburb
+      GROUP BY suburb, province
+      ORDER BY province NULLS LAST, suburb
     `);
 
     const data = result.rows.map((r: any) => ({
