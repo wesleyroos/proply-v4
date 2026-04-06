@@ -1,5 +1,5 @@
 app = "proply-v4"
-primary_region = "ams"
+primary_region = "jnb"
 
 [build]
   dockerfile = "Dockerfile"
