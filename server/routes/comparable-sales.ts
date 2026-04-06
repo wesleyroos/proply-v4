@@ -27,10 +27,11 @@ router.get("/suburbs", async (_req, res) => {
         round(avg(sale_price))::int                AS avg_price,
         round(avg(price_per_sqm))::int             AS avg_price_per_sqm,
         max(sale_date)                             AS latest_sale,
-        round(avg(CASE WHEN sale_date >= CURRENT_DATE - INTERVAL '12 months' THEN sale_price END))::int
+        round(avg(CASE WHEN sale_date IS NOT NULL AND sale_date::date >= CURRENT_DATE - INTERVAL '12 months' THEN sale_price END))::int
                                                    AS recent_avg_price,
-        round(avg(CASE WHEN sale_date >= CURRENT_DATE - INTERVAL '24 months'
-                        AND sale_date <  CURRENT_DATE - INTERVAL '12 months'
+        round(avg(CASE WHEN sale_date IS NOT NULL
+                        AND sale_date::date >= CURRENT_DATE - INTERVAL '24 months'
+                        AND sale_date::date <  CURRENT_DATE - INTERVAL '12 months'
                    THEN sale_price END))::int      AS prior_avg_price
       FROM comparable_sales
       WHERE suburb IS NOT NULL
