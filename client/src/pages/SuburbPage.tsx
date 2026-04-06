@@ -13,6 +13,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MapPin, TrendingUp, Home, Calendar, Loader2, ChevronRight, ArrowRight } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 interface SuburbStats {
   total_sales: number;
@@ -48,9 +57,28 @@ interface SuburbDetail {
   recentSales: Sale[];
 }
 
+interface TrendPoint {
+  quarter: string;
+  median_price: number;
+  median_price_per_sqm: number;
+  sale_count: number;
+}
+
 function fmt(n: number | null | undefined): string {
   if (n == null) return "—";
   return `R ${n.toLocaleString("en-ZA")}`;
+}
+
+function fmtShort(n: number): string {
+  if (n >= 1_000_000) return `R${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `R${Math.round(n / 1_000)}k`;
+  return `R${n}`;
+}
+
+function formatQuarter(dateStr: string): string {
+  const d = new Date(dateStr);
+  const q = Math.floor(d.getMonth() / 3) + 1;
+  return `Q${q} ${d.getFullYear()}`;
 }
 
 function titleCase(str: string): string {
@@ -69,8 +97,20 @@ export default function SuburbPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: trendData } = useQuery<{ success: boolean; data: TrendPoint[] }>({
+    queryKey: ["comparable-sales-trend", suburbSlug],
+    queryFn: () =>
+      fetch(`/api/comparable-sales/suburb/${suburbSlug}/trend`).then((r) => r.json()),
+    enabled: !!suburbSlug,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const detail = data?.data;
   const stats = detail?.stats;
+  const trendPoints = (trendData?.data ?? []).map((p) => ({
+    ...p,
+    label: formatQuarter(p.quarter),
+  }));
 
   const displaySuburb = detail?.suburb
     ? titleCase(detail.suburb)
@@ -183,6 +223,58 @@ export default function SuburbPage() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Price trend chart */}
+              {trendPoints.length >= 3 && (
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="bg-proply-blue/10 text-proply-blue text-xs font-medium px-3 py-1 rounded-full">Trend</span>
+                    <h2 className="text-xl font-bold text-slate-900">Median Price Over Time</h2>
+                  </div>
+                  <Card>
+                    <CardContent className="p-6">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <LineChart data={trendPoints} margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                          <XAxis
+                            dataKey="label"
+                            tick={{ fontSize: 11, fill: "#94a3b8" }}
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <YAxis
+                            tickFormatter={fmtShort}
+                            tick={{ fontSize: 11, fill: "#94a3b8" }}
+                            tickLine={false}
+                            axisLine={false}
+                            width={64}
+                          />
+                          <Tooltip
+                            formatter={(value: number) => [fmt(value), "Median Price"]}
+                            labelStyle={{ fontWeight: 600, color: "#0f172a" }}
+                            contentStyle={{
+                              border: "1px solid #e2e8f0",
+                              borderRadius: 8,
+                              fontSize: 12,
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="median_price"
+                            stroke="#2563eb"
+                            strokeWidth={2.5}
+                            dot={{ r: 3, fill: "#2563eb", strokeWidth: 0 }}
+                            activeDot={{ r: 5 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                      <p className="text-xs text-slate-400 mt-3 text-center">
+                        Quarterly median sale price · {trendPoints.length} quarters of data
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
 
               {/* Property type breakdown */}
               {detail.propertyTypes.length > 0 && (

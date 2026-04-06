@@ -15,7 +15,7 @@ function unslugify(slug: string): string {
 
 /**
  * GET /api/comparable-sales/suburbs
- * All suburbs with aggregate stats.
+ * All suburbs with aggregate stats including growth data.
  */
 router.get("/suburbs", async (_req, res) => {
   try {
@@ -26,7 +26,12 @@ router.get("/suburbs", async (_req, res) => {
         count(*)::int                              AS sale_count,
         round(avg(sale_price))::int                AS avg_price,
         round(avg(price_per_sqm))::int             AS avg_price_per_sqm,
-        max(sale_date)                             AS latest_sale
+        max(sale_date)                             AS latest_sale,
+        round(avg(CASE WHEN sale_date >= CURRENT_DATE - INTERVAL '12 months' THEN sale_price END))::int
+                                                   AS recent_avg_price,
+        round(avg(CASE WHEN sale_date >= CURRENT_DATE - INTERVAL '24 months'
+                        AND sale_date <  CURRENT_DATE - INTERVAL '12 months'
+                   THEN sale_price END))::int      AS prior_avg_price
       FROM comparable_sales
       WHERE suburb IS NOT NULL
       GROUP BY suburb, province
@@ -100,6 +105,36 @@ router.get("/suburb/:suburb", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching suburb detail:", error);
+    return res.status(500).json({ success: false, error: "Unknown error" });
+  }
+});
+
+/**
+ * GET /api/comparable-sales/suburb/:suburb/trend
+ * Quarterly median price trend for one suburb.
+ */
+router.get("/suburb/:suburb/trend", async (req, res) => {
+  try {
+    const suburbName = unslugify(req.params.suburb);
+
+    const result = await db.execute(sql`
+      SELECT
+        date_trunc('quarter', sale_date::date)::date             AS quarter,
+        percentile_cont(0.5) WITHIN GROUP (ORDER BY sale_price)::int
+                                                                  AS median_price,
+        percentile_cont(0.5) WITHIN GROUP (ORDER BY price_per_sqm)::int
+                                                                  AS median_price_per_sqm,
+        count(*)::int                                             AS sale_count
+      FROM comparable_sales
+      WHERE suburb ILIKE ${suburbName}
+        AND sale_date IS NOT NULL
+      GROUP BY 1
+      ORDER BY 1
+    `);
+
+    return res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error("Error fetching suburb trend:", error);
     return res.status(500).json({ success: false, error: "Unknown error" });
   }
 });

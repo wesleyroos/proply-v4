@@ -23,6 +23,7 @@ import {
   FileText,
   Database,
   ArrowRight,
+  ArrowUpRight,
 } from "lucide-react";
 
 interface SuburbSummary {
@@ -33,15 +34,71 @@ interface SuburbSummary {
   avg_price: number;
   avg_price_per_sqm: number;
   latest_sale: string | null;
+  recent_avg_price: number | null;
+  prior_avg_price: number | null;
 }
+
+type SortBy = "active" | "price_asc" | "price_desc" | "sqm" | "growth";
 
 function fmt(n: number): string {
   return `R ${n.toLocaleString("en-ZA")}`;
 }
 
+function fmtShort(n: number): string {
+  if (n >= 1_000_000) return `R${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `R${Math.round(n / 1_000)}k`;
+  return `R${n}`;
+}
+
+function computeGrowth(s: SuburbSummary): number | null {
+  if (!s.recent_avg_price || !s.prior_avg_price || s.prior_avg_price === 0) return null;
+  return ((s.recent_avg_price - s.prior_avg_price) / s.prior_avg_price) * 100;
+}
+
+function ShortlistCard({ s, stat }: { s: SuburbSummary; stat: React.ReactNode }) {
+  return (
+    <Link href={`/market/${s.suburbSlug}`}>
+      <div className="flex-shrink-0 w-44 bg-white border border-slate-200 rounded-xl p-4 hover:border-proply-blue/40 hover:shadow-md transition-all cursor-pointer group">
+        <div className="font-semibold text-slate-900 text-sm leading-tight mb-0.5 group-hover:text-proply-blue transition-colors line-clamp-2">
+          {s.suburb}
+        </div>
+        {s.province && <div className="text-xs text-slate-400 mb-2">{s.province}</div>}
+        <div className="mt-auto">{stat}</div>
+      </div>
+    </Link>
+  );
+}
+
+function ShortlistRow({
+  title,
+  items,
+  renderStat,
+  emptyMessage,
+}: {
+  title: string;
+  items: SuburbSummary[];
+  renderStat: (s: SuburbSummary) => React.ReactNode;
+  emptyMessage?: string;
+}) {
+  if (items.length === 0) {
+    return emptyMessage ? null : null;
+  }
+  return (
+    <div>
+      <h3 className="text-base font-semibold text-slate-900 mb-3">{title}</h3>
+      <div className="flex gap-3 overflow-x-auto pb-2">
+        {items.map((s) => (
+          <ShortlistCard key={s.suburb} s={s} stat={renderStat(s)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function MarketIndexPage() {
   const [search, setSearch] = useState("");
-  const [province, setProvince] = useState("all");
+  const [province, setProvince] = useState("");
+  const [sortBy, setSortBy] = useState<SortBy>("active");
 
   const { data, isLoading, isError } = useQuery<{ success: boolean; data: SuburbSummary[] }>({
     queryKey: ["comparable-sales-suburbs"],
@@ -57,11 +114,54 @@ export default function MarketIndexPage() {
     new Set(suburbs.map((s) => s.province).filter(Boolean) as string[])
   ).sort();
 
-  const filtered = suburbs.filter((s) => {
-    const matchSearch = !search.trim() || s.suburb.toLowerCase().includes(search.toLowerCase());
-    const matchProvince = province === "all" || s.province === province;
-    return matchSearch && matchProvince;
-  });
+  const provinceSelected = province !== "";
+
+  // Base set for shortlists — province-filtered when selected, otherwise all
+  const shortlistBase = provinceSelected
+    ? suburbs.filter((s) => s.province === province)
+    : suburbs;
+
+  const topActive = [...shortlistBase]
+    .sort((a, b) => b.sale_count - a.sale_count)
+    .slice(0, 12);
+
+  const topAffordable = [...shortlistBase]
+    .filter((s) => s.avg_price > 0 && s.sale_count >= 5)
+    .sort((a, b) => a.avg_price - b.avg_price)
+    .slice(0, 12);
+
+  const topGrowth = [...shortlistBase]
+    .map((s) => ({ ...s, growth: computeGrowth(s) }))
+    .filter((s) => s.growth !== null && isFinite(s.growth) && s.sale_count >= 5)
+    .sort((a, b) => (b.growth ?? 0) - (a.growth ?? 0))
+    .slice(0, 12);
+
+  const provinceLabel = province || "all provinces";
+
+  // Grid: only shown when province is selected
+  const filtered = !provinceSelected
+    ? []
+    : (() => {
+        const base = suburbs.filter((s) => {
+          if (s.province !== province) return false;
+          if (search.trim() && !s.suburb.toLowerCase().includes(search.toLowerCase())) return false;
+          return true;
+        });
+        return [...base].sort((a, b) => {
+          switch (sortBy) {
+            case "active":    return b.sale_count - a.sale_count;
+            case "price_asc": return a.avg_price - b.avg_price;
+            case "price_desc":return b.avg_price - a.avg_price;
+            case "sqm":       return b.avg_price_per_sqm - a.avg_price_per_sqm;
+            case "growth": {
+              const ga = computeGrowth(a) ?? -Infinity;
+              const gb = computeGrowth(b) ?? -Infinity;
+              return gb - ga;
+            }
+            default: return 0;
+          }
+        });
+      })();
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -94,7 +194,7 @@ export default function MarketIndexPage() {
       <PublicHeader />
 
       <main className="flex-1">
-        {/* Hero — dark gradient */}
+        {/* Hero */}
         <section className="relative py-20 overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 text-white">
           <div className="container mx-auto px-4">
             <span className="inline-flex items-center bg-proply-blue/20 text-proply-blue text-sm font-medium px-3 py-1 rounded-full mb-5">
@@ -109,35 +209,52 @@ export default function MarketIndexPage() {
             </p>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Search suburb…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-9 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/15"
-                />
-                {search && (
-                  <button
-                    onClick={() => setSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-              <Select value={province} onValueChange={setProvince}>
-                <SelectTrigger className="w-full sm:w-52 bg-white/10 border-white/20 text-white">
-                  <SelectValue placeholder="All provinces" />
+            <div className="flex flex-col sm:flex-row gap-3 max-w-2xl">
+              <Select value={province} onValueChange={(v) => { setProvince(v); setSearch(""); }}>
+                <SelectTrigger className="w-full sm:w-64 bg-white/10 border-white/20 text-white">
+                  <SelectValue placeholder="Select a province to explore…" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All provinces</SelectItem>
                   {provinces.map((p) => (
                     <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
+              {provinceSelected && (
+                <>
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Search suburb…"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-9 pr-9 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/15"
+                    />
+                    {search && (
+                      <button
+                        onClick={() => setSearch("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
+                    <SelectTrigger className="w-full sm:w-52 bg-white/10 border-white/20 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Most active</SelectItem>
+                      <SelectItem value="price_asc">Lowest price</SelectItem>
+                      <SelectItem value="price_desc">Highest price</SelectItem>
+                      <SelectItem value="sqm">Highest R/m²</SelectItem>
+                      <SelectItem value="growth">Highest growth</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </>
+              )}
             </div>
 
             {/* Stats */}
@@ -189,8 +306,8 @@ export default function MarketIndexPage() {
           </div>
         </section>
 
-        {/* Suburb grid */}
-        <section className="container mx-auto px-4 py-16">
+        {/* Shortlists + grid */}
+        <section className="container mx-auto px-4 py-14 space-y-10">
           {isLoading && (
             <div className="flex justify-center py-20">
               <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -201,52 +318,125 @@ export default function MarketIndexPage() {
             <p className="text-center text-slate-500 py-20">Failed to load suburb data.</p>
           )}
 
-          {!isLoading && !isError && filtered.length === 0 && (
-            <p className="text-center text-slate-400 py-20">
-              No suburbs found{search ? ` matching "${search}"` : ""}{province !== "all" ? ` in ${province}` : ""}.
-            </p>
-          )}
-
-          {!isLoading && !isError && filtered.length > 0 && (
+          {!isLoading && !isError && (
             <>
-              {(search || province !== "all") && (
-                <p className="text-sm text-slate-500 mb-4">
-                  {filtered.length} {filtered.length === 1 ? "suburb" : "suburbs"} found
+              {/* Shortlists */}
+              <div className="space-y-8">
+                <div>
+                  <p className="text-sm text-slate-500 mb-6">
+                    {provinceSelected
+                      ? `Showing highlights for ${province}`
+                      : "Select a province above to browse all suburbs, or explore highlights below."}
+                  </p>
+                </div>
+
+                <ShortlistRow
+                  title={`Most Active${provinceSelected ? ` in ${province}` : ""}`}
+                  items={topActive}
+                  renderStat={(s) => (
+                    <>
+                      <div className="text-proply-blue font-bold text-sm">{s.sale_count} sales</div>
+                      {s.avg_price > 0 && (
+                        <div className="text-xs text-slate-400 mt-0.5">{fmtShort(s.avg_price)} avg</div>
+                      )}
+                    </>
+                  )}
+                />
+
+                <ShortlistRow
+                  title={`Most Affordable${provinceSelected ? ` in ${province}` : ""}`}
+                  items={topAffordable}
+                  renderStat={(s) => (
+                    <>
+                      <div className="text-proply-blue font-bold text-sm">{fmtShort(s.avg_price)}</div>
+                      <div className="text-xs text-slate-400 mt-0.5">{s.sale_count} sales</div>
+                    </>
+                  )}
+                />
+
+                {topGrowth.length > 0 && (
+                  <ShortlistRow
+                    title={`Highest Growth${provinceSelected ? ` in ${province}` : ""}`}
+                    items={topGrowth}
+                    renderStat={(s) => {
+                      const g = computeGrowth(s);
+                      return (
+                        <>
+                          <div className="flex items-center gap-1 text-emerald-600 font-bold text-sm">
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                            {g !== null ? `+${g.toFixed(1)}%` : "—"}
+                          </div>
+                          <div className="text-xs text-slate-400 mt-0.5">vs prior year</div>
+                        </>
+                      );
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Province gate — full suburb grid */}
+              {!provinceSelected && (
+                <div className="text-center py-10">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-proply-blue/10 mb-4">
+                    <MapPin className="w-5 h-5 text-proply-blue" />
+                  </div>
+                  <p className="text-slate-500 text-sm">Select a province above to browse all suburbs.</p>
+                </div>
+              )}
+
+              {provinceSelected && filtered.length === 0 && (
+                <p className="text-center text-slate-400 py-10">
+                  No suburbs found{search ? ` matching "${search}"` : ""}.
                 </p>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {filtered.map((s) => (
-                  <Link key={s.suburb} href={`/market/${s.suburbSlug}`}>
-                    <Card className="hover:shadow-md hover:border-proply-blue/30 transition-all cursor-pointer h-full group">
-                      <CardContent className="p-5">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-semibold text-slate-900 text-base leading-tight group-hover:text-proply-blue transition-colors">
-                            {s.suburb}
-                          </h3>
-                          <Badge variant="secondary" className="text-xs ml-2 shrink-0">
-                            {s.sale_count}
-                          </Badge>
-                        </div>
-                        {s.province && (
-                          <p className="text-xs text-slate-400 mb-2">{s.province}</p>
-                        )}
-                        <div className="space-y-1">
-                          {s.avg_price > 0 && (
-                            <div className="text-sm font-semibold text-proply-blue">
-                              {fmt(s.avg_price)}
-                            </div>
-                          )}
-                          {s.avg_price_per_sqm > 0 && (
-                            <div className="text-xs text-slate-400">
-                              {fmt(s.avg_price_per_sqm)}/m²
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
+
+              {provinceSelected && filtered.length > 0 && (
+                <div>
+                  <p className="text-sm text-slate-500 mb-4">
+                    {filtered.length} {filtered.length === 1 ? "suburb" : "suburbs"} in {province}
+                    {search ? ` matching "${search}"` : ""}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {filtered.map((s) => {
+                      const growth = computeGrowth(s);
+                      return (
+                        <Link key={s.suburb} href={`/market/${s.suburbSlug}`}>
+                          <Card className="hover:shadow-md hover:border-proply-blue/30 transition-all cursor-pointer h-full group">
+                            <CardContent className="p-5">
+                              <div className="flex items-start justify-between mb-2">
+                                <h3 className="font-semibold text-slate-900 text-base leading-tight group-hover:text-proply-blue transition-colors">
+                                  {s.suburb}
+                                </h3>
+                                <Badge variant="secondary" className="text-xs ml-2 shrink-0">
+                                  {s.sale_count}
+                                </Badge>
+                              </div>
+                              <div className="space-y-1">
+                                {s.avg_price > 0 && (
+                                  <div className="text-sm font-semibold text-proply-blue">
+                                    {fmt(s.avg_price)}
+                                  </div>
+                                )}
+                                {s.avg_price_per_sqm > 0 && (
+                                  <div className="text-xs text-slate-400">
+                                    {fmt(s.avg_price_per_sqm)}/m²
+                                  </div>
+                                )}
+                                {growth !== null && (
+                                  <div className={`text-xs font-medium flex items-center gap-0.5 ${growth >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                                    <ArrowUpRight className="w-3 h-3" />
+                                    {growth >= 0 ? "+" : ""}{growth.toFixed(1)}% YoY
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </section>
