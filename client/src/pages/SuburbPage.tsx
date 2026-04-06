@@ -4,7 +4,6 @@ import { Helmet } from "react-helmet";
 import PublicHeader from "@/components/PublicHeader";
 import PublicFooter from "@/components/PublicFooter";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -13,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MapPin, TrendingUp, Home, Calendar, Loader2, ChevronRight } from "lucide-react";
+import { MapPin, TrendingUp, Home, Calendar, Loader2, ChevronRight, ArrowRight } from "lucide-react";
 
 interface SuburbStats {
   total_sales: number;
@@ -73,7 +72,9 @@ export default function SuburbPage() {
   const detail = data?.data;
   const stats = detail?.stats;
 
-  const displaySuburb = detail?.suburb ? titleCase(detail.suburb) : titleCase(suburbSlug.replace(/-/g, " "));
+  const displaySuburb = detail?.suburb
+    ? titleCase(detail.suburb)
+    : titleCase(suburbSlug.replace(/-/g, " "));
 
   const pageTitle = `Property Sales in ${displaySuburb} | Proply`;
   const pageDescription = stats?.total_sales
@@ -103,20 +104,26 @@ export default function SuburbPage() {
       <PublicHeader />
 
       <main className="flex-1">
-        {/* Breadcrumb + hero */}
-        <section className="bg-white border-b border-slate-200 py-10 px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-4">
-              <Link href="/market" className="hover:text-slate-600 transition-colors">Market</Link>
-              <ChevronRight className="w-3 h-3" />
-              <span className="text-slate-600">{displaySuburb}</span>
+        {/* Hero — dark gradient */}
+        <section className="relative py-16 overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-4">
+              <Link href="/market" className="hover:text-white transition-colors">Market</Link>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="text-gray-300">{displaySuburb}</span>
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-1">{displaySuburb}</h1>
-            <p className="text-slate-500 text-sm">Title deed sales sourced from South Africa's deeds office</p>
+            <span className="inline-flex items-center bg-proply-blue/20 text-proply-blue text-sm font-medium px-3 py-1 rounded-full mb-4">
+              <MapPin className="w-4 h-4 mr-1.5" />
+              Suburb Data
+            </span>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{displaySuburb}</h1>
+            <p className="text-gray-300 text-base mt-2">
+              Title deed sales sourced from South Africa's deeds office
+            </p>
           </div>
         </section>
 
-        <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <div className="container mx-auto px-4 py-16 space-y-12">
           {isLoading && (
             <div className="flex justify-center py-20">
               <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -132,39 +139,45 @@ export default function SuburbPage() {
               {/* Stats cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      Median Price
+                  <CardContent className="p-5">
+                    <div className="w-8 h-8 rounded-lg bg-proply-blue/10 flex items-center justify-center mb-3">
+                      <TrendingUp className="w-4 h-4 text-proply-blue" />
                     </div>
-                    <div className="text-lg font-bold text-slate-900">{fmt(stats?.median_price ?? null)}</div>
+                    <div className="text-sm text-slate-500 mb-1">Median Price</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-proply-blue">
+                      {fmt(stats?.median_price ?? null)}
+                    </div>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
-                      <Home className="w-3.5 h-3.5" />
-                      Median R/m²
+                  <CardContent className="p-5">
+                    <div className="w-8 h-8 rounded-lg bg-proply-blue/10 flex items-center justify-center mb-3">
+                      <Home className="w-4 h-4 text-proply-blue" />
                     </div>
-                    <div className="text-lg font-bold text-slate-900">{fmt(stats?.median_price_per_sqm ?? null)}</div>
+                    <div className="text-sm text-slate-500 mb-1">Median R/m²</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-proply-blue">
+                      {fmt(stats?.median_price_per_sqm ?? null)}
+                    </div>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
-                      <MapPin className="w-3.5 h-3.5" />
-                      Total Sales
+                  <CardContent className="p-5">
+                    <div className="w-8 h-8 rounded-lg bg-proply-blue/10 flex items-center justify-center mb-3">
+                      <MapPin className="w-4 h-4 text-proply-blue" />
                     </div>
-                    <div className="text-lg font-bold text-slate-900">{stats?.total_sales ?? "—"}</div>
+                    <div className="text-sm text-slate-500 mb-1">Total Sales</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-proply-blue">
+                      {stats?.total_sales ?? "—"}
+                    </div>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      Latest Sale
+                  <CardContent className="p-5">
+                    <div className="w-8 h-8 rounded-lg bg-proply-blue/10 flex items-center justify-center mb-3">
+                      <Calendar className="w-4 h-4 text-proply-blue" />
                     </div>
-                    <div className="text-lg font-bold text-slate-900">
+                    <div className="text-sm text-slate-500 mb-1">Latest Sale</div>
+                    <div className="text-xl sm:text-2xl font-bold text-proply-blue">
                       {stats?.latest_sale ? stats.latest_sale.substring(0, 10) : "—"}
                     </div>
                   </CardContent>
@@ -174,16 +187,21 @@ export default function SuburbPage() {
               {/* Property type breakdown */}
               {detail.propertyTypes.length > 0 && (
                 <div>
-                  <h2 className="text-base font-semibold text-slate-800 mb-3">By Property Type</h2>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="bg-proply-blue/10 text-proply-blue text-xs font-medium px-3 py-1 rounded-full">Breakdown</span>
+                    <h2 className="text-xl font-bold text-slate-900">By Property Type</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
                     {detail.propertyTypes.map((t) => (
                       <div
                         key={t.property_type}
-                        className="bg-white border border-slate-200 rounded-lg px-4 py-3 text-sm"
+                        className="bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm"
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="secondary" className="text-xs">{t.count}</Badge>
-                          <span className="font-medium text-slate-800">{t.property_type}</span>
+                          <span className="bg-proply-blue/10 text-proply-blue text-xs font-semibold px-2 py-0.5 rounded-full">
+                            {t.count}
+                          </span>
+                          <span className="font-semibold text-slate-800 text-sm">{t.property_type}</span>
                         </div>
                         <div className="text-xs text-slate-500">
                           Avg {fmt(t.avg_price)}
@@ -197,27 +215,30 @@ export default function SuburbPage() {
 
               {/* Recent sales table */}
               <div>
-                <h2 className="text-base font-semibold text-slate-800 mb-3">
-                  Recent Sales
-                  <span className="text-slate-400 font-normal text-sm ml-2">(last {detail.recentSales.length})</span>
-                </h2>
-                <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="bg-proply-blue/10 text-proply-blue text-xs font-medium px-3 py-1 rounded-full">Recent</span>
+                  <h2 className="text-xl font-bold text-slate-900">
+                    Recent Sales
+                    <span className="text-slate-400 font-normal text-sm ml-2">(last {detail.recentSales.length})</span>
+                  </h2>
+                </div>
+                <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-slate-50">
-                        <TableHead className="text-xs">Address</TableHead>
-                        <TableHead className="text-xs">Type</TableHead>
-                        <TableHead className="text-xs text-right">Beds</TableHead>
-                        <TableHead className="text-xs text-right">Size m²</TableHead>
-                        <TableHead className="text-xs text-right">Sale Price</TableHead>
-                        <TableHead className="text-xs text-right">R/m²</TableHead>
-                        <TableHead className="text-xs text-right">Date</TableHead>
+                      <TableRow className="bg-slate-900">
+                        <TableHead className="text-xs text-gray-300">Address</TableHead>
+                        <TableHead className="text-xs text-gray-300">Type</TableHead>
+                        <TableHead className="text-xs text-gray-300 text-right">Beds</TableHead>
+                        <TableHead className="text-xs text-gray-300 text-right">Size m²</TableHead>
+                        <TableHead className="text-xs text-gray-300 text-right">Sale Price</TableHead>
+                        <TableHead className="text-xs text-gray-300 text-right">R/m²</TableHead>
+                        <TableHead className="text-xs text-gray-300 text-right">Date</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {detail.recentSales.map((sale) => (
-                        <TableRow key={sale.id} className="text-sm">
-                          <TableCell className="max-w-[220px] truncate text-xs text-slate-700">
+                        <TableRow key={sale.id} className="hover:bg-slate-50">
+                          <TableCell className="max-w-[200px] truncate text-xs text-slate-700">
                             {sale.address}
                           </TableCell>
                           <TableCell className="text-xs text-slate-500">
@@ -229,7 +250,7 @@ export default function SuburbPage() {
                           <TableCell className="text-right text-xs text-slate-500">
                             {sale.floor_size ?? "—"}
                           </TableCell>
-                          <TableCell className="text-right text-xs font-medium text-slate-900">
+                          <TableCell className="text-right text-xs font-semibold text-proply-blue">
                             {fmt(sale.sale_price)}
                           </TableCell>
                           <TableCell className="text-right text-xs text-slate-500">
@@ -245,18 +266,26 @@ export default function SuburbPage() {
                 </div>
               </div>
 
-              {/* CTA */}
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center">
-                <h3 className="font-semibold text-slate-900 mb-1">Need a full property valuation?</h3>
-                <p className="text-slate-600 text-sm mb-4">
-                  Proply's AI-powered Property Analyzer uses comparable sales data like this to generate detailed valuation reports.
+              {/* Deal Score CTA */}
+              <div className="bg-slate-900 rounded-2xl p-8 sm:p-10 text-center text-white">
+                <span className="inline-flex items-center bg-proply-blue/20 text-proply-blue text-sm font-medium px-3 py-1 rounded-full mb-4">
+                  Powered by Deal Score
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold mb-2">
+                  Want an AI-powered analysis for a property in {displaySuburb}?
+                </h3>
+                <p className="text-gray-400 max-w-lg mx-auto mb-6">
+                  Deal Score combines comparable sales data with AI to generate detailed property reports — valuations, neighbourhood insights, and investment scoring. Free to try.
                 </p>
-                <Link href="/property-analyzer">
-                  <span className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors cursor-pointer">
-                    Try Property Analyzer
-                    <ChevronRight className="w-4 h-4" />
-                  </span>
-                </Link>
+                <a
+                  href="https://dealscore.co.za/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-proply-blue hover:bg-proply-blue/90 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+                >
+                  Try Deal Score free
+                  <ArrowRight className="w-4 h-4" />
+                </a>
               </div>
             </>
           )}

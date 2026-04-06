@@ -14,7 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, TrendingUp, Loader2, Search, X } from "lucide-react";
+import {
+  MapPin,
+  TrendingUp,
+  Loader2,
+  Search,
+  X,
+  FileText,
+  Database,
+  ArrowRight,
+} from "lucide-react";
 
 interface SuburbSummary {
   suburb: string;
@@ -44,7 +53,6 @@ export default function MarketIndexPage() {
   const totalSuburbs = suburbs.length;
   const totalSales = suburbs.reduce((sum, s) => sum + s.sale_count, 0);
 
-  // Distinct provinces for the dropdown
   const provinces = Array.from(
     new Set(suburbs.map((s) => s.province).filter(Boolean) as string[])
   ).sort();
@@ -86,41 +94,41 @@ export default function MarketIndexPage() {
       <PublicHeader />
 
       <main className="flex-1">
-        {/* Hero */}
-        <section className="bg-white border-b border-slate-200 py-12 px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
-              <MapPin className="w-4 h-4" />
-              <span>South Africa</span>
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+        {/* Hero — dark gradient */}
+        <section className="relative py-20 overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+          <div className="container mx-auto px-4">
+            <span className="inline-flex items-center bg-proply-blue/20 text-proply-blue text-sm font-medium px-3 py-1 rounded-full mb-5">
+              <MapPin className="w-4 h-4 mr-1.5" />
+              Market Data
+            </span>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">
               Property Market Data
             </h1>
-            <p className="text-slate-600 max-w-xl mb-6">
-              Real title deed sale prices sourced from South Africa's deeds office. Browse by suburb to see median prices, R/m² and recent sales.
+            <p className="text-lg text-gray-300 max-w-xl mb-8">
+              Real title deed sale prices for South African suburbs — free, accurate, and updated as new reports are run.
             </p>
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   placeholder="Search suburb…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-9 bg-slate-50"
+                  className="pl-9 pr-9 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/15"
                 />
                 {search && (
                   <button
                     onClick={() => setSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
               <Select value={province} onValueChange={setProvince}>
-                <SelectTrigger className="w-full sm:w-48 bg-slate-50">
+                <SelectTrigger className="w-full sm:w-52 bg-white/10 border-white/20 text-white">
                   <SelectValue placeholder="All provinces" />
                 </SelectTrigger>
                 <SelectContent>
@@ -132,23 +140,57 @@ export default function MarketIndexPage() {
               </Select>
             </div>
 
+            {/* Stats */}
             {!isLoading && (
-              <div className="flex gap-6 mt-4 text-sm">
+              <div className="flex gap-10 mt-8">
                 <div>
-                  <span className="font-semibold text-slate-900">{totalSales.toLocaleString("en-ZA")}</span>
-                  <span className="text-slate-500 ml-1">title deed sales</span>
+                  <div className="text-2xl sm:text-3xl font-bold text-proply-blue">
+                    {totalSales.toLocaleString("en-ZA")}
+                  </div>
+                  <div className="text-gray-400 text-sm mt-0.5">title deed sales</div>
                 </div>
                 <div>
-                  <span className="font-semibold text-slate-900">{totalSuburbs}</span>
-                  <span className="text-slate-500 ml-1">suburbs</span>
+                  <div className="text-2xl sm:text-3xl font-bold text-proply-blue">
+                    {totalSuburbs}
+                  </div>
+                  <div className="text-gray-400 text-sm mt-0.5">suburbs</div>
                 </div>
               </div>
             )}
           </div>
         </section>
 
-        {/* Content */}
-        <section className="max-w-5xl mx-auto px-4 py-10">
+        {/* Value proposition strip */}
+        <section className="py-12 bg-white border-b border-slate-100">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+              <div>
+                <div className="w-10 h-10 rounded-lg bg-proply-blue/10 flex items-center justify-center mx-auto mb-3">
+                  <FileText className="w-5 h-5 text-proply-blue" />
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-1">Real sale prices</h3>
+                <p className="text-sm text-slate-500">From title deeds, not listing prices. What properties actually sold for.</p>
+              </div>
+              <div>
+                <div className="w-10 h-10 rounded-lg bg-proply-blue/10 flex items-center justify-center mx-auto mb-3">
+                  <Database className="w-5 h-5 text-proply-blue" />
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-1">100% free</h3>
+                <p className="text-sm text-slate-500">LightStone charges for this data. We make it freely available to everyone.</p>
+              </div>
+              <div>
+                <div className="w-10 h-10 rounded-lg bg-proply-blue/10 flex items-center justify-center mx-auto mb-3">
+                  <TrendingUp className="w-5 h-5 text-proply-blue" />
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-1">Make informed decisions</h3>
+                <p className="text-sm text-slate-500">Stop guessing. See actual transaction data before buying, selling, or investing.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Suburb grid */}
+        <section className="container mx-auto px-4 py-16">
           {isLoading && (
             <div className="flex justify-center py-20">
               <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -172,31 +214,30 @@ export default function MarketIndexPage() {
                   {filtered.length} {filtered.length === 1 ? "suburb" : "suburbs"} found
                 </p>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {filtered.map((s) => (
                   <Link key={s.suburb} href={`/market/${s.suburbSlug}`}>
-                    <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer h-full">
-                      <CardContent className="p-4">
+                    <Card className="hover:shadow-md hover:border-proply-blue/30 transition-all cursor-pointer h-full group">
+                      <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-medium text-slate-900 text-sm leading-tight">
+                          <h3 className="font-semibold text-slate-900 text-base leading-tight group-hover:text-proply-blue transition-colors">
                             {s.suburb}
                           </h3>
                           <Badge variant="secondary" className="text-xs ml-2 shrink-0">
-                            {s.sale_count} {s.sale_count === 1 ? "sale" : "sales"}
+                            {s.sale_count}
                           </Badge>
                         </div>
                         {s.province && (
-                          <p className="text-xs text-slate-400 mb-1">{s.province}</p>
+                          <p className="text-xs text-slate-400 mb-2">{s.province}</p>
                         )}
-                        <div className="space-y-1 text-xs text-slate-500">
+                        <div className="space-y-1">
                           {s.avg_price > 0 && (
-                            <div className="flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />
-                              <span>Avg {fmt(s.avg_price)}</span>
+                            <div className="text-sm font-semibold text-proply-blue">
+                              {fmt(s.avg_price)}
                             </div>
                           )}
                           {s.avg_price_per_sqm > 0 && (
-                            <div className="text-slate-400">
+                            <div className="text-xs text-slate-400">
                               {fmt(s.avg_price_per_sqm)}/m²
                             </div>
                           )}
@@ -208,6 +249,30 @@ export default function MarketIndexPage() {
               </div>
             </>
           )}
+        </section>
+
+        {/* Deal Score CTA */}
+        <section className="py-16 bg-slate-900 text-white">
+          <div className="container mx-auto px-4 text-center">
+            <span className="inline-flex items-center bg-proply-blue/20 text-proply-blue text-sm font-medium px-3 py-1 rounded-full mb-5">
+              Powered by Deal Score
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+              Want a full AI analysis for a specific property?
+            </h2>
+            <p className="text-gray-400 max-w-lg mx-auto mb-8">
+              Deal Score uses this comparable sales data to generate detailed AI-powered property reports — valuations, neighbourhood insights, and investment scoring. Free to try.
+            </p>
+            <a
+              href="https://dealscore.co.za/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-proply-blue hover:bg-proply-blue/90 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            >
+              Try Deal Score free
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
         </section>
       </main>
 
