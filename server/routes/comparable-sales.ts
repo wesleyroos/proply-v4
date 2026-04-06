@@ -5,6 +5,108 @@ import { sql, and, gte, lte, eq, ilike } from "drizzle-orm";
 
 const router = express.Router();
 
+function slugify(str: string): string {
+  return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function unslugify(slug: string): string {
+  return slug.replace(/-/g, " ");
+}
+
+/**
+ * GET /api/comparable-sales/suburbs
+ * All suburbs with aggregate stats, grouped by city.
+ */
+router.get("/suburbs", async (_req, res) => {
+  try {
+    const result = await db.execute(sql`
+      SELECT
+        city,
+        suburb,
+        count(*)::int                              AS sale_count,
+        round(avg(sale_price))::int                AS avg_price,
+        round(avg(price_per_sqm))::int             AS avg_price_per_sqm,
+        max(sale_date)                             AS latest_sale
+      FROM comparable_sales
+      WHERE suburb IS NOT NULL AND city IS NOT NULL
+      GROUP BY city, suburb
+      ORDER BY city, suburb
+    `);
+
+    const data = result.rows.map((r: any) => ({
+      ...r,
+      citySlug: slugify(r.city),
+      suburbSlug: slugify(r.suburb),
+    }));
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error fetching suburb list:", error);
+    return res.status(500).json({ success: false, error: "Unknown error" });
+  }
+});
+
+/**
+ * GET /api/comparable-sales/suburb/:city/:suburb
+ * Aggregate stats + property type breakdown + last 20 sales for one suburb.
+ */
+router.get("/suburb/:city/:suburb", async (req, res) => {
+  try {
+    const cityName = unslugify(req.params.city);
+    const suburbName = unslugify(req.params.suburb);
+
+    const [statsResult, typesResult, salesResult] = await Promise.all([
+      db.execute(sql`
+        SELECT
+          count(*)::int                                                          AS total_sales,
+          percentile_cont(0.5) WITHIN GROUP (ORDER BY sale_price)::int          AS median_price,
+          percentile_cont(0.5) WITHIN GROUP (ORDER BY price_per_sqm)::int       AS median_price_per_sqm,
+          round(avg(floor_size))::int                                            AS avg_floor_size,
+          min(sale_date)                                                         AS earliest_sale,
+          max(sale_date)                                                         AS latest_sale
+        FROM comparable_sales
+        WHERE suburb ILIKE ${suburbName} AND city ILIKE ${cityName}
+      `),
+      db.execute(sql`
+        SELECT
+          property_type,
+          count(*)::int                              AS count,
+          round(avg(sale_price))::int                AS avg_price,
+          round(avg(price_per_sqm))::int             AS avg_price_per_sqm
+        FROM comparable_sales
+        WHERE suburb ILIKE ${suburbName} AND city ILIKE ${cityName}
+          AND property_type IS NOT NULL
+        GROUP BY property_type
+        ORDER BY count DESC
+      `),
+      db.execute(sql`
+        SELECT id, address, suburb, city, property_type, bedrooms, floor_size,
+               sale_price, price_per_sqm, sale_date
+        FROM comparable_sales
+        WHERE suburb ILIKE ${suburbName} AND city ILIKE ${cityName}
+        ORDER BY sale_date DESC NULLS LAST
+        LIMIT 20
+      `),
+    ]);
+
+    const stats = statsResult.rows[0] ?? {};
+
+    return res.json({
+      success: true,
+      data: {
+        city: cityName,
+        suburb: suburbName,
+        stats,
+        propertyTypes: typesResult.rows,
+        recentSales: salesResult.rows,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching suburb detail:", error);
+    return res.status(500).json({ success: false, error: "Unknown error" });
+  }
+});
+
 /**
  * GET /api/comparable-sales
  * Query the comparable_sales table with optional filters.

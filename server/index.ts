@@ -10,7 +10,7 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { db } from "../db";
 import { propdataListings } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -128,6 +128,133 @@ app.use('/static-assets', express.static('public'));
         html = html.replace("</head>", `${ogTags}\n  </head>`);
       }
 
+      res.status(200).set("Content-Type", "text/html").end(html);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ── robots.txt ──
+  app.get("/robots.txt", (_req: Request, res: Response) => {
+    res.type("text/plain").send(
+      "User-agent: *\nAllow: /\nSitemap: https://app.proply.co.za/sitemap.xml\n"
+    );
+  });
+
+  // ── sitemap.xml ──
+  app.get("/sitemap.xml", async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT city, suburb, max(sale_date) AS latest_sale
+        FROM comparable_sales
+        WHERE suburb IS NOT NULL AND city IS NOT NULL
+        GROUP BY city, suburb
+        ORDER BY city, suburb
+      `);
+
+      function slugify(str: string): string {
+        return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      }
+
+      const base = "https://app.proply.co.za";
+      const today = new Date().toISOString().substring(0, 10);
+
+      const suburbUrls = result.rows.map((r: any) => `
+  <url>
+    <loc>${base}/market/${slugify(r.city)}/${slugify(r.suburb)}</loc>
+    <lastmod>${r.latest_sale ? String(r.latest_sale).substring(0, 10) : today}</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>`).join("");
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${base}/market</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>${suburbUrls}
+</urlset>`;
+
+      res.type("application/xml").send(xml);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ── OG meta injection for /market (index) ──
+  app.get("/market", async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const isDev = app.get("env") === "development";
+      const htmlPath = isDev
+        ? path.resolve(__dirname, "..", "client", "index.html")
+        : path.resolve(__dirname, "public", "index.html");
+
+      if (!fs.existsSync(htmlPath)) return next();
+
+      let html = fs.readFileSync(htmlPath, "utf-8");
+
+      const ogTags = `
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://app.proply.co.za/market" />
+    <meta property="og:title" content="South Africa Property Market Data by Suburb | Proply" />
+    <meta property="og:description" content="Browse real title deed sale prices across South African suburbs. Median prices, R/m² and recent sales — all free." />
+    <meta name="description" content="Browse real title deed sale prices across South African suburbs. Median prices, R/m² and recent sales — all free." />`;
+
+      html = html.replace("</head>", `${ogTags}\n  </head>`);
+      res.status(200).set("Content-Type", "text/html").end(html);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ── OG meta injection for /market/:city/:suburb ──
+  app.get("/market/:city/:suburb", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      function unslugify(slug: string) { return slug.replace(/-/g, " "); }
+
+      const cityName = unslugify(req.params.city);
+      const suburbName = unslugify(req.params.suburb);
+
+      const result = await db.execute(sql`
+        SELECT
+          count(*)::int AS total_sales,
+          percentile_cont(0.5) WITHIN GROUP (ORDER BY sale_price)::int AS median_price,
+          percentile_cont(0.5) WITHIN GROUP (ORDER BY price_per_sqm)::int AS median_price_per_sqm
+        FROM comparable_sales
+        WHERE suburb ILIKE ${suburbName} AND city ILIKE ${cityName}
+      `);
+
+      const stats = result.rows[0] as any;
+
+      const isDev = app.get("env") === "development";
+      const htmlPath = isDev
+        ? path.resolve(__dirname, "..", "client", "index.html")
+        : path.resolve(__dirname, "public", "index.html");
+
+      if (!fs.existsSync(htmlPath)) return next();
+
+      let html = fs.readFileSync(htmlPath, "utf-8");
+
+      const displaySuburb = suburbName.replace(/\b\w/g, (c) => c.toUpperCase());
+      const displayCity = cityName.replace(/\b\w/g, (c) => c.toUpperCase());
+      const pageUrl = `https://app.proply.co.za/market/${req.params.city}/${req.params.suburb}`;
+
+      const title = `Property Sales in ${displaySuburb}, ${displayCity} | Proply`;
+      let description = `Explore recent property sales in ${displaySuburb}.`;
+      if (stats?.total_sales) {
+        const price = stats.median_price ? `R${Number(stats.median_price).toLocaleString("en-ZA")}` : null;
+        const rpm = stats.median_price_per_sqm ? `R${Number(stats.median_price_per_sqm).toLocaleString("en-ZA")}/m²` : null;
+        description = `${stats.total_sales} sales in ${displaySuburb}${price ? ` | Median ${price}` : ""}${rpm ? ` | ${rpm}` : ""}.`;
+      }
+
+      const ogTags = `
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="${pageUrl}" />
+    <meta property="og:title" content="${title.replace(/"/g, "&quot;")}" />
+    <meta property="og:description" content="${description.replace(/"/g, "&quot;")}" />
+    <meta name="description" content="${description.replace(/"/g, "&quot;")}" />`;
+
+      html = html.replace("</head>", `${ogTags}\n  </head>`);
       res.status(200).set("Content-Type", "text/html").end(html);
     } catch (err) {
       next(err);

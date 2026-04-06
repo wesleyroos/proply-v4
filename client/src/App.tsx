@@ -57,6 +57,8 @@ import PropdataListingsPage from "./pages/PropdataListingsPage";
 import ReportPreviewPage from "./pages/ReportPreviewPage";
 import AcceptInvitationPage from "./pages/AcceptInvitationPage";
 import MarketDataPage from "./pages/MarketDataPage";
+import MarketIndexPage from "./pages/MarketIndexPage";
+import SuburbPage from "./pages/SuburbPage";
 
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -170,6 +172,16 @@ function App() {
             <Route path="/blog/:slug" component={() => (
               <PageTransition>
                 <BlogPage />
+              </PageTransition>
+            )} />
+            <Route path="/market" component={() => (
+              <PageTransition>
+                <MarketIndexPage />
+              </PageTransition>
+            )} />
+            <Route path="/market/:city/:suburb" component={() => (
+              <PageTransition>
+                <SuburbPage />
               </PageTransition>
             )} />
             <Route path="/property-analyzer" component={() => (
