@@ -24,3 +24,7 @@ primary_region = "ams"
   memory = "1gb"
   cpu_kind = "shared"
   cpus = 1
+
+[[mounts]]
+  source = "agency_logos"
+  destination = "/app/public/agency-logos"
