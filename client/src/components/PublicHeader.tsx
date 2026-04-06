@@ -50,6 +50,9 @@ export default function PublicHeader() {
                 <ChevronDown className="h-4 w-4" />
               </button>
               <div className="absolute left-0 top-full mt-1 w-48 bg-white shadow-lg rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border">
+                <Link href="/market" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-proply-blue">
+                  Market Data
+                </Link>
                 <Link href="/airbnb-yield-calculator" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-proply-blue">
                   Airbnb Yield Calculator
                 </Link>
@@ -146,6 +149,9 @@ export default function PublicHeader() {
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 <div className="hidden ml-4 mt-2 space-y-2">
+                  <Link href="/market" className="block py-2 pl-2 text-sm text-gray-700 border-l-2 border-gray-200 hover:border-proply-blue hover:text-proply-blue">
+                    Market Data
+                  </Link>
                   <Link href="/airbnb-yield-calculator" className="block py-2 pl-2 text-sm text-gray-700 border-l-2 border-gray-200 hover:border-proply-blue hover:text-proply-blue">
                     Airbnb Yield Calculator
                   </Link>

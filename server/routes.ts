@@ -192,6 +192,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/address-validation/validate" ||
       req.path === "/address-validation/autocomplete" ||
       req.path === "/area-rate" || // New public area rate endpoint
+      req.path === "/comparable-sales/suburbs" || // Public suburb market data index
+      req.path.startsWith("/comparable-sales/suburb/") || // Public suburb market data detail
       req.path === "/demo-request" || // Demo request endpoint
       req.path === "/download-pdf" || // PDF download endpoint
       req.path === "/download-property-analysis-pdf" || // Property analysis PDF download endpoint
