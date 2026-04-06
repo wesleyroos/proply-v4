@@ -179,7 +179,7 @@ function App() {
                 <MarketIndexPage />
               </PageTransition>
             )} />
-            <Route path="/market/:city/:suburb" component={() => (
+            <Route path="/market/:suburb" component={() => (
               <PageTransition>
                 <SuburbPage />
               </PageTransition>

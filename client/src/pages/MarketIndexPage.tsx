@@ -8,9 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, TrendingUp, Loader2 } from "lucide-react";
 
 interface SuburbSummary {
-  city: string;
   suburb: string;
-  citySlug: string;
   suburbSlug: string;
   sale_count: number;
   avg_price: number;
@@ -30,14 +28,6 @@ export default function MarketIndexPage() {
   });
 
   const suburbs = data?.data ?? [];
-
-  // Group by city
-  const byCity = suburbs.reduce<Record<string, SuburbSummary[]>>((acc, s) => {
-    (acc[s.city] ??= []).push(s);
-    return acc;
-  }, {});
-
-  const cities = Object.keys(byCity).sort();
   const totalSuburbs = suburbs.length;
   const totalSales = suburbs.reduce((sum, s) => sum + s.sale_count, 0);
 
@@ -52,8 +42,8 @@ export default function MarketIndexPage() {
       itemListElement: suburbs.slice(0, 50).map((s, i) => ({
         "@type": "ListItem",
         position: i + 1,
-        name: `${s.suburb}, ${s.city}`,
-        url: `https://app.proply.co.za/market/${s.citySlug}/${s.suburbSlug}`,
+        name: s.suburb,
+        url: `https://app.proply.co.za/market/${s.suburbSlug}`,
       })),
     },
   };
@@ -95,10 +85,6 @@ export default function MarketIndexPage() {
                   <span className="font-semibold text-slate-900">{totalSuburbs}</span>
                   <span className="text-slate-500 ml-1">suburbs</span>
                 </div>
-                <div>
-                  <span className="font-semibold text-slate-900">{cities.length}</span>
-                  <span className="text-slate-500 ml-1">cities</span>
-                </div>
               </div>
             )}
           </div>
@@ -116,45 +102,39 @@ export default function MarketIndexPage() {
             <p className="text-center text-slate-500 py-20">Failed to load suburb data.</p>
           )}
 
-          {!isLoading && !isError && cities.map((city) => (
-            <div key={city} className="mb-10">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-slate-400" />
-                {city}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {byCity[city].map((s) => (
-                  <Link key={`${s.city}-${s.suburb}`} href={`/market/${s.citySlug}/${s.suburbSlug}`}>
-                    <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer h-full">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-medium text-slate-900 text-sm leading-tight">
-                            {s.suburb}
-                          </h3>
-                          <Badge variant="secondary" className="text-xs ml-2 shrink-0">
-                            {s.sale_count} {s.sale_count === 1 ? "sale" : "sales"}
-                          </Badge>
-                        </div>
-                        <div className="space-y-1 text-xs text-slate-500">
-                          {s.avg_price > 0 && (
-                            <div className="flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />
-                              <span>Avg {fmt(s.avg_price)}</span>
-                            </div>
-                          )}
-                          {s.avg_price_per_sqm > 0 && (
-                            <div className="text-slate-400">
-                              {fmt(s.avg_price_per_sqm)}/m²
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
+          {!isLoading && !isError && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {suburbs.map((s) => (
+                <Link key={s.suburb} href={`/market/${s.suburbSlug}`}>
+                  <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer h-full">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-medium text-slate-900 text-sm leading-tight">
+                          {s.suburb}
+                        </h3>
+                        <Badge variant="secondary" className="text-xs ml-2 shrink-0">
+                          {s.sale_count} {s.sale_count === 1 ? "sale" : "sales"}
+                        </Badge>
+                      </div>
+                      <div className="space-y-1 text-xs text-slate-500">
+                        {s.avg_price > 0 && (
+                          <div className="flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" />
+                            <span>Avg {fmt(s.avg_price)}</span>
+                          </div>
+                        )}
+                        {s.avg_price_per_sqm > 0 && (
+                          <div className="text-slate-400">
+                            {fmt(s.avg_price_per_sqm)}/m²
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
             </div>
-          ))}
+          )}
         </section>
       </main>
 

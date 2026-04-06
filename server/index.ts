@@ -145,11 +145,11 @@ app.use('/static-assets', express.static('public'));
   app.get("/sitemap.xml", async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await db.execute(sql`
-        SELECT city, suburb, max(sale_date) AS latest_sale
+        SELECT suburb, max(sale_date) AS latest_sale
         FROM comparable_sales
-        WHERE suburb IS NOT NULL AND city IS NOT NULL
-        GROUP BY city, suburb
-        ORDER BY city, suburb
+        WHERE suburb IS NOT NULL
+        GROUP BY suburb
+        ORDER BY suburb
       `);
 
       function slugify(str: string): string {
@@ -161,7 +161,7 @@ app.use('/static-assets', express.static('public'));
 
       const suburbUrls = result.rows.map((r: any) => `
   <url>
-    <loc>${base}/market/${slugify(r.city)}/${slugify(r.suburb)}</loc>
+    <loc>${base}/market/${slugify(r.suburb)}</loc>
     <lastmod>${r.latest_sale ? String(r.latest_sale).substring(0, 10) : today}</lastmod>
     <changefreq>weekly</changefreq>
   </url>`).join("");
@@ -207,12 +207,11 @@ app.use('/static-assets', express.static('public'));
     }
   });
 
-  // ── OG meta injection for /market/:city/:suburb ──
-  app.get("/market/:city/:suburb", async (req: Request, res: Response, next: NextFunction) => {
+  // ── OG meta injection for /market/:suburb ──
+  app.get("/market/:suburb", async (req: Request, res: Response, next: NextFunction) => {
     try {
       function unslugify(slug: string) { return slug.replace(/-/g, " "); }
 
-      const cityName = unslugify(req.params.city);
       const suburbName = unslugify(req.params.suburb);
 
       const result = await db.execute(sql`
@@ -221,7 +220,7 @@ app.use('/static-assets', express.static('public'));
           percentile_cont(0.5) WITHIN GROUP (ORDER BY sale_price)::int AS median_price,
           percentile_cont(0.5) WITHIN GROUP (ORDER BY price_per_sqm)::int AS median_price_per_sqm
         FROM comparable_sales
-        WHERE suburb ILIKE ${suburbName} AND city ILIKE ${cityName}
+        WHERE suburb ILIKE ${suburbName}
       `);
 
       const stats = result.rows[0] as any;
@@ -236,10 +235,9 @@ app.use('/static-assets', express.static('public'));
       let html = fs.readFileSync(htmlPath, "utf-8");
 
       const displaySuburb = suburbName.replace(/\b\w/g, (c) => c.toUpperCase());
-      const displayCity = cityName.replace(/\b\w/g, (c) => c.toUpperCase());
-      const pageUrl = `https://app.proply.co.za/market/${req.params.city}/${req.params.suburb}`;
+      const pageUrl = `https://app.proply.co.za/market/${req.params.suburb}`;
 
-      const title = `Property Sales in ${displaySuburb}, ${displayCity} | Proply`;
+      const title = `Property Sales in ${displaySuburb} | Proply`;
       let description = `Explore recent property sales in ${displaySuburb}.`;
       if (stats?.total_sales) {
         const price = stats.median_price ? `R${Number(stats.median_price).toLocaleString("en-ZA")}` : null;

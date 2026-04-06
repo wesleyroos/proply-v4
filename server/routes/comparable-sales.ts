@@ -15,27 +15,25 @@ function unslugify(slug: string): string {
 
 /**
  * GET /api/comparable-sales/suburbs
- * All suburbs with aggregate stats, grouped by city.
+ * All suburbs with aggregate stats.
  */
 router.get("/suburbs", async (_req, res) => {
   try {
     const result = await db.execute(sql`
       SELECT
-        city,
         suburb,
         count(*)::int                              AS sale_count,
         round(avg(sale_price))::int                AS avg_price,
         round(avg(price_per_sqm))::int             AS avg_price_per_sqm,
         max(sale_date)                             AS latest_sale
       FROM comparable_sales
-      WHERE suburb IS NOT NULL AND city IS NOT NULL
-      GROUP BY city, suburb
-      ORDER BY city, suburb
+      WHERE suburb IS NOT NULL
+      GROUP BY suburb
+      ORDER BY suburb
     `);
 
     const data = result.rows.map((r: any) => ({
       ...r,
-      citySlug: slugify(r.city),
       suburbSlug: slugify(r.suburb),
     }));
 
@@ -47,12 +45,11 @@ router.get("/suburbs", async (_req, res) => {
 });
 
 /**
- * GET /api/comparable-sales/suburb/:city/:suburb
+ * GET /api/comparable-sales/suburb/:suburb
  * Aggregate stats + property type breakdown + last 20 sales for one suburb.
  */
-router.get("/suburb/:city/:suburb", async (req, res) => {
+router.get("/suburb/:suburb", async (req, res) => {
   try {
-    const cityName = unslugify(req.params.city);
     const suburbName = unslugify(req.params.suburb);
 
     const [statsResult, typesResult, salesResult] = await Promise.all([
@@ -65,7 +62,7 @@ router.get("/suburb/:city/:suburb", async (req, res) => {
           min(sale_date)                                                         AS earliest_sale,
           max(sale_date)                                                         AS latest_sale
         FROM comparable_sales
-        WHERE suburb ILIKE ${suburbName} AND city ILIKE ${cityName}
+        WHERE suburb ILIKE ${suburbName}
       `),
       db.execute(sql`
         SELECT
@@ -74,7 +71,7 @@ router.get("/suburb/:city/:suburb", async (req, res) => {
           round(avg(sale_price))::int                AS avg_price,
           round(avg(price_per_sqm))::int             AS avg_price_per_sqm
         FROM comparable_sales
-        WHERE suburb ILIKE ${suburbName} AND city ILIKE ${cityName}
+        WHERE suburb ILIKE ${suburbName}
           AND property_type IS NOT NULL
         GROUP BY property_type
         ORDER BY count DESC
@@ -83,7 +80,7 @@ router.get("/suburb/:city/:suburb", async (req, res) => {
         SELECT id, address, suburb, city, property_type, bedrooms, floor_size,
                sale_price, price_per_sqm, sale_date
         FROM comparable_sales
-        WHERE suburb ILIKE ${suburbName} AND city ILIKE ${cityName}
+        WHERE suburb ILIKE ${suburbName}
         ORDER BY sale_date DESC NULLS LAST
         LIMIT 20
       `),
@@ -94,7 +91,6 @@ router.get("/suburb/:city/:suburb", async (req, res) => {
     return res.json({
       success: true,
       data: {
-        city: cityName,
         suburb: suburbName,
         stats,
         propertyTypes: typesResult.rows,

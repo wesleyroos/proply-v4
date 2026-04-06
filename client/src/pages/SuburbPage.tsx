@@ -43,7 +43,6 @@ interface Sale {
 }
 
 interface SuburbDetail {
-  city: string;
   suburb: string;
   stats: SuburbStats;
   propertyTypes: PropertyTypeBreakdown[];
@@ -60,15 +59,14 @@ function titleCase(str: string): string {
 }
 
 export default function SuburbPage() {
-  const [, params] = useRoute("/market/:city/:suburb");
-  const citySlug = params?.city ?? "";
+  const [, params] = useRoute("/market/:suburb");
   const suburbSlug = params?.suburb ?? "";
 
   const { data, isLoading, isError } = useQuery<{ success: boolean; data: SuburbDetail }>({
-    queryKey: ["comparable-sales-suburb", citySlug, suburbSlug],
+    queryKey: ["comparable-sales-suburb", suburbSlug],
     queryFn: () =>
-      fetch(`/api/comparable-sales/suburb/${citySlug}/${suburbSlug}`).then((r) => r.json()),
-    enabled: !!citySlug && !!suburbSlug,
+      fetch(`/api/comparable-sales/suburb/${suburbSlug}`).then((r) => r.json()),
+    enabled: !!suburbSlug,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -76,12 +74,11 @@ export default function SuburbPage() {
   const stats = detail?.stats;
 
   const displaySuburb = detail?.suburb ? titleCase(detail.suburb) : titleCase(suburbSlug.replace(/-/g, " "));
-  const displayCity = detail?.city ? titleCase(detail.city) : titleCase(citySlug.replace(/-/g, " "));
 
-  const pageTitle = `Property Sales in ${displaySuburb}, ${displayCity} | Proply`;
+  const pageTitle = `Property Sales in ${displaySuburb} | Proply`;
   const pageDescription = stats?.total_sales
     ? `${stats.total_sales} title deed sales in ${displaySuburb}${stats.median_price ? ` | Median ${fmt(stats.median_price)}` : ""}${stats.median_price_per_sqm ? ` | ${fmt(stats.median_price_per_sqm)}/m²` : ""}.`
-    : `Explore recent property sales in ${displaySuburb}, ${displayCity}.`;
+    : `Explore recent property sales in ${displaySuburb}.`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -112,13 +109,7 @@ export default function SuburbPage() {
             <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-4">
               <Link href="/market" className="hover:text-slate-600 transition-colors">Market</Link>
               <ChevronRight className="w-3 h-3" />
-              <span>{displayCity}</span>
-              <ChevronRight className="w-3 h-3" />
               <span className="text-slate-600">{displaySuburb}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-              <MapPin className="w-4 h-4" />
-              <span>{displayCity}</span>
             </div>
             <h1 className="text-3xl font-bold text-slate-900 mb-1">{displaySuburb}</h1>
             <p className="text-slate-500 text-sm">Title deed sales sourced from South Africa's deeds office</p>
