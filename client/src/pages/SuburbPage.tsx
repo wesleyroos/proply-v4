@@ -83,7 +83,7 @@ export default function SuburbPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Place",
-    name: `${displaySuburb}, ${displayCity}`,
+    name: displaySuburb,
     description: pageDescription,
     additionalProperty: [
       stats?.median_price && { "@type": "PropertyValue", name: "Median Sale Price", value: fmt(stats.median_price) },
