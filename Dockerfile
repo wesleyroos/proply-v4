@@ -21,6 +21,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# postgresql-client gives us pg_dump/pg_restore for the one-off
+# Railway → Fly Postgres migration release_command.
+RUN apk add --no-cache postgresql17-client
+
 # Only production dependencies
 COPY package*.json ./
 RUN npm ci --omit=dev
@@ -29,6 +33,8 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/migrations ./migrations
+COPY --from=builder /app/scripts/migrate-from-railway.sh ./scripts/migrate-from-railway.sh
+RUN chmod +x ./scripts/migrate-from-railway.sh
 
 EXPOSE 8080
 

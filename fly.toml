@@ -4,6 +4,9 @@ primary_region = "jnb"
 [build]
   dockerfile = "Dockerfile"
 
+[deploy]
+  release_command = "/app/scripts/migrate-from-railway.sh"
+
 [env]
   PORT = "8080"
   NODE_ENV = "production"
