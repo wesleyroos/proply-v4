@@ -3264,6 +3264,10 @@ export function registerRoutes(app: Express): Server {
         return res.status(403).json({ error: 'Admin access required' });
       }
       const { invoiceId } = req.params;
+      // Delete related transaction history first (foreign key constraint)
+      await db.execute(
+        sql`DELETE FROM transaction_history WHERE invoice_id = ${invoiceId}`
+      );
       const result = await db.execute(
         sql`DELETE FROM agency_invoices WHERE invoice_id = ${invoiceId}`
       );
