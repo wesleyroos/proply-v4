@@ -103,9 +103,11 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...mid);
-  doc.text("An Intelligence Layer for Real Estate", ml, y);
+  doc.text("7 Darter Rd, Longkloof Gardens", ml, y);
   y += 5;
-  doc.text("wesley@proply.co.za", ml, y);
+  doc.text("Cape Town, 8001", ml, y);
+  y += 5;
+  doc.text("hello@proply.co.za", ml, y);
   y += 5;
   doc.text("app.proply.co.za", ml, y);
 
@@ -316,7 +318,8 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...light);
   doc.text("Thank you for using Proply.", pageWidth / 2, footerY, { align: "center" });
-  doc.text("Questions? Contact us at wesley@proply.co.za", pageWidth / 2, footerY + 5, { align: "center" });
+  doc.text("Questions? Contact us at hello@proply.co.za", pageWidth / 2, footerY + 5, { align: "center" });
+  doc.text("Proply (Pty) Ltd  |  Reg: 2024/112602/07", pageWidth / 2, footerY + 10, { align: "center" });
 
   return Buffer.from(doc.output("arraybuffer"));
 }
