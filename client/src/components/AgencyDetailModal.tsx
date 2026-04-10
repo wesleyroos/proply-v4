@@ -1285,16 +1285,37 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                                 </Badge>
                               </td>
                               <td className="py-3 px-2 text-right">
-                                {invoice.status === 'paid' ? (
-                                  <button 
-                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    onClick={() => handleDownloadInvoice(invoice.id)}
+                                <div className="flex items-center justify-end gap-2">
+                                  {invoice.status === 'paid' ? (
+                                    <button
+                                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                      onClick={() => handleDownloadInvoice(invoice.id)}
+                                    >
+                                      Download
+                                    </button>
+                                  ) : (
+                                    <span className="text-gray-400 text-sm">Download</span>
+                                  )}
+                                  <button
+                                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                                    onClick={async () => {
+                                      if (!confirm(`Delete invoice ${invoice.id}?`)) return;
+                                      try {
+                                        const res = await fetch(`/api/admin/invoices/${invoice.id}`, {
+                                          method: 'DELETE',
+                                          credentials: 'include',
+                                        });
+                                        if (!res.ok) throw new Error('Failed to delete');
+                                        toast({ title: "Invoice deleted" });
+                                        queryClient.invalidateQueries({ queryKey: ['/api/agencies', agency.id, 'report-stats'] });
+                                      } catch {
+                                        toast({ title: "Failed to delete invoice", variant: "destructive" });
+                                      }
+                                    }}
                                   >
-                                    Download
+                                    Delete
                                   </button>
-                                ) : (
-                                  <span className="text-gray-400 text-sm">Download</span>
-                                )}
+                                </div>
                               </td>
                             </tr>
                           ))}

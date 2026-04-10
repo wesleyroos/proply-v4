@@ -3225,8 +3225,11 @@ export function registerRoutes(app: Express): Server {
 
       const invoices = invoicesQuery.rows.map((invoice: any) => {
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthName = `${monthNames[parseInt(invoice.month) - 1]} ${invoice.year}`;
-        const billingPeriod = `${invoice.year}-${String(invoice.month).padStart(2, '0')}`;
+        // month is stored as "2026-04" — extract the month number from the string
+        const monthNum = invoice.month?.includes('-') ? parseInt(invoice.month.split('-')[1]) : parseInt(invoice.month);
+        const yearNum = invoice.year || (invoice.month?.includes('-') ? parseInt(invoice.month.split('-')[0]) : new Date().getFullYear());
+        const monthName = `${monthNames[(monthNum || 1) - 1]} ${yearNum}`;
+        const billingPeriod = invoice.month;
         return {
           id: invoice.invoice_id,
           month: billingPeriod,
@@ -3250,6 +3253,27 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error fetching agency report stats:', error);
       res.status(500).json({ error: 'Failed to fetch report statistics' });
+    }
+  });
+
+  // Delete invoice (admin only)
+  app.delete('/api/admin/invoices/:invoiceId', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'system_admin' && user.role !== 'admin')) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+      const { invoiceId } = req.params;
+      const result = await db.execute(
+        sql`DELETE FROM agency_invoices WHERE invoice_id = ${invoiceId}`
+      );
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Invoice not found' });
+      }
+      res.json({ success: true, message: `Invoice ${invoiceId} deleted` });
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      res.status(500).json({ error: 'Failed to delete invoice' });
     }
   });
 
