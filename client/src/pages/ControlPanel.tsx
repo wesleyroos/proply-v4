@@ -355,18 +355,9 @@ export function ControlPanel() {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">
-                          {agency.billingEnabled ? 'Enabled' : 'Disabled'}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleBillingToggle(agency.id, !agency.billingEnabled)}
-                        >
-                          {agency.billingEnabled ? 'Disable' : 'Enable'}
-                        </Button>
-                      </div>
+                      <Badge variant={agency.billingEnabled ? "default" : "secondary"}>
+                        {agency.billingEnabled ? 'Enabled' : 'Disabled'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <span className="text-sm">
@@ -379,30 +370,16 @@ export function ControlPanel() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleSync(agency.id)}
-                          disabled={agency.status === 'syncing'}
-                        >
-                          <RefreshCw
-                            className={`h-4 w-4 ${
-                              agency.status === 'syncing' ? 'animate-spin' : ''
-                            }`}
-                          />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedAgency(agency);
-                            setDetailModalOpen(true);
-                          }}
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedAgency(agency);
+                          setDetailModalOpen(true);
+                        }}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
