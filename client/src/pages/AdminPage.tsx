@@ -174,28 +174,6 @@ function BillingOverview() {
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
-  const [billingRunning, setBillingRunning] = useState(false);
-  const [billingResult, setBillingResult] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  const runBilling = async () => {
-    if (!confirm("This will create invoices and attempt to charge agencies with billing enabled and a payment method on file. Continue?")) return;
-    setBillingRunning(true);
-    setBillingResult(null);
-    try {
-      const res = await fetch("/api/admin/trigger-billing", { method: "POST", credentials: "include" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Billing failed");
-      toast({ title: "Billing complete", description: data.message || "Monthly billing has been processed." });
-      setBillingResult("Billing run completed successfully.");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
-      toast({ title: "Billing failed", description: msg, variant: "destructive" });
-      setBillingResult(`Error: ${msg}`);
-    } finally {
-      setBillingRunning(false);
-    }
-  };
 
   const { data: billingData, isLoading } = useQuery<BillingAgency[]>({
     queryKey: ["/api/admin/billing-preview", selectedYear, selectedMonth],
@@ -239,19 +217,7 @@ function BillingOverview() {
             <SelectItem value={String(now.getFullYear())}>{now.getFullYear()}</SelectItem>
           </SelectContent>
         </Select>
-        <div className="ml-auto">
-          <Button onClick={runBilling} disabled={billingRunning} variant="outline">
-            {billingRunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
-            {billingRunning ? "Running..." : "Run Billing Now"}
-          </Button>
-        </div>
       </div>
-
-      {billingResult && (
-        <div className={`text-sm p-3 rounded-lg ${billingResult.startsWith("Error") ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800"}`}>
-          {billingResult}
-        </div>
-      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

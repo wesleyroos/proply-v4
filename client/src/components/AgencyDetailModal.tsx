@@ -496,6 +496,53 @@ function AgencyUsersTab({ agencyId }: { agencyId: string }) {
   );
 }
 
+function RunBillingButton() {
+  const [running, setRunning] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const runBilling = async () => {
+    if (!confirm("This will create invoices for last month's usage and attempt to charge agencies with a payment method on file. Continue?")) return;
+    setRunning(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/admin/trigger-billing", { method: "POST", credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Billing failed");
+      toast({ title: "Billing complete", description: data.message || "Monthly billing has been processed." });
+      setResult("Billing run completed successfully.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast({ title: "Billing failed", description: msg, variant: "destructive" });
+      setResult(`Error: ${msg}`);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium">Run Billing Cycle</h3>
+            <p className="text-sm text-muted-foreground">Manually trigger monthly billing for all agencies</p>
+          </div>
+          <Button onClick={runBilling} disabled={running} variant="outline">
+            {running ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
+            {running ? "Running..." : "Run Billing Now"}
+          </Button>
+        </div>
+        {result && (
+          <p className={`text-sm mt-3 p-2 rounded ${result.startsWith("Error") ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800"}`}>
+            {result}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: AgencyDetailModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -1347,6 +1394,11 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
             </Card>
 
 
+
+            {/* Run Billing */}
+            {localBillingEnabled && (
+              <RunBillingButton />
+            )}
 
             {/* Payment Methods */}
             <Card>
