@@ -29,6 +29,7 @@ import {
   Activity,
   TestTube,
   ToggleLeft,
+  Users,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -408,6 +409,93 @@ function AgencyProductToggles({ agencyId, agencyName, analyzerEnabled, rentCompa
   );
 }
 
+interface AgencyUser {
+  id: number;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  role: string;
+  lastLoginAt: string | null;
+  createdAt: string;
+  reportsGenerated: number;
+}
+
+function AgencyUsersTab({ agencyId }: { agencyId: string }) {
+  const { data, isLoading } = useQuery<{ users: AgencyUser[] }>({
+    queryKey: ['/api/agencies', agencyId, 'users'],
+    queryFn: async () => {
+      const res = await fetch(`/api/agencies/${agencyId}/users`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch users');
+      return res.json();
+    },
+  });
+
+  const agencyUsers = data?.users || [];
+
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading users...</p>;
+  }
+
+  if (agencyUsers.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+          <p className="text-lg font-medium text-muted-foreground">No Users</p>
+          <p className="text-sm text-muted-foreground mt-2">No users are linked to this agency yet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Users className="h-5 w-5" />
+          Agency Users ({agencyUsers.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Name</th>
+              <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Email</th>
+              <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Role</th>
+              <th className="text-right py-2 pr-4 font-medium text-muted-foreground">Reports</th>
+              <th className="text-left py-2 font-medium text-muted-foreground">Last Login</th>
+            </tr>
+          </thead>
+          <tbody>
+            {agencyUsers.map((u) => (
+              <tr key={u.id} className="border-b border-gray-100">
+                <td className="py-2 pr-4 font-medium">
+                  {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : '—'}
+                </td>
+                <td className="py-2 pr-4 text-muted-foreground">{u.email}</td>
+                <td className="py-2 pr-4">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    u.role === 'branch_admin' || u.role === 'franchise_admin'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {u.role?.replace('_', ' ') || 'user'}
+                  </span>
+                </td>
+                <td className="py-2 pr-4 text-right">{u.reportsGenerated || 0}</td>
+                <td className="py-2 text-muted-foreground text-sm">
+                  {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : 'Never'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: AgencyDetailModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -661,10 +749,14 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Users
             </TabsTrigger>
             <TabsTrigger value="usage" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -841,6 +933,10 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="users" className="mt-6 space-y-6">
+            <AgencyUsersTab agencyId={agency.id} />
           </TabsContent>
 
           <TabsContent value="usage" className="mt-6 space-y-6">

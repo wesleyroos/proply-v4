@@ -3417,6 +3417,48 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get users for an agency branch
+  app.get('/api/agencies/:agencyId/users', async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || (user.role !== 'system_admin' && user.role !== 'admin')) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { agencyId } = req.params;
+
+      const agencyBranch = await db.query.agencyBranches.findFirst({
+        where: eq(agencyBranches.slug, agencyId)
+      });
+
+      if (!agencyBranch) {
+        return res.status(404).json({ error: 'Agency not found' });
+      }
+
+      // Find users linked to this branch or franchise
+      const agencyUsers = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          lastLoginAt: users.lastLoginAt,
+          createdAt: users.createdAt,
+          reportsGenerated: users.reportsGenerated,
+        })
+        .from(users)
+        .where(
+          sql`${users.branchId} = ${agencyBranch.id} OR ${users.franchiseId} = ${agencyBranch.id}`
+        );
+
+      res.json({ users: agencyUsers });
+    } catch (error) {
+      console.error('Error fetching agency users:', error);
+      res.status(500).json({ error: 'Failed to fetch agency users' });
+    }
+  });
+
   // Payment Methods API Routes for Agency Billing
   app.get('/api/payment-methods', async (req, res) => {
     try {
