@@ -10,6 +10,7 @@ import {
 import { eq, and, sql, desc } from "drizzle-orm";
 import { decrypt } from "../utils/encryption";
 import { trackReportGeneration } from "../utils/report-tracker";
+import { trackAgencyReportUsage } from "../utils/billing-tracker";
 
 const router = Router();
 
@@ -56,7 +57,7 @@ async function authenticatePartner(
       return res.status(403).json({ error: "Agency is inactive" });
     }
 
-    req.agencyBranch = matchedBranch;
+    (req as any).agencyBranch = matchedBranch;
     next();
   } catch (error) {
     console.error("Partner auth error:", error);
@@ -99,7 +100,7 @@ router.post("/generate-report", authenticatePartner, async (req, res) => {
 
   try {
     const { propertyId } = req.body;
-    const branch = req.agencyBranch;
+    const branch = (req as any).agencyBranch;
 
     if (!propertyId) {
       return res.status(400).json({ error: "propertyId is required" });
@@ -431,7 +432,7 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
     let shortTermData = null;
     try {
       const { fetchPriceLabsData } = await import("./rental-performance");
-      shortTermData = await fetchPriceLabsData(address, bedrooms, bathrooms, propertyType || "Property", userId);
+      shortTermData = await fetchPriceLabsData(address, bedrooms as number, bathrooms as number, propertyType || "Property", userId as number);
     } catch (plError) {
       console.warn("[Partner API] PriceLabs fetch failed (non-fatal):", plError);
     }
@@ -541,7 +542,7 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
     if (rentalPerformance.shortTerm) {
       shortTermTrajectories = {};
       for (const key of ["percentile25", "percentile50", "percentile75", "percentile90"]) {
-        const annual = rentalPerformance.shortTerm[key]?.annual;
+        const annual = (rentalPerformance.shortTerm as any)[key]?.annual;
         if (annual) shortTermTrajectories[key] = buildTrajectory(annual);
       }
     }
@@ -623,9 +624,10 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
       console.error("[Partner API] Failed to save financial data to rental_performance_data:", finSaveError);
     }
 
-    // Track the report generation
+    // Track the report generation for billing
     try {
       await trackReportGeneration({ propertyId, reportType: "valuation", userId });
+      await trackAgencyReportUsage(branch.id, userId, listing.address);
     } catch {
       // Non-fatal
     }
@@ -654,7 +656,7 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
 router.get("/report-status/:propertyId", authenticatePartner, async (req, res) => {
   try {
     const { propertyId } = req.params;
-    const branch = req.agencyBranch;
+    const branch = (req as any).agencyBranch;
 
     // Verify the listing belongs to this agency
     const [listing] = await db
@@ -698,7 +700,7 @@ router.get("/report-status/:propertyId", authenticatePartner, async (req, res) =
 // List all synced listings for this agency (so they know which propertyIds to use).
 router.get("/listings", authenticatePartner, async (req, res) => {
   try {
-    const branch = req.agencyBranch;
+    const branch = (req as any).agencyBranch;
 
     const listings = await db
       .select({

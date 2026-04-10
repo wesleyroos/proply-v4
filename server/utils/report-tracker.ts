@@ -11,7 +11,7 @@ interface ReportGenerationOptions {
 export async function trackReportGeneration(options: ReportGenerationOptions): Promise<void> {
   try {
     console.log(`Tracking report generation for property: ${options.propertyId}`);
-    
+
     // Look up the property and join with agency branch to get franchise information
     const property = await db
       .select({
@@ -19,6 +19,7 @@ export async function trackReportGeneration(options: ReportGenerationOptions): P
         agentName: propdataListings.agentName,
         franchiseName: agencyBranches.franchiseName,
         branchName: agencyBranches.branchName,
+        slug: agencyBranches.slug,
       })
       .from(propdataListings)
       .leftJoin(agencyBranches, eq(propdataListings.branchId, agencyBranches.id))
@@ -39,13 +40,13 @@ export async function trackReportGeneration(options: ReportGenerationOptions): P
       return;
     }
 
-    const { agentId, agentName, franchiseName, branchName } = property[0];
-    
-    // Use franchise name if available, fallback to agent name
+    const { agentId, agentName, franchiseName, branchName, slug } = property[0];
+
+    // Use slug as agencyId — this must match agencyBranches.slug for billing to work
     const displayName = franchiseName || agentName || "Unknown Agency";
-    const agencyIdentifier = franchiseName ? `${franchiseName}-${branchName}` : (agentId?.toString() || "unknown");
-    
-    // Log the report generation using franchise name
+    const agencyIdentifier = slug || (agentId?.toString() || "unknown");
+
+    // Log the report generation using slug as identifier
     await db.insert(reportGenerations).values({
       agencyId: agencyIdentifier,
       agencyName: displayName,
