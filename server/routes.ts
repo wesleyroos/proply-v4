@@ -126,6 +126,7 @@ import adminInvitationsRouter from './routes/admin-invitations';
 import branchAdminRouter from './routes/branch-admin';
 import franchiseAdminRouter from './routes/franchise-admin';
 import agencyProfileRouter from './routes/agency-profile';
+import partnerApiRouter from './routes/partner-api';
 
 // Extend Express.User to include our schema
 declare global {
@@ -2786,6 +2787,7 @@ export function registerRoutes(app: Express): Server {
   // PDF reports routes - keep original router for completeness
   app.use('/api/propdata-reports', propdataReportsRouter);
   app.use('/api/report-activity', reportActivityRouter);
+  app.use('/api/partner', partnerApiRouter);
   
   // Image sync endpoint for comprehensive image processing
   app.post("/api/sync-missing-images", async (req, res) => {

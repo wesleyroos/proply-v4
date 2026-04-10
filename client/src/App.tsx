@@ -26,6 +26,7 @@ import SharedPropertyAnalysisPage from "./pages/SharedPropertyAnalysisPage";
 import RentCompareDetailPage from "./pages/RentCompareDetailPage";
 import SharedRentCompareAnalysisPage from "./pages/SharedRentCompareAnalysisPage";
 
+import ApiDocsPage from "./pages/ApiDocsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import ContactPage from "./pages/ContactPage";
@@ -202,6 +203,11 @@ function App() {
             <Route path="/terms" component={() => (
               <PageTransition>
                 <TermsPage />
+              </PageTransition>
+            )} />
+            <Route path="/docs/api" component={() => (
+              <PageTransition>
+                <ApiDocsPage />
               </PageTransition>
             )} />
             <Route path="/contact" component={() => (
