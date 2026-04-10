@@ -2850,23 +2850,6 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ error: "Agency not found" });
       }
 
-      // If trying to enable billing, check for payment methods first
-      if (billingEnabled) {
-        const { agencyPaymentMethods } = await import("@db/schema");
-        const paymentMethods = await db.query.agencyPaymentMethods.findMany({
-          where: eq(agencyPaymentMethods.agencyBranchId, agencyBranch.id)
-        });
-
-        const activePaymentMethods = paymentMethods.filter(pm => pm.isActive);
-        
-        if (activePaymentMethods.length === 0) {
-          return res.status(400).json({ 
-            error: "Cannot enable billing without payment methods",
-            message: "A valid payment method must be added by the branch or franchise administrator before billing can be enabled. Please contact your agency administrator to add payment details."
-          });
-        }
-      }
-
       // Check if billing settings exist, create if not
       let billingSettings = await db.query.agencyBillingSettings.findFirst({
         where: eq(agencyBillingSettings.agencyBranchId, agencyBranch.id)
