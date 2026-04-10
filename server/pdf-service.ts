@@ -97,7 +97,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...dark);
-  doc.text("Proply (Pty) Ltd", ml, y);
+  doc.text("Proply Tech (Pty) Ltd", ml, y);
 
   y += 6;
   doc.setFontSize(9);
@@ -319,7 +319,7 @@ export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   doc.setTextColor(...light);
   doc.text("Thank you for using Proply.", pageWidth / 2, footerY, { align: "center" });
   doc.text("Questions? Contact us at hello@proply.co.za", pageWidth / 2, footerY + 5, { align: "center" });
-  doc.text("Proply (Pty) Ltd  |  Reg: 2024/112602/07", pageWidth / 2, footerY + 10, { align: "center" });
+  doc.text("Proply Tech (Pty) Ltd  |  Reg: 2024/112602/07", pageWidth / 2, footerY + 10, { align: "center" });
 
   return Buffer.from(doc.output("arraybuffer"));
 }
