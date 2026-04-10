@@ -500,6 +500,7 @@ function RunBillingButton() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const runBilling = async () => {
     if (!confirm("This will create invoices for last month's usage and attempt to charge agencies with a payment method on file. Continue?")) return;
@@ -511,6 +512,8 @@ function RunBillingButton() {
       if (!res.ok) throw new Error(data.error || "Billing failed");
       toast({ title: "Billing complete", description: data.message || "Monthly billing has been processed." });
       setResult("Billing run completed successfully.");
+      // Refresh all report-stats queries so invoices tab updates instantly
+      queryClient.invalidateQueries({ queryKey: ['/api/report-stats'] });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       toast({ title: "Billing failed", description: msg, variant: "destructive" });
