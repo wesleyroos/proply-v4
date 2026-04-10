@@ -151,6 +151,179 @@ const StatCard = ({
   </Card>
 );
 
+interface BillingAgency {
+  agencyId: string;
+  agencyName: string;
+  reportCount: number;
+  amount: number;
+  billingEnabled: boolean;
+}
+
+function calculateTieredAmount(count: number): number {
+  let amount = 0;
+  let remaining = count;
+  if (remaining > 0) { const t = Math.min(remaining, 50); amount += t * 200; remaining -= t; }
+  if (remaining > 0) { const t = Math.min(remaining, 50); amount += t * 180; remaining -= t; }
+  if (remaining > 0) { const t = Math.min(remaining, 50); amount += t * 160; remaining -= t; }
+  if (remaining > 0) { amount += remaining * 140; }
+  return amount;
+}
+
+function BillingOverview() {
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+
+  const { data: billingData, isLoading } = useQuery<BillingAgency[]>({
+    queryKey: ["/api/admin/billing-preview", selectedYear, selectedMonth],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/billing-preview/${selectedYear}/${selectedMonth}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch billing preview");
+      return res.json();
+    },
+  });
+
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+
+  const agencies = billingData || [];
+  const totalReports = agencies.reduce((s, a) => s + a.reportCount, 0);
+  const totalAmount = agencies.reduce((s, a) => s + a.amount, 0);
+  const billableAmount = agencies.filter(a => a.billingEnabled).reduce((s, a) => s + a.amount, 0);
+
+  return (
+    <div className="space-y-6">
+      {/* Month selector */}
+      <div className="flex items-center gap-3">
+        <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(parseInt(v))}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {months.map((m, i) => (
+              <SelectItem key={i + 1} value={String(i + 1)}>{m}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+          <SelectTrigger className="w-24">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={String(now.getFullYear() - 1)}>{now.getFullYear() - 1}</SelectItem>
+            <SelectItem value={String(now.getFullYear())}>{now.getFullYear()}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <FileText className="h-5 w-5 text-muted-foreground" />
+              <h3 className="text-sm font-medium text-muted-foreground">Total Reports</h3>
+            </div>
+            <p className="text-2xl font-bold mt-2">{isLoading ? "..." : totalReports}</p>
+            <p className="text-sm text-muted-foreground">Across all agencies</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <CreditCard className="h-5 w-5 text-muted-foreground" />
+              <h3 className="text-sm font-medium text-muted-foreground">Total Value</h3>
+            </div>
+            <p className="text-2xl font-bold mt-2">
+              {isLoading ? "..." : `R${totalAmount.toLocaleString("en-ZA")}`}
+            </p>
+            <p className="text-sm text-muted-foreground">If all agencies were billed</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <CreditCard className="h-5 w-5 text-green-600" />
+              <h3 className="text-sm font-medium text-muted-foreground">Billable Amount</h3>
+            </div>
+            <p className="text-2xl font-bold mt-2 text-green-600">
+              {isLoading ? "..." : `R${billableAmount.toLocaleString("en-ZA")}`}
+            </p>
+            <p className="text-sm text-muted-foreground">Billing-enabled agencies only</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Agency breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Agency Breakdown — {months[selectedMonth - 1]} {selectedYear}</CardTitle>
+          <CardDescription>Usage and projected billing per agency</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <p className="text-muted-foreground text-sm">Loading...</p>
+          ) : agencies.length === 0 ? (
+            <p className="text-muted-foreground text-sm">No reports generated this month.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Agency</TableHead>
+                  <TableHead className="text-right">Reports</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-center">Billing</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {agencies.sort((a, b) => b.reportCount - a.reportCount).map((agency) => (
+                  <TableRow key={agency.agencyId}>
+                    <TableCell className="font-medium">{agency.agencyName}</TableCell>
+                    <TableCell className="text-right">{agency.reportCount}</TableCell>
+                    <TableCell className="text-right">R{agency.amount.toLocaleString("en-ZA")}</TableCell>
+                    <TableCell className="text-center">
+                      {agency.billingEnabled ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Off</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Pricing reference */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Pricing Tiers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+            {[
+              { range: "1–50", price: "R200" },
+              { range: "51–100", price: "R180" },
+              { range: "101–150", price: "R160" },
+              { range: "151–200", price: "R140" },
+              { range: "200+", price: "R140" },
+            ].map(({ range, price }) => (
+              <div key={range} className="bg-gray-50 rounded-lg p-3 text-center">
+                <p className="font-medium">{price}/report</p>
+                <p className="text-muted-foreground text-xs">{range} reports</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { user, clearCache } = useUser();
   const [, setLocation] = useLocation();
@@ -528,9 +701,10 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="users">Users</TabsTrigger>
-                <TabsTrigger value="invitations">Pending Invitations</TabsTrigger>
+                <TabsTrigger value="billing">Billing</TabsTrigger>
+                <TabsTrigger value="invitations">Invitations</TabsTrigger>
               </TabsList>
               
               <TabsContent value="users" className="mt-4">
@@ -739,6 +913,10 @@ export default function AdminPage() {
                 )}
               </TabsContent>
               
+              <TabsContent value="billing" className="mt-4">
+                <BillingOverview />
+              </TabsContent>
+
               <TabsContent value="invitations" className="mt-4">
                 <PendingInvitations />
               </TabsContent>

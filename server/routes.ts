@@ -2469,69 +2469,44 @@ export function registerRoutes(app: Express): Server {
       const startDate = new Date(yearNum, monthNum - 1, 1);
       const endDate = new Date(yearNum, monthNum, 1);
       
-      // Get usage data for preview
+      // Get usage data with billing status
       const monthlyUsage = await db
         .select({
           agencyId: reportGenerations.agencyId,
           agencyName: reportGenerations.agencyName,
           reportCount: sql<number>`COUNT(*)::int`,
+          billingEnabled: agencyBillingSettings.billingEnabled,
         })
         .from(reportGenerations)
+        .leftJoin(agencyBranches, eq(reportGenerations.agencyId, agencyBranches.slug))
+        .leftJoin(agencyBillingSettings, eq(agencyBranches.id, agencyBillingSettings.agencyBranchId))
         .where(
           and(
             gte(reportGenerations.timestamp, startDate),
             lt(reportGenerations.timestamp, endDate)
           )
         )
-        .groupBy(reportGenerations.agencyId, reportGenerations.agencyName);
+        .groupBy(reportGenerations.agencyId, reportGenerations.agencyName, agencyBillingSettings.billingEnabled);
 
       // Calculate tiered billing for each agency
-      const billingPreview = monthlyUsage.map(usage => {
-        let amount = 0;
-        let remaining = usage.reportCount;
-        
-        // Tier 1: 1-50 reports at R200 each
-        if (remaining > 0) {
-          const tier1Count = Math.min(remaining, 50);
-          amount += tier1Count * 200;
-          remaining -= tier1Count;
-        }
-        
-        // Tier 2: 51-100 reports at R180 each
-        if (remaining > 0) {
-          const tier2Count = Math.min(remaining, 50);
-          amount += tier2Count * 180;
-          remaining -= tier2Count;
-        }
-        
-        // Tier 3: 101-150 reports at R160 each
-        if (remaining > 0) {
-          const tier3Count = Math.min(remaining, 50);
-          amount += tier3Count * 160;
-          remaining -= tier3Count;
-        }
-        
-        // Tier 4: 151-200 reports at R140 each
-        if (remaining > 0) {
-          const tier4Count = Math.min(remaining, 50);
-          amount += tier4Count * 140;
-          remaining -= tier4Count;
-        }
-        
-        // Tier 5: 200+ reports at R140 each
-        if (remaining > 0) {
-          amount += remaining * 140;
-        }
-        
-        return {
-          agencyId: usage.agencyId,
-          agencyName: usage.agencyName,
-          reportCount: usage.reportCount,
-          amount
-        };
-      });
+      function calcTiered(count: number): number {
+        let amt = 0, rem = count;
+        if (rem > 0) { const t = Math.min(rem, 50); amt += t * 200; rem -= t; }
+        if (rem > 0) { const t = Math.min(rem, 50); amt += t * 180; rem -= t; }
+        if (rem > 0) { const t = Math.min(rem, 50); amt += t * 160; rem -= t; }
+        if (rem > 0) { amt += rem * 140; }
+        return amt;
+      }
 
-      res.json({ billingPreview, totalAgencies: billingPreview.length });
+      const billingPreview = monthlyUsage.map(usage => ({
+        agencyId: usage.agencyId,
+        agencyName: usage.agencyName,
+        reportCount: usage.reportCount,
+        amount: calcTiered(usage.reportCount),
+        billingEnabled: usage.billingEnabled || false,
+      }));
+
+      res.json(billingPreview);
     } catch (error) {
       console.error("Failed to generate billing preview:", error);
       res.status(500).json({ error: "Failed to generate billing preview" });
