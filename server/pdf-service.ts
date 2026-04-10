@@ -1,6 +1,5 @@
 import { jsPDF } from "jspdf";
-import * as fs from "fs";
-import * as path from "path";
+import { PROPLY_LOGO_BASE64 } from "./assets/logo";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -20,37 +19,8 @@ interface InvoiceData {
   };
 }
 
-// Load logo once at startup — try base64 text file first, then PNG
-let logoBase64: string | null = null;
-try {
-  // First try the pre-encoded base64 file (works regardless of deployment)
-  const b64Candidates = [
-    path.join(__dirname, "assets/proply-logo-base64.txt"),
-    path.join(process.cwd(), "server/assets/proply-logo-base64.txt"),
-  ];
-  for (const p of b64Candidates) {
-    if (fs.existsSync(p)) {
-      logoBase64 = fs.readFileSync(p, "utf-8").trim();
-      break;
-    }
-  }
-  // Fallback to reading the PNG directly
-  if (!logoBase64) {
-    const pngCandidates = [
-      path.join(process.cwd(), "client/public/proply-logo-1.png"),
-      path.join(process.cwd(), "dist/public/proply-logo-1.png"),
-      path.join(__dirname, "../client/public/proply-logo-1.png"),
-    ];
-    for (const p of pngCandidates) {
-      if (fs.existsSync(p)) {
-        logoBase64 = fs.readFileSync(p).toString("base64");
-        break;
-      }
-    }
-  }
-} catch {
-  // Logo not available — will use text fallback
-}
+// Logo is embedded as a compiled TS constant — no file I/O needed
+const logoBase64 = PROPLY_LOGO_BASE64;
 
 function formatCurrency(amount: number): string {
   return `R ${amount.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
