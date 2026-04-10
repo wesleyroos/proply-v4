@@ -36,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { AgencyLogoUpload } from "./AgencyLogoUpload";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -499,6 +499,12 @@ function AgencyUsersTab({ agencyId }: { agencyId: string }) {
 export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: AgencyDetailModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [localBillingEnabled, setLocalBillingEnabled] = useState(agency?.billingEnabled ?? false);
+
+  // Sync local state when agency prop changes (e.g. modal reopened with fresh data)
+  useEffect(() => {
+    if (agency) setLocalBillingEnabled(agency.billingEnabled ?? false);
+  }, [agency]);
 
   // Fetch payment methods for this agency
   const { data: paymentMethods, isLoading: loadingPayments } = useQuery({
@@ -575,15 +581,13 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
       return response.json();
     },
     onSuccess: (_, variables) => {
+      setLocalBillingEnabled(variables.enabled);
       toast({
         title: "Billing updated",
         description: `Billing has been ${variables.enabled ? 'enabled' : 'disabled'} for this agency.`,
       });
-      // Invalidate all agency-related queries to refresh the modal immediately
       queryClient.invalidateQueries({ queryKey: ['/api/agencies'] });
       queryClient.invalidateQueries({ queryKey: ['/api/control-panel/agencies'] });
-      // Force close and reopen by triggering parent refetch
-      onClose();
     },
     onError: (error) => {
       toast({
@@ -1318,25 +1322,25 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                   <div>
                     <h3 className="font-medium">Billing for {agency.franchiseName || agency.name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {agency.billingEnabled ? 
-                        'Billing is currently enabled for this agency' : 
+                      {localBillingEnabled ?
+                        'Billing is currently enabled for this agency' :
                         'Billing is currently disabled for this agency'
                       }
                     </p>
                   </div>
                   <Button
                     onClick={() => {
-                      billingToggleMutation.mutate({ 
-                        agencyId: agency.id, 
-                        enabled: !agency.billingEnabled 
+                      billingToggleMutation.mutate({
+                        agencyId: agency.id,
+                        enabled: !localBillingEnabled
                       });
                     }}
                     disabled={billingToggleMutation.isPending}
-                    variant={agency.billingEnabled ? "destructive" : "default"}
+                    variant={localBillingEnabled ? "destructive" : "default"}
                   >
                     {billingToggleMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     <CreditCard className="mr-2 h-4 w-4" />
-                    {agency.billingEnabled ? 'Disable Billing' : 'Enable Billing'}
+                    {localBillingEnabled ? 'Disable Billing' : 'Enable Billing'}
                   </Button>
                 </div>
               </CardContent>
@@ -1394,7 +1398,7 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                     </div>
                     
                     {/* Test Billing Button */}
-                    {agency.billingEnabled && (
+                    {localBillingEnabled && (
                       <div className="pt-4 border-t">
                         <TestBillingButton agencyId={agency.id} />
                       </div>
