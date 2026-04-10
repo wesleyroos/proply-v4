@@ -20,305 +20,319 @@ interface InvoiceData {
   };
 }
 
+// Load logo once at startup
+let logoBase64: string | null = null;
+try {
+  const candidates = [
+    path.join(process.cwd(), "client/public/proply-logo-1.png"),
+    path.join(process.cwd(), "dist/public/proply-logo-1.png"),
+    path.join(__dirname, "../client/public/proply-logo-1.png"),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      logoBase64 = fs.readFileSync(p).toString("base64");
+      break;
+    }
+  }
+} catch {
+  // Logo not available — will use text fallback
+}
+
+function formatCurrency(amount: number): string {
+  return `R ${amount.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
+function formatPeriod(period: string): string {
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const [year, month] = period.split("-");
+  return `${monthNames[parseInt(month) - 1]} ${year}`;
+}
+
 export function generateInvoicePDF(invoiceData: InvoiceData): Buffer {
   const doc = new jsPDF();
-
-  // Company header
   const pageWidth = doc.internal.pageSize.width;
-  const margin = 20;
+  const pageHeight = doc.internal.pageSize.height;
+  const ml = 20; // margin left
+  const mr = pageWidth - 20; // margin right
+  const contentWidth = mr - ml;
 
-  // Add Proply logo (actual image)
-  try {
-    const logoPath = path.join(
-      process.cwd(),
-      "client/public/proply-logo-1.png",
-    );
-    if (fs.existsSync(logoPath)) {
-      const logoData = fs.readFileSync(logoPath);
-      const logoBase64 = logoData.toString("base64");
-      // Maintain aspect ratio (868x229 = ~3.8:1)
-      const logoWidth = 40;
-      const logoHeight = logoWidth / 3.8; // Maintain aspect ratio
-      doc.addImage(
-        `data:image/png;base64,${logoBase64}`,
-        "PNG",
-        margin,
-        15,
-        logoWidth,
-        logoHeight,
-      );
-    } else {
-      // Fallback to text if logo file not found
-      doc.setFontSize(20);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(59, 130, 246);
-      doc.text("PROPLY", margin, 25);
-    }
-  } catch (error) {
-    // Fallback to text if there's an error loading the logo
-    doc.setFontSize(20);
+  // ─── COLOURS ──────────────────────────────────────────────
+  const blue = [41, 128, 205] as const;   // Proply brand blue
+  const dark = [33, 33, 33] as const;
+  const mid = [100, 100, 100] as const;
+  const light = [150, 150, 150] as const;
+  const tableHeader = [41, 128, 205] as const;
+  const tableStripe = [245, 247, 250] as const;
+
+  let y = 20;
+
+  // ─── HEADER ───────────────────────────────────────────────
+  // Logo
+  if (logoBase64) {
+    // Logo aspect ratio is ~3.8:1
+    const logoW = 45;
+    const logoH = logoW / 3.8;
+    doc.addImage(`data:image/png;base64,${logoBase64}`, "PNG", ml, y, logoW, logoH);
+  } else {
+    doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(59, 130, 246);
-    doc.text("PROPLY", margin, 25);
+    doc.setTextColor(...blue);
+    doc.text("proply", ml, y + 10);
   }
 
-  // Title
-  doc.setFontSize(24);
+  // "INVOICE" title — right aligned
+  doc.setFontSize(28);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0); // Back to black
-  doc.text("INVOICE", pageWidth - margin, 30, { align: "right" });
+  doc.setTextColor(...dark);
+  doc.text("INVOICE", mr, y + 10, { align: "right" });
 
-  // Company info (left side) - adjust position to account for logo
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0); // Ensure text is black
-  doc.text("Proply Listing Analyzer", margin, 40);
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("An Intelligence Layer for Real Estate.", margin, 48);
-  doc.text("support@proply.co.za", margin, 55);
-  doc.text("app.proply.co.za", margin, 62);
-
-  // Invoice details (right side)
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text("Invoice Number:", pageWidth - 80, 50);
-  doc.setFont("helvetica", "normal");
-  doc.text(invoiceData.invoiceNumber, pageWidth - margin, 50, {
-    align: "right",
-  });
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Issue Date:", pageWidth - 80, 60);
-  doc.setFont("helvetica", "normal");
-  doc.text(
-    new Date(invoiceData.issueDate).toLocaleDateString("en-ZA"),
-    pageWidth - margin,
-    60,
-    { align: "right" },
-  );
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Billing Period:", pageWidth - 80, 70);
-  doc.setFont("helvetica", "normal");
-  const [year, month] = invoiceData.billingPeriod.split("-");
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const monthName = `${monthNames[parseInt(month) - 1]} ${year}`;
-  doc.text(monthName, pageWidth - margin, 70, { align: "right" });
-
-  // Horizontal line
+  // ─── DIVIDER ──────────────────────────────────────────────
+  y = 40;
+  doc.setDrawColor(220, 220, 220);
   doc.setLineWidth(0.5);
-  doc.line(margin, 85, pageWidth - margin, 85);
+  doc.line(ml, y, mr, y);
 
-  // Bill to section
-  let yPos = 100;
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text("BILL TO:", margin, yPos);
+  // ─── TWO-COLUMN INFO ─────────────────────────────────────
+  y = 50;
 
-  yPos += 10;
-  doc.setFontSize(12);
+  // Left column: From
+  doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  const agencyName =
-    invoiceData.agency.companyName ||
-    `${invoiceData.agency.franchiseName} - ${invoiceData.agency.branchName}`;
-  doc.text(agencyName, margin, yPos);
+  doc.setTextColor(...light);
+  doc.text("FROM", ml, y);
+
+  y += 6;
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...dark);
+  doc.text("Proply (Pty) Ltd", ml, y);
+
+  y += 6;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...mid);
+  doc.text("An Intelligence Layer for Real Estate", ml, y);
+  y += 5;
+  doc.text("wesley@proply.co.za", ml, y);
+  y += 5;
+  doc.text("app.proply.co.za", ml, y);
+
+  // Right column: Invoice details
+  const rightCol = mr - 70;
+  let ry = 50;
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...light);
+  doc.text("INVOICE DETAILS", rightCol, ry);
+
+  ry += 8;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...mid);
+  doc.text("Invoice No.", rightCol, ry);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...dark);
+  doc.text(invoiceData.invoiceNumber, mr, ry, { align: "right" });
+
+  ry += 7;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...mid);
+  doc.text("Issue Date", rightCol, ry);
+  doc.setTextColor(...dark);
+  doc.text(formatDate(invoiceData.issueDate), mr, ry, { align: "right" });
+
+  ry += 7;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...mid);
+  doc.text("Billing Period", rightCol, ry);
+  doc.setTextColor(...dark);
+  doc.text(formatPeriod(invoiceData.billingPeriod), mr, ry, { align: "right" });
+
+  ry += 7;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...mid);
+  doc.text("Status", rightCol, ry);
+  if (invoiceData.status === "paid") {
+    doc.setTextColor(34, 197, 94);
+  } else if (invoiceData.status === "pending") {
+    doc.setTextColor(234, 179, 8);
+  } else {
+    doc.setTextColor(239, 68, 68);
+  }
+  doc.setFont("helvetica", "bold");
+  doc.text(invoiceData.status.toUpperCase(), mr, ry, { align: "right" });
+
+  // ─── BILL TO ──────────────────────────────────────────────
+  y = 95;
+  doc.setDrawColor(220, 220, 220);
+  doc.line(ml, y, mr, y);
+
+  y += 10;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...light);
+  doc.text("BILL TO", ml, y);
+
+  y += 7;
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...dark);
+  const agencyName = invoiceData.agency.companyName || invoiceData.agency.franchiseName;
+  doc.text(agencyName, ml, y);
+
+  if (invoiceData.agency.branchName && invoiceData.agency.branchName !== agencyName) {
+    y += 6;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...mid);
+    doc.text(invoiceData.agency.branchName, ml, y);
+  }
 
   if (invoiceData.agency.businessAddress) {
-    yPos += 8;
-    doc.setFont("helvetica", "normal");
-    const addressLines = invoiceData.agency.businessAddress.split("\n");
-    addressLines.forEach((line) => {
-      doc.text(line.trim(), margin, yPos);
-      yPos += 6;
-    });
+    const lines = invoiceData.agency.businessAddress.split("\n");
+    for (const line of lines) {
+      y += 5;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...mid);
+      doc.text(line.trim(), ml, y);
+    }
   }
 
   if (invoiceData.agency.vatNumber) {
-    yPos += 5;
-    doc.text(`VAT Number: ${invoiceData.agency.vatNumber}`, margin, yPos);
-    yPos += 6;
+    y += 5;
+    doc.setFontSize(9);
+    doc.setTextColor(...mid);
+    doc.text(`VAT: ${invoiceData.agency.vatNumber}`, ml, y);
   }
 
   if (invoiceData.agency.registrationNumber) {
-    doc.text(
-      `Registration: ${invoiceData.agency.registrationNumber}`,
-      margin,
-      yPos,
-    );
-    yPos += 6;
+    y += 5;
+    doc.text(`Reg: ${invoiceData.agency.registrationNumber}`, ml, y);
   }
 
-  // Calculate pricing (based on tiered structure)
-  const calculatePricing = (reportCount: number) => {
-    let totalCost = 0;
-    let remaining = reportCount;
-    const tiers = [
-      { min: 1, max: 50, price: 200 },
-      { min: 51, max: 100, price: 180 },
-      { min: 101, max: 150, price: 160 },
-      { min: 151, max: 200, price: 140 },
-      { min: 201, max: Infinity, price: 140 },
-    ];
+  // ─── LINE ITEMS TABLE ─────────────────────────────────────
+  y += 15;
 
-    const breakdown = [];
+  // Calculate tiered pricing breakdown
+  const tiers = [
+    { min: 1, max: 50, price: 200 },
+    { min: 51, max: 100, price: 180 },
+    { min: 101, max: 150, price: 160 },
+    { min: 151, max: 200, price: 140 },
+    { min: 201, max: Infinity, price: 140 },
+  ];
 
-    for (const tier of tiers) {
-      if (remaining <= 0) break;
+  const breakdown: Array<{ description: string; qty: number; unitPrice: number; total: number }> = [];
+  let remaining = invoiceData.reportCount;
 
-      const countInTier = Math.min(remaining, tier.max - tier.min + 1);
-      if (countInTier > 0) {
-        const tierCost = countInTier * tier.price;
-        totalCost += tierCost;
+  for (const tier of tiers) {
+    if (remaining <= 0) break;
+    const qty = Math.min(remaining, tier.max - tier.min + 1);
+    const label = tier.max === Infinity ? `Property reports (${tier.min}+)` : `Property reports (${tier.min}–${tier.max})`;
+    breakdown.push({ description: label, qty, unitPrice: tier.price, total: qty * tier.price });
+    remaining -= qty;
+  }
 
-        if (tier.max === Infinity) {
-          breakdown.push({
-            description: `Reports ${tier.min}+`,
-            quantity: countInTier,
-            unitPrice: tier.price,
-            total: tierCost,
-          });
-        } else {
-          breakdown.push({
-            description: `Reports ${tier.min}-${tier.max}`,
-            quantity: countInTier,
-            unitPrice: tier.price,
-            total: tierCost,
-          });
-        }
+  const subtotal = breakdown.reduce((s, r) => s + r.total, 0);
 
-        remaining -= countInTier;
-      }
-    }
+  // Table header
+  const colDesc = ml;
+  const colQty = ml + contentWidth * 0.55;
+  const colUnit = ml + contentWidth * 0.72;
+  const colTotal = mr;
+  const rowH = 10;
 
-    return { breakdown, totalCost };
-  };
+  doc.setFillColor(...tableHeader);
+  doc.roundedRect(ml, y, contentWidth, rowH, 2, 2, "F");
 
-  const pricing = calculatePricing(invoiceData.reportCount);
-
-  // Invoice table (manual table since autoTable is not working)
-  yPos += 15;
-
-  // Table header - using proper Proply blue
-  doc.setFillColor(27, 162, 255); // Proply blue (#1ba2ff)
-  doc.rect(margin, yPos, pageWidth - 2 * margin, 10, "F");
-
-  doc.setTextColor(255, 255, 255); // White text
-  doc.setFontSize(11);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text("Description", margin + 5, yPos + 7);
-  doc.text("Quantity", margin + 90, yPos + 7);
-  doc.text("Unit Price", margin + 120, yPos + 7);
-  doc.text("Total", pageWidth - margin - 5, yPos + 7, { align: "right" });
+  doc.setTextColor(255, 255, 255);
+  doc.text("Description", colDesc + 5, y + 7);
+  doc.text("Qty", colQty, y + 7, { align: "center" });
+  doc.text("Unit Price", colUnit, y + 7, { align: "right" });
+  doc.text("Total", colTotal - 5, y + 7, { align: "right" });
 
-  yPos += 10;
-  doc.setTextColor(0, 0, 0); // Back to black
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  y += rowH;
 
   // Table rows
-  let rowColor = true;
-  pricing.breakdown.forEach((item, index) => {
-    if (rowColor) {
-      doc.setFillColor(248, 249, 250); // Light gray
-      doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "F");
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...dark);
+
+  breakdown.forEach((item, i) => {
+    if (i % 2 === 0) {
+      doc.setFillColor(...tableStripe);
+      doc.rect(ml, y, contentWidth, rowH, "F");
     }
-
-    doc.text(item.description, margin + 5, yPos + 6);
-    doc.text(item.quantity.toString(), margin + 90, yPos + 6, {
-      align: "center",
-    });
-    doc.text(`R${item.unitPrice.toFixed(2)}`, margin + 120, yPos + 6, {
-      align: "right",
-    });
-    doc.text(`R${item.total.toFixed(2)}`, pageWidth - margin - 5, yPos + 6, {
-      align: "right",
-    });
-
-    yPos += 8;
-    rowColor = !rowColor;
+    doc.text(item.description, colDesc + 5, y + 7);
+    doc.text(String(item.qty), colQty, y + 7, { align: "center" });
+    doc.text(formatCurrency(item.unitPrice), colUnit, y + 7, { align: "right" });
+    doc.text(formatCurrency(item.total), colTotal - 5, y + 7, { align: "right" });
+    y += rowH;
   });
 
-  const finalY = yPos;
+  // Bottom border on table
+  doc.setDrawColor(220, 220, 220);
+  doc.line(ml, y, mr, y);
 
-  // Totals section
-  const totalsX = pageWidth - 80;
-  let totalsY = finalY + 20;
+  // ─── TOTALS ───────────────────────────────────────────────
+  y += 12;
+  const totalsLabel = mr - 55;
 
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text("Subtotal:", totalsX, totalsY);
-  doc.text(`R${pricing.totalCost.toFixed(2)}`, pageWidth - margin, totalsY, {
-    align: "right",
-  });
-
-  totalsY += 10;
-  doc.text("VAT (0%):", totalsX, totalsY);
-  doc.text("R0.00", pageWidth - margin, totalsY, { align: "right" });
-
-  totalsY += 15;
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text("TOTAL:", totalsX, totalsY);
-  doc.text(`R${pricing.totalCost.toFixed(2)}`, pageWidth - margin, totalsY, {
-    align: "right",
-  });
-
-  // Payment status
-  totalsY += 25;
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-
-  if (invoiceData.status === "paid" && invoiceData.paidAt) {
-    doc.setTextColor(34, 197, 94); // Green
-    doc.text("PAID", totalsX, totalsY);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 0); // Back to black
-    doc.text(
-      `Payment Date: ${new Date(invoiceData.paidAt).toLocaleDateString("en-ZA")}`,
-      margin,
-      totalsY + 10,
-    );
-  } else if (invoiceData.status === "pending") {
-    doc.setTextColor(234, 179, 8); // Yellow
-    doc.text("PENDING", totalsX, totalsY);
-    doc.setTextColor(0, 0, 0); // Back to black
-  } else {
-    doc.setTextColor(239, 68, 68); // Red
-    doc.text("OVERDUE", totalsX, totalsY);
-    doc.setTextColor(0, 0, 0); // Back to black
-  }
-
-  // Footer
-  const footerY = doc.internal.pageSize.height - 30;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(128, 128, 128); // Gray
-  doc.text("Thank you for using Proply Tech!", pageWidth / 2, footerY, {
-    align: "center",
-  });
-  doc.text(
-    "For support, contact us at support@proply.co.za",
-    pageWidth / 2,
-    footerY + 8,
-    { align: "center" },
-  );
+  doc.setTextColor(...mid);
+  doc.text("Subtotal", totalsLabel, y);
+  doc.setTextColor(...dark);
+  doc.text(formatCurrency(subtotal), mr - 5, y, { align: "right" });
 
-  // Convert to buffer
-  const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
-  return pdfBuffer;
+  y += 8;
+  doc.setTextColor(...mid);
+  doc.text("VAT (0%)", totalsLabel, y);
+  doc.setTextColor(...dark);
+  doc.text(formatCurrency(0), mr - 5, y, { align: "right" });
+
+  y += 4;
+  doc.setDrawColor(220, 220, 220);
+  doc.line(totalsLabel - 5, y, mr, y);
+
+  y += 10;
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...dark);
+  doc.text("Total Due", totalsLabel, y);
+  doc.text(formatCurrency(subtotal), mr - 5, y, { align: "right" });
+
+  // ─── PAYMENT STATUS BADGE ────────────────────────────────
+  if (invoiceData.status === "paid" && invoiceData.paidAt) {
+    y += 15;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(34, 197, 94);
+    doc.text(`Paid on ${formatDate(invoiceData.paidAt)}`, mr - 5, y, { align: "right" });
+  }
+
+  // ─── FOOTER ───────────────────────────────────────────────
+  const footerY = pageHeight - 25;
+  doc.setDrawColor(220, 220, 220);
+  doc.line(ml, footerY - 8, mr, footerY - 8);
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...light);
+  doc.text("Thank you for using Proply.", pageWidth / 2, footerY, { align: "center" });
+  doc.text("Questions? Contact us at wesley@proply.co.za", pageWidth / 2, footerY + 5, { align: "center" });
+
+  return Buffer.from(doc.output("arraybuffer"));
 }

@@ -1303,7 +1303,7 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                                         });
                                         if (!res.ok) throw new Error('Failed to delete');
                                         toast({ title: "Invoice deleted" });
-                                        queryClient.invalidateQueries({ queryKey: ['/api/agencies', agency.id, 'report-stats'] });
+                                        queryClient.invalidateQueries({ queryKey: ['/api/report-stats', agency.id] });
                                       } catch {
                                         toast({ title: "Failed to delete invoice", variant: "destructive" });
                                       }
