@@ -3289,15 +3289,18 @@ export function registerRoutes(app: Express): Server {
 
       // Get invoice details with agency information
       const invoiceQuery = await db.execute(
-        sql`SELECT 
+        sql`SELECT
           ai.id,
-          ai.invoice_number,
-          ai.issue_date,
-          ai.total_amount,
+          ai.invoice_id,
+          ai.month,
+          ai.year,
+          ai.report_count,
+          ai.amount,
+          ai.invoice_date,
           ai.status,
           ai.paid_at,
-          abc.billing_period,
-          abc.report_count,
+          ai.agency_id,
+          ai.agency_name,
           ab.franchise_name,
           ab.branch_name,
           ab.company_name,
@@ -3305,10 +3308,9 @@ export function registerRoutes(app: Express): Server {
           ab.registration_number,
           ab.business_address,
           ab.id as agency_branch_id
-        FROM agency_invoices ai 
-        INNER JOIN agency_billing_cycles abc ON ai.billing_cycle_id = abc.id
-        INNER JOIN agency_branches ab ON abc.agency_branch_id = ab.id
-        WHERE ai.invoice_number = ${invoiceNumber}`
+        FROM agency_invoices ai
+        LEFT JOIN agency_branches ab ON ab.slug = ai.agency_id
+        WHERE ai.invoice_id = ${invoiceNumber}`
       );
 
       if (invoiceQuery.rows.length === 0) {
@@ -3322,31 +3324,24 @@ export function registerRoutes(app: Express): Server {
         if (user.role !== 'branch_admin' && user.role !== 'franchise_admin') {
           return res.status(403).json({ error: 'Access denied' });
         }
-        
-        // Verify user belongs to this agency
         if (!user.branchId || user.branchId !== invoiceData.agency_branch_id) {
           return res.status(403).json({ error: 'Access denied - can only download your own agency invoices' });
         }
       }
 
-      // Only allow downloads for paid invoices (not upcoming/pending)
-      if (invoiceData.status === 'pending') {
-        return res.status(400).json({ error: 'Cannot download invoice for upcoming billing period' });
-      }
-
       // Prepare invoice data for PDF generation
       const pdfData = {
-        invoiceNumber: String(invoiceData.invoice_number),
-        issueDate: String(invoiceData.issue_date),
-        billingPeriod: String(invoiceData.billing_period),
+        invoiceNumber: String(invoiceData.invoice_id),
+        issueDate: invoiceData.invoice_date ? String(invoiceData.invoice_date) : new Date().toISOString().split('T')[0],
+        billingPeriod: String(invoiceData.month),
         reportCount: Number(invoiceData.report_count),
-        totalAmount: parseFloat(String(invoiceData.total_amount)),
+        totalAmount: parseFloat(String(invoiceData.amount)),
         status: String(invoiceData.status),
         paidAt: invoiceData.paid_at ? String(invoiceData.paid_at) : undefined,
         agency: {
           companyName: invoiceData.company_name ? String(invoiceData.company_name) : undefined,
-          franchiseName: String(invoiceData.franchise_name),
-          branchName: String(invoiceData.branch_name),
+          franchiseName: String(invoiceData.franchise_name || invoiceData.agency_name),
+          branchName: String(invoiceData.branch_name || ''),
           vatNumber: invoiceData.vat_number ? String(invoiceData.vat_number) : undefined,
           registrationNumber: invoiceData.registration_number ? String(invoiceData.registration_number) : undefined,
           businessAddress: invoiceData.business_address ? String(invoiceData.business_address) : undefined
