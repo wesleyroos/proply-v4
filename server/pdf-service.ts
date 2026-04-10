@@ -20,18 +20,32 @@ interface InvoiceData {
   };
 }
 
-// Load logo once at startup
+// Load logo once at startup — try base64 text file first, then PNG
 let logoBase64: string | null = null;
 try {
-  const candidates = [
-    path.join(process.cwd(), "client/public/proply-logo-1.png"),
-    path.join(process.cwd(), "dist/public/proply-logo-1.png"),
-    path.join(__dirname, "../client/public/proply-logo-1.png"),
+  // First try the pre-encoded base64 file (works regardless of deployment)
+  const b64Candidates = [
+    path.join(__dirname, "assets/proply-logo-base64.txt"),
+    path.join(process.cwd(), "server/assets/proply-logo-base64.txt"),
   ];
-  for (const p of candidates) {
+  for (const p of b64Candidates) {
     if (fs.existsSync(p)) {
-      logoBase64 = fs.readFileSync(p).toString("base64");
+      logoBase64 = fs.readFileSync(p, "utf-8").trim();
       break;
+    }
+  }
+  // Fallback to reading the PNG directly
+  if (!logoBase64) {
+    const pngCandidates = [
+      path.join(process.cwd(), "client/public/proply-logo-1.png"),
+      path.join(process.cwd(), "dist/public/proply-logo-1.png"),
+      path.join(__dirname, "../client/public/proply-logo-1.png"),
+    ];
+    for (const p of pngCandidates) {
+      if (fs.existsSync(p)) {
+        logoBase64 = fs.readFileSync(p).toString("base64");
+        break;
+      }
     }
   }
 } catch {
