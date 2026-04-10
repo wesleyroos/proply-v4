@@ -33,13 +33,13 @@ router.get('/config', async (req, res) => {
 router.post('/create-tokenize-url', async (req, res) => {
   try {
     const user = req.user;
-    if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
-      return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+    if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin' && user.role !== 'system_admin' && user.role !== 'admin')) {
+      return res.status(403).json({ error: 'Access denied. Admin required.' });
     }
 
-    // Get the user's agency branch
-    let branchId = user.branchId;
-    
+    // Get the user's agency branch — system admins can pass branchId in body
+    let branchId = req.body.branchId || user.branchId;
+
     if (user.role === 'franchise_admin' && user.franchiseId) {
       const [firstBranch] = await db
         .select()
@@ -59,13 +59,7 @@ router.post('/create-tokenize-url', async (req, res) => {
     // Initialize PayFast service (test mode for setup)
     const payfast = new PayFastService(true);
     
-    // Use production domain or Replit domain for development
-    const isProduction = process.env.REPLIT_DOMAINS && process.env.REPLIT_DOMAINS.includes('app.proply.co.za');
-    const baseUrl = isProduction
-      ? 'https://app.proply.co.za'
-      : (process.env.REPLIT_DOMAINS 
-        ? `https://${process.env.REPLIT_DOMAINS}` 
-        : 'http://localhost:5000');
+    const baseUrl = process.env.APP_URL || 'https://app.proply.co.za';
     const returnUrl = `${baseUrl}/settings?token=success`;
     const cancelUrl = `${baseUrl}/settings?token=cancelled`;
     

@@ -96,6 +96,7 @@ const toggleBilling = async (agencyId: string, enabled: boolean) => {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify({ billingEnabled: enabled }),
   });
   if (!response.ok) {
