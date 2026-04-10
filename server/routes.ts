@@ -4342,12 +4342,12 @@ export function registerRoutes(app: Express): Server {
   app.post('/api/payfast/create-tokenize-url', async (req, res) => {
     try {
       const user = req.user;
-      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
-        return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+      if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin' && user.role !== 'system_admin' && user.role !== 'admin')) {
+        return res.status(403).json({ error: 'Access denied. Admin required.' });
       }
 
-      // Get the user's agency branch
-      let branchId = user.branchId;
+      // Get the agency branch — system admins can pass branchId in body
+      let branchId = req.body.branchId || user.branchId;
       
       if (user.role === 'franchise_admin' && user.franchiseId) {
         const [firstBranch] = await db

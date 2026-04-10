@@ -491,7 +491,11 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
         title: "Billing updated",
         description: `Billing has been ${variables.enabled ? 'enabled' : 'disabled'} for this agency.`,
       });
+      // Invalidate all agency-related queries to refresh the modal immediately
       queryClient.invalidateQueries({ queryKey: ['/api/agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/control-panel/agencies'] });
+      // Force close and reopen by triggering parent refetch
+      onClose();
     },
     onError: (error) => {
       toast({
