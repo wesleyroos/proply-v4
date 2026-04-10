@@ -1304,9 +1304,34 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
                   <div className="text-center py-12">
                     <CreditCard className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                     <p className="text-lg font-medium text-muted-foreground">No Payment Methods</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Payment methods can be added through the Settings page
+                    <p className="text-sm text-muted-foreground mt-2 mb-4">
+                      Add a card to enable automated billing
                     </p>
+                    {agency.mainBranchId && (
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/payfast/create-tokenize-url', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              credentials: 'include',
+                              body: JSON.stringify({ branchId: parseInt(agency.mainBranchId!) }),
+                            });
+                            const data = await res.json();
+                            if (data.tokenizeUrl) {
+                              window.open(data.tokenizeUrl, '_blank');
+                            } else {
+                              alert(data.error || 'Failed to create tokenization URL');
+                            }
+                          } catch (err) {
+                            alert('Failed to create tokenization URL');
+                          }
+                        }}
+                      >
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Add Payment Method
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>
