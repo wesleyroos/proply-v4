@@ -477,11 +477,11 @@ export function AgencyDetailModal({ agency, isOpen, onClose, onStatsClick }: Age
   // Billing toggle mutation
   const billingToggleMutation = useMutation({
     mutationFn: async ({ agencyId, enabled }: { agencyId: string; enabled: boolean }) => {
-      const response = await fetch('/api/toggle-billing', {
-        method: 'POST',
+      const response = await fetch(`/api/admin/agencies/${agencyId}/billing`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ agencyId, enabled })
+        body: JSON.stringify({ billingEnabled: enabled })
       });
       if (!response.ok) throw new Error('Failed to toggle billing');
       return response.json();

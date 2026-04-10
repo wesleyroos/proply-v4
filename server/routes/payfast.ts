@@ -10,8 +10,8 @@ const router = Router();
 router.get('/config', async (req, res) => {
   try {
     const user = req.user;
-    if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
-      return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+    if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin' && user.role !== 'system_admin' && user.role !== 'admin')) {
+      return res.status(403).json({ error: 'Access denied. Admin required.' });
     }
 
     // For now, default to test mode - in production this would be a system setting
@@ -125,8 +125,8 @@ router.post('/webhook', async (req, res) => {
 router.post('/save-token', async (req, res) => {
   try {
     const user = req.user;
-    if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin')) {
-      return res.status(403).json({ error: 'Access denied. Branch or franchise admin required.' });
+    if (!user || (user.role !== 'branch_admin' && user.role !== 'franchise_admin' && user.role !== 'system_admin' && user.role !== 'admin')) {
+      return res.status(403).json({ error: 'Access denied. Admin required.' });
     }
 
     const { token, cardType, lastFour, expiryMonth, expiryYear } = req.body;
@@ -135,16 +135,16 @@ router.post('/save-token', async (req, res) => {
       return res.status(400).json({ error: 'Missing required token data' });
     }
 
-    // Get the user's agency branch
-    let branchId = user.branchId;
-    
+    // Get the agency branch — system admins can pass branchId in body
+    let branchId = req.body.branchId || user.branchId;
+
     if (user.role === 'franchise_admin' && user.franchiseId) {
       const [firstBranch] = await db
         .select()
         .from(agencyBranches)
         .where(eq(agencyBranches.id, user.franchiseId))
         .limit(1);
-      
+
       if (firstBranch) {
         branchId = firstBranch.id;
       }
