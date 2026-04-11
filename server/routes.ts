@@ -141,6 +141,7 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/pdf-generate/") || // PDF generation endpoint (internal)
       req.path.startsWith("/api/pdf-generate/") || // PDF generation endpoint (public download)
       req.path === "/payfast/notify" || // PayFast webhook endpoint
+      req.path.startsWith("/partner/") || // Partner API — uses x-api-key auth
       req.path.startsWith("/api/property-analyzer/shared/") || // Public shared analysis
       req.path.startsWith("/api/properties/shared/") || // Public shared rent compare analysis
 
