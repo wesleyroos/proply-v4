@@ -94,7 +94,8 @@ export const agencyBranches = pgTable("agency_branches", {
   status: text("status").default("active").notNull(), // active, inactive
   autoSyncEnabled: boolean("auto_sync_enabled").default(true).notNull(),
   syncFrequency: text("sync_frequency").default("5 minutes").notNull(),
-  apiKey: text("api_key"), // Encrypted API key for direct integrations (e.g. Prospr)
+  apiKey: text("api_key"), // Encrypted API key for fetching listings from provider (e.g. Prospr's API key)
+  partnerApiKey: text("partner_api_key"), // Encrypted API key for partners to call Proply's partner API
   apiBaseUrl: text("api_base_url"), // Optional base URL override for direct integrations
   logoUrl: text("logo_url"), // Path to uploaded agency logo
   primaryColor: text("primary_color"), // Brand colour used in reports (e.g. "#1ba2ff")

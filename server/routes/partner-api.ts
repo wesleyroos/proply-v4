@@ -29,16 +29,16 @@ async function authenticatePartner(
   }
 
   try {
-    // Find all agency branches that have an API key set
+    // Find all agency branches that have a partner API key set
     const branches = await db
       .select()
       .from(agencyBranches)
-      .where(sql`${agencyBranches.apiKey} IS NOT NULL`);
+      .where(sql`${agencyBranches.partnerApiKey} IS NOT NULL`);
 
     let matchedBranch = null;
     for (const branch of branches) {
       try {
-        const decryptedKey = decrypt(branch.apiKey!);
+        const decryptedKey = decrypt(branch.partnerApiKey!);
         if (decryptedKey === apiKey) {
           matchedBranch = branch;
           break;

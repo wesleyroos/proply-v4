@@ -58,7 +58,7 @@ async function main() {
   // Store the encrypted key
   await db
     .update(agencyBranches)
-    .set({ apiKey: encryptedKey })
+    .set({ partnerApiKey: encryptedKey })
     .where(eq(agencyBranches.id, branch.id));
 
   console.log("=".repeat(60));
