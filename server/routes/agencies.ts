@@ -205,11 +205,25 @@ router.get("/agencies", async (req, res) => {
 // POST /api/agencies/:agencyId/sync - Trigger sync for specific agency
 router.post("/agencies/:agencyId/sync", async (req, res) => {
   try {
-    if (!req.user?.isAdmin) {
-      return res.status(403).json({ error: "Admin access required" });
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: "Authentication required" });
     }
 
     const { agencyId } = req.params;
+
+    // Allow system admins, or franchise/branch admins for their own agency
+    if (!user.isAdmin && user.role !== 'system_admin' && user.role !== 'admin') {
+      if (user.role === 'franchise_admin' || user.role === 'branch_admin') {
+        const userAgencyId = user.franchiseId || user.branchId;
+        const numId = parseInt(agencyId, 10);
+        if (!userAgencyId || (userAgencyId !== numId && agencyId !== String(userAgencyId))) {
+          return res.status(403).json({ error: "Access denied — you can only sync your own agency" });
+        }
+      } else {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+    }
     const { forceFullSync = false } = req.body;
 
     // Look up agency by slug or numeric ID
