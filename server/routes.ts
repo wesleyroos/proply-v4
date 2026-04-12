@@ -3243,13 +3243,47 @@ export function registerRoutes(app: Express): Server {
         };
       });
 
+      // Get recent report activity with user details
+      const recentReports = await db.execute(
+        sql`SELECT
+          rg.property_id,
+          rg.report_type,
+          rg.timestamp,
+          rg.user_id,
+          u.email,
+          u.first_name,
+          u.last_name,
+          pl.address
+        FROM report_generations rg
+        LEFT JOIN users u ON rg.user_id = u.id
+        LEFT JOIN propdata_listings pl ON pl.propdata_id = rg.property_id
+        WHERE rg.agency_id = ${agencyBranch.slug}
+           OR rg.agency_id = ${agencyIdentifier}
+           OR rg.agency_name = ${agencyName}
+        ORDER BY rg.timestamp DESC
+        LIMIT 50`
+      );
+
+      const recentActivity = recentReports.rows.map((r: any) => ({
+        propertyId: r.property_id,
+        address: r.address || r.property_id,
+        reportType: r.report_type,
+        timestamp: r.timestamp,
+        userId: r.user_id,
+        userName: r.first_name || r.last_name
+          ? `${r.first_name || ''} ${r.last_name || ''}`.trim()
+          : r.email || 'API',
+        userEmail: r.email || null,
+      }));
+
       res.json({
         currentMonth: currentMonth[0]?.reports || 0,
         previousMonth: previousMonth[0]?.reports || 0,
         totalReports: totalReports[0]?.reports || 0,
-        monthlyStats: monthlyStats.reverse(), // Reverse to show oldest to newest for charts
+        monthlyStats: monthlyStats.reverse(),
         reportTypes,
-        invoices
+        invoices,
+        recentActivity,
       });
     } catch (error) {
       console.error('Error fetching agency report stats:', error);
