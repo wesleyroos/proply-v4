@@ -11,6 +11,7 @@ import { eq, and, sql, desc } from "drizzle-orm";
 import { decrypt } from "../utils/encryption";
 import { trackReportGeneration } from "../utils/report-tracker";
 import { trackAgencyReportUsage } from "../utils/billing-tracker";
+import { upsertComparableSales } from "../services/comparableSalesStore";
 
 const router = Router();
 
@@ -158,6 +159,7 @@ router.post("/generate-report", authenticatePartner, async (req, res) => {
 
       if (!coordinates) {
         // Geocode the address
+        console.log(`[Partner API] No coordinates on listing — geocoding "${listing.address}"`);
         const { default: fetch } = await import("node-fetch");
         const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(listing.address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
         const geoRes = await fetch(geocodeUrl);
@@ -165,7 +167,18 @@ router.post("/generate-report", authenticatePartner, async (req, res) => {
         if (geoData.results?.[0]?.geometry?.location) {
           const loc = geoData.results[0].geometry.location;
           coordinates = { latitude: loc.lat, longitude: loc.lng };
+          console.log(`[Partner API] Geocoded to ${loc.lat}, ${loc.lng}`);
+
+          // Cache coordinates back to listing for future requests
+          db.update(propdataListings)
+            .set({ location: { ...location, latitude: loc.lat, longitude: loc.lng } })
+            .where(eq(propdataListings.propdataId, propertyId))
+            .catch(() => {});
+        } else {
+          console.warn(`[Partner API] Geocoding failed for "${listing.address}" — status: ${geoData.status}`);
         }
+      } else {
+        console.log(`[Partner API] Using listing coordinates: ${location.latitude}, ${location.longitude}`);
       }
 
       if (coordinates) {
@@ -181,10 +194,13 @@ router.post("/generate-report", authenticatePartner, async (req, res) => {
           ? KF_PROPERTY_TYPE_MAP[listing.propertyType.toLowerCase()] ?? undefined
           : undefined;
 
+        console.log(`[Partner API] Fetching KF comparables (type=${kfType || "All"})...`);
         const kfProperties = await getComparableSalesByCoordinates(
           coordinates,
           kfType
         );
+        console.log(`[Partner API] KF returned ${kfProperties.length} comparable sales`);
+
         if (kfProperties.length > 0) {
           const titleDeedProperties = kfProperties.map((p: any) => ({
             address: p.address,
@@ -194,6 +210,10 @@ router.post("/generate-report", authenticatePartner, async (req, res) => {
             pricePerSqM: p.pricePerSqM,
             saleDate: p.saleDate,
             bedrooms: p.bedrooms,
+            latitude: p.latitude,
+            longitude: p.longitude,
+            distanceKM: p.distanceKM,
+            titleDeedNo: p.titleDeedNo,
             source: "knowledgeFactory",
           }));
           const validPrices = titleDeedProperties.filter(
@@ -214,10 +234,17 @@ router.post("/generate-report", authenticatePartner, async (req, res) => {
             averageSalePrice,
             dataSource: "knowledgeFactory",
           };
+
+          // Upsert into comparable_sales table for market data pages
+          upsertComparableSales(titleDeedProperties, propertyId).catch(err =>
+            console.warn("[Partner API] comparable_sales upsert failed:", err)
+          );
         }
+      } else {
+        console.warn(`[Partner API] No coordinates resolved — skipping comparable sales`);
       }
     } catch (compError) {
-      console.warn("[Partner API] Comparable sales fetch failed (non-fatal):", compError);
+      console.error("[Partner API] Comparable sales fetch failed (non-fatal):", compError);
     }
 
     // ── 3b. Generate valuation via OpenAI (reuse the existing endpoint internally) ──
