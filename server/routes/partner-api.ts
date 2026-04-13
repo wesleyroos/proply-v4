@@ -594,7 +594,7 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
         propertyType,
         parkingSpaces: parkingSpaces ? Number(parkingSpaces) : null,
         pricePerSquareMeter: pricePerSquareMeter?.toString(),
-        valuationData: valuationReport,
+        valuationData: { ...valuationReport, rentalPerformance },
         imagesAnalyzed: images.length,
         analysisModel: "gpt-5.1",
         annualPropertyAppreciationData,
