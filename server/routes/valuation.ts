@@ -822,10 +822,17 @@ Your finishesRating in the JSON output MUST be ${Math.round(qualityScores.overal
       temperature: 0.4, // Lower temperature for more consistent, reproducible valuations
     });
 
-    const reportContent = response.choices[0].message.content;
-    
+    const choice = response.choices[0];
+    console.log(`OpenAI response: finish_reason=${choice?.finish_reason}, has_content=${!!choice?.message?.content}, refusal=${choice?.message?.refusal || 'none'}, usage=${JSON.stringify(response.usage)}`);
+    const reportContent = choice?.message?.content;
+
     if (!reportContent) {
-      throw new Error("No response content from OpenAI");
+      const detail = choice?.message?.refusal
+        ? `Model refused: ${choice.message.refusal}`
+        : choice?.finish_reason === 'length'
+        ? 'Response truncated (max_completion_tokens too low)'
+        : `finish_reason=${choice?.finish_reason}, no content returned`;
+      throw new Error(`No response content from OpenAI — ${detail}`);
     }
 
     // Parse the JSON response

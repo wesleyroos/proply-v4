@@ -166,6 +166,22 @@ router.post("/generate-report", authenticatePartner, async (req, res) => {
       let coordinates =
         location?.latitude && location?.longitude ? location : null;
 
+      // South Africa: lat ≈ -22 to -35, lng ≈ 16 to 33.
+      // If lat is positive and in the lng range (16-33), coordinates are likely swapped.
+      if (coordinates) {
+        const lat = Number(coordinates.latitude);
+        const lng = Number(coordinates.longitude);
+        if (lat > 0 && lat >= 16 && lat <= 34 && lng > 0 && lng >= 22 && lng <= 35) {
+          console.warn(`[Partner API] Coordinates appear swapped (lat=${lat}, lng=${lng}) — correcting`);
+          coordinates = { latitude: -lng, longitude: lat };
+          // Fix the listing so future requests don't hit this
+          db.update(propdataListings)
+            .set({ location: { ...location, latitude: -lng, longitude: lat } })
+            .where(eq(propdataListings.propdataId, propertyId))
+            .catch(() => {});
+        }
+      }
+
       if (!coordinates) {
         // Geocode the address
         console.log(`[Partner API] No coordinates on listing — geocoding "${listing.address}"`);

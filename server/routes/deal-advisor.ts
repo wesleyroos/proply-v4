@@ -106,6 +106,24 @@ router.post("/comparable-sales", async (req, res) => {
         ? providedCoordinates
         : await geocodeAddress(address);
 
+      // South Africa: lat ≈ -22 to -35, lng ≈ 16 to 33.
+      // If lat is positive and in the lng range, coordinates are likely swapped.
+      if (coordinates) {
+        const lat = Number(coordinates.latitude);
+        const lng = Number(coordinates.longitude);
+        if (lat > 0 && lat >= 16 && lat <= 34 && lng > 0 && lng >= 22 && lng <= 35) {
+          console.warn(`[deal-advisor] Coordinates appear swapped (lat=${lat}, lng=${lng}) — correcting`);
+          coordinates = { latitude: -lng, longitude: lat };
+          // Fix the listing so future requests don't hit this
+          if (propdataId) {
+            db.update(propdataListings)
+              .set({ location: { latitude: -lng, longitude: lat } })
+              .where(eq(propdataListings.propdataId, propdataId))
+              .catch(() => {});
+          }
+        }
+      }
+
       // Cache geocoded coordinates back onto the listing so future requests skip this step
       if (coordinates && !providedCoordinates?.latitude && propdataId) {
         db.update(propdataListings)
