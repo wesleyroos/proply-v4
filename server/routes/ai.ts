@@ -71,7 +71,15 @@ Remember, the Rent Compare tool is designed to bridge the trust gap between owne
       max_completion_tokens: 500
     });
 
-    res.json({ advice: response.choices[0].message.content });
+    const choice = response.choices[0];
+    const advice = choice?.message?.content || "";
+    console.log(`[rental-advice] finish_reason=${choice?.finish_reason}, refusal=${choice?.message?.refusal || 'none'}, content_length=${advice.length}, query="${userQuery.substring(0, 80)}"`);
+
+    if (!advice && choice?.message?.refusal) {
+      console.warn(`[rental-advice] Model refused: ${choice.message.refusal}`);
+    }
+
+    res.json({ advice });
   } catch (error) {
     console.error("Error getting rental advice:", error);
     res.status(500).json({ error: "Failed to get rental advice" });
