@@ -8,7 +8,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loader2, Send, X, Sparkles, Maximize2, Minimize2 } from "lucide-react";
+import { Loader2, Send, X, Sparkles, Maximize2, Minimize2, MessageSquare } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 export interface AiAdvisorAction {
@@ -47,6 +47,7 @@ export function AiAdvisor({
   placeholder = "Ask anything...",
   accentColor = "#1BA3FF",
 }: AiAdvisorProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,6 +162,21 @@ export function AiAdvisor({
 
   const accentDark = accentColor === "#1BA3FF" ? "#0d8ae0" : accentColor;
 
+  if (!isOpen) {
+    return (
+      <Button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 rounded-full p-6 shadow-lg flex items-center justify-center z-50 hover:opacity-90"
+        style={{ background: accentColor }}
+        aria-label={`Open ${title}`}
+        size="icon"
+      >
+        <MessageSquare className="h-8 w-8 text-white" />
+        <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white" />
+      </Button>
+    );
+  }
+
   return (
     <>
       {isExpanded && <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setIsExpanded(false)} />}
@@ -182,7 +198,7 @@ export function AiAdvisor({
               <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="text-white hover:bg-white/20">
                 {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setIsExpanded(false)} className="text-white hover:bg-white/20 hidden">
+              <Button variant="ghost" size="sm" onClick={() => { setIsOpen(false); setIsExpanded(false); }} className="text-white hover:bg-white/20" aria-label="Close">
                 <X className="h-4 w-4" />
               </Button>
             </div>
