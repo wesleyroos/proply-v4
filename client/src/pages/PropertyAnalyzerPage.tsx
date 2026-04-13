@@ -34,6 +34,7 @@ import CashflowMetrics from "@/components/CashflowMetrics";
 import InvestmentMetrics from "@/components/InvestmentMetrics";
 import RentalPerformance from "@/components/RentalPerformance";
 import AssetGrowthMetrics from "@/components/AssetGrowthMetrics";
+import { AiAdvisor } from "@/components/AiAdvisor";
 import { useUser } from "@/hooks/use-user";
 import PropertyAnalyzerForm from "@/components/PropertyAnalyzerForm";
 import PropertyMap from "@/components/PropertyMap";
@@ -279,6 +280,8 @@ export default function PropertyAnalyzerPage() {
       setShowLimitModal(true);
     }
   }, [user, hasProAccess]);
+
+  const fmt = (n: number) => n != null ? `R${Math.round(n).toLocaleString('en-ZA')}` : 'N/A';
 
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null,
@@ -1285,6 +1288,44 @@ export default function PropertyAnalyzerPage() {
                 />
               </div>
             </div>
+
+            {/* AI Investment Advisor */}
+            <AiAdvisor
+              advisorType="analyzer"
+              title="Investment Advisor"
+              placeholder="Ask about this investment..."
+              context={{
+                address: formData?.address || '',
+                purchasePrice: analysisResult.analysis.purchasePrice,
+                bedrooms: formData?.bedrooms,
+                bathrooms: formData?.bathrooms,
+                floorSize: analysisResult.floorArea,
+                ratePerSqm: analysisResult.ratePerSquareMeter,
+                shortTermGrossYield: analysisResult.shortTermGrossYield,
+                longTermGrossYield: analysisResult.longTermGrossYield,
+                shortTermAnnualRevenue: analysisResult.analysis.shortTermAnnualRevenue,
+                longTermAnnualRevenue: analysisResult.analysis.longTermAnnualRevenue,
+                depositPercent: analysisResult.depositPercentage,
+                depositAmount: analysisResult.deposit,
+                interestRate: analysisResult.interestRate,
+                loanTerm: analysisResult.loanTerm,
+                monthlyBondRepayment: analysisResult.monthlyBondRepayment,
+                capRate: analysisResult.analysis.investmentMetrics?.year1?.capRate,
+                cashOnCash: analysisResult.analysis.investmentMetrics?.year1?.cashOnCashReturn,
+                noi: analysisResult.analysis.netOperatingIncome?.year1?.value,
+              }}
+              welcomeMessage={`I've analysed the investment at **${formData?.address || 'this property'}** (${fmt(analysisResult.analysis.purchasePrice)}).\n\n${
+                analysisResult.shortTermGrossYield != null && analysisResult.longTermGrossYield != null
+                  ? `**STR yield: ${analysisResult.shortTermGrossYield.toFixed(1)}%** | **LTR yield: ${analysisResult.longTermGrossYield.toFixed(1)}%** | Monthly bond: **${fmt(analysisResult.monthlyBondRepayment || 0)}**`
+                  : `Monthly bond repayment: **${fmt(analysisResult.monthlyBondRepayment || 0)}**`
+              }\n\nWhat would you like to explore?`}
+              actions={[
+                { label: "Is this a good deal?", prompt: `Based on the yields, cap rate, and financing structure, is this property at ${formData?.address} a good investment? Give me a clear verdict with the key numbers.` },
+                { label: "STR vs LTR — which is better?", prompt: `Compare short-term vs long-term rental strategy for this property. Show me the annual revenue difference, yield comparison, and which strategy wins after expenses.` },
+                { label: "What if I put down 30%?", prompt: `Recalculate the investment metrics if I increase my deposit to 30% instead of ${analysisResult.depositPercentage || 10}%. How does it change my monthly bond, cash-on-cash return, and breakeven?` },
+                { label: "Draft an investment summary", prompt: `Draft a concise investment summary for this property that I could share with a potential co-investor. Include the key metrics, strategy recommendation, and risk factors.` },
+              ]}
+            />
           </>
         )}
         <Dialog open={showPDFGenerator} onOpenChange={setShowPDFGenerator}>

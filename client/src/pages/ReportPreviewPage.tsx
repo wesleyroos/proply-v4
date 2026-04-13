@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Download, Bed, Bath, Car, Maximize2, MapPin, Calendar, Phone, Mail, User, Building2, TrendingUp, Home, ChevronDown, Pencil, Save, X } from "lucide-react";
+import { AiAdvisor } from "../components/AiAdvisor";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ReportData {
@@ -1386,6 +1387,54 @@ export default function ReportPreviewPage() {
           </p>
         </AccordionSection>
       </main>
+
+      {/* ── AI Property Advisor ── */}
+      {vd && (() => {
+        const vals: any[] = vd.valuations ?? [];
+        const midVal = vals.find((v: any) => /midline|mid/i.test(v.type))?.value;
+        const cs = data.valuationReport?.comparableSalesData;
+        const csRows = cs?.titleDeedProperties?.length ? cs.titleDeedProperties : cs?.properties ?? [];
+        const sqmRows = csRows.filter((r: any) => r.pricePerSqM > 0);
+
+        return (
+          <AiAdvisor
+            advisorType="report"
+            title="Property Advisor"
+            accentColor={accentColor}
+            placeholder="Ask about this property..."
+            context={{
+              address: p.address,
+              propertyType: p.propertyType,
+              bedrooms: p.bedrooms,
+              bathrooms: p.bathrooms,
+              floorSize: p.floorSize,
+              price: p.price,
+              valuations: vals,
+              ltrMinRental: ltr?.minRental,
+              ltrMaxRental: ltr?.maxRental,
+              ltrMinYield: ltr?.minYield,
+              ltrMaxYield: ltr?.maxYield,
+              strMedianAnnual: str?.percentile50?.annual,
+              appreciationRate: rd?.annualPropertyAppreciationData?.finalAppreciationRate,
+              comparableSalesCount: csRows.length,
+              avgSalePrice: cs?.averageSalePrice,
+              avgPricePerSqm: sqmRows.length > 0 ? Math.round(sqmRows.reduce((s: number, r: any) => s + r.pricePerSqM, 0) / sqmRows.length) : null,
+              summary: vd.summary,
+            }}
+            welcomeMessage={`I've reviewed the full valuation report for **${p.address}**.\n\n${
+              midVal ? `**Midline estimate: R${Number(midVal).toLocaleString('en-ZA')}**` : ''
+            }${ltr ? ` | **LTR: R${ltr.minRental?.toLocaleString('en-ZA')}–R${ltr.maxRental?.toLocaleString('en-ZA')}/mo**` : ''}${
+              csRows.length > 0 ? ` | **${csRows.length} comparable sales**` : ''
+            }\n\nWhat would you like to know?`}
+            actions={[
+              { label: "Is this property fairly priced?", prompt: `Based on the ${csRows.length} comparable sales and the valuation range, is this property fairly priced? Break down the evidence.` },
+              { label: "STR vs LTR — what's better?", prompt: `Compare the short-term rental potential (STR median annual: R${str?.percentile50?.annual?.toLocaleString('en-ZA') || 'N/A'}) vs long-term rental (R${ltr?.minRental?.toLocaleString('en-ZA') || 'N/A'}–R${ltr?.maxRental?.toLocaleString('en-ZA') || 'N/A'}/mo). Which strategy wins and by how much?` },
+              { label: "Draft a client summary", prompt: `Draft a professional 3-paragraph summary of this property that I can send to a client. Include the valuation range, rental potential, and key investment highlights.` },
+              { label: "What are the risks?", prompt: `What are the key investment risks for this property? Consider the market, location, pricing relative to comparables, and rental assumptions.` },
+            ]}
+          />
+        );
+      })()}
 
       {/* ── Footer ── */}
       <footer className="bg-slate-900 text-white mt-8">
