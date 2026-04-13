@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loader2, Send, MessageSquare, Info, X, Lock } from "lucide-react";
-import { getRentalAdvice, RentalAnalysisContext } from "@/services/openai";
+import { streamRentalAdvice, RentalAnalysisContext } from "@/services/openai";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import ReactMarkdown from "react-markdown";
 
 interface RentalAdvisorProps {
   analysisData: RentalAnalysisContext;
@@ -34,27 +35,24 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Add welcome message when chat is first opened
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([{
         type: 'assistant',
-        content: `Hello! I'm your Airbnb Manager Advisor. I can help you communicate effectively with property owners about the rental comparison data and address their concerns. My goal is to help you build trust and retain your owners. How can I assist you today?`
+        content: `Hello! I'm your Airbnb Manager Advisor. I can help you communicate effectively with property owners about the rental comparison data and address their concerns. How can I assist you today?`
       }]);
     }
   }, [isOpen, messages.length]);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim() || isLoading) return;
 
     const userMessage = query.trim();
     setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
@@ -62,25 +60,41 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
     setIsLoading(true);
     setShowSuggestions(false);
 
-    try {
-      const advice = await getRentalAdvice(analysisData, userMessage);
-      setMessages(prev => [...prev, { type: 'assistant', content: advice }]);
-    } catch (error) {
-      console.error("Error getting advice:", error);
-      setMessages(prev => [...prev, {
-        type: 'assistant',
-        content: "Sorry, I encountered an error while analyzing the data. Please try again."
-      }]);
-    } finally {
-      setIsLoading(false);
-    }
+    // Add empty assistant message that will be streamed into
+    setMessages(prev => [...prev, { type: 'assistant', content: '' }]);
+
+    await streamRentalAdvice(
+      analysisData,
+      userMessage,
+      // onChunk — append to the last message
+      (text) => {
+        setMessages(prev => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          if (last.type === 'assistant') {
+            updated[updated.length - 1] = { ...last, content: last.content + text };
+          }
+          return updated;
+        });
+      },
+      // onDone
+      () => { setIsLoading(false); },
+      // onError
+      (error) => {
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { type: 'assistant', content: error };
+          return updated;
+        });
+        setIsLoading(false);
+      }
+    );
   };
 
   const handleSampleQuestionClick = (question: string) => {
     setQuery(question);
   };
 
-  // Helper to render pro-only upgrade prompt
   const renderProUpgradePrompt = () => (
     <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
       <div className="p-4 border-b">
@@ -89,23 +103,15 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
             <Lock className="h-5 w-5 text-[#1BA3FF]" />
             <h3 className="text-lg font-semibold text-gray-900">Rental Strategy Advisor</h3>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setIsOpen(false)}
-            aria-label="Close"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} aria-label="Close">
             <X className="h-4 w-4" />
           </Button>
         </div>
       </div>
-      
       <div className="flex-1 p-6 flex flex-col items-center justify-center text-center space-y-4">
         <Lock className="h-12 w-12 text-[#1BA3FF] mb-2" />
         <h3 className="text-xl font-semibold">Pro Feature</h3>
-        <p className="text-gray-600">
-          The Rental Strategy Advisor is available exclusively to Pro plan subscribers.
-        </p>
+        <p className="text-gray-600">The Rental Strategy Advisor is available exclusively to Pro plan subscribers.</p>
         <Button className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 mt-2" onClick={() => setShowUpgradeModal(true)}>
           Upgrade to Pro
         </Button>
@@ -113,12 +119,8 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
     </Card>
   );
 
-  // If still checking access status, show nothing
-  if (accessLoading) {
-    return null;
-  }
+  if (accessLoading) return null;
 
-  // If not open, show the button only
   if (!isOpen) {
     return (
       <Button
@@ -128,12 +130,11 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
         size="icon"
       >
         <MessageSquare className="h-8 w-8 text-white" />
-        <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
+        <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white" />
       </Button>
     );
   }
 
-  // If no pro access, show upgrade prompt
   if (!hasAccess) {
     return (
       <>
@@ -143,7 +144,6 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
     );
   }
 
-  // Regular chatbox for pro users
   return (
     <>
       <Card className="fixed bottom-6 right-6 w-96 bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "600px" }}>
@@ -153,12 +153,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
               <MessageSquare className="h-5 w-5 text-[#1BA3FF]" />
               <h3 className="text-lg font-semibold text-gray-900">Rental Strategy Advisor</h3>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setIsOpen(false)}
-              aria-label="Close"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} aria-label="Close">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -171,11 +166,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`mb-4 ${
-                message.type === 'user'
-                  ? 'ml-auto max-w-[80%]'
-                  : 'mr-auto max-w-[80%]'
-              }`}
+              className={`mb-4 ${message.type === 'user' ? 'ml-auto max-w-[80%]' : 'mr-auto max-w-[80%]'}`}
             >
               <div
                 className={`p-3 rounded-lg ${
@@ -184,7 +175,13 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
                     : 'bg-gray-100 text-gray-800'
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {message.type === 'assistant' ? (
+                  <div className="text-sm prose prose-sm prose-gray max-w-none [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:mb-2 [&_ol]:mb-2 [&_li]:mb-0.5 [&_strong]:text-gray-900 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_h1]:font-bold [&_h2]:font-semibold [&_h3]:font-semibold [&_h1]:mb-2 [&_h2]:mb-1.5 [&_h3]:mb-1">
+                    <ReactMarkdown>{message.content || (isLoading && index === messages.length - 1 ? '...' : '')}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-sm">{message.content}</p>
+                )}
               </div>
             </div>
           ))}
@@ -220,22 +217,13 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
               disabled={isLoading}
               aria-label="Ask a question"
             />
-            <Button 
-              type="submit" 
-              disabled={isLoading || !query.trim()}
-              aria-label="Send message"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
+            <Button type="submit" disabled={isLoading || !query.trim()} aria-label="Send message">
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </form>
         </div>
       </Card>
-      
-      {/* Upgrade Modal */}
+
       <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
     </>
   );

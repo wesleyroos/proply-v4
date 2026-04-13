@@ -3,21 +3,13 @@ import OpenAI from "openai";
 
 const router = express.Router();
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'not-configured' });
 
-router.post('/rental-advice', async (req, res) => {
-  try {
-    const { context, userQuery } = req.body;
-    
-    // Determine if this is a rental comparison or property deal query
-    const isPropertyDeal = context.hasOwnProperty('dealScore');
-    
-    let systemPrompt = '';
-    
-    if (isPropertyDeal) {
-      // Property deal advisor system prompt
-      systemPrompt = `You are an AI real estate advisor helping agents provide informed guidance to their clients. You're analyzing a property with the following details:
+function buildSystemPrompt(context: any): string {
+  const isPropertyDeal = context.hasOwnProperty('dealScore');
+
+  if (isPropertyDeal) {
+    return `You are an AI real estate advisor helping agents provide informed guidance to their clients. You're analyzing a property with the following details:
 
 Purchase Price: R${context.purchasePrice.toLocaleString()}
 Market Value: R${context.marketPrice.toLocaleString()}
@@ -34,9 +26,9 @@ Your role is to help the real estate agent:
 5. Provide context on comparable properties and market trends
 
 Provide professional, concise advice that the agent can use when advising their clients.`;
-    } else {
-      // Original rental advisor system prompt
-      systemPrompt = `You are an advisor for Airbnb property managers helping them communicate effectively with property owners. Your goal is to help managers build trust with owners and retain their business by providing clear insights about rental strategies. Use the comparative data to explain the benefits of short-term rentals when appropriate, but remain balanced and honest. 
+  }
+
+  return `You are an advisor for Airbnb property managers helping them communicate effectively with property owners. Your goal is to help managers build trust with owners and retain their business by providing clear insights about rental strategies. Use the comparative data to explain the benefits of short-term rentals when appropriate, but remain balanced and honest.
 
 When owners express concerns about short-term rentals, address them with evidence-based responses that build confidence. Focus on helping managers demonstrate their value and expertise to owners.
 
@@ -53,31 +45,66 @@ Current property context:
 - Annual occupancy: ${context.annualOccupancy}%
 
 Remember, the Rent Compare tool is designed to bridge the trust gap between owners and Airbnb managers. Your advice should help managers demonstrate transparency and data-driven decision making to their owners.`;
-    }
-    
-    const response = await openai.chat.completions.create({
-      model: "gpt-5.1", // gpt-5.1: latest flagship model
+}
+
+// Streaming endpoint — returns Server-Sent Events
+router.post('/rental-advice/stream', async (req, res) => {
+  try {
+    const { context, userQuery } = req.body;
+    const systemPrompt = buildSystemPrompt(context);
+
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
+
+    const stream = await openai.chat.completions.create({
+      model: "gpt-5.1",
       messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: userQuery
-        }
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userQuery },
       ],
       temperature: 0.7,
-      max_completion_tokens: 4000
+      max_completion_tokens: 4000,
+      stream: true,
+    });
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) {
+        res.write(`data: ${JSON.stringify({ content })}\n\n`);
+      }
+    }
+
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+  } catch (error) {
+    console.error("[rental-advice/stream] Error:", error);
+    res.write(`data: ${JSON.stringify({ error: "Failed to generate advice" })}\n\n`);
+    res.end();
+  }
+});
+
+// Non-streaming fallback
+router.post('/rental-advice', async (req, res) => {
+  try {
+    const { context, userQuery } = req.body;
+    const systemPrompt = buildSystemPrompt(context);
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-5.1",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userQuery },
+      ],
+      temperature: 0.7,
+      max_completion_tokens: 4000,
     });
 
     const choice = response.choices[0];
     const advice = choice?.message?.content || "";
-    console.log(`[rental-advice] finish_reason=${choice?.finish_reason}, refusal=${choice?.message?.refusal || 'none'}, content_length=${advice.length}, query="${userQuery.substring(0, 80)}"`);
-
-    if (!advice && choice?.message?.refusal) {
-      console.warn(`[rental-advice] Model refused: ${choice.message.refusal}`);
-    }
+    console.log(`[rental-advice] finish_reason=${choice?.finish_reason}, content_length=${advice.length}, query="${userQuery.substring(0, 80)}"`);
 
     res.json({ advice });
   } catch (error) {
