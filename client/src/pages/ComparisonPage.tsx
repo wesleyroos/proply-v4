@@ -506,7 +506,29 @@ export default function ComparisonPage() {
                   <RentalAdvisor
                     analysisData={{
                       ...comparisonData,
-                      address
+                      address,
+                      advantage: comparisonData.shortTermAfterFees - comparisonData.longTermAnnual,
+                      advantagePercent: comparisonData.longTermAnnual > 0
+                        ? ((comparisonData.shortTermAfterFees - comparisonData.longTermAnnual) / comparisonData.longTermAnnual) * 100
+                        : 0,
+                      platformFeeRate: comparisonData.managementFee > 0 ? 0.15 : 0.03,
+                      platformFeeAmount: comparisonData.shortTermAnnual * (comparisonData.managementFee > 0 ? 0.15 : 0.03),
+                      managementFeeAmount: comparisonData.managementFee > 0
+                        ? comparisonData.shortTermAnnual * (1 - 0.15) * comparisonData.managementFee
+                        : 0,
+                      ...(revenueData?.["50"] ? {
+                        marketData: {
+                          adr25: revenueData["25"]?.adr,
+                          adr50: revenueData["50"]?.adr,
+                          adr75: revenueData["75"]?.adr,
+                          adr90: revenueData["90"]?.adr,
+                          avgOccupancy: revenueData["50"]?.occupancy,
+                          activeListings: revenueData["50"]?.activeListings,
+                          revpar: revenueData["50"]?.revpar,
+                          demandScore: revenueData["50"]?.demandScore,
+                          seasonalityIndex: revenueData["50"]?.seasonalityIndex,
+                        }
+                      } : {}),
                     }}
                   />
                 </div>

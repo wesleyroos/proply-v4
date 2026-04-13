@@ -1,14 +1,46 @@
 export interface RentalAnalysisContext {
+  // Core inputs
+  address: string;
+  title?: string;
+  bedrooms?: string;
+  bathrooms?: string;
   longTermMonthly: number;
-  shortTermMonthly: number;
-  longTermAnnual: number;
-  shortTermAnnual: number;
-  shortTermAfterFees: number;
-  breakEvenOccupancy: number;
   shortTermNightly: number;
   managementFee: number;
   annualOccupancy: number;
-  address: string;
+
+  // Calculated outputs
+  longTermAnnual: number;
+  shortTermMonthly: number;
+  shortTermAnnual: number;
+  shortTermAfterFees: number;
+  breakEvenOccupancy: number;
+
+  // Enriched data (optional — passed when available)
+  annualEscalation?: number;
+  platformFeeRate?: number;
+  platformFeeAmount?: number;
+  managementFeeAmount?: number;
+  advantage?: number; // shortTermAfterFees - longTermAnnual
+  advantagePercent?: number;
+
+  // Market data from PriceLabs (when available)
+  marketData?: {
+    adr25?: number;
+    adr50?: number;
+    adr75?: number;
+    adr90?: number;
+    avgOccupancy?: number;
+    activeListings?: number;
+    revpar?: number;
+    demandScore?: number;
+    seasonalityIndex?: number;
+  };
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 export async function getRentalAdvice(
@@ -35,6 +67,7 @@ export async function getRentalAdvice(
 export async function streamRentalAdvice(
   context: RentalAnalysisContext,
   userQuery: string,
+  conversationHistory: ChatMessage[],
   onChunk: (text: string) => void,
   onDone: () => void,
   onError: (error: string) => void,
@@ -43,7 +76,7 @@ export async function streamRentalAdvice(
     const response = await fetch('/api/rental-advice/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ context, userQuery }),
+      body: JSON.stringify({ context, userQuery, history: conversationHistory }),
     });
 
     if (!response.ok) throw new Error('Failed to get rental advice');
@@ -77,6 +110,6 @@ export async function streamRentalAdvice(
     onDone();
   } catch (error) {
     console.error("Streaming error:", error);
-    onError("I apologize, but I encountered an error. Please try again.");
+    onError("I encountered an error. Please try again.");
   }
 }
