@@ -1,4 +1,5 @@
 import { Router } from "express";
+import crypto from "crypto";
 import { db } from "../../db";
 import {
   agencyBranches,
@@ -133,9 +134,17 @@ router.post("/generate-report", authenticatePartner, async (req, res) => {
 
     if (existingReport) {
       const baseUrl = process.env.APP_URL || "https://proply.co.za";
+      // Generate an edit token if one doesn't exist yet (for reports created before this feature)
+      let token = (existingReport as any).editToken;
+      if (!token) {
+        token = crypto.randomBytes(32).toString("hex");
+        db.execute(sql`UPDATE valuation_reports SET edit_token = ${token} WHERE id = ${existingReport.id}`).catch(() => {});
+      }
       return res.json({
         status: "existing",
         reportUrl: `${baseUrl}/report/${propertyId}`,
+        editUrl: `${baseUrl}/report/${propertyId}?edit=${token}`,
+        editToken: token,
         propertyId,
         generatedAt: existingReport.createdAt.toISOString(),
       });
@@ -607,6 +616,7 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
     };
 
     // Save valuation report to DB
+    const editToken = crypto.randomBytes(32).toString("hex");
     const [savedReport] = await db
       .insert(valuationReports)
       .values({
@@ -628,6 +638,7 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
         cashflowAnalysisData,
         financingAnalysisData,
         comparableSalesData,
+        editToken,
       })
       .returning();
 
@@ -666,6 +677,8 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
     return res.json({
       status: "completed",
       reportUrl: `${baseUrl}/report/${propertyId}`,
+      editUrl: `${baseUrl}/report/${propertyId}?edit=${editToken}`,
+      editToken,
       propertyId,
       generatedAt: savedReport.createdAt.toISOString(),
     });
@@ -720,6 +733,62 @@ router.get("/report-status/:propertyId", authenticatePartner, async (req, res) =
   } catch (error) {
     console.error("[Partner API] Status check failed:", error);
     return res.status(500).json({ error: "Failed to check report status" });
+  }
+});
+
+// ─── PATCH /report/:propertyId ─────────────────────────────────────
+// Edit a generated report — adjust valuations, rental estimates,
+// property details, or financing parameters. All fields optional.
+router.patch("/report/:propertyId", authenticatePartner, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const branch = (req as any).agencyBranch;
+
+    // Verify listing belongs to this agency
+    const [listing] = await db
+      .select({ propdataId: propdataListings.propdataId })
+      .from(propdataListings)
+      .where(
+        and(
+          eq(propdataListings.propdataId, propertyId),
+          eq(propdataListings.branchId, branch.id)
+        )
+      )
+      .limit(1);
+
+    if (!listing) {
+      return res.status(404).json({ error: "Property not found or does not belong to your agency" });
+    }
+
+    const { applyReportEdits } = await import("../services/reportEditService");
+    const {
+      valuations,
+      longTermMinRental,
+      longTermMaxRental,
+      floorSize,
+      bedrooms,
+      bathrooms,
+      depositPercentage,
+      interestRate,
+      loanTerm,
+    } = req.body;
+
+    const result = await applyReportEdits(
+      propertyId,
+      { valuations, longTermMinRental, longTermMaxRental, floorSize, bedrooms, bathrooms, depositPercentage, interestRate, loanTerm },
+      `partner:${branch.id}`
+    );
+
+    return res.json({
+      status: "updated",
+      ...result,
+    });
+  } catch (error) {
+    console.error("[Partner API] Report edit failed:", error);
+    return res.status(500).json({
+      error: "Failed to edit report",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 });
 

@@ -661,8 +661,10 @@ export class PropdataPdfShiftService {
     </div>`;
 
     // ── Disclaimer ──
+    const hasManualOverrides = vr && (vr as any).manualOverrides && Object.keys((vr as any).manualOverrides).length > 0;
     const disclaimerHtml = `<div class="disclaimer-section">
       <div class="disclaimer-title">Disclaimers &amp; Legal Notices</div>
+      ${hasManualOverrides ? `<p class="disclaimer-text" style="margin-bottom:8px;font-weight:600;">Note: Some values in this report have been manually adjusted from the original automated estimates.</p>` : ""}
       <p class="disclaimer-text">The information in this report is provided by Proply Tech (Pty) Ltd for informational purposes only. While every effort is made to ensure accuracy, we cannot guarantee the absolute accuracy or completeness of the data. This report does not constitute financial, investment, legal, or professional advice. Property investment carries inherent risks and market conditions can change. Any decisions made based on this information are solely the responsibility of the user. Proply Tech (Pty) Ltd expressly disclaims any liability for direct, indirect, incidental, or consequential damages arising from use of this report. Projections and estimates are indicative only and based on data available at the time of generation.</p>
     </div>`;
 

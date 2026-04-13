@@ -1,8 +1,8 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { initGoogleMaps } from "../lib/maps";
 import PropertyMap from "../components/PropertyMap";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ComposedChart,
   Area,
@@ -14,7 +14,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Download, Bed, Bath, Car, Maximize2, MapPin, Calendar, Phone, Mail, User, Building2, TrendingUp, Home, ChevronDown } from "lucide-react";
+import { Download, Bed, Bath, Car, Maximize2, MapPin, Calendar, Phone, Mail, User, Building2, TrendingUp, Home, ChevronDown, Pencil, Save, X } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ReportData {
@@ -53,6 +53,8 @@ interface ReportData {
       averageSalePrice: number;
       dataSource: string;
     } | null;
+    manualOverrides?: Record<string, boolean> | null;
+    lastEditedAt?: string | null;
   } | null;
   rentalData: {
     financingAnalysisData?: any;
@@ -118,6 +120,29 @@ function AccordionSection({ title, color, open, onToggle, children }: {
           {children}
         </div>
       )}
+    </div>
+  );
+}
+
+function EditableNumber({ value, onChange, editing, prefix = "", suffix = "", className = "" }: {
+  value: number | null;
+  onChange: (v: number) => void;
+  editing: boolean;
+  prefix?: string;
+  suffix?: string;
+  className?: string;
+}) {
+  if (!editing) return null; // Caller renders display mode
+  return (
+    <div className="relative inline-flex items-center">
+      {prefix && <span className="text-slate-400 text-xs mr-1">{prefix}</span>}
+      <input
+        type="number"
+        value={value ?? ""}
+        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+        className={`border border-blue-300 rounded px-2 py-1 text-sm font-semibold bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:outline-none w-32 ${className}`}
+      />
+      {suffix && <span className="text-slate-400 text-xs ml-1">{suffix}</span>}
     </div>
   );
 }
@@ -362,8 +387,55 @@ function detectOutliers(rows: any[]): boolean[] {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ReportPreviewPage() {
   const [location] = useLocation();
-  const propertyId = location.split("/").pop() || "";
+  const queryClient = useQueryClient();
+  const propertyId = location.split("/").pop()?.split("?")[0] || "";
   const headerRef = useRef<HTMLDivElement>(null);
+
+  // Edit mode
+  const editToken = new URLSearchParams(window.location.search).get("edit");
+  const canEdit = !!editToken;
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editDraft, setEditDraft] = useState<{
+    valuations?: Array<{ type: string; formula: string; value: number }>;
+    longTermMinRental?: number;
+    longTermMaxRental?: number;
+    floorSize?: number;
+    bedrooms?: number;
+    bathrooms?: number;
+  }>({});
+
+  const startEditing = useCallback(() => {
+    setEditDraft({});
+    setIsEditing(true);
+  }, []);
+
+  const cancelEditing = useCallback(() => {
+    setEditDraft({});
+    setIsEditing(false);
+  }, []);
+
+  const hasPendingEdits = Object.keys(editDraft).length > 0;
+
+  const saveEdits = useCallback(async () => {
+    if (!hasPendingEdits || !editToken) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/propdata-reports/report-data/${propertyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ editToken, ...editDraft }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      queryClient.invalidateQueries({ queryKey: ["report-data", propertyId] });
+      setEditDraft({});
+      setIsEditing(false);
+    } catch {
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [editDraft, editToken, propertyId, hasPendingEdits, queryClient]);
 
   const { data, isLoading, isError } = useQuery<ReportData>({
     queryKey: ["report-data", propertyId],
@@ -501,15 +573,48 @@ export default function ReportPreviewPage() {
               )}
             </div>
           </div>
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold flex-shrink-0 transition-opacity hover:opacity-90"
-            style={{ background: accentColor }}
-          >
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Download PDF</span>
-            <span className="sm:hidden">PDF</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {canEdit && !isEditing && (
+              <button
+                onClick={startEditing}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                <Pencil className="w-4 h-4" />
+                <span className="hidden sm:inline">Edit</span>
+              </button>
+            )}
+            {isEditing && (
+              <>
+                <button
+                  onClick={cancelEditing}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden sm:inline">Cancel</span>
+                </button>
+                <button
+                  onClick={saveEdits}
+                  disabled={!hasPendingEdits || isSaving}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+                  style={{ background: "#16a34a" }}
+                >
+                  <Save className="w-4 h-4" />
+                  <span className="hidden sm:inline">{isSaving ? "Saving…" : "Save"}</span>
+                </button>
+              </>
+            )}
+            {!isEditing && (
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold flex-shrink-0 transition-opacity hover:opacity-90"
+                style={{ background: accentColor }}
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Download PDF</span>
+                <span className="sm:hidden">PDF</span>
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -586,13 +691,21 @@ export default function ReportPreviewPage() {
             {p.bedrooms != null && (
               <div className="flex items-center gap-2 text-slate-500">
                 <Bed className="w-4 h-4" />
-                <span className="text-sm font-semibold">{p.bedrooms} Bedrooms</span>
+                {isEditing ? (
+                  <input type="number" value={editDraft.bedrooms ?? p.bedrooms ?? ""} onChange={(e) => setEditDraft((d) => ({ ...d, bedrooms: parseFloat(e.target.value) || 0 }))} className="border border-blue-300 rounded px-2 py-1 text-sm font-semibold bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:outline-none w-16" />
+                ) : (
+                  <span className="text-sm font-semibold">{p.bedrooms} Bedrooms</span>
+                )}
               </div>
             )}
             {p.bathrooms != null && (
               <div className="flex items-center gap-2 text-slate-500">
                 <Bath className="w-4 h-4" />
-                <span className="text-sm font-semibold">{p.bathrooms} Bathrooms</span>
+                {isEditing ? (
+                  <input type="number" value={editDraft.bathrooms ?? p.bathrooms ?? ""} onChange={(e) => setEditDraft((d) => ({ ...d, bathrooms: parseFloat(e.target.value) || 0 }))} className="border border-blue-300 rounded px-2 py-1 text-sm font-semibold bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:outline-none w-16" />
+                ) : (
+                  <span className="text-sm font-semibold">{p.bathrooms} Bathrooms</span>
+                )}
               </div>
             )}
             {p.garages != null && (
@@ -601,10 +714,17 @@ export default function ReportPreviewPage() {
                 <span className="text-sm font-semibold">{p.garages} Garages</span>
               </div>
             )}
-            {p.floorSize != null && (
+            {(p.floorSize != null || isEditing) && (
               <div className="flex items-center gap-2 text-slate-500">
                 <Maximize2 className="w-4 h-4" />
-                <span className="text-sm font-semibold">{p.floorSize} m² Floor</span>
+                {isEditing ? (
+                  <span className="flex items-center gap-1">
+                    <input type="number" value={editDraft.floorSize ?? p.floorSize ?? ""} onChange={(e) => setEditDraft((d) => ({ ...d, floorSize: parseFloat(e.target.value) || 0 }))} className="border border-blue-300 rounded px-2 py-1 text-sm font-semibold bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:outline-none w-20" />
+                    <span className="text-sm">m²</span>
+                  </span>
+                ) : (
+                  <span className="text-sm font-semibold">{p.floorSize} m² Floor</span>
+                )}
               </div>
             )}
             {p.erfSize != null && (
@@ -617,6 +737,18 @@ export default function ReportPreviewPage() {
         </div>
         </div>
       </section>
+
+      {/* ── Manually adjusted banner ── */}
+      {data.valuationReport?.manualOverrides && Object.keys(data.valuationReport.manualOverrides).length > 0 && !isEditing && (
+        <section className="bg-slate-100 pb-2">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 flex items-center gap-2 text-xs text-amber-700">
+              <Pencil className="w-3 h-3" />
+              <span>Some values in this report have been manually adjusted from the original AI estimates.</span>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Key metrics strip ── */}
       {(ltrYieldRange || strYieldRange || apprRate) && (
@@ -688,11 +820,38 @@ export default function ReportPreviewPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {vd.valuations.map((v: any, i: number) => (
+                      {(editDraft.valuations || vd.valuations).map((v: any, i: number) => (
                         <tr key={i} className="border-b border-slate-50 last:border-0">
                           <td className="px-4 py-3 font-semibold text-slate-800">{v.type}</td>
-                          <td className="px-4 py-3 text-center text-slate-500 text-xs">{v.formula || "N/A"}</td>
-                          <td className="px-4 py-3 text-right font-bold whitespace-nowrap" style={{ color: accentColor }}>{fmt(v.value)}</td>
+                          <td className="px-4 py-3 text-center text-slate-500 text-xs">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={(editDraft.valuations || vd.valuations)[i].formula || ""}
+                                onChange={(e) => {
+                                  const updated = [...(editDraft.valuations || vd.valuations.map((x: any) => ({ ...x })))];
+                                  updated[i] = { ...updated[i], formula: e.target.value };
+                                  setEditDraft((d) => ({ ...d, valuations: updated }));
+                                }}
+                                className="border border-blue-300 rounded px-2 py-1 text-xs bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:outline-none w-full max-w-xs"
+                              />
+                            ) : (v.formula || "N/A")}
+                          </td>
+                          <td className="px-4 py-3 text-right font-bold whitespace-nowrap" style={{ color: accentColor }}>
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                value={(editDraft.valuations || vd.valuations)[i].value || ""}
+                                onChange={(e) => {
+                                  const updated = [...(editDraft.valuations || vd.valuations.map((x: any) => ({ ...x })))];
+                                  updated[i] = { ...updated[i], value: parseFloat(e.target.value) || 0 };
+                                  setEditDraft((d) => ({ ...d, valuations: updated }));
+                                }}
+                                className="border border-blue-300 rounded px-2 py-1 text-sm font-bold bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:outline-none w-36 text-right"
+                                style={{ color: accentColor }}
+                              />
+                            ) : fmt(v.value)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -715,12 +874,41 @@ export default function ReportPreviewPage() {
             {ltr && (
               <div className="mb-8">
                 <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Long-Term Rental</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                  <MiniCard label="Monthly Range" value={`${fmt(ltr.minRental)} – ${fmt(ltr.maxRental)}`} />
-                  <MiniCard label="Gross Yield Range" value={`${ltr.minYield ?? "N/A"}% – ${ltr.maxYield ?? "N/A"}%`} valueColor="#16a34a" />
-                  <MiniCard label="Annual Revenue" value={`${fmt(ltr.minRental ? ltr.minRental * 12 : null)} – ${fmt(ltr.maxRental ? ltr.maxRental * 12 : null)}`} />
-                  <MiniCard label="Strategy" value="Long-term let" sub="12-month lease" />
-                </div>
+                {isEditing ? (
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="bg-slate-50 rounded-xl p-4 border border-blue-200">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-2">Min Monthly Rental</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-slate-400 text-sm">R</span>
+                        <input
+                          type="number"
+                          value={editDraft.longTermMinRental ?? ltr.minRental ?? ""}
+                          onChange={(e) => setEditDraft((d) => ({ ...d, longTermMinRental: parseFloat(e.target.value) || 0 }))}
+                          className="border border-blue-300 rounded px-2 py-1 text-sm font-semibold bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:outline-none w-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-blue-200">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-2">Max Monthly Rental</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-slate-400 text-sm">R</span>
+                        <input
+                          type="number"
+                          value={editDraft.longTermMaxRental ?? ltr.maxRental ?? ""}
+                          onChange={(e) => setEditDraft((d) => ({ ...d, longTermMaxRental: parseFloat(e.target.value) || 0 }))}
+                          className="border border-blue-300 rounded px-2 py-1 text-sm font-semibold bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:outline-none w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <MiniCard label="Monthly Range" value={`${fmt(ltr.minRental)} – ${fmt(ltr.maxRental)}`} />
+                    <MiniCard label="Gross Yield Range" value={`${ltr.minYield ?? "N/A"}% – ${ltr.maxYield ?? "N/A"}%`} valueColor="#16a34a" />
+                    <MiniCard label="Annual Revenue" value={`${fmt(ltr.minRental ? ltr.minRental * 12 : null)} – ${fmt(ltr.maxRental ? ltr.maxRental * 12 : null)}`} />
+                    <MiniCard label="Strategy" value="Long-term let" sub="12-month lease" />
+                  </div>
+                )}
                 {ltr.reasoning && <p className="text-sm text-slate-500 leading-relaxed">{ltr.reasoning}</p>}
               </div>
             )}

@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomUUID, randomBytes } from "crypto";
 import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
@@ -3888,6 +3888,7 @@ export function registerRoutes(app: Express): Server {
             annualPropertyAppreciationData: financialData.annualPropertyAppreciationData,
             cashflowAnalysisData: financialData.cashflowAnalysisData,
             financingAnalysisData: financialData.financingAnalysisData,
+            editToken: randomBytes(32).toString("hex"),
           })
           .returning();
 

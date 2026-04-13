@@ -328,6 +328,8 @@ router.get('/report-data/:propertyId', async (req, res) => {
       valuationReport: valuationReport ? {
         valuationData: valuationReport.valuationData,
         comparableSalesData: (valuationReport as any).comparableSalesData ?? null,
+        manualOverrides: (valuationReport as any).manualOverrides ?? null,
+        lastEditedAt: (valuationReport as any).lastEditedAt ?? null,
       } : null,
       rentalData: mergedRentalData,
       branch: branch ? {
@@ -341,6 +343,43 @@ router.get('/report-data/:propertyId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching report data:', error);
     res.status(500).json({ error: 'Failed to fetch report data' });
+  }
+});
+
+// Edit report values — authenticated via edit token (from URL) or session
+router.patch('/report-data/:propertyId', async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const { editToken, valuations, longTermMinRental, longTermMaxRental, floorSize, bedrooms, bathrooms, depositPercentage, interestRate, loanTerm } = req.body;
+
+    if (!propertyId) return res.status(400).json({ error: 'Property ID is required' });
+
+    // Auth: edit token or session
+    const report = await db.query.valuationReports.findFirst({
+      where: eq(valuationReports.propertyId, propertyId),
+    });
+    if (!report) return res.status(404).json({ error: 'Report not found' });
+
+    const hasValidToken = editToken && (report as any).editToken === editToken;
+    const hasSession = req.user && (req.user as any).id === report.userId;
+
+    if (!hasValidToken && !hasSession) {
+      return res.status(401).json({ error: 'Edit token required or must be logged in as report owner' });
+    }
+
+    const { applyReportEdits } = await import('../services/reportEditService');
+    const editedBy = hasSession ? `user:${(req.user as any).id}` : 'token';
+
+    const result = await applyReportEdits(
+      propertyId,
+      { valuations, longTermMinRental, longTermMaxRental, floorSize, bedrooms, bathrooms, depositPercentage, interestRate, loanTerm },
+      editedBy
+    );
+
+    return res.json({ status: 'updated', ...result });
+  } catch (error) {
+    console.error('Error editing report:', error);
+    res.status(500).json({ error: 'Failed to edit report' });
   }
 });
 

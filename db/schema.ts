@@ -514,7 +514,14 @@ export const valuationReports = pgTable("valuation_reports", {
 
   // COMPARABLE SALES DATA - Cached title deed records from Knowledge Factory
   comparableSalesData: jsonb("comparable_sales_data"), // Stores titleDeedProperties, averageSalePrice, dataSource
-  
+
+  // REPORT EDITING - Allows agents/partners to adjust AI-generated values
+  editToken: text("edit_token"), // Random token for URL-based edit auth on public report page
+  originalValuationData: jsonb("original_valuation_data"), // Snapshot of AI-generated valuationData, set on first edit
+  manualOverrides: jsonb("manual_overrides").default({}), // Tracks which sections were edited: { valuations: true, rental: true, ... }
+  lastEditedAt: timestamp("last_edited_at"),
+  lastEditedBy: text("last_edited_by"), // 'partner:branchId', 'user:123', 'token'
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
