@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loader2, Send, MessageSquare, X, Lock, Sparkles } from "lucide-react";
+import { Loader2, Send, MessageSquare, X, Lock, Sparkles, Maximize2, Minimize2 } from "lucide-react";
 import { streamRentalAdvice, RentalAnalysisContext, ChatMessage } from "@/services/openai";
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
@@ -70,6 +70,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [showActions, setShowActions] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const actionPrompts = getActionPrompts(analysisData);
@@ -196,24 +197,36 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
 
   return (
     <>
-      <Card className="fixed bottom-6 right-6 w-[420px] bg-white shadow-lg border border-gray-200 flex flex-col z-50" style={{ maxHeight: "650px" }}>
+      {/* Backdrop when expanded */}
+      {isExpanded && <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setIsExpanded(false)} />}
+
+      <Card className={`fixed bg-white shadow-2xl border border-gray-200 flex flex-col z-50 transition-all duration-300 ease-in-out ${
+        isExpanded
+          ? 'inset-4 sm:inset-8 md:inset-12 lg:inset-16 rounded-2xl'
+          : 'bottom-6 right-6 w-[420px] rounded-lg'
+      }`} style={isExpanded ? {} : { maxHeight: "650px" }}>
         <div className="p-4 border-b bg-gradient-to-r from-[#1BA3FF] to-[#0d8ae0] text-white rounded-t-lg">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5" />
               <h3 className="text-base font-semibold">Rental Strategy Advisor</h3>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} aria-label="Close" className="text-white hover:bg-white/20">
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} aria-label={isExpanded ? "Minimize" : "Expand"} className="text-white hover:bg-white/20">
+                {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setIsOpen(false); setIsExpanded(false); }} aria-label="Close" className="text-white hover:bg-white/20">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: "420px" }}>
+        <div className={`flex-1 overflow-y-auto p-4 ${isExpanded ? 'px-8 md:px-16 lg:px-24' : ''}`} style={isExpanded ? {} : { maxHeight: "420px" }}>
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`mb-4 ${message.type === 'user' ? 'ml-auto max-w-[85%]' : 'mr-auto max-w-[85%]'}`}
+              className={`mb-4 ${message.type === 'user' ? 'ml-auto' : 'mr-auto'} ${isExpanded ? 'max-w-[70%]' : 'max-w-[85%]'}`}
             >
               <div
                 className={`p-3 rounded-xl ${
@@ -252,13 +265,13 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
           </div>
         )}
 
-        <div className="p-3 border-t bg-white rounded-b-lg">
-          <form onSubmit={handleSubmit} className="flex gap-2">
+        <div className={`p-3 border-t bg-white rounded-b-lg ${isExpanded ? 'px-8 md:px-16 lg:px-24 py-4' : ''}`}>
+          <form onSubmit={handleSubmit} className={`flex gap-2 ${isExpanded ? 'max-w-3xl mx-auto' : ''}`}>
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ask anything about this analysis..."
-              className="flex-1 text-sm"
+              className={`flex-1 ${isExpanded ? 'text-base py-5' : 'text-sm'}`}
               disabled={isLoading}
               aria-label="Ask a question"
             />
@@ -266,7 +279,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
               type="submit"
               disabled={isLoading || !query.trim()}
               aria-label="Send message"
-              size="sm"
+              size={isExpanded ? "default" : "sm"}
               className="bg-[#1BA3FF] hover:bg-[#0d8ae0]"
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
