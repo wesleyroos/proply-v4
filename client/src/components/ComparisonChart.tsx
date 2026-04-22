@@ -107,7 +107,7 @@ export default function ComparisonChart({
     const month = new Date(2024, i).toLocaleString("default", {
       month: "short",
     });
-    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+    const daysInMonth = new Date(2023, i + 1, 0).getDate();
 
     // Base nightly rate adjusted for platform fees
     const platformFee = data.managementFee > 0 ? 0.15 : 0.03;
@@ -646,7 +646,7 @@ export default function ComparisonChart({
                       seasonalRate,
                       data.managementFee > 0,
                     );
-                    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                    const daysInMonth = new Date(2023, i + 1, 0).getDate();
                     const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
                     const revenue =
                       feeAdjustedRate * occupancyRate * daysInMonth;
@@ -676,7 +676,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
@@ -702,7 +702,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
@@ -734,7 +734,7 @@ export default function ComparisonChart({
                       seasonalRate,
                       data.managementFee > 0,
                     );
-                    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                    const daysInMonth = new Date(2023, i + 1, 0).getDate();
                     const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
                     const revenue =
                       feeAdjustedRate * occupancyRate * daysInMonth;
@@ -764,7 +764,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
@@ -790,7 +790,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
@@ -822,7 +822,7 @@ export default function ComparisonChart({
                       seasonalRate,
                       data.managementFee > 0,
                     );
-                    const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                    const daysInMonth = new Date(2023, i + 1, 0).getDate();
                     const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
                     const revenue =
                       feeAdjustedRate * occupancyRate * daysInMonth;
@@ -852,7 +852,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
@@ -878,7 +878,7 @@ export default function ComparisonChart({
                           seasonalRate,
                           data.managementFee > 0,
                         );
-                        const daysInMonth = new Date(2024, i + 1, 0).getDate();
+                        const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
                         const revenue =
                           feeAdjustedRate * occupancyRate * daysInMonth;
@@ -983,7 +983,7 @@ const MONTHS = [
   "Dec",
 ];
 const SEASONALITY_FACTORS = [
-  2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03,
+  1.7953, 1.4379, 1.0806, 1.0806, 0.6465, 0.5786, 0.5786, 0.5786, 0.6465, 0.7913, 1.0806, 1.7272,
 ];
 
 const OCCUPANCY_RATES = {
@@ -1014,7 +1014,7 @@ function calculateMonthlyRevenue(
   managementFeePercent: number,
 ): number {
   const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
-  const daysInMonth = new Date(2024, month + 1, 0).getDate();
+  const daysInMonth = new Date(2023, month + 1, 0).getDate();
 
   // Apply seasonal adjustment and platform fee
   const seasonalRate = getSeasonalNightlyRate(nightly, month);

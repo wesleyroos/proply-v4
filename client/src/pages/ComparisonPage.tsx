@@ -64,11 +64,11 @@ export default function ComparisonPage() {
     const managementFee = parseFloat(data.managementFee) / 100;
 
     const SEASONALITY_FACTORS = [
-      2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03,
+      1.7953, 1.4379, 1.0806, 1.0806, 0.6465, 0.5786, 0.5786, 0.5786, 0.6465, 0.7913, 1.0806, 1.7272,
     ];
 
     const shortTermAnnual = Array(12).fill(0).reduce((sum, _, month) => {
-      const daysInMonth = new Date(2024, month + 1, 0).getDate();
+      const daysInMonth = new Date(2023, month + 1, 0).getDate();
       const seasonalMultiplier = SEASONALITY_FACTORS[month];
       return sum + (shortTermNightly * seasonalMultiplier * daysInMonth * occupancyRate);
     }, 0);

@@ -1263,7 +1263,7 @@ const MONTHS = [
   "Dec",
 ];
 const SEASONALITY_FACTORS = [
-  2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03,
+  1.7953, 1.4379, 1.0806, 1.0806, 0.6465, 0.5786, 0.5786, 0.5786, 0.6465, 0.7913, 1.0806, 1.7272,
 ];
 
 function getSeasonalMultiplier(month: number): number {
@@ -1288,7 +1288,7 @@ function calculateMonthlyRevenue(
   managementFeePercent: number,
 ): number {
   const occupancyRate = OCCUPANCY_RATES[scenario][month] / 100;
-  const daysInMonth = new Date(2024, month + 1, 0).getDate();
+  const daysInMonth = new Date(2023, month + 1, 0).getDate();
 
   // Apply seasonal adjustment and platform fee
   const seasonalRate = getSeasonalNightlyRate(nightly, month);

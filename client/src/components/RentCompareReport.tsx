@@ -14,7 +14,8 @@ import MapView from "@/components/MapView";
 import { BedDouble, Bath, TrendingUp } from "lucide-react";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const SEASONALITY_FACTORS = [2.11,1.69,1.27,1.27,0.76,0.68,0.68,0.68,0.76,0.93,1.27,2.03];
+// Normalized so weighted sum × days = 365: nightly_rate × 365 × occupancy = gross annual
+const SEASONALITY_FACTORS = [1.7953,1.4379,1.0806,1.0806,0.6465,0.5786,0.5786,0.5786,0.6465,0.7913,1.0806,1.7272];
 const OCCUPANCY_RATES = {
   low:    [65,65,60,55,50,50,50,50,60,65,65,65],
   medium: [80,78,73,68,63,60,60,60,70,75,75,85],
@@ -43,21 +44,31 @@ interface Props {
 }
 
 export default function RentCompareReport({ property }: Props) {
-  const stNightly       = Number(property.shortTermNightly   || 0);
-  const annualOccupancy = Number(property.annualOccupancy    || 0);
-  const managementFee   = Number(property.managementFee      || 0); // decimal
-  const ltMonthly       = Number(property.longTermMonthly    || 0);
-  const ltAnnual        = Number(property.longTermAnnual     || 0);
-  const stAnnual        = Number(property.shortTermAnnual    || 0);
-  const stAfterFees     = Number(property.shortTermAfterFees || 0);
-  const breakEven       = Number(property.breakEvenOccupancy || 0);
+  const stNightly       = Number(property.shortTermNightly || 0);
+  const annualOccupancy = Number(property.annualOccupancy  || 0);
+  const managementFee   = Number(property.managementFee   || 0); // decimal
+  const ltMonthly       = Number(property.longTermMonthly || 0);
+  const ltAnnual        = Number(property.longTermAnnual  || 0);
 
+  // Always recalculate from raw inputs so stale stored values don't affect display
+  const occupancyRate  = annualOccupancy / 100;
   const platformRate   = managementFee > 0 ? 0.15 : 0.03;
-  const platformPct    = platformRate * 100;
+  const stAnnual       = SEASONALITY_FACTORS.reduce((sum, factor, month) => {
+    const days = new Date(2023, month + 1, 0).getDate();
+    return sum + stNightly * factor * days * occupancyRate;
+  }, 0);
   const platformAmt    = stAnnual * platformRate;
   const afterPlatform  = stAnnual - platformAmt;
   const mgmtAmt        = managementFee > 0 ? afterPlatform * managementFee : 0;
-  const advantage      = stAfterFees - ltAnnual;
+  const stAfterFees    = afterPlatform - mgmtAmt;
+
+  const platformFeeMultiplier   = managementFee > 0 ? 0.85 : 0.97;
+  const managementFeeMultiplier = 1 - managementFee;
+  const netDailyRateNeeded      = ltAnnual / (365 * platformFeeMultiplier * managementFeeMultiplier);
+  const breakEven               = stNightly > 0 ? (netDailyRateNeeded / stNightly) * 100 : 0;
+
+  const platformPct = platformRate * 100;
+  const advantage   = stAfterFees - ltAnnual;
 
   const analysisDate = new Date(property.createdAt).toLocaleDateString("en-ZA", {
     day: "2-digit", month: "long", year: "numeric",
@@ -66,7 +77,7 @@ export default function RentCompareReport({ property }: Props) {
   const monthlyChartData = useMemo(() => {
     const mgmtM = managementFee > 0 ? 1 - managementFee : 1;
     return MONTHS.map((month, i) => {
-      const days = new Date(2024, i + 1, 0).getDate();
+      const days = new Date(2023, i + 1, 0).getDate();
       const seasonal = stNightly * SEASONALITY_FACTORS[i];
       const net = seasonal * (1 - platformRate) * mgmtM;
       return {
@@ -82,7 +93,7 @@ export default function RentCompareReport({ property }: Props) {
   const monthlyTable = useMemo(() => {
     const mgmtM = managementFee > 0 ? 1 - managementFee : 1;
     return MONTHS.map((month, i) => {
-      const days = new Date(2024, i + 1, 0).getDate();
+      const days = new Date(2023, i + 1, 0).getDate();
       const seasonal = stNightly * SEASONALITY_FACTORS[i];
       const netRate = seasonal * (1 - platformRate) * mgmtM;
       const stNet = Math.round(netRate * (annualOccupancy / 100) * days);

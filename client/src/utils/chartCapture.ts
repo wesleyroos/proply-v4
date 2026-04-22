@@ -111,7 +111,7 @@ function calculateMonthlyRevenue(
   }
 
   const adjustedRate = nightlyRate * rateMultiplier;
-  const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate();
+  const daysInMonth = new Date(2023, monthIndex + 1, 0).getDate();
   const occupancy = occupancyRates[scenario][monthIndex] / 100;
   const grossRevenue = adjustedRate * daysInMonth * occupancy;
   const platformFee = hasManagement ? 0.15 : 0.03;
