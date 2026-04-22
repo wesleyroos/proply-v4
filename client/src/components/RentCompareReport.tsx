@@ -14,8 +14,8 @@ import MapView from "@/components/MapView";
 import { BedDouble, Bath, TrendingUp } from "lucide-react";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-// Normalized so weighted sum × days = 365: nightly_rate × 365 × occupancy = gross annual
-const SEASONALITY_FACTORS = [1.7953,1.4379,1.0806,1.0806,0.6465,0.5786,0.5786,0.5786,0.6465,0.7913,1.0806,1.7272];
+// Dynamic pricing multipliers: Jan/Dec peak (2×+), Jun–Aug low season (0.68×)
+const SEASONALITY_FACTORS = [2.11,1.69,1.27,1.27,0.76,0.68,0.68,0.68,0.76,0.93,1.27,2.03];
 const OCCUPANCY_RATES = {
   low:    [65,65,60,55,50,50,50,50,60,65,65,65],
   medium: [80,78,73,68,63,60,60,60,70,75,75,85],
@@ -53,19 +53,27 @@ export default function RentCompareReport({ property }: Props) {
   // Always recalculate from raw inputs so stale stored values don't affect display
   const occupancyRate  = annualOccupancy / 100;
   const platformRate   = managementFee > 0 ? 0.15 : 0.03;
-  const stAnnual       = SEASONALITY_FACTORS.reduce((sum, factor, month) => {
-    const days = new Date(2023, month + 1, 0).getDate();
-    return sum + stNightly * factor * days * occupancyRate;
-  }, 0);
-  const platformAmt    = stAnnual * platformRate;
-  const afterPlatform  = stAnnual - platformAmt;
-  const mgmtAmt        = managementFee > 0 ? afterPlatform * managementFee : 0;
-  const stAfterFees    = afterPlatform - mgmtAmt;
 
+  // Weighted day sum across all months using seasonal rate multipliers
+  const seasonalDaySum = SEASONALITY_FACTORS.reduce((sum, factor, month) => {
+    return sum + factor * new Date(2024, month + 1, 0).getDate();
+  }, 0);
+
+  const stAnnual    = stNightly * seasonalDaySum * occupancyRate;
+  const platformAmt = stAnnual * platformRate;
+  const afterPlatform = stAnnual - platformAmt;
+  const mgmtAmt     = managementFee > 0 ? afterPlatform * managementFee : 0;
+  const stAfterFees = afterPlatform - mgmtAmt;
+
+  // Effective average nightly rate (accounts for seasonal pricing)
+  const effectiveAvgRate = occupancyRate > 0 ? stAnnual / (365 * occupancyRate) : 0;
+
+  // Break-even using same seasonality-weighted formula for consistency
   const platformFeeMultiplier   = managementFee > 0 ? 0.85 : 0.97;
   const managementFeeMultiplier = 1 - managementFee;
-  const netDailyRateNeeded      = ltAnnual / (365 * platformFeeMultiplier * managementFeeMultiplier);
-  const breakEven               = stNightly > 0 ? (netDailyRateNeeded / stNightly) * 100 : 0;
+  const breakEven = stNightly > 0
+    ? (ltAnnual / (stNightly * seasonalDaySum * platformFeeMultiplier * managementFeeMultiplier)) * 100
+    : 0;
 
   const platformPct = platformRate * 100;
   const advantage   = stAfterFees - ltAnnual;
@@ -77,7 +85,7 @@ export default function RentCompareReport({ property }: Props) {
   const monthlyChartData = useMemo(() => {
     const mgmtM = managementFee > 0 ? 1 - managementFee : 1;
     return MONTHS.map((month, i) => {
-      const days = new Date(2023, i + 1, 0).getDate();
+      const days = new Date(2024, i + 1, 0).getDate();
       const seasonal = stNightly * SEASONALITY_FACTORS[i];
       const net = seasonal * (1 - platformRate) * mgmtM;
       return {
@@ -93,7 +101,7 @@ export default function RentCompareReport({ property }: Props) {
   const monthlyTable = useMemo(() => {
     const mgmtM = managementFee > 0 ? 1 - managementFee : 1;
     return MONTHS.map((month, i) => {
-      const days = new Date(2023, i + 1, 0).getDate();
+      const days = new Date(2024, i + 1, 0).getDate();
       const seasonal = stNightly * SEASONALITY_FACTORS[i];
       const netRate = seasonal * (1 - platformRate) * mgmtM;
       const stNet = Math.round(netRate * (annualOccupancy / 100) * days);
@@ -181,9 +189,10 @@ export default function RentCompareReport({ property }: Props) {
             <p className="text-blue-200 text-xs mt-0.5">Airbnb / short-stay platform</p>
           </div>
           <div className="px-6 py-4 divide-y divide-slate-100">
-            <Row label="Nightly Rate" value={formatter.format(stNightly)} />
+            <Row label="Base Nightly Rate" value={formatter.format(stNightly)} />
+            <Row label="Effective Avg. Nightly Rate" value={formatter.format(effectiveAvgRate)} note="Seasonal pricing: Jan/Dec peak (~2×), Jun–Aug low (~0.68×)" />
             <Row label="Annual Occupancy" value={`${annualOccupancy}%`} />
-            <Row label="Gross Annual Revenue" value={formatter.format(stAnnual)} />
+            <Row label="Gross Annual Revenue" value={formatter.format(stAnnual)} note={`Base rate × seasonal multipliers × 365 days × ${annualOccupancy}% occupancy`} />
             <Row label={`Less Platform Fee (${platformPct.toFixed(0)}%)`} value={`− ${formatter.format(platformAmt)}`} red />
             {managementFee > 0 && (
               <Row
@@ -381,17 +390,22 @@ function Row({
   label,
   value,
   red,
+  note,
 }: {
   label: string;
   value: string;
   red?: boolean;
+  note?: string;
 }) {
   return (
-    <div className="flex justify-between py-2.5">
-      <span className="text-[12px] text-slate-500">{label}</span>
-      <span className={`text-[12px] font-semibold ${red ? "text-red-500" : "text-slate-800"}`}>
-        {value}
-      </span>
+    <div className="py-2.5">
+      <div className="flex justify-between">
+        <span className="text-[12px] text-slate-500">{label}</span>
+        <span className={`text-[12px] font-semibold ${red ? "text-red-500" : "text-slate-800"}`}>
+          {value}
+        </span>
+      </div>
+      {note && <p className="text-[10px] text-slate-400 mt-0.5 italic">{note}</p>}
     </div>
   );
 }

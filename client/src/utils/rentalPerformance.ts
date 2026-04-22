@@ -1,6 +1,6 @@
 // Seasonality factors for each month (Jan-Dec)
 // Normalized so weighted sum × days = 365, meaning: nightly_rate × 365 × occupancy = annual gross
-export const SEASONALITY_FACTORS = [1.7953, 1.4379, 1.0806, 1.0806, 0.6465, 0.5786, 0.5786, 0.5786, 0.6465, 0.7913, 1.0806, 1.7272];
+export const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
 
 // Occupancy rates for different scenarios
 export const OCCUPANCY_RATES = {
