@@ -1,6 +1,9 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatter } from "./formatting";
+
+// PDF-safe formatter: avoids Unicode spaces and special minus signs that jsPDF can't render
+const fmt = (v: number) => `R ${Math.round(v).toLocaleString('en-US')}`;
+const fmtDebit = (v: number) => `- R ${Math.round(v).toLocaleString('en-US')}`;
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const SEASONALITY_FACTORS = [2.11,1.69,1.27,1.27,0.76,0.68,0.68,0.68,0.76,0.93,1.27,2.03];
@@ -153,21 +156,21 @@ export async function generateRentComparePDF(
   }> = [
     {
       label: "SHORT-TERM ANNUAL (NET)",
-      value: formatter.format(stAfterFees),
+      value: fmt(stAfterFees),
       sub: "After all fees & commissions",
       color: EMERALD,
       bg: [240, 253, 250],
     },
     {
       label: "LONG-TERM ANNUAL",
-      value: formatter.format(ltAnnual),
-      sub: `At ${formatter.format(ltMonthly)}/month`,
+      value: fmt(ltAnnual),
+      sub: `At ${fmt(ltMonthly)}/month`,
       color: PURPLE,
       bg: [245, 243, 255],
     },
     {
       label: "ANNUAL ADVANTAGE",
-      value: `${advantage > 0 ? "+" : ""}${formatter.format(advantage)}`,
+      value: `${advantage > 0 ? "+" : ""}${fmt(advantage)}`,
       sub: "Short-term vs long-term",
       color: advantage > 0 ? EMERALD : [220, 38, 38],
       bg: advantage > 0 ? [240, 253, 250] : [254, 242, 242],
@@ -203,15 +206,15 @@ export async function generateRentComparePDF(
   y += 3;
 
   const stBody: string[][] = [
-    ["Nightly Rate", formatter.format(stNightly)],
+    ["Nightly Rate", fmt(stNightly)],
     ["Annual Occupancy", `${occupancy}%`],
-    ["Gross Annual Revenue", formatter.format(stAnnual)],
-    [`Less Platform Fee (${platformPct.toFixed(0)}%)`, `− ${formatter.format(platformAmt)}`],
+    ["Gross Annual Revenue", fmt(stAnnual)],
+    [`Less Platform Fee (${platformPct.toFixed(0)}%)`, fmtDebit(platformAmt)],
   ];
   if (mgmtFee > 0) {
-    stBody.push([`Less Management Fee (${(mgmtFee * 100).toFixed(0)}%)`, `− ${formatter.format(mgmtAmt)}`]);
+    stBody.push([`Less Management Fee (${(mgmtFee * 100).toFixed(0)}%)`, fmtDebit(mgmtAmt)]);
   }
-  stBody.push(["Net Annual Revenue", formatter.format(stAfterFees)]);
+  stBody.push(["Net Annual Revenue", fmt(stAfterFees)]);
 
   autoTable(doc, {
     startY: y,
@@ -246,9 +249,9 @@ export async function generateRentComparePDF(
     startY: y,
     head: [["Metric", "Amount"]],
     body: [
-      ["Monthly Rental", formatter.format(ltMonthly)],
+      ["Monthly Rental", fmt(ltMonthly)],
       ["Annual Escalation", `${property.annualEscalation}%`],
-      ["Annual Revenue", formatter.format(ltAnnual)],
+      ["Annual Revenue", fmt(ltAnnual)],
     ],
     theme: "grid",
     styles: { fontSize: 8.5, cellPadding: 2.5 },
@@ -273,7 +276,7 @@ export async function generateRentComparePDF(
   y += 3;
 
   const conclusion = advantage > 0
-    ? `At ${occupancy}% occupancy, short-term earns ${formatter.format(advantage)} more per year than long-term.`
+    ? `At ${occupancy}% occupancy, short-term earns ${fmt(advantage)} more per year than long-term.`
     : `Long-term may be more suitable at ${occupancy}% occupancy. Short-term needs ${breakEven.toFixed(1)}% to break even.`;
 
   autoTable(doc, {
@@ -313,11 +316,11 @@ export async function generateRentComparePDF(
     const net = seasonal * (1 - platformRate) * mgmtMultiplier;
     return [
       month,
-      formatter.format(seasonal),
-      formatter.format(net * (OCCUPANCY_RATES.low[i] / 100) * days),
-      formatter.format(net * (OCCUPANCY_RATES.medium[i] / 100) * days),
-      formatter.format(net * (OCCUPANCY_RATES.high[i] / 100) * days),
-      formatter.format(ltMonthly),
+      fmt(seasonal),
+      fmt(net * (OCCUPANCY_RATES.low[i] / 100) * days),
+      fmt(net * (OCCUPANCY_RATES.medium[i] / 100) * days),
+      fmt(net * (OCCUPANCY_RATES.high[i] / 100) * days),
+      fmt(ltMonthly),
     ];
   });
 
