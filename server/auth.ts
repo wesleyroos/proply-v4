@@ -131,6 +131,12 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "Incorrect password." });
         }
 
+        // Check account expiry
+        if ((user as any).expiresAt && new Date((user as any).expiresAt) < new Date()) {
+          console.log("Account expired for email:", email);
+          return done(null, false, { message: "This account has expired." });
+        }
+
         // Update last login timestamp
         await db
           .update(users)
