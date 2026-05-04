@@ -29,6 +29,7 @@ export interface RentComparePropertyData {
   breakEvenOccupancy: string;
   annualEscalation: string;
   createdAt: string;
+  photos?: string | null;
 }
 
 async function fetchImageAsBase64(url: string): Promise<string> {
@@ -342,6 +343,47 @@ export async function generateRentComparePDF(
     columnStyles: { 0: { cellWidth: 70 } },
     margin: { left: margin, right: margin },
   });
+
+  // ===========================
+  // PAGE 2 — Photos (if any)
+  // ===========================
+  const photoUrls: string[] = (() => {
+    try { return property.photos ? JSON.parse(property.photos).slice(0, 8) : []; }
+    catch { return []; }
+  })();
+
+  if (photoUrls.length > 0) {
+    const photoBase64s = await Promise.all(photoUrls.map(u => fetchImageAsBase64(u)));
+    const validPhotos = photoBase64s.filter(Boolean);
+
+    if (validPhotos.length > 0) {
+      doc.addPage();
+      addHeader("Property Photos");
+
+      doc.setFontSize(9.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...SLATE_800);
+      doc.text("Property Photos", margin, 22);
+
+      // 4 per row, 2 rows max — thumbnails at ~40×30 mm each
+      const cols = 4;
+      const thumbW = (pageWidth - margin * 2 - (cols - 1) * 2) / cols; // ~40mm
+      const thumbH = thumbW * 0.75; // 4:3
+      const startY = 27;
+
+      validPhotos.forEach((b64, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = margin + col * (thumbW + 2);
+        const y = startY + row * (thumbH + 2);
+        try {
+          doc.addImage(b64, "JPEG", x, y, thumbW, thumbH);
+        } catch {
+          // skip unreadable image
+        }
+      });
+    }
+  }
 
   // ===========================
   // PAGE 2 — Monthly Projections
