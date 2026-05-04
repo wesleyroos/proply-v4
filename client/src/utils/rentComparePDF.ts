@@ -62,18 +62,38 @@ export async function generateRentComparePDF(
   const chartEl = document.getElementById('rent-compare-monthly-chart');
   if (chartEl) {
     try {
+      // Snapshot real dimensions from the live DOM — getBoundingClientRect returns
+      // 0×0 inside the cloned doc so we must read values here, before cloning.
+      const elRect = chartEl.getBoundingClientRect();
+      const svgDims = Array.from(chartEl.getElementsByTagName('svg')).map(svg => {
+        const r = svg.getBoundingClientRect();
+        return { width: r.width, height: r.height };
+      });
+
       const canvas = await html2canvas(chartEl, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
         allowTaint: true,
-        foreignObjectRendering: true,
+        foreignObjectRendering: false,
+        width: elRect.width,
+        height: elRect.height,
         onclone: (clonedDoc) => {
-          const svgElements = clonedDoc.getElementsByTagName('svg');
-          Array.from(svgElements).forEach(svg => {
-            svg.setAttribute('width', svg.getBoundingClientRect().width.toString());
-            svg.setAttribute('height', svg.getBoundingClientRect().height.toString());
+          const cloned = clonedDoc.getElementById('rent-compare-monthly-chart');
+          if (!cloned) return;
+          // Force the ResponsiveContainer to a fixed size so the SVG gets laid out
+          cloned.querySelectorAll<HTMLElement>('.recharts-responsive-container').forEach(c => {
+            c.style.width = `${elRect.width}px`;
+            c.style.height = '270px';
+          });
+          // Apply the pre-captured pixel dimensions to each SVG
+          Array.from(cloned.getElementsByTagName('svg')).forEach((svg, i) => {
+            const d = svgDims[i];
+            if (d && d.width > 0) {
+              svg.setAttribute('width', String(d.width));
+              svg.setAttribute('height', String(d.height));
+            }
           });
         },
       });
