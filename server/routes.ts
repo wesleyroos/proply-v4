@@ -5,6 +5,8 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
 import path from "path";
+import fs from "fs";
+import multer from "multer";
 import {
   properties,
   propertyAnalyzerResults,
@@ -142,8 +144,8 @@ export function registerRoutes(app: Express): Server {
       req.path.startsWith("/api/pdf-generate/") || // PDF generation endpoint (public download)
       req.path === "/payfast/notify" || // PayFast webhook endpoint
       req.path.startsWith("/partner/") || // Partner API — uses x-api-key auth
-      req.path.startsWith("/api/property-analyzer/shared/") || // Public shared analysis
-      req.path.startsWith("/api/properties/shared/") || // Public shared rent compare analysis
+      req.path.startsWith("/property-analyzer/shared/") || // Public shared analysis
+      req.path.startsWith("/properties/shared/") || // Public shared rent compare analysis
 
       (req.path.startsWith("/admin/invitations/") && req.method === "POST" && req.path.includes("/accept")) || // Admin invitation acceptance
       (req.path.startsWith("/admin/invitations/") && req.method === "GET" && req.path.includes("/details")) // Admin invitation details (public)
@@ -1517,6 +1519,79 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error fetching shared property:", error);
       res.status(500).json({ error: "Failed to fetch shared property" });
+    }
+  });
+
+  // ── Property photo upload / delete ──────────────────────────────────────
+
+  const propertyPhotoStorage = multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      const dir = path.join(process.cwd(), "public", "property-photos");
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
+      cb(null, `property-${req.params.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}${ext}`);
+    },
+  });
+
+  const uploadPropertyPhotos = multer({
+    storage: propertyPhotoStorage,
+    limits: { fileSize: 15 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+      const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+      if (allowed.includes(file.mimetype)) cb(null, true);
+      else cb(new Error("Only JPEG, PNG, WebP and GIF images are allowed"));
+    },
+  });
+
+  app.post("/api/properties/:id/photos", uploadPropertyPhotos.array("photos", 20), async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Not authenticated");
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) return res.status(400).send("Invalid property ID");
+    try {
+      const [property] = await db.select().from(properties).where(eq(properties.id, propertyId));
+      if (!property) return res.status(404).send("Property not found");
+      if (property.userId !== req.user!.id && !req.user!.isAdmin) return res.status(403).send("Not authorized");
+
+      const files = (req.files || []) as Array<{ filename: string }>;
+      const newUrls = files.map(f => `/static-assets/property-photos/${f.filename}`);
+      const existing: string[] = property.photos ? JSON.parse(property.photos) : [];
+      const updated = [...existing, ...newUrls];
+
+      await db.update(properties).set({ photos: JSON.stringify(updated) }).where(eq(properties.id, propertyId));
+      res.json({ photos: updated });
+    } catch (error) {
+      console.error("Error uploading property photos:", error);
+      res.status(500).json({ error: "Failed to upload photos" });
+    }
+  });
+
+  app.delete("/api/properties/:id/photos", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Not authenticated");
+    const propertyId = parseInt(req.params.id);
+    if (isNaN(propertyId)) return res.status(400).send("Invalid property ID");
+    try {
+      const [property] = await db.select().from(properties).where(eq(properties.id, propertyId));
+      if (!property) return res.status(404).send("Property not found");
+      if (property.userId !== req.user!.id && !req.user!.isAdmin) return res.status(403).send("Not authorized");
+
+      const { url } = req.body as { url: string };
+      const existing: string[] = property.photos ? JSON.parse(property.photos) : [];
+      const updated = existing.filter(p => p !== url);
+
+      const filename = url.split("/").pop();
+      if (filename) {
+        const filePath = path.join(process.cwd(), "public", "property-photos", filename);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      }
+
+      await db.update(properties).set({ photos: JSON.stringify(updated) }).where(eq(properties.id, propertyId));
+      res.json({ photos: updated });
+    } catch (error) {
+      console.error("Error deleting property photo:", error);
+      res.status(500).json({ error: "Failed to delete photo" });
     }
   });
 

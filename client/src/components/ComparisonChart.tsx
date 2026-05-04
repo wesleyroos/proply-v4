@@ -49,6 +49,7 @@ interface ComparisonData {
   shortTermNightly: number;
   managementFee: number;
   annualOccupancy: number;
+  annualEscalation?: string;
   bedrooms?: string;
   bathrooms?: string;
 }
@@ -155,7 +156,7 @@ export default function ComparisonChart({
                     bedrooms: data.bedrooms || "",
                     bathrooms: data.bathrooms || "",
                     longTermRental: data.longTermMonthly.toString(),
-                    annualEscalation: "0",
+                    annualEscalation: data.annualEscalation || "0",
                     shortTermNightly: data.shortTermNightly.toString(),
                     annualOccupancy: data.annualOccupancy.toString(),
                     managementFee: (data.managementFee * 100).toString(),

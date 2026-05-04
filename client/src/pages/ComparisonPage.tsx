@@ -41,6 +41,7 @@ export default function ComparisonPage() {
     shortTermNightly: number;
     managementFee: number;
     annualOccupancy: number;
+    annualEscalation?: string;
     bedrooms?: string;
     bathrooms?: string;
   }
@@ -98,6 +99,7 @@ export default function ComparisonPage() {
       shortTermNightly,
       managementFee,
       annualOccupancy: parseFloat(data.annualOccupancy),
+      annualEscalation: data.annualEscalation,
       bedrooms: data.bedrooms,
       bathrooms: data.bathrooms,
     });

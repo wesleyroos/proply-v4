@@ -1,7 +1,7 @@
 import { useParams, Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { AlertCircle, ArrowLeft, Share2, Pencil, FileText, ArrowUpDown } from "lucide-react";
+import { AlertCircle, ArrowLeft, Share2, Pencil, FileText, ArrowUpDown, Camera } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import RentCompareReport from "@/components/RentCompareReport";
 import { generateRentComparePDF } from "@/utils/rentComparePDF";
@@ -26,9 +26,11 @@ export default function RentCompareDetailPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const { data: property, isLoading, error } = useQuery({
     queryKey: ["/api/properties", id],
@@ -95,6 +97,45 @@ export default function RentCompareDetailPage() {
     }
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach(f => formData.append("photos", f));
+      const res = await fetch(`/api/properties/${id}/photos`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) throw new Error();
+      await queryClient.invalidateQueries({ queryKey: ["/api/properties", id] });
+      toast({ title: "Photos uploaded", description: `${files.length} photo${files.length > 1 ? "s" : ""} added.` });
+    } catch {
+      toast({ variant: "destructive", title: "Upload failed", description: "Could not upload photos. Please try again." });
+    } finally {
+      setIsUploading(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
+  };
+
+  const handleDeletePhoto = async (url: string) => {
+    try {
+      const res = await fetch(`/api/properties/${id}/photos`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ url }),
+      });
+      if (!res.ok) throw new Error();
+      await queryClient.invalidateQueries({ queryKey: ["/api/properties", id] });
+      toast({ title: "Photo removed" });
+    } catch {
+      toast({ variant: "destructive", title: "Error", description: "Could not remove photo." });
+    }
+  };
+
   const handleExportPDF = async () => {
     if (!property) return;
     setIsExporting(true);
@@ -150,6 +191,25 @@ export default function RentCompareDetailPage() {
               <Pencil className="h-3.5 w-3.5" />
               Edit
             </Button>
+            {/* Upload photos */}
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              className="hidden"
+              onChange={handlePhotoUpload}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => photoInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              <Camera className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{isUploading ? "Uploading…" : "Photos"}</span>
+            </Button>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={handleShare} disabled={isSharing}>
               <Share2 className="h-3.5 w-3.5" />
               {isSharing ? "Copying…" : "Share"}
@@ -169,7 +229,7 @@ export default function RentCompareDetailPage() {
 
       {/* ── Report content ── */}
       <div className="px-4 sm:px-6 py-8">
-        <RentCompareReport property={property} />
+        <RentCompareReport property={property} onDeletePhoto={handleDeletePhoto} />
       </div>
 
       {/* ── Edit Dialog ── */}

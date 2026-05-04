@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   LineChart,
   Line,
@@ -11,7 +11,8 @@ import {
 } from "recharts";
 import { formatter, formatCurrency } from "@/utils/formatting";
 import MapView from "@/components/MapView";
-import { BedDouble, Bath, TrendingUp } from "lucide-react";
+import { BedDouble, Bath, TrendingUp, ImageIcon } from "lucide-react";
+import { PhotoLightbox } from "@/components/PhotoLightbox";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 // Dynamic pricing multipliers: Jan/Dec peak (2×+), Jun–Aug low season (0.68×)
@@ -37,13 +38,15 @@ export interface RentCompareProperty {
   breakEvenOccupancy: string;
   annualEscalation: string;
   createdAt: string;
+  photos?: string | null; // JSON array of photo URLs
 }
 
 interface Props {
   property: RentCompareProperty;
+  onDeletePhoto?: (url: string) => void;
 }
 
-export default function RentCompareReport({ property }: Props) {
+export default function RentCompareReport({ property, onDeletePhoto }: Props) {
   const stNightly       = Number(property.shortTermNightly || 0);
   const annualOccupancy = Number(property.annualOccupancy  || 0);
   const managementFee   = Number(property.managementFee   || 0); // decimal
@@ -81,6 +84,13 @@ export default function RentCompareReport({ property }: Props) {
   const analysisDate = new Date(property.createdAt).toLocaleDateString("en-ZA", {
     day: "2-digit", month: "long", year: "numeric",
   });
+
+  const photos: string[] = useMemo(() => {
+    if (!property.photos) return [];
+    try { return JSON.parse(property.photos); } catch { return []; }
+  }, [property.photos]);
+
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const monthlyChartData = useMemo(() => {
     const mgmtM = managementFee > 0 ? 1 - managementFee : 1;
@@ -179,6 +189,64 @@ export default function RentCompareReport({ property }: Props) {
           </div>
         ))}
       </div>
+
+      {/* ── Photos ── */}
+      {photos.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+            <ImageIcon className="h-4 w-4 text-slate-400" />
+            <span className="font-semibold text-slate-800 text-[14px]">Property Photos</span>
+            <span className="ml-auto text-[11px] text-slate-400">{photos.length} photo{photos.length !== 1 ? "s" : ""}</span>
+          </div>
+          <div className="p-3">
+            <div className="grid grid-cols-2 gap-1.5">
+              {photos.slice(0, 4).map((url, i) => (
+                <button
+                  key={url}
+                  className="relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-100 group focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onClick={() => setLightboxIndex(i)}
+                >
+                  <img
+                    src={url}
+                    alt={`Property photo ${i + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                  />
+                  {/* +N overlay on 4th tile if more than 4 photos */}
+                  {i === 3 && photos.length > 4 && (
+                    <div className="absolute inset-0 bg-black/55 flex items-center justify-center rounded-lg">
+                      <span className="text-white text-xl font-bold">+{photos.length - 4}</span>
+                    </div>
+                  )}
+                  {/* Delete button — only shown if owner passed the callback */}
+                  {onDeletePhoto && (
+                    <button
+                      className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onClick={(e) => { e.stopPropagation(); onDeletePhoto(url); }}
+                      aria-label="Delete photo"
+                    >
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </button>
+              ))}
+            </div>
+            {/* Tap to view hint */}
+            <p className="text-center text-[11px] text-slate-400 mt-2">Tap a photo to view full screen</p>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photos}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
+        />
+      )}
 
       {/* ── Revenue Comparison ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -285,7 +353,7 @@ export default function RentCompareReport({ property }: Props) {
       </div>
 
       {/* ── Monthly Projections Chart ── */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div id="rent-compare-monthly-chart" className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <div className="mb-5">
           <h3 className="font-bold text-slate-800 text-[15px]">Monthly Revenue Projections</h3>
           <p className="text-[11px] text-slate-500 mt-0.5">

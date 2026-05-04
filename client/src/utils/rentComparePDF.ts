@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 
 // PDF-safe formatter: avoids Unicode spaces and special minus signs that jsPDF can't render
 const fmt = (v: number) => `R ${Math.round(v).toLocaleString('en-US')}`;
@@ -55,6 +56,34 @@ export async function generateRentComparePDF(
   property: RentComparePropertyData,
   companyLogo?: string,
 ) {
+  // Capture the monthly projections chart from the DOM before building the PDF
+  let chartImageData = '';
+  let chartAspectRatio = 2.5;
+  const chartEl = document.getElementById('rent-compare-monthly-chart');
+  if (chartEl) {
+    try {
+      const canvas = await html2canvas(chartEl, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        allowTaint: true,
+        foreignObjectRendering: true,
+        onclone: (clonedDoc) => {
+          const svgElements = clonedDoc.getElementsByTagName('svg');
+          Array.from(svgElements).forEach(svg => {
+            svg.setAttribute('width', svg.getBoundingClientRect().width.toString());
+            svg.setAttribute('height', svg.getBoundingClientRect().height.toString());
+          });
+        },
+      });
+      chartImageData = canvas.toDataURL('image/png');
+      chartAspectRatio = canvas.width / canvas.height;
+    } catch {
+      // fall back to table-only layout
+    }
+  }
+
   const doc = new jsPDF();
   const pageWidth  = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -309,6 +338,14 @@ export async function generateRentComparePDF(
   doc.setTextColor(...SLATE_500);
   doc.text("Three occupancy scenarios based on historical Cape Town seasonality patterns.", margin, 27);
 
+  let tableStartY = 31;
+  if (chartImageData) {
+    const imgW = pageWidth - margin * 2;
+    const imgH = Math.min(imgW / chartAspectRatio, 90);
+    doc.addImage(chartImageData, 'PNG', margin, 31, imgW, imgH);
+    tableStartY = 31 + imgH + 6;
+  }
+
   const mgmtMultiplier = mgmtFee > 0 ? 1 - mgmtFee : 1;
   const monthlyBody = MONTHS.map((month, i) => {
     const days = new Date(2023, i + 1, 0).getDate();
@@ -325,7 +362,7 @@ export async function generateRentComparePDF(
   });
 
   autoTable(doc, {
-    startY: 31,
+    startY: tableStartY,
     head: [["Month", "Seasonal Rate", "Conservative", "Moderate", "Optimistic", "Long-Term"]],
     body: monthlyBody,
     theme: "striped",
