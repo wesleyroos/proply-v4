@@ -197,7 +197,7 @@ export default function RentCompareReport({ property, onDeletePhoto }: Props) {
             {photos.slice(0, 4).map((url, i) => (
               <button
                 key={url}
-                className="relative flex-1 h-20 overflow-hidden rounded-md bg-slate-100 group focus:outline-none"
+                className="relative flex-1 h-32 overflow-hidden rounded-md bg-slate-100 group focus:outline-none"
                 onClick={() => setLightboxIndex(i)}
               >
                 <img
