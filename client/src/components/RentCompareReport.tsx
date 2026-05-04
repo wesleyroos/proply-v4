@@ -193,47 +193,38 @@ export default function RentCompareReport({ property, onDeletePhoto }: Props) {
       {/* ── Photos ── */}
       {photos.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
-            <ImageIcon className="h-4 w-4 text-slate-400" />
-            <span className="font-semibold text-slate-800 text-[14px]">Property Photos</span>
-            <span className="ml-auto text-[11px] text-slate-400">{photos.length} photo{photos.length !== 1 ? "s" : ""}</span>
-          </div>
-          <div className="p-3">
-            <div className="grid grid-cols-2 gap-1.5">
-              {photos.slice(0, 4).map((url, i) => (
-                <button
-                  key={url}
-                  className="relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-100 group focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onClick={() => setLightboxIndex(i)}
-                >
-                  <img
-                    src={url}
-                    alt={`Property photo ${i + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                  />
-                  {/* +N overlay on 4th tile if more than 4 photos */}
-                  {i === 3 && photos.length > 4 && (
-                    <div className="absolute inset-0 bg-black/55 flex items-center justify-center rounded-lg">
-                      <span className="text-white text-xl font-bold">+{photos.length - 4}</span>
-                    </div>
-                  )}
-                  {/* Delete button — only shown if owner passed the callback */}
-                  {onDeletePhoto && (
-                    <button
-                      className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                      onClick={(e) => { e.stopPropagation(); onDeletePhoto(url); }}
-                      aria-label="Delete photo"
-                    >
-                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </button>
-              ))}
-            </div>
-            {/* Tap to view hint */}
-            <p className="text-center text-[11px] text-slate-400 mt-2">Tap a photo to view full screen</p>
+          <div className="flex gap-1 p-1.5">
+            {photos.slice(0, 4).map((url, i) => (
+              <button
+                key={url}
+                className="relative flex-1 h-20 overflow-hidden rounded-md bg-slate-100 group focus:outline-none"
+                onClick={() => setLightboxIndex(i)}
+              >
+                <img
+                  src={url}
+                  alt={`Photo ${i + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                />
+                {/* +N overlay on last tile if more than 4 photos */}
+                {i === 3 && photos.length > 4 && (
+                  <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">+{photos.length - 4}</span>
+                  </div>
+                )}
+                {/* Delete button — owner only */}
+                {onDeletePhoto && (
+                  <button
+                    className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    onClick={(e) => { e.stopPropagation(); onDeletePhoto(url); }}
+                    aria-label="Delete photo"
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </button>
+            ))}
           </div>
         </div>
       )}
