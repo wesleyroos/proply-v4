@@ -27,7 +27,7 @@ class AutoSyncService {
 
     // Run sync every 5 minutes (300,000 ms)
     this.syncInterval = setInterval(() => {
-      this.performQuickSync();
+      this.performQuickSync().catch(err => console.error("Auto-sync cycle failed:", err));
     }, 5 * 60 * 1000);
 
     console.log("Auto-sync started: Quick sync will run every 5 minutes");
@@ -61,19 +61,27 @@ class AutoSyncService {
 
     this.isRunning = true;
 
-    // Ensure the sequence is ahead of the current max id (guards against out-of-sync sequences)
-    await db.execute(
-      sql`SELECT setval(pg_get_serial_sequence('sync_tracking', 'id'), COALESCE((SELECT MAX(id) FROM sync_tracking), 0) + 1, false)`
-    );
+    let syncRecord: { id: number };
+    try {
+      // Ensure the sequence is ahead of the current max id (guards against out-of-sync sequences)
+      await db.execute(
+        sql`SELECT setval(pg_get_serial_sequence('sync_tracking', 'id'), COALESCE((SELECT MAX(id) FROM sync_tracking), 0) + 1, false)`
+      );
 
-    // Create sync tracking record
-    const [syncRecord] = await db
-      .insert(syncTracking)
-      .values({
-        syncType: 'quick',
-        status: 'running'
-      })
-      .returning({ id: syncTracking.id });
+      // Create sync tracking record
+      const [record] = await db
+        .insert(syncTracking)
+        .values({
+          syncType: 'quick',
+          status: 'running'
+        })
+        .returning({ id: syncTracking.id });
+      syncRecord = record;
+    } catch (dbErr) {
+      this.isRunning = false;
+      console.error("Auto-sync aborted: database unreachable:", dbErr instanceof Error ? dbErr.message : dbErr);
+      return { success: false, newListings: 0, updatedListings: 0, errors: 1, message: "Database unreachable" };
+    }
 
     let newCount = 0;
     let updatedCount = 0;
