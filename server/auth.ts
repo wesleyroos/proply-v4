@@ -9,6 +9,31 @@ import { users, insertUserSchema, accessCodes, type SelectUser, passwordResetTok
 import { db } from "@db";
 import { eq, and, isNull } from "drizzle-orm";
 import { sendNewUserNotification, sendPasswordResetEmail, sendWelcomeEmail } from "./services/email";
+import rateLimit from "express-rate-limit";
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many login attempts. Please try again in 15 minutes." },
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many accounts created from this IP. Please try again later." },
+});
+
+const passwordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many password reset requests. Please try again in an hour." },
+});
 
 // Add the requireAuth middleware export
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
@@ -170,7 +195,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/register", registerLimiter, async (req, res, next) => {
     try {
       console.log("Registration payload:", req.body);
 
@@ -313,7 +338,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
+  app.post("/api/login", loginLimiter, (req, res, next) => {
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
       if (err) {
         console.error("Login error:", err);
@@ -361,7 +386,7 @@ export function setupAuth(app: Express) {
   // GET /api/user is handled by the comprehensive endpoint in routes.ts (includes product flags, etc.)
 
   // Add new password reset endpoints
-  app.post("/api/forgot-password", async (req, res) => {
+  app.post("/api/forgot-password", passwordLimiter, async (req, res) => {
     try {
       const { email } = req.body;
 
@@ -404,7 +429,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/reset-password", async (req, res) => {
+  app.post("/api/reset-password", passwordLimiter, async (req, res) => {
     try {
       const { token, password } = req.body;
 

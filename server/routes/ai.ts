@@ -1,7 +1,16 @@
 import express from 'express';
 import OpenAI from "openai";
+import rateLimit from "express-rate-limit";
 
 const router = express.Router();
+
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many AI requests. Please slow down." },
+});
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'not-configured' });
 
@@ -195,7 +204,7 @@ function buildMessages(systemPrompt: string, history: any[], userQuery: string) 
 
 // ─── Unified streaming endpoint ─────────────────────────────────────
 
-router.post('/ai-advisor/stream', async (req, res) => {
+router.post('/ai-advisor/stream', aiLimiter, async (req, res) => {
   try {
     const { advisorType, context, userQuery, history } = req.body;
 
