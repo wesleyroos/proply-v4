@@ -147,7 +147,6 @@ export function registerRoutes(app: Express): Server {
       req.path === "/demo-request" || // Demo request endpoint
       req.path === "/download-pdf" || // PDF download endpoint
       req.path === "/download-property-analysis-pdf" || // Property analysis PDF download endpoint
-      req.path.startsWith("/propdata-reports/") || // PropData PDF reports
       req.path === "/pdf-test" || // PDF test endpoint
       req.path === "/payfast/notify" || // PayFast webhook endpoint
       req.path.startsWith("/partner/") || // Partner API — uses x-api-key auth
@@ -256,7 +255,7 @@ export function registerRoutes(app: Express): Server {
       return res.status(401).send("Not authenticated");
     }
 
-    const { userId, subscriptionStatus } = req.body;
+    const { userId, subscriptionStatus, payfastToken } = req.body;
 
     if (!userId || !subscriptionStatus) {
       return res.status(400).send("Missing required fields");
@@ -271,6 +270,12 @@ export function registerRoutes(app: Express): Server {
     if (subscriptionStatus !== 'pro') {
       return res.status(400).json({ error: "Invalid subscription status" });
     }
+
+    // NOTE: This endpoint does not server-side verify payment with PayFast ITN.
+    // Ownership check above prevents cross-account abuse. Full ITN-driven upgrade
+    // is the correct long-term fix (ITN at /api/payfast/notify should be authoritative).
+    const isAdmin = req.user!.role === 'system_admin' || (req.user as any).isAdmin;
+    console.log(`[subscription/upgrade] user=${req.user!.id} admin=${isAdmin} payfastToken=${payfastToken || 'none'}`);
 
     try {
       console.log("Processing subscription upgrade:", {
@@ -1645,8 +1650,10 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Inside the payment webhook route, update the implementation:
+  // Legacy payment webhook — requires auth and self-ownership only
   app.post("/api/payment-webhook", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ error: "Not authenticated" });
+
     console.log("Received webhook payload:", req.body);
 
     // Block sandbox merchant IDs
@@ -1661,6 +1668,11 @@ export function registerRoutes(app: Express): Server {
       token = null,
       user_id,
     } = req.body;
+
+    // Ownership check — a user can only update their own subscription via this endpoint
+    if (user_id !== req.user!.id && req.user!.role !== 'system_admin' && !req.user!.isAdmin) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
 
     try {
       // Verify the user exists first

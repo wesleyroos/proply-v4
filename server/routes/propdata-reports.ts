@@ -1,5 +1,6 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { timingSafeEqual } from 'crypto';
+import rateLimit from 'express-rate-limit';
 import { PropdataPdfShiftService as PropdataPdfService } from '../services/propdataPdfShiftService';
 import { SimplePdfTest } from '../services/simplePdfTest';
 import { sendEmail, generatePropertyReportEmailTemplate } from '../services/emailService';
@@ -12,6 +13,19 @@ import { logReportActivity } from './report-activity';
 import { ReportMappingService } from '../services/reportMappingService';
 
 const router = Router();
+
+const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ error: 'Authentication required' });
+  next();
+};
+
+const reportSendLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many report send requests. Please try again later.' },
+});
 
 // Store for temporary PDF files (in production, use cloud storage)
 const PDF_STORAGE_PATH = path.join(process.cwd(), 'temp_pdfs');
@@ -52,8 +66,7 @@ router.get('/test', async (req, res) => {
 });
 
 // Generate and return PDF directly
-router.post('/generate/:propertyId', async (req, res) => {
-  // Note: Authentication handled by frontend session
+router.post('/generate/:propertyId', requireAuth, async (req, res) => {
   try {
     const { propertyId } = req.params;
     
@@ -94,10 +107,23 @@ router.post('/generate/:propertyId', async (req, res) => {
 });
 
 // Generate PDF and send via email
-router.post('/send/:propertyId', async (req, res) => {
+router.post('/send/:propertyId', requireAuth, reportSendLimiter, async (req, res) => {
   try {
     const { propertyId } = req.params;
     const { recipients } = req.body;
+
+    // Validate recipient emails
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (recipients !== undefined) {
+      if (!Array.isArray(recipients) || recipients.length > 10) {
+        return res.status(400).json({ error: 'recipients must be an array of up to 10 email addresses' });
+      }
+      for (const r of recipients) {
+        if (typeof r !== 'string' || !EMAIL_RE.test(r)) {
+          return res.status(400).json({ error: `Invalid email address: ${String(r).slice(0, 100)}` });
+        }
+      }
+    }
     
     if (!propertyId) {
       return res.status(400).json({ error: 'Property ID is required' });
@@ -190,7 +216,7 @@ router.post('/send/:propertyId', async (req, res) => {
 });
 
 // Download stored PDF report
-router.get('/download/:reportId', async (req, res) => {
+router.get('/download/:reportId', requireAuth, async (req, res) => {
   try {
     const { reportId } = req.params;
     
@@ -262,8 +288,8 @@ router.get('/download/:reportId', async (req, res) => {
 });
 
 
-// Public endpoint — returns all data needed to render the web report preview page
-router.get('/report-data/:propertyId', async (req, res) => {
+// Returns all data needed to render the web report preview page
+router.get('/report-data/:propertyId', requireAuth, async (req, res) => {
   try {
     const { propertyId } = req.params;
     if (!propertyId) return res.status(400).json({ error: 'Property ID is required' });

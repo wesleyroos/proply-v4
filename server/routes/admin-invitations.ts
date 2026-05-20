@@ -241,9 +241,13 @@ router.post("/:token/accept", async (req, res) => {
     const { password, firstName, lastName } = req.body;
 
     if (!password || !firstName || !lastName) {
-      return res.status(400).json({ 
-        error: "Password, firstName, and lastName are required" 
+      return res.status(400).json({
+        error: "Password, firstName, and lastName are required"
       });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
     }
 
     // Find valid invitation

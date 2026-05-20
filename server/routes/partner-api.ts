@@ -1,5 +1,6 @@
 import { Router } from "express";
 import crypto from "crypto";
+import rateLimit from "express-rate-limit";
 import { db } from "../../db";
 import {
   agencyBranches,
@@ -15,6 +16,14 @@ import { trackAgencyReportUsage } from "../utils/billing-tracker";
 import { upsertComparableSales } from "../services/comparableSalesStore";
 
 const router = Router();
+
+const partnerApiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many partner API requests. Please slow down." },
+});
 
 /**
  * Middleware: authenticate partner requests via x-api-key header.
@@ -41,7 +50,9 @@ async function authenticatePartner(
     for (const branch of branches) {
       try {
         const decryptedKey = decrypt(branch.partnerApiKey!);
-        if (decryptedKey === apiKey) {
+        const keysMatch = decryptedKey.length === String(apiKey).length &&
+          crypto.timingSafeEqual(Buffer.from(decryptedKey), Buffer.from(String(apiKey)));
+        if (keysMatch) {
           matchedBranch = branch;
           break;
         }
@@ -97,7 +108,7 @@ async function getAgencyUserId(branchId: number): Promise<number> {
 // ─── POST /generate-report ─────────────────────────────────────────
 // Triggers the full Proply valuation pipeline for a listing and returns
 // the report preview URL. This is the main endpoint James will call.
-router.post("/generate-report", authenticatePartner, async (req, res) => {
+router.post("/generate-report", partnerApiLimiter, authenticatePartner, async (req, res) => {
   const startTime = Date.now();
 
   try {
@@ -709,7 +720,7 @@ RENTAL BASELINE: monthly rental ≈ 0.6% of market value. Use midline valuation 
 
 // ─── GET /report-status/:propertyId ────────────────────────────────
 // Check if a report exists for a given property.
-router.get("/report-status/:propertyId", authenticatePartner, async (req, res) => {
+router.get("/report-status/:propertyId", partnerApiLimiter, authenticatePartner, async (req, res) => {
   try {
     const { propertyId } = req.params;
     const branch = (req as any).agencyBranch;
@@ -755,7 +766,7 @@ router.get("/report-status/:propertyId", authenticatePartner, async (req, res) =
 // ─── PATCH /report/:propertyId ─────────────────────────────────────
 // Edit a generated report — adjust valuations, rental estimates,
 // property details, or financing parameters. All fields optional.
-router.patch("/report/:propertyId", authenticatePartner, async (req, res) => {
+router.patch("/report/:propertyId", partnerApiLimiter, authenticatePartner, async (req, res) => {
   try {
     const { propertyId } = req.params;
     const branch = (req as any).agencyBranch;
@@ -810,7 +821,7 @@ router.patch("/report/:propertyId", authenticatePartner, async (req, res) => {
 
 // ─── GET /listings ─────────────────────────────────────────────────
 // List all synced listings for this agency (so they know which propertyIds to use).
-router.get("/listings", authenticatePartner, async (req, res) => {
+router.get("/listings", partnerApiLimiter, authenticatePartner, async (req, res) => {
   try {
     const branch = (req as any).agencyBranch;
 
