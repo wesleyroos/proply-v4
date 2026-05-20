@@ -41,6 +41,7 @@ import { generateInvoicePDF } from "./pdf-service";
 // Function to track agency report usage for billing
 // Re-export from shared utility so existing call sites don't break
 import { trackAgencyReportUsage } from './utils/billing-tracker';
+import { isValidImageFile } from './utils/mime-validation';
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
@@ -1565,8 +1566,20 @@ export function registerRoutes(app: Express): Server {
       if (!property) return res.status(404).send("Property not found");
       if (property.userId !== req.user!.id && !req.user!.isAdmin) return res.status(403).send("Not authorized");
 
-      const files = (req.files || []) as Array<{ filename: string }>;
-      const newUrls = files.map(f => `/static-assets/property-photos/${f.filename}`);
+      const files = (req.files || []) as Array<{ filename: string; path: string }>;
+
+      // Validate magic bytes — reject and delete any file that isn't a real image
+      const validFiles: typeof files = [];
+      for (const file of files) {
+        if (isValidImageFile(file.path)) {
+          validFiles.push(file);
+        } else {
+          fs.unlink(file.path, () => {});
+          return res.status(400).json({ error: "One or more files are not valid images" });
+        }
+      }
+
+      const newUrls = validFiles.map(f => `/static-assets/property-photos/${f.filename}`);
       const existing: string[] = property.photos ? JSON.parse(property.photos) : [];
       const updated = [...existing, ...newUrls];
 
@@ -2026,29 +2039,61 @@ export function registerRoutes(app: Express): Server {
       console.log("Bedrooms parsed value:", parseFloat(req.body.bedrooms));
       console.log("Full request body:", JSON.stringify(req.body, null, 2));
 
-      // Ensure bedrooms is a decimal
-      const bedroomsValue = parseFloat(req.body.bedrooms);
+      const b = req.body;
+
+      const bedroomsValue = parseFloat(b.bedrooms);
       if (isNaN(bedroomsValue)) {
         return res.status(400).json({ error: "Invalid bedrooms value" });
       }
 
-      const dataToSave = {
-        ...req.body,
-        bedrooms: parseFloat(req.body.bedrooms),
-        bathrooms: parseInt(req.body.bathrooms),
-        parkingSpaces: parseInt(req.body.parkingSpaces || 0),
-        userId: req.user!.id,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const str = (v: any) => (v != null ? String(v) : null);
+      const strReq = (v: any) => String(v ?? "");
 
-      // Insert analysis result with properly formatted data
       const [savedAnalysis] = await db
         .insert(propertyAnalyzerResults)
         .values({
-          ...req.body,
           userId: req.user!.id,
+          title: strReq(b.title).slice(0, 500),
+          address: strReq(b.address).slice(0, 500),
+          propertyUrl: b.propertyUrl ? String(b.propertyUrl).slice(0, 2048) : null,
+          propertyDescription: b.propertyDescription ? String(b.propertyDescription).slice(0, 5000) : null,
+          propertyPhoto: b.propertyPhoto ? String(b.propertyPhoto).slice(0, 2048) : null,
+          purchasePrice: strReq(b.purchasePrice),
+          floorArea: strReq(b.floorArea),
+          bedrooms: String(bedroomsValue),
+          bathrooms: parseInt(b.bathrooms),
+          parkingSpaces: b.parkingSpaces != null ? parseInt(b.parkingSpaces) : null,
+          depositAmount: strReq(b.depositAmount),
+          depositPercentage: strReq(b.depositPercentage),
+          interestRate: strReq(b.interestRate),
+          loanTerm: parseInt(b.loanTerm),
+          monthlyBondRepayment: str(b.monthlyBondRepayment),
+          monthlyLevies: strReq(b.monthlyLevies),
+          monthlyRatesTaxes: strReq(b.monthlyRatesTaxes),
+          otherMonthlyExpenses: strReq(b.otherMonthlyExpenses),
+          maintenancePercent: strReq(b.maintenancePercent),
+          managementFee: strReq(b.managementFee),
+          shortTermNightlyRate: str(b.shortTermNightlyRate),
+          annualOccupancy: str(b.annualOccupancy),
+          shortTermAnnualRevenue: str(b.shortTermAnnualRevenue),
+          longTermAnnualRevenue: str(b.longTermAnnualRevenue),
+          shortTermGrossYield: str(b.shortTermGrossYield),
+          longTermGrossYield: str(b.longTermGrossYield),
+          ratePerSquareMeter: strReq(b.ratePerSquareMeter),
+          longTermRental: str(b.longTermRental),
+          leaseCycleGap: str(b.leaseCycleGap),
+          depositType: b.depositType ? String(b.depositType).slice(0, 50) : null,
+          annualIncomeGrowth: str(b.annualIncomeGrowth),
+          annualExpenseGrowth: str(b.annualExpenseGrowth),
+          annualPropertyAppreciation: str(b.annualPropertyAppreciation),
+          revenueProjections: b.revenueProjections ?? null,
+          operatingExpenses: b.operatingExpenses ?? null,
+          longTermOperatingExpenses: b.longTermOperatingExpenses ?? null,
+          netOperatingIncome: b.netOperatingIncome ?? null,
+          longTermNetOperatingIncome: b.longTermNetOperatingIncome ?? null,
+          investmentMetrics: b.investmentMetrics ?? null,
           createdAt: new Date(),
+          updatedAt: new Date(),
         })
         .returning();
 

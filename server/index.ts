@@ -26,6 +26,19 @@ app.use((_req, res, next) => {
   next();
 });
 
+// CSRF origin check on state-changing API requests
+const ALLOWED_ORIGINS = ['https://app.proply.co.za', 'https://proply.co.za'];
+app.use((req, res, next) => {
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) && req.path.startsWith('/api')) {
+    const origin = req.headers.origin ?? req.headers.referer ?? '';
+    const isDev = app.get('env') === 'development';
+    if (!isDev && origin && !ALLOWED_ORIGINS.some(o => origin.startsWith(o))) {
+      return res.status(403).json({ error: 'Forbidden: cross-origin request rejected' });
+    }
+  }
+  next();
+});
+
 // Essential middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

@@ -9,6 +9,7 @@ import { getBranchesClient } from "../services/propdata/branchesClient";
 import { ProsprClient } from "../services/prospr/client";
 import { autoSyncService } from "../services/autoSync";
 import { encrypt } from "../utils/encryption";
+import { isValidImageFile } from "../utils/mime-validation";
 
 const router = Router();
 
@@ -536,6 +537,11 @@ router.post("/agencies/:agencyId/upload-logo", upload.single('logo'), async (req
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    if (!isValidImageFile(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: "File is not a valid image" });
     }
 
     // Check if agency exists

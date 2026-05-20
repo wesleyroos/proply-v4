@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { isValidImageFile } from "../utils/mime-validation";
 
 const router = Router();
 
@@ -187,6 +188,11 @@ router.post("/agency-profile/logo", upload.single('logo'), async (req, res) => {
 
     if (!req.file) {
       return res.status(400).json({ error: "No logo file provided" });
+    }
+
+    if (!isValidImageFile(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: "File is not a valid image" });
     }
 
     let branchId = req.user.branchId;

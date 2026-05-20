@@ -147,13 +147,13 @@ export function setupAuth(app: Express) {
 
         if (!user) {
           console.log("No user found with email:", email);
-          return done(null, false, { message: "No account found with this email address." });
+          return done(null, false, { message: "Invalid email or password." });
         }
 
         const isMatch = await crypto.compare(password, user.password);
         if (!isMatch) {
           console.log("Password mismatch for email:", email);
-          return done(null, false, { message: "Incorrect password." });
+          return done(null, false, { message: "Invalid email or password." });
         }
 
         // Check account expiry
