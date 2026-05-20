@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { db } from "../../db";
 import {
   propdataListings,
@@ -507,7 +507,7 @@ export class PropdataPdfService {
         `R${(val.value || 0).toLocaleString("en-ZA")}`,
       ]);
 
-      (this.doc as any).autoTable({
+      autoTable(this.doc, {
         startY: this.currentY,
         head: [["Estimate Type", "Size × Rate/m²", "Valuation"]],
         body: tableData,
@@ -613,7 +613,7 @@ export class PropdataPdfService {
           `R${(shortTerm.percentile90.annual || 0).toLocaleString("en-ZA")}`,
         ]);
 
-        (this.doc as any).autoTable({
+        autoTable(this.doc, {
           startY: this.currentY,
           head: [["Performance Level", "Nightly Rate", "Monthly Income", "Annual Income"]],
           body: percentileData,
@@ -678,7 +678,7 @@ export class PropdataPdfService {
             balanceRow.push(`R${Math.round(m?.remainingBalance || 0).toLocaleString()}`);
           });
 
-          (this.doc as any).autoTable({
+          autoTable(this.doc, {
             startY: this.currentY,
             head: [["Metric", "Y1", "Y2", "Y3", "Y4", "Y5", "Y10", "Y20"]],
             body: [bondPaymentRow, equityRow, balanceRow],
@@ -761,7 +761,7 @@ export class PropdataPdfService {
         ]);
       }
 
-      (this.doc as any).autoTable({
+      autoTable(this.doc, {
         startY: this.currentY,
         head: [["Strategy", ...yearHeaders]],
         body: tableRows,
@@ -800,7 +800,7 @@ export class PropdataPdfService {
           ...validYears.map((k) => `R${Math.round(appreciation.yearlyValues[k]).toLocaleString()}`),
         ];
 
-        (this.doc as any).autoTable({
+        autoTable(this.doc, {
           startY: this.currentY,
           head: [["Metric", ...yearHdrs]],
           body: [valueRow],
