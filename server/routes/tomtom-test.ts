@@ -53,6 +53,9 @@ const router = Router();
  *  - lon: string (optional) - Longitude coordinate to test directly
  */
 router.get('/', async (req, res) => {
+  if (!(req as any).user?.isAdmin) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const { address, lat, lon } = req.query;
   
   const testResults: any = {

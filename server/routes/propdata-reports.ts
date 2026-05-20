@@ -95,14 +95,7 @@ router.post('/generate/:propertyId', requireAuth, async (req, res) => {
     
   } catch (error) {
     console.error('Error generating PDF report:', error);
-    
-    // Return detailed error for debugging
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    res.status(500).json({ 
-      error: 'Failed to generate PDF report',
-      details: errorMessage,
-      propertyId: req.params.propertyId
-    });
+    res.status(500).json({ error: 'Failed to generate PDF report' });
   }
 });
 
@@ -205,13 +198,7 @@ router.post('/send/:propertyId', requireAuth, reportSendLimiter, async (req, res
     
   } catch (error) {
     console.error('Error sending PDF report:', error);
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    res.status(500).json({ 
-      error: 'Failed to generate and send PDF report',
-      details: errorMessage,
-      propertyId: req.params.propertyId
-    });
+    res.status(500).json({ error: 'Failed to generate and send PDF report' });
   }
 });
 
@@ -280,10 +267,7 @@ router.get('/download/:reportId', requireAuth, async (req, res) => {
     
   } catch (error) {
     console.error('Error downloading PDF report:', error);
-    res.status(500).json({ 
-      error: 'Failed to download PDF report',
-      details: error instanceof Error ? error.message : 'Unknown error occurred'
-    });
+    res.status(500).json({ error: 'Failed to download PDF report' });
   }
 });
 

@@ -138,7 +138,6 @@ export function registerRoutes(app: Express): Server {
       req.path === "/deal-advisor/find-comparable" ||
       req.path === "/public-revenue-data" ||
       req.path === "/traffic-data" ||
-      req.path === "/tomtom-test" ||
       req.path === "/address-validation/validate" ||
       req.path === "/address-validation/autocomplete" ||
       req.path === "/area-rate" || // New public area rate endpoint
@@ -147,7 +146,6 @@ export function registerRoutes(app: Express): Server {
       req.path === "/demo-request" || // Demo request endpoint
       req.path === "/download-pdf" || // PDF download endpoint
       req.path === "/download-property-analysis-pdf" || // Property analysis PDF download endpoint
-      req.path === "/pdf-test" || // PDF test endpoint
       req.path === "/payfast/notify" || // PayFast tokenization webhook (agency billing)
       req.path === "/payment-webhook" || // PayFast ITN for subscription upgrades (server-to-server)
       req.path.startsWith("/partner/") || // Partner API — uses x-api-key auth
@@ -2888,20 +2886,18 @@ export function registerRoutes(app: Express): Server {
   // PDF reports routes - integrated directly to avoid Vite routing conflicts
   // Test endpoint for basic PDF generation
   app.get('/api/pdf-test', async (req, res) => {
+    if (!req.isAuthenticated() || !(req.user as any)?.isAdmin) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
     try {
-      console.log('Testing basic PDF generation...');
       const { SimplePdfTest } = await import('./services/simplePdfTest.js');
       const pdfBuffer = await SimplePdfTest.createTestPdf();
-      
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename="test.pdf"');
       res.send(pdfBuffer);
     } catch (error: any) {
       console.error('PDF test failed:', error);
-      res.status(500).json({ 
-        error: 'Test PDF generation failed',
-        details: error.message 
-      });
+      res.status(500).json({ error: 'Test PDF generation failed' });
     }
   });
 
