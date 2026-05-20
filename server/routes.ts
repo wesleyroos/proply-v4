@@ -255,6 +255,16 @@ export function registerRoutes(app: Express): Server {
       return res.status(400).send("Missing required fields");
     }
 
+    // Enforce ownership — users can only upgrade their own account
+    if (userId !== req.user!.id && req.user!.role !== 'system_admin' && !(req.user as any).isAdmin) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    // Only allow upgrading to 'pro' — reject all other values
+    if (subscriptionStatus !== 'pro') {
+      return res.status(400).json({ error: "Invalid subscription status" });
+    }
+
     try {
       console.log("Processing subscription upgrade:", {
         userId,
@@ -1597,10 +1607,15 @@ export function registerRoutes(app: Express): Server {
 
   // Inside the payment webhook route, update the implementation:
   app.post("/api/payment-webhook", async (req, res) => {
-    console.log("Received sandbox webhook payload:", req.body);
+    console.log("Received webhook payload:", req.body);
 
-    // For sandbox testing, we'll accept all webhooks
-    // In production, verify the signature here
+    // Block sandbox merchant IDs
+    const SANDBOX_MERCHANT_ID = '10000100';
+    if (req.body.merchant_id === SANDBOX_MERCHANT_ID) {
+      console.warn("Rejected sandbox webhook attempt");
+      return res.status(403).json({ error: "Sandbox payments not accepted in production" });
+    }
+
     const {
       subscription_status = "active",
       token = null,
@@ -1719,6 +1734,10 @@ export function registerRoutes(app: Express): Server {
 
     const { currentPassword, newPassword } = req.body;
     console.log("Password change request for user:", req.user!.id);
+
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
 
     try {
       // Verify current password
@@ -2526,6 +2545,12 @@ export function registerRoutes(app: Express): Server {
 
   // Automated billing management endpoints
   app.post("/api/admin/trigger-billing", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    if ((req.user as any).role !== 'system_admin' && !(req.user as any).isAdmin) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
     try {
       const { triggerManualBilling } = await import('./billing/automated-billing');
       await triggerManualBilling();
@@ -4248,6 +4273,9 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
+    if ((req.user as any).role !== 'system_admin' && !(req.user as any).isAdmin) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
 
     try {
       const usage = await db
@@ -4276,6 +4304,9 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/report-generation-stats", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
+    }
+    if ((req.user as any).role !== 'system_admin' && !(req.user as any).isAdmin) {
+      return res.status(403).json({ error: "Forbidden" });
     }
 
     try {

@@ -17,6 +17,15 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
+// Security headers
+app.use((_req, res, next) => {
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
 // Essential middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -235,7 +244,8 @@ app.use('/static-assets', express.static('public'));
       let html = fs.readFileSync(htmlPath, "utf-8");
 
       const displaySuburb = suburbName.replace(/\b\w/g, (c) => c.toUpperCase());
-      const pageUrl = `https://app.proply.co.za/market/${req.params.suburb}`;
+      const safeSlug = encodeURIComponent(req.params.suburb).replace(/%2F/g, '/');
+      const pageUrl = `https://app.proply.co.za/market/${safeSlug}`;
 
       const title = `Property Sales in ${displaySuburb} | Proply`;
       let description = `Explore recent property sales in ${displaySuburb}.`;
@@ -247,7 +257,7 @@ app.use('/static-assets', express.static('public'));
 
       const ogTags = `
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="${pageUrl}" />
+    <meta property="og:url" content="${pageUrl.replace(/"/g, '&quot;').replace(/</g, '&lt;')}" />
     <meta property="og:title" content="${title.replace(/"/g, "&quot;")}" />
     <meta property="og:description" content="${description.replace(/"/g, "&quot;")}" />
     <meta name="description" content="${description.replace(/"/g, "&quot;")}" />`;

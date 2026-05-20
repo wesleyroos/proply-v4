@@ -82,7 +82,7 @@ export function setupAuth(app: Express) {
     saveUninitialized: true, // Save uninitialized sessions
     name: 'proply.sid',
     cookie: {
-      httpOnly: false, // Allow client-side access for debugging
+      httpOnly: true,
       sameSite: 'lax',
       secure: false,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
@@ -183,19 +183,18 @@ export function setupAuth(app: Express) {
           .send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
       }
 
-      const { 
-        email: username, 
-        password, 
-        email, 
-        userType, 
-        company, 
-        firstName, 
-        lastName, 
+      const {
+        email: username,
+        password,
+        email,
+        userType,
+        company,
+        firstName,
+        lastName,
         accessCode,
-        subscriptionStatus = 'free'
       } = req.body;
 
-      console.log("Processing registration with subscription status:", subscriptionStatus);
+      console.log("Processing registration for email:", email);
 
       let validCode = null;
       if (accessCode) {
@@ -241,7 +240,7 @@ export function setupAuth(app: Express) {
         company,
         firstName,
         lastName,
-        subscriptionStatus: validCode ? "pro" : subscriptionStatus,
+        subscriptionStatus: validCode ? "pro" : "free",
         accessCodeId: validCode?.id || null,
       };
 

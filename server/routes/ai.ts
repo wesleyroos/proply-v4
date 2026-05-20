@@ -184,8 +184,8 @@ function buildMessages(systemPrompt: string, history: any[], userQuery: string) 
   const messages: any[] = [{ role: "system", content: systemPrompt }];
   if (history && Array.isArray(history)) {
     for (const msg of history.slice(-20)) {
-      if (msg.role === 'user' || msg.role === 'assistant') {
-        messages.push({ role: msg.role, content: msg.content });
+      if ((msg.role === 'user' || msg.role === 'assistant') && typeof msg.content === 'string') {
+        messages.push({ role: msg.role as 'user' | 'assistant', content: msg.content.slice(0, 4000) });
       }
     }
   }

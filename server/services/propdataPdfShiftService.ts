@@ -9,7 +9,7 @@ import {
   rentalPerformanceData,
   agencyBranches,
 } from "../../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
@@ -45,7 +45,7 @@ export class PropdataPdfShiftService {
 
     if (!property) {
       const raw = await db.execute(
-        `SELECT * FROM propdata_listings WHERE propdata_id = '${propertyId}' LIMIT 1`,
+        sql`SELECT * FROM propdata_listings WHERE propdata_id = ${propertyId} LIMIT 1`,
       );
       if (raw.rows.length > 0) property = raw.rows[0] as any;
     }
