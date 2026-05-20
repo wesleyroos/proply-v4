@@ -17,6 +17,9 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
+// Trust Railway's load balancer so req.ip and rate limiters see real client IPs
+app.set('trust proxy', 1);
+
 // Security headers
 app.use((_req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');

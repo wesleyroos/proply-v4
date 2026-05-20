@@ -47,35 +47,27 @@ export default function PaymentSuccessPage() {
           throw new Error("Failed to parse registration/upgrade data");
         }
 
-        // If this is an upgrade (has uid), handle differently than new registration
+        // If this is an upgrade (has uid), the ITN webhook has already upgraded the account.
+        // Poll /api/user until subscriptionStatus is 'pro' (max ~15s), then redirect.
         if (compressed.uid) {
-          const response = await fetch("/api/subscription/upgrade", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: compressed.uid,
-              subscriptionStatus: "pro",
-              subscriptionStartDate: new Date(),
-              subscriptionNextBillingDate: new Date(
-                Date.now() + 30 * 24 * 60 * 60 * 1000,
-              ),
-            }),
-            credentials: "include",
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || "Failed to upgrade subscription");
+          for (let attempt = 0; attempt < 10; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            const userRes = await fetch("/api/user", { credentials: "include" });
+            if (userRes.ok) {
+              const userData = await userRes.json();
+              if (userData.subscriptionStatus === "pro") {
+                queryClient.invalidateQueries({ queryKey: ["user"] });
+                setIsProcessing(false);
+                toast({ title: "Success", description: "Your account has been upgraded to Pro!" });
+                setTimeout(() => setLocation("/settings"), 2000);
+                return;
+              }
+            }
           }
-
+          // Timeout: show success anyway — ITN may arrive slightly later
           queryClient.invalidateQueries({ queryKey: ["user"] });
           setIsProcessing(false);
-          toast({
-            title: "Success",
-            description: "Your account has been upgraded to Pro!",
-          });
+          toast({ title: "Payment received", description: "Your Pro subscription will activate shortly." });
           setTimeout(() => setLocation("/settings"), 2000);
           return;
         }

@@ -148,7 +148,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/download-pdf" || // PDF download endpoint
       req.path === "/download-property-analysis-pdf" || // Property analysis PDF download endpoint
       req.path === "/pdf-test" || // PDF test endpoint
-      req.path === "/payfast/notify" || // PayFast webhook endpoint
+      req.path === "/payfast/notify" || // PayFast tokenization webhook (agency billing)
+      req.path === "/payment-webhook" || // PayFast ITN for subscription upgrades (server-to-server)
       req.path.startsWith("/partner/") || // Partner API — uses x-api-key auth
       req.path.startsWith("/property-analyzer/shared/") || // Public shared analysis
       req.path.startsWith("/properties/shared/") || // Public shared rent compare analysis
@@ -249,10 +250,16 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Subscription upgrade endpoint
+  // Subscription upgrade endpoint — admin-only; individual upgrades go through PayFast ITN
   app.post("/api/subscription/upgrade", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
+    }
+
+    // Non-admins cannot self-upgrade via this endpoint; upgrades happen via PayFast ITN at /api/payment-webhook
+    const isAdmin = req.user!.role === 'system_admin' || (req.user as any).isAdmin;
+    if (!isAdmin) {
+      return res.status(403).json({ error: "Forbidden: subscription upgrades are processed via payment webhook" });
     }
 
     const { userId, subscriptionStatus, payfastToken } = req.body;
@@ -261,21 +268,12 @@ export function registerRoutes(app: Express): Server {
       return res.status(400).send("Missing required fields");
     }
 
-    // Enforce ownership — users can only upgrade their own account
-    if (userId !== req.user!.id && req.user!.role !== 'system_admin' && !(req.user as any).isAdmin) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
-
     // Only allow upgrading to 'pro' — reject all other values
     if (subscriptionStatus !== 'pro') {
       return res.status(400).json({ error: "Invalid subscription status" });
     }
 
-    // NOTE: This endpoint does not server-side verify payment with PayFast ITN.
-    // Ownership check above prevents cross-account abuse. Full ITN-driven upgrade
-    // is the correct long-term fix (ITN at /api/payfast/notify should be authoritative).
-    const isAdmin = req.user!.role === 'system_admin' || (req.user as any).isAdmin;
-    console.log(`[subscription/upgrade] user=${req.user!.id} admin=${isAdmin} payfastToken=${payfastToken || 'none'}`);
+    console.log(`[subscription/upgrade] admin=${req.user!.id} upgrading user=${userId}`);
 
     try {
       console.log("Processing subscription upgrade:", {
@@ -1650,78 +1648,102 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Legacy payment webhook — requires auth and self-ownership only
+  // PayFast ITN webhook — server-to-server, no auth cookie, HMAC-verified
   app.post("/api/payment-webhook", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ error: "Not authenticated" });
-
-    console.log("Received webhook payload:", req.body);
-
-    // Block sandbox merchant IDs
-    const SANDBOX_MERCHANT_ID = '10000100';
-    if (req.body.merchant_id === SANDBOX_MERCHANT_ID) {
-      console.warn("Rejected sandbox webhook attempt");
-      return res.status(403).json({ error: "Sandbox payments not accepted in production" });
-    }
-
-    const {
-      subscription_status = "active",
-      token = null,
-      user_id,
-    } = req.body;
-
-    // Ownership check — a user can only update their own subscription via this endpoint
-    if (user_id !== req.user!.id && req.user!.role !== 'system_admin' && !req.user!.isAdmin) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
+    // Always respond 200 to PayFast regardless of outcome (prevents retries on our errors)
+    const data = req.body || {};
+    console.log('[payment-webhook] ITN received:', JSON.stringify(data));
 
     try {
-      // Verify the user exists first
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, user_id))
-        .limit(1);
+      const { PayFastService } = await import('./services/payfast');
+      // Block sandbox merchant in production
+      const SANDBOX_MERCHANT_ID = '10000100';
+      if (process.env.NODE_ENV === 'production' && data.merchant_id === SANDBOX_MERCHANT_ID) {
+        console.warn('[payment-webhook] Rejected sandbox merchant ID in production');
+        return res.status(200).send('OK');
+      }
 
+      const testModeSetting = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, 'payfast_test_mode')
+      });
+      const isTestMode = testModeSetting?.value === 'true';
+      const pf = new PayFastService(isTestMode);
+
+      // Verify HMAC signature — reject anything that doesn't match
+      const signatureValid = pf.validateWebhookSignature(data, data.signature ?? '');
+      if (!signatureValid) {
+        console.error('[payment-webhook] Signature validation FAILED — dropping ITN');
+        return res.status(200).send('OK');
+      }
+
+      // Only process completed payments
+      if (data.payment_status !== 'COMPLETE') {
+        console.log('[payment-webhook] Non-COMPLETE status:', data.payment_status, '— ignoring');
+        return res.status(200).send('OK');
+      }
+
+      // Extract userId from custom_str1 (UpgradeModal sends JSON: {userId, subscriptionStatus})
+      let userId: number | null = null;
+      let isUpgrade = false;
+      try {
+        if (data.custom_str1) {
+          const parsed = JSON.parse(data.custom_str1);
+          const raw = parsed.userId;
+          userId = raw != null ? Number(raw) : null;
+          if (userId != null && isNaN(userId)) userId = null;
+          isUpgrade = parsed.subscriptionStatus === 'pro';
+        }
+      } catch {
+        console.warn('[payment-webhook] Could not parse custom_str1:', data.custom_str1);
+      }
+
+      if (!userId || !isUpgrade) {
+        console.log('[payment-webhook] Not a subscription upgrade ITN — skipping upgrade logic');
+        return res.status(200).send('OK');
+      }
+
+      // Verify the user exists
+      const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
       if (!user) {
-        console.log("Webhook: User not found:", user_id);
-        return res.status(404).json({ error: "User not found" });
+        console.error('[payment-webhook] User not found:', userId);
+        return res.status(200).send('OK');
       }
 
       const now = new Date();
-      // If this is a first-time subscription, set start date to now
       const startDate = user.subscriptionStartDate || now;
-      // Calculate next billing date (30 days from start date)
-      const nextBillingDate = new Date(startDate);
+      const nextBillingDate = new Date(now);
       nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
-      // Update user with sandbox subscription data
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          subscriptionStatus: subscription_status,
-          payfastToken: token,
+      await db.transaction(async (tx) => {
+        await tx.update(users).set({
+          subscriptionStatus: 'pro',
+          payfastToken: data.token ?? user.payfastToken ?? null,
+          payfastSubscriptionStatus: 'active',
           subscriptionStartDate: startDate,
           subscriptionNextBillingDate: nextBillingDate,
-          subscriptionExpiryDate:
-            subscription_status === "active" ? nextBillingDate : now,
+          subscriptionExpiryDate: nextBillingDate,
+          pendingDowngrade: false,
           updatedAt: now,
-        })
-        .where(eq(users.id, user_id))
-        .returning();
+        }).where(eq(users.id, userId));
 
-      console.log("Sandbox: Updated subscription data:", {
-        userId: updatedUser.id,
-        status: updatedUser.subscriptionStatus,
-        token: updatedUser.payfastToken,
-        startDate: updatedUser.subscriptionStartDate,
-        nextBilling: updatedUser.subscriptionNextBillingDate,
+        const invoiceNumber = `INV-${userId}-${Date.now()}`;
+        await tx.insert(invoices).values({
+          userId,
+          amount: '2000.00',
+          description: 'Proply Pro Subscription',
+          status: 'paid',
+          invoiceNumber,
+          paidAt: now,
+          createdAt: now,
+        });
       });
 
-      res.json({ success: true });
+      console.log('[payment-webhook] Subscription upgraded to pro for user:', userId);
     } catch (error) {
-      console.error("Sandbox webhook error:", error);
-      res.status(500).json({ error: "Failed to process sandbox webhook" });
+      console.error('[payment-webhook] Error processing ITN:', error);
     }
+
+    res.status(200).send('OK');
   });
 
   // Update user profile
