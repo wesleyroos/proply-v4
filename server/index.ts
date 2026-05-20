@@ -23,6 +23,22 @@ app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.payfast.co.za https://sandbox.payfast.co.za https://maps.googleapis.com https://maps.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https: http:",
+      "connect-src 'self' https://api.pricelabs.co https://api.openai.com https://maps.googleapis.com",
+      "frame-src https://www.payfast.co.za https://sandbox.payfast.co.za",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
+    ].join('; ')
+  );
   next();
 });
 

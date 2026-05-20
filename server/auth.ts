@@ -102,7 +102,9 @@ declare global {
 export function setupAuth(app: Express) {
   const MemoryStore = createMemoryStore(session);
   const sessionSettings: session.SessionOptions = {
-    secret: "proply-session-secret-stable", // Use a stable secret
+    secret: process.env.SESSION_SECRET || (process.env.NODE_ENV === 'production'
+      ? (() => { throw new Error('SESSION_SECRET env var must be set in production'); })()
+      : "proply-dev-secret-not-for-production"),
     resave: true, // Force session save on each request
     saveUninitialized: true, // Save uninitialized sessions
     name: 'proply.sid',

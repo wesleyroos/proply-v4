@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { isValidImageFile } from "../utils/mime-validation";
+import { isValidImageFile, safeImageExtension } from "../utils/mime-validation";
 
 const router = Router();
 
@@ -193,6 +193,17 @@ router.post("/agency-profile/logo", upload.single('logo'), async (req, res) => {
     if (!isValidImageFile(req.file.path)) {
       fs.unlinkSync(req.file.path);
       return res.status(400).json({ error: "File is not a valid image" });
+    }
+
+    // Rename to canonical extension derived from magic bytes
+    const safeExt = safeImageExtension(req.file.path);
+    const safeBase = path.basename(req.file.filename, path.extname(req.file.filename));
+    const safeName = safeBase + safeExt;
+    const safeFilePath = path.join(path.dirname(req.file.path), safeName);
+    if (req.file.path !== safeFilePath) {
+      fs.renameSync(req.file.path, safeFilePath);
+      req.file.path = safeFilePath;
+      req.file.filename = safeName;
     }
 
     let branchId = req.user.branchId;

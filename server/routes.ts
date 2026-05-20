@@ -41,7 +41,7 @@ import { generateInvoicePDF } from "./pdf-service";
 // Function to track agency report usage for billing
 // Re-export from shared utility so existing call sites don't break
 import { trackAgencyReportUsage } from './utils/billing-tracker';
-import { isValidImageFile } from './utils/mime-validation';
+import { isValidImageFile, safeImageExtension } from './utils/mime-validation';
 import propertyScraper from './routes/property-scraper';
 import sgMail from '@sendgrid/mail';
 import primeRateRouter from './routes/prime-rate';
@@ -1251,11 +1251,27 @@ export function registerRoutes(app: Express): Server {
     }
 
     try {
+      const b = req.body;
       const property = await db
         .insert(properties)
         .values({
-          ...req.body,
           userId: req.user!.id,
+          title: String(b.title ?? "").slice(0, 500),
+          address: String(b.address ?? "").slice(0, 500),
+          bedrooms: String(b.bedrooms ?? ""),
+          bathrooms: String(b.bathrooms ?? ""),
+          longTermRental: String(b.longTermRental ?? ""),
+          annualEscalation: String(b.annualEscalation ?? ""),
+          shortTermNightly: String(b.shortTermNightly ?? ""),
+          annualOccupancy: String(b.annualOccupancy ?? ""),
+          managementFee: String(b.managementFee ?? ""),
+          propertyType: b.propertyType === 'rent_compare' ? 'rent_compare' : 'rent_compare',
+          longTermMonthly: b.longTermMonthly,
+          longTermAnnual: b.longTermAnnual,
+          shortTermMonthly: b.shortTermMonthly,
+          shortTermAnnual: b.shortTermAnnual,
+          shortTermAfterFees: b.shortTermAfterFees,
+          breakEvenOccupancy: b.breakEvenOccupancy,
         })
         .returning();
       res.json(property[0]);
@@ -1569,14 +1585,19 @@ export function registerRoutes(app: Express): Server {
       const files = (req.files || []) as Array<{ filename: string; path: string }>;
 
       // Validate magic bytes — reject and delete any file that isn't a real image
-      const validFiles: typeof files = [];
+      // Also rename to a canonical extension so user-supplied names can't sneak in .php etc.
+      const validFiles: Array<{ filename: string; path: string }> = [];
       for (const file of files) {
-        if (isValidImageFile(file.path)) {
-          validFiles.push(file);
-        } else {
+        if (!isValidImageFile(file.path)) {
           fs.unlink(file.path, () => {});
           return res.status(400).json({ error: "One or more files are not valid images" });
         }
+        const safeExt = safeImageExtension(file.path);
+        const safeBase = path.basename(file.filename, path.extname(file.filename));
+        const safeName = safeBase + safeExt;
+        const safeFullPath = path.join(path.dirname(file.path), safeName);
+        if (file.path !== safeFullPath) fs.renameSync(file.path, safeFullPath);
+        validFiles.push({ filename: safeName, path: safeFullPath });
       }
 
       const newUrls = validFiles.map(f => `/static-assets/property-photos/${f.filename}`);
@@ -2219,11 +2240,52 @@ export function registerRoutes(app: Express): Server {
         return res.status(403).send("Not authorized");
       }
 
+      const b = req.body;
+      const str = (v: any) => (v != null ? String(v) : null);
+      const strReq = (v: any) => String(v ?? "");
+
       const [updated] = await db
         .update(propertyAnalyzerResults)
         .set({
-          ...req.body,
-          userId: req.user!.id,
+          title: b.title !== undefined ? strReq(b.title).slice(0, 500) : undefined,
+          address: b.address !== undefined ? strReq(b.address).slice(0, 500) : undefined,
+          propertyUrl: b.propertyUrl !== undefined ? (b.propertyUrl ? String(b.propertyUrl).slice(0, 2048) : null) : undefined,
+          propertyDescription: b.propertyDescription !== undefined ? (b.propertyDescription ? String(b.propertyDescription).slice(0, 5000) : null) : undefined,
+          propertyPhoto: b.propertyPhoto !== undefined ? (b.propertyPhoto ? String(b.propertyPhoto).slice(0, 2048) : null) : undefined,
+          purchasePrice: b.purchasePrice !== undefined ? strReq(b.purchasePrice) : undefined,
+          floorArea: b.floorArea !== undefined ? strReq(b.floorArea) : undefined,
+          bedrooms: b.bedrooms !== undefined ? String(parseFloat(b.bedrooms)) : undefined,
+          bathrooms: b.bathrooms !== undefined ? parseInt(b.bathrooms) : undefined,
+          parkingSpaces: b.parkingSpaces !== undefined ? (b.parkingSpaces != null ? parseInt(b.parkingSpaces) : null) : undefined,
+          depositAmount: b.depositAmount !== undefined ? strReq(b.depositAmount) : undefined,
+          depositPercentage: b.depositPercentage !== undefined ? strReq(b.depositPercentage) : undefined,
+          interestRate: b.interestRate !== undefined ? strReq(b.interestRate) : undefined,
+          loanTerm: b.loanTerm !== undefined ? parseInt(b.loanTerm) : undefined,
+          monthlyBondRepayment: b.monthlyBondRepayment !== undefined ? str(b.monthlyBondRepayment) : undefined,
+          monthlyLevies: b.monthlyLevies !== undefined ? strReq(b.monthlyLevies) : undefined,
+          monthlyRatesTaxes: b.monthlyRatesTaxes !== undefined ? strReq(b.monthlyRatesTaxes) : undefined,
+          otherMonthlyExpenses: b.otherMonthlyExpenses !== undefined ? strReq(b.otherMonthlyExpenses) : undefined,
+          maintenancePercent: b.maintenancePercent !== undefined ? strReq(b.maintenancePercent) : undefined,
+          managementFee: b.managementFee !== undefined ? strReq(b.managementFee) : undefined,
+          shortTermNightlyRate: b.shortTermNightlyRate !== undefined ? str(b.shortTermNightlyRate) : undefined,
+          annualOccupancy: b.annualOccupancy !== undefined ? str(b.annualOccupancy) : undefined,
+          shortTermAnnualRevenue: b.shortTermAnnualRevenue !== undefined ? str(b.shortTermAnnualRevenue) : undefined,
+          longTermAnnualRevenue: b.longTermAnnualRevenue !== undefined ? str(b.longTermAnnualRevenue) : undefined,
+          shortTermGrossYield: b.shortTermGrossYield !== undefined ? str(b.shortTermGrossYield) : undefined,
+          longTermGrossYield: b.longTermGrossYield !== undefined ? str(b.longTermGrossYield) : undefined,
+          ratePerSquareMeter: b.ratePerSquareMeter !== undefined ? strReq(b.ratePerSquareMeter) : undefined,
+          longTermRental: b.longTermRental !== undefined ? str(b.longTermRental) : undefined,
+          leaseCycleGap: b.leaseCycleGap !== undefined ? str(b.leaseCycleGap) : undefined,
+          depositType: b.depositType !== undefined ? (b.depositType ? String(b.depositType).slice(0, 50) : null) : undefined,
+          annualIncomeGrowth: b.annualIncomeGrowth !== undefined ? str(b.annualIncomeGrowth) : undefined,
+          annualExpenseGrowth: b.annualExpenseGrowth !== undefined ? str(b.annualExpenseGrowth) : undefined,
+          annualPropertyAppreciation: b.annualPropertyAppreciation !== undefined ? str(b.annualPropertyAppreciation) : undefined,
+          revenueProjections: b.revenueProjections !== undefined ? (b.revenueProjections ?? null) : undefined,
+          operatingExpenses: b.operatingExpenses !== undefined ? (b.operatingExpenses ?? null) : undefined,
+          longTermOperatingExpenses: b.longTermOperatingExpenses !== undefined ? (b.longTermOperatingExpenses ?? null) : undefined,
+          netOperatingIncome: b.netOperatingIncome !== undefined ? (b.netOperatingIncome ?? null) : undefined,
+          longTermNetOperatingIncome: b.longTermNetOperatingIncome !== undefined ? (b.longTermNetOperatingIncome ?? null) : undefined,
+          investmentMetrics: b.investmentMetrics !== undefined ? (b.investmentMetrics ?? null) : undefined,
           updatedAt: new Date(),
         })
         .where(eq(propertyAnalyzerResults.id, propertyId))
@@ -4691,16 +4753,28 @@ export function registerRoutes(app: Express): Server {
       
       // PayFast sends form-encoded data in req.body
       const data = req.body || {};
-      
-      console.log('Parsed webhook data:', data);
-      
+
+      // Verify HMAC signature before trusting any webhook data
+      const { PayFastService } = await import('./services/payfast');
+      const testModeSetting = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, 'payfast_test_mode')
+      });
+      const isWebhookTestMode = testModeSetting?.value === 'true';
+      const payfastForVerify = new PayFastService(isWebhookTestMode);
+      const signatureValid = payfastForVerify.validateWebhookSignature(data, data.signature ?? '');
+      if (!signatureValid) {
+        console.error('PayFast webhook signature validation FAILED — request rejected');
+        return res.status(200).send('OK'); // Always 200 to PayFast; invalid sigs are silently dropped
+      }
+
+      console.log('Parsed webhook data (signature verified):', data);
+
       // Check if this is a tokenization response
       if (data.token && data.payment_status && data.m_payment_id) {
         console.log('Tokenization webhook received:', {
           token: data.token,
           payment_status: data.payment_status,
           m_payment_id: data.m_payment_id,
-          signature: data.signature
         });
         
         // Find the tokenization session using m_payment_id (which is our session ID)
