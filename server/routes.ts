@@ -1,6 +1,7 @@
-import { randomUUID, randomBytes } from "crypto";
+import { randomUUID, randomBytes, timingSafeEqual } from "crypto";
 import type { Express } from "express";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
@@ -93,6 +94,14 @@ function normalizeUserField(value: string | null, fieldName?: string): string | 
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
+const changePasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many password change requests. Please try again later." },
+});
+
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
@@ -138,11 +147,8 @@ export function registerRoutes(app: Express): Server {
       req.path === "/demo-request" || // Demo request endpoint
       req.path === "/download-pdf" || // PDF download endpoint
       req.path === "/download-property-analysis-pdf" || // Property analysis PDF download endpoint
-      req.path.startsWith("/propdata-debug/") || // PropData debug endpoint
       req.path.startsWith("/propdata-reports/") || // PropData PDF reports
       req.path === "/pdf-test" || // PDF test endpoint
-      req.path.startsWith("/pdf-generate/") || // PDF generation endpoint (internal)
-      req.path.startsWith("/api/pdf-generate/") || // PDF generation endpoint (public download)
       req.path === "/payfast/notify" || // PayFast webhook endpoint
       req.path.startsWith("/partner/") || // Partner API — uses x-api-key auth
       req.path.startsWith("/property-analyzer/shared/") || // Public shared analysis
@@ -1761,7 +1767,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Change password
-  app.post("/api/change-password", async (req, res) => {
+  app.post("/api/change-password", changePasswordLimiter, async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).send("Not authenticated");
     }
@@ -2867,6 +2873,7 @@ export function registerRoutes(app: Express): Server {
 
   // Generate property PDF report
   app.get('/api/pdf-generate/:propertyId', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ error: "Not authenticated" });
     try {
       const { propertyId } = req.params;
       console.log(`Generating PDF report for property ${propertyId}`);

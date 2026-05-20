@@ -1,5 +1,6 @@
 import express from "express";
 import fetch from "node-fetch";
+import rateLimit from "express-rate-limit";
 import { db } from "../../db";
 import { propdataListings } from "../../db/schema";
 import { eq } from "drizzle-orm";
@@ -8,6 +9,14 @@ import { getComparableSalesByCoordinates, KnowledgeFactoryProperty } from "../se
 import { upsertComparableSales } from "../services/comparableSalesStore";
 
 const router = express.Router();
+
+const dealAdvisorLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please slow down." },
+});
 
 /**
  * Geocode an address string to lat/lng using Google's Geocoding API.
@@ -52,7 +61,7 @@ const KF_PROPERTY_TYPE_MAP: Record<string, string> = {
 };
 
 // Endpoint to get comparable sales data
-router.post("/comparable-sales", async (req, res) => {
+router.post("/comparable-sales", dealAdvisorLimiter, async (req, res) => {
   try {
     const {
       address,
@@ -210,7 +219,7 @@ router.post("/comparable-sales", async (req, res) => {
 });
 
 // Endpoint to get suburb sentiment
-router.post("/suburb-sentiment", async (req, res) => {
+router.post("/suburb-sentiment", dealAdvisorLimiter, async (req, res) => {
   try {
     const { suburb } = req.body;
 
@@ -245,7 +254,7 @@ router.post("/suburb-sentiment", async (req, res) => {
 });
 
 // Endpoint to get area rate
-router.post("/area-rate", async (req, res) => {
+router.post("/area-rate", dealAdvisorLimiter, async (req, res) => {
   try {
     const { address, propertyType, luxuryRating } = req.body;
 
@@ -274,7 +283,7 @@ router.post("/area-rate", async (req, res) => {
 });
 
 // Endpoint to get rental amount
-router.post("/rental-amount", async (req, res) => {
+router.post("/rental-amount", dealAdvisorLimiter, async (req, res) => {
   try {
     const { address, propertySize, bedrooms, condition, luxuryRating } = req.body;
 

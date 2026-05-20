@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { timingSafeEqual } from 'crypto';
 import { PropdataPdfShiftService as PropdataPdfService } from '../services/propdataPdfShiftService';
 import { SimplePdfTest } from '../services/simplePdfTest';
 import { sendEmail, generatePropertyReportEmailTemplate } from '../services/emailService';
@@ -360,7 +361,15 @@ router.patch('/report-data/:propertyId', async (req, res) => {
     });
     if (!report) return res.status(404).json({ error: 'Report not found' });
 
-    const hasValidToken = editToken && (report as any).editToken === editToken;
+    const storedToken: string | null = (report as any).editToken ?? null;
+    const tokenMatch = (tok: string, stored: string) => {
+      try {
+        return timingSafeEqual(Buffer.from(tok), Buffer.from(stored));
+      } catch {
+        return false;
+      }
+    };
+    const hasValidToken = editToken && storedToken && tokenMatch(String(editToken), storedToken);
     const hasSession = req.user && (req.user as any).id === report.userId;
 
     if (!hasValidToken && !hasSession) {

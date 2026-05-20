@@ -5,6 +5,9 @@ const router = express.Router();
 
 // Debug endpoint to examine PropData API response structure
 router.get("/debug-listing/:propdataId", async (req, res) => {
+  if (!req.user?.isAdmin) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
   try {
     const { propdataId } = req.params;
     
