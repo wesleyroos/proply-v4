@@ -139,8 +139,6 @@ export function setupAuth(app: Express) {
       passwordField: 'password'
     }, async (email, password, done) => {
       try {
-        console.log("Login attempt with email:", email);
-
         const [user] = await db
           .select()
           .from(users)
@@ -148,19 +146,16 @@ export function setupAuth(app: Express) {
           .limit(1);
 
         if (!user) {
-          console.log("No user found with email:", email);
           return done(null, false, { message: "Invalid email or password." });
         }
 
         const isMatch = await crypto.compare(password, user.password);
         if (!isMatch) {
-          console.log("Password mismatch for email:", email);
           return done(null, false, { message: "Invalid email or password." });
         }
 
         // Check account expiry
         if ((user as any).expiresAt && new Date((user as any).expiresAt) < new Date()) {
-          console.log("Account expired for email:", email);
           return done(null, false, { message: "This account has expired." });
         }
 
@@ -342,7 +337,6 @@ export function setupAuth(app: Express) {
       }
 
       if (!user) {
-        console.log("Login failed:", info.message);
         return res.status(401).json({
           message: info.message ?? "Invalid credentials"
         });
