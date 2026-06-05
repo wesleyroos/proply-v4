@@ -199,15 +199,10 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", registerLimiter, async (req, res, next) => {
     try {
-      console.log("Registration payload:", req.body);
-
       // Validate request body
       const result = insertUserSchema.safeParse(req.body);
       if (!result.success) {
-        console.log("Validation errors:", result.error.issues);
-        return res
-          .status(400)
-          .send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
+        return res.status(400).json({ error: "Invalid registration data" });
       }
 
       const {
@@ -221,7 +216,6 @@ export function setupAuth(app: Express) {
         accessCode,
       } = req.body;
 
-      console.log("Processing registration for email:", email);
 
       let validCode = null;
       if (accessCode) {
