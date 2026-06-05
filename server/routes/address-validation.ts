@@ -1,7 +1,16 @@
 import express from "express";
 import fetch from "node-fetch";
+import rateLimit from "express-rate-limit";
 
 const router = express.Router();
+
+const autocompleteLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many autocomplete requests. Please try again later." },
+});
 
 /**
  * Get the Google Maps API key from environment variables
@@ -285,7 +294,7 @@ function getMockAddressSuggestions(input: string) {
 }
 
 // Endpoint for address autocomplete suggestions
-router.get("/autocomplete", async (req, res) => {
+router.get("/autocomplete", autocompleteLimiter, async (req, res) => {
   try {
     const { input, testMode } = req.query;
     
