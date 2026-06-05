@@ -1638,7 +1638,7 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/payment-webhook", async (req, res) => {
     // Always respond 200 to PayFast regardless of outcome (prevents retries on our errors)
     const data = req.body || {};
-    console.log('[payment-webhook] ITN received:', JSON.stringify(data));
+    console.log('[payment-webhook] ITN received: merchant=%s status=%s', data.merchant_id, data.payment_status);
 
     try {
       const { PayFastService } = await import('./services/payfast');
@@ -4745,10 +4745,6 @@ export function registerRoutes(app: Express): Server {
 
   // PayFast webhook/notification endpoint
   app.post('/api/payfast/notify', async (req, res) => {
-    console.log('\n=== PAYFAST WEBHOOK RECEIVED ===');
-    console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
-    
     try {
       const { payfastTokenizationSessions, agencyPaymentMethods } = await import('@db/schema');
       
@@ -4768,15 +4764,9 @@ export function registerRoutes(app: Express): Server {
         return res.status(200).send('OK'); // Always 200 to PayFast; invalid sigs are silently dropped
       }
 
-      console.log('Parsed webhook data (signature verified):', data);
-
       // Check if this is a tokenization response
       if (data.token && data.payment_status && data.m_payment_id) {
-        console.log('Tokenization webhook received:', {
-          token: data.token,
-          payment_status: data.payment_status,
-          m_payment_id: data.m_payment_id,
-        });
+        console.log('[payfast/notify] tokenization: status=%s session=%s', data.payment_status, data.m_payment_id);
         
         // Find the tokenization session using m_payment_id (which is our session ID)
         const tokenizationSession = await db.query.payfastTokenizationSessions.findFirst({
@@ -4802,8 +4792,6 @@ export function registerRoutes(app: Express): Server {
         
         // Handle successful tokenization
         if (data.payment_status === 'COMPLETE') {
-          console.log('Processing successful tokenization...');
-          
           // Extract card details from webhook data
           const cardLastFour = data.card_number ? data.card_number.slice(-4) : '****';
           const cardBrand = data.card_type || 'Unknown';
@@ -4825,12 +4813,7 @@ export function registerRoutes(app: Express): Server {
             .set({ status: 'completed' })
             .where(eq(payfastTokenizationSessions.sessionId, data.m_payment_id));
           
-          console.log('✅ Payment method stored successfully:', {
-            token: data.token,
-            lastFour: cardLastFour,
-            brand: cardBrand,
-            branchId: tokenizationSession.agencyBranchId
-          });
+          console.log('[payfast/notify] payment method stored: branch=%s brand=%s last4=%s', tokenizationSession.agencyBranchId, cardBrand, cardLastFour);
         } else {
           console.log('❌ Tokenization failed:', data.payment_status);
           
