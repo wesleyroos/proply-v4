@@ -109,14 +109,17 @@ app.use('/api', aiRouter);
 app.use('/static-assets', express.static('public'));
 
 (async () => {
+  // Fix users_id_seq if it has fallen behind the actual max id (can happen after manual inserts or imports)
+  await db.execute(sql`SELECT setval('users_id_seq', GREATEST((SELECT COALESCE(MAX(id), 1) FROM users), nextval('users_id_seq') - 1))`);
+
   const server = registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    const message = status < 500 ? (err.message || "Bad request") : "Internal Server Error";
 
+    console.error("Unhandled error:", err instanceof Error ? err.message : err);
     res.status(status).json({ message });
-    throw err;
   });
 
   // ── Open Graph meta tag injection for /report/:propertyId ──
