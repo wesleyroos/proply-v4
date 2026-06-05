@@ -223,7 +223,6 @@ export function registerRoutes(app: Express): Server {
           .limit(1);
         productAnalyzerEnabled = branch?.productAnalyzerEnabled ?? false;
         productRentCompareEnabled = branch?.productRentCompareEnabled ?? false;
-        console.log(`Product flags for branch ${agencyBranchId}:`, { productAnalyzerEnabled, productRentCompareEnabled });
       }
 
       // Return user data with role-based fields
@@ -239,15 +238,6 @@ export function registerRoutes(app: Express): Server {
         productAnalyzerEnabled,
         productRentCompareEnabled,
       };
-
-      console.log("Fetched user data:", {
-        id: normalizedUser.id,
-        email: normalizedUser.email,
-        role: normalizedUser.role,
-        franchiseId: normalizedUser.franchiseId,
-        branchId: normalizedUser.branchId,
-        isAdmin: normalizedUser.isAdmin
-      });
 
       res.json(normalizedUser);
     } catch (error) {
@@ -1870,13 +1860,6 @@ export function registerRoutes(app: Express): Server {
         .limit(1);
 
       // Do analysis
-      console.log("\n=== Starting Property Analysis ===");
-      console.log("Current User Data:", {
-        id: user?.id,
-        email: user?.email,
-        currentAnalysisCount: user?.analysisCount || 0,
-        hasUser: !!user
-      });
 
       const propertyData = {
         purchasePrice: parseFloat(req.body.purchasePrice),
@@ -1916,10 +1899,6 @@ export function registerRoutes(app: Express): Server {
       };
 
       const analysisResult = calculateYields(propertyData);
-      console.log(
-        "Analysis complete. Result:",
-        JSON.stringify(analysisResult, null, 2),
-      );
 
       // Check if user belongs to an agency with billing enabled
       let shouldChargeAgency = false;
@@ -1963,23 +1942,10 @@ export function registerRoutes(app: Express): Server {
         change: (updatedUser.analysisCount || 0) - (user?.analysisCount || 0)
       };
 
-      console.log("Analysis response:", analysisResponse);
-
       res.json(analysisResponse);
     } catch (error) {
-      console.error("=== Analysis Error ===");
-      console.error("Error details:", error);
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to analyze property data";
-      console.error("Sending error response:", { error: errorMessage });
-
-      res.status(500).json({
-        error: errorMessage,
-        details: error instanceof Error ? error.message : undefined,
-      });
+      console.error("Analysis error:", error instanceof Error ? error.message : error);
+      res.status(500).json({ error: "Failed to analyze property data" });
     }
   });
 

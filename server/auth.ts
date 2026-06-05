@@ -165,7 +165,6 @@ export function setupAuth(app: Express) {
           .set({ lastLoginAt: new Date() })
           .where(eq(users.id, user.id));
 
-        console.log("Login successful for user:", user.id);
         return done(null, user);
       } catch (err) {
         console.error("Login error:", err);
