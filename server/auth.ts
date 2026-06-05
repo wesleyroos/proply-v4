@@ -324,8 +324,8 @@ export function setupAuth(app: Express) {
         });
       });
     } catch (error) {
-      console.error("Registration error:", error);
-      next(error);
+      console.error("Registration error:", error instanceof Error ? error.message : "Unknown error");
+      return res.status(500).json({ error: "Registration failed. Please try again." });
     }
   });
 
