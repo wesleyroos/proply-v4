@@ -102,6 +102,14 @@ const changePasswordLimiter = rateLimit({
   message: { error: "Too many password change requests. Please try again later." },
 });
 
+const demoRequestLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many demo requests. Please try again later." },
+});
+
 export function registerRoutes(app: Express): Server {
   // Setup authentication first
   setupAuth(app);
@@ -3905,7 +3913,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Demo request endpoint
-  app.post("/api/demo-request", async (req, res) => {
+  app.post("/api/demo-request", demoRequestLimiter, async (req, res) => {
     try {
       const { fullName, email, company, phoneNumber, product, message } = req.body;
       
