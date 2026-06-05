@@ -969,21 +969,17 @@ export function registerRoutes(app: Express): Server {
         } else if (action === "delete") {
           // Handle user deletion
           try {
-            // First, remove the access code reference from the user
-            await db
-              .update(users)
-              .set({ accessCodeId: null })
-              .where(eq(users.id, userId));
-
-            // Then delete any associated access codes
+            await db.update(users).set({ accessCodeId: null }).where(eq(users.id, userId));
+            await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
+            await db.delete(reportGenerations).where(eq(reportGenerations.userId, userId));
+            await db.delete(priceLabsUsage).where(eq(priceLabsUsage.userId, userId));
+            await db.delete(valuationReports).where(eq(valuationReports.userId, userId));
+            await db.delete(rentalPerformanceData).where(eq(rentalPerformanceData.userId, userId));
+            await db.delete(propertyAnalyzerResults).where(eq(propertyAnalyzerResults.userId, userId));
+            await db.delete(subscriptionHistory).where(eq(subscriptionHistory.userId, userId));
             await db.delete(accessCodes).where(eq(accessCodes.usedBy, userId));
-
-            // Delete any properties owned by the user
             await db.delete(properties).where(eq(properties.userId, userId));
-
-            // Finally, delete the user
             await db.delete(users).where(eq(users.id, userId));
-
             res.json({ message: "User deleted successfully" });
           } catch (error) {
             console.error("Error deleting user:", error);
@@ -1032,27 +1028,21 @@ export function registerRoutes(app: Express): Server {
       }
 
       try {
-        // First, remove the access code reference from the user
-        await db
-          .update(users)
-          .set({ accessCodeId: null })
-          .where(eq(users.id, userId));
-
-        // Then delete any associated access codes
+        await db.update(users).set({ accessCodeId: null }).where(eq(users.id, userId));
+        await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
+        await db.delete(reportGenerations).where(eq(reportGenerations.userId, userId));
+        await db.delete(priceLabsUsage).where(eq(priceLabsUsage.userId, userId));
+        await db.delete(valuationReports).where(eq(valuationReports.userId, userId));
+        await db.delete(rentalPerformanceData).where(eq(rentalPerformanceData.userId, userId));
+        await db.delete(propertyAnalyzerResults).where(eq(propertyAnalyzerResults.userId, userId));
+        await db.delete(subscriptionHistory).where(eq(subscriptionHistory.userId, userId));
         await db.delete(accessCodes).where(eq(accessCodes.usedBy, userId));
-
-        // Delete any properties owned by the user
         await db.delete(properties).where(eq(properties.userId, userId));
-
-        // Finally, delete the user
         await db.delete(users).where(eq(users.id, userId));
-
         res.json({ message: "User deleted successfully" });
       } catch (error) {
         console.error("Error deleting user:", error);
-        res
-          .status(500)
-          .json({ error: "Failed to delete user and associated data" });
+        res.status(500).json({ error: "Failed to delete user and associated data" });
       }
     } catch (error) {
       console.error("User deletion error:", error);
