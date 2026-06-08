@@ -47,11 +47,15 @@ app.use((_req, res, next) => {
 
 // CSRF origin check on state-changing API requests
 const ALLOWED_ORIGINS = ['https://app.proply.co.za', 'https://proply.co.za'];
+// Server-to-server webhooks have no browser Origin — exempt them from CSRF check
+const CSRF_EXEMPT_PATHS = ['/api/subscription/payfast-itn'];
 app.use((req, res, next) => {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) && req.path.startsWith('/api')) {
     const origin = req.headers.origin ?? req.headers.referer ?? '';
     const isDev = app.get('env') === 'development';
-    if (!isDev && origin && !ALLOWED_ORIGINS.some(o => origin.startsWith(o))) {
+    const isExempt = CSRF_EXEMPT_PATHS.some(p => req.path.startsWith(p));
+    // CSRF-VULN-002/003/005: also reject requests with no Origin header (not just wrong origin)
+    if (!isDev && !isExempt && (!origin || !ALLOWED_ORIGINS.some(o => origin.startsWith(o)))) {
       return res.status(403).json({ error: 'Forbidden: cross-origin request rejected' });
     }
   }

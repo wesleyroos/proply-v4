@@ -66,8 +66,6 @@ export default function ResetPasswordPage() {
     },
   });
 
-  // Debug: Watch password value changes
-  console.log('Password value:', watch('password'));
 
   const onRequestSubmit = async (data: any) => {
     try {

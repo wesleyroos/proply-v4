@@ -7,6 +7,7 @@ import { streamRentalAdvice, RentalAnalysisContext, ChatMessage } from "@/servic
 import { useProAccess } from "@/hooks/use-pro-access";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import ReactMarkdown from "react-markdown";
+import rehypeSanitize from "rehype-sanitize";
 
 interface RentalAdvisorProps {
   analysisData: RentalAnalysisContext;
@@ -237,7 +238,7 @@ export function RentalAdvisor({ analysisData }: RentalAdvisorProps) {
               >
                 {message.type === 'assistant' ? (
                   <div className="text-sm prose prose-sm prose-gray max-w-none [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:mb-2 [&_ol]:mb-2 [&_li]:mb-0.5 [&_strong]:text-gray-900 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_h1]:font-bold [&_h2]:font-semibold [&_h3]:font-semibold [&_h1]:mb-2 [&_h2]:mb-1.5 [&_h3]:mb-1 [&_table]:text-xs [&_th]:px-2 [&_td]:px-2">
-                    <ReactMarkdown>{message.content || (isLoading && index === messages.length - 1 ? '...' : '')}</ReactMarkdown>
+                    <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content || (isLoading && index === messages.length - 1 ? '...' : '')}</ReactMarkdown>
                   </div>
                 ) : (
                   <p className="text-sm">{message.content}</p>

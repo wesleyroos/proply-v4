@@ -5,6 +5,16 @@ import { eq, and, isNull, gt, inArray } from "drizzle-orm";
 import { requireAdmin, requireRole } from "../auth";
 import { createId } from '@paralleldrive/cuid2';
 import { sendAdminInvitationEmail } from "../utils/admin-emails";
+import rateLimit from "express-rate-limit";
+
+// OAUTH-001 / AUTH-VULN-02: rate-limit unauthenticated token endpoints to prevent enumeration
+const invitationTokenLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please try again later." },
+});
 
 const router = Router();
 
@@ -192,7 +202,7 @@ router.get("/", requireAdmin, async (req, res) => {
 });
 
 // Get invitation details (public endpoint)
-router.get("/:token/details", async (req, res) => {
+router.get("/:token/details", invitationTokenLimiter, async (req, res) => {
   try {
     const { token } = req.params;
 
@@ -235,7 +245,7 @@ router.get("/:token/details", async (req, res) => {
 });
 
 // Accept invitation (public endpoint)
-router.post("/:token/accept", async (req, res) => {
+router.post("/:token/accept", invitationTokenLimiter, async (req, res) => {
   try {
     const { token } = req.params;
     const { password, firstName, lastName } = req.body;
