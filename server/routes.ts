@@ -239,6 +239,8 @@ export function registerRoutes(app: Express): Server {
         productRentCompareEnabled,
       };
 
+      // AUTH-VULN-04: prevent browser/proxy caching of sensitive user data
+      res.set('Cache-Control', 'no-store');
       res.json(normalizedUser);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -549,6 +551,11 @@ export function registerRoutes(app: Express): Server {
 
       if (!user) {
         return res.status(404).json({ error: "User not found" });
+      }
+
+      // AUTHZ-VULN-04: only pro users with an active subscription may cancel
+      if (user.subscriptionStatus !== 'pro') {
+        return res.status(400).json({ error: "No active subscription found" });
       }
 
       // Calculate next billing date as expiry date
@@ -1560,8 +1567,10 @@ export function registerRoutes(app: Express): Server {
 
   const uploadPropertyPhotos = multer({
     storage: propertyPhotoStorage,
-    limits: { fileSize: 15 * 1024 * 1024 },
+    limits: { fileSize: 5 * 1024 * 1024 }, // UPLOAD-002: 5 MB cap
     fileFilter: (_req, file, cb) => {
+      // UPLOAD-007: reject filenames containing null bytes
+      if (file.originalname.includes('\x00')) return cb(new Error("Invalid filename"));
       const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
       if (allowed.includes(file.mimetype)) cb(null, true);
       else cb(new Error("Only JPEG, PNG, WebP and GIF images are allowed"));
@@ -1587,11 +1596,18 @@ export function registerRoutes(app: Express): Server {
           fs.unlink(file.path, () => {});
           return res.status(400).json({ error: "One or more files are not valid images" });
         }
-        const safeExt = safeImageExtension(file.path);
+        // UPLOAD-001/005: re-encode through sharp — strips all metadata (EXIF/XMP/tEXt)
+        // and discards any embedded HTML/scripts, mitigating polyglot payloads.
         const safeBase = path.basename(file.filename, path.extname(file.filename));
-        const safeName = safeBase + safeExt;
+        const safeName = safeBase + ".jpg";
         const safeFullPath = path.join(path.dirname(file.path), safeName);
-        if (file.path !== safeFullPath) fs.renameSync(file.path, safeFullPath);
+        try {
+          await sharp(file.path).jpeg({ quality: 85 }).toFile(safeFullPath);
+          fs.unlink(file.path, () => {});
+        } catch {
+          fs.unlink(file.path, () => {});
+          return res.status(400).json({ error: "One or more files could not be processed" });
+        }
         validFiles.push({ filename: safeName, path: safeFullPath });
       }
 
@@ -2670,7 +2686,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.get("/api/admin/billing-preview/:year/:month", async (req, res) => {
+  app.get("/api/admin/billing-preview/:year/:month", requireAdmin, async (req, res) => {
     try {
       const { year, month } = req.params;
       const yearNum = parseInt(year);
@@ -2936,21 +2952,54 @@ export function registerRoutes(app: Express): Server {
     }
   });
   
+  // SSRF-VULN-01: validate URL before fetching — block private/link-local IPs
+  function isPrivateIP(ip: string): boolean {
+    return /^127\./.test(ip) ||
+      /^10\./.test(ip) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(ip) ||
+      /^192\.168\./.test(ip) ||
+      /^169\.254\./.test(ip) ||
+      /^0\./.test(ip) ||
+      /^::1$/.test(ip) ||
+      /^f[cd]/i.test(ip);
+  }
+
+  async function assertSafeUrl(urlStr: string): Promise<void> {
+    let parsed: URL;
+    try { parsed = new URL(urlStr); } catch { throw new Error('Invalid URL'); }
+    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Only HTTP/HTTPS allowed');
+    const dns = await import('dns/promises');
+    let addrs: string[];
+    try {
+      const res = await dns.lookup(parsed.hostname, { all: true });
+      addrs = res.map((r: any) => r.address);
+    } catch { throw new Error('Failed to resolve hostname'); }
+    for (const addr of addrs) {
+      if (isPrivateIP(addr)) throw new Error('Private addresses not allowed');
+    }
+  }
+
   // Image optimization endpoint for faster loading
-  app.get("/api/optimize-image", async (req, res) => {
+  app.get("/api/optimize-image", requireAuth, async (req, res) => {
     try {
       const { url, width, height, quality } = req.query;
-      
+
       if (!url || typeof url !== 'string') {
         return res.status(400).json({ error: "URL parameter is required" });
+      }
+
+      try {
+        await assertSafeUrl(url);
+      } catch (err: any) {
+        return res.status(400).json({ error: err.message || 'Invalid URL' });
       }
 
       const targetWidth = parseInt(width as string) || 300;
       const targetHeight = parseInt(height as string) || 300;
       const targetQuality = parseInt(quality as string) || 70;
 
-      // Fetch the original image
-      const response = await fetch(url);
+      // Fetch the original image — redirect:error prevents NIP.IO-style redirect bypass
+      const response = await fetch(url, { redirect: 'error' } as any);
       if (!response.ok) {
         return res.status(404).json({ error: "Image not found" });
       }

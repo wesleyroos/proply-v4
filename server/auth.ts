@@ -347,6 +347,8 @@ export function setupAuth(app: Express) {
           return next(err);
         }
 
+        // AUTH-VULN-04: prevent browser/proxy caching of authenticated responses
+        res.set('Cache-Control', 'no-store');
         return res.json({
           id: user.id,
           email: user.email,

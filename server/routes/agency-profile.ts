@@ -175,19 +175,27 @@ router.put("/agency-profile", async (req, res) => {
 });
 
 // POST /api/agency-profile/logo - Upload agency logo
-router.post("/agency-profile/logo", upload.single('logo'), async (req, res) => {
+// UPLOAD-003: role check runs BEFORE multer to prevent SVG MIME crash disclosing admin-only endpoint
+router.post("/agency-profile/logo", (req, res, next) => {
+  if (!req.user) return res.status(401).json({ error: "Authentication required" });
+  if (req.user.role !== 'branch_admin' && req.user.role !== 'franchise_admin') {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  // Run multer after auth/role check; capture multer errors cleanly
+  upload.single('logo')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || 'File upload error' });
+    next();
+  });
+}, async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: "Authentication required" });
-    }
-
-    // Only allow branch_admin and franchise_admin to upload logos
-    if (req.user.role !== 'branch_admin' && req.user.role !== 'franchise_admin') {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
     if (!req.file) {
       return res.status(400).json({ error: "No logo file provided" });
+    }
+
+    // UPLOAD-007: reject filenames with null bytes
+    if (req.file.originalname.includes('\x00')) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: "Invalid filename" });
     }
 
     if (!isValidImageFile(req.file.path)) {
