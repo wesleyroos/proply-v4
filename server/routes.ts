@@ -1267,6 +1267,7 @@ export function registerRoutes(app: Express): Server {
           shortTermNightly: String(b.shortTermNightly ?? ""),
           annualOccupancy: String(b.annualOccupancy ?? ""),
           managementFee: String(b.managementFee ?? ""),
+          platformFee: String(b.platformFee ?? ""),
           propertyType: b.propertyType === 'rent_compare' ? 'rent_compare' : 'rent_compare',
           longTermMonthly: b.longTermMonthly,
           longTermAnnual: b.longTermAnnual,
@@ -1303,6 +1304,7 @@ export function registerRoutes(app: Express): Server {
             shortTermNightly: properties.shortTermNightly,
             annualOccupancy: properties.annualOccupancy,
             managementFee: properties.managementFee,
+            platformFee: properties.platformFee,
             propertyType: properties.propertyType,
             longTermMonthly: properties.longTermMonthly,
             longTermAnnual: properties.longTermAnnual,
@@ -1435,6 +1437,7 @@ export function registerRoutes(app: Express): Server {
         shortTermNightly: stNightly,
         annualOccupancy: annOccupancy,
         managementFee: mgmtFee,
+        platformFee: pfFee,
       } = req.body;
 
       // Recalculate derived fields
@@ -1444,6 +1447,10 @@ export function registerRoutes(app: Express): Server {
       const occupancyRate = parseFloat(annOccupancy) / 100;
       const mgmtFeeNum = (parseFloat(mgmtFee) || 0) / 100; // convert % input to decimal
 
+      // Platform fee: use explicit value if provided, else fall back to 15% (managed) / 3% (self)
+      const pfPct = parseFloat(pfFee) || (mgmtFeeNum > 0 ? 15 : 3);
+      const platformFeeRate = pfPct / 100;
+
       const SEASONALITY_FACTORS = [2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03];
       const shortTermAnnualNum = SEASONALITY_FACTORS.reduce((sum, factor, month) => {
         const daysInMonth = new Date(2023, month + 1, 0).getDate();
@@ -1451,14 +1458,12 @@ export function registerRoutes(app: Express): Server {
       }, 0);
       const shortTermMonthlyNum = shortTermAnnualNum / 12;
 
-      const platformFeeRate = mgmtFeeNum > 0 ? 0.15 : 0.03;
       const afterPlatformFee = shortTermAnnualNum * (1 - platformFeeRate);
       const managementFeeAmount = mgmtFeeNum > 0 ? afterPlatformFee * mgmtFeeNum : 0;
       const shortTermAfterFeesNum = afterPlatformFee - managementFeeAmount;
 
-      const platformFeeMultiplier = mgmtFeeNum > 0 ? 0.85 : 0.97;
       const managementFeeMultiplier = 1 - mgmtFeeNum;
-      const netDailyRateNeeded = longTermAnnualNum / (365 * platformFeeMultiplier * managementFeeMultiplier);
+      const netDailyRateNeeded = longTermAnnualNum / (365 * (1 - platformFeeRate) * managementFeeMultiplier);
       const breakEvenOccupancyNum = stNightlyNum > 0 ? (netDailyRateNeeded / stNightlyNum) * 100 : 0;
 
       const [updated] = await db
@@ -1473,6 +1478,7 @@ export function registerRoutes(app: Express): Server {
           shortTermNightly: String(stNightly),
           annualOccupancy: String(annOccupancy),
           managementFee: String(mgmtFeeNum), // stored as decimal (0.20 for 20%)
+          platformFee: String(pfPct), // stored as percent (14 for 14%)
           longTermMonthly: String(longTermMonthlyNum),
           longTermAnnual: String(longTermAnnualNum),
           shortTermMonthly: String(shortTermMonthlyNum),

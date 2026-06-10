@@ -47,6 +47,7 @@ interface PropertyFormProps {
     shortTermNightly: string;
     annualOccupancy: string;
     managementFee: string;
+    platformFee: string;
   }) => void;
 }
 
@@ -74,6 +75,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
       shortTermNightly: "",
       annualOccupancy: "",
       managementFee: "",
+      platformFee: "",
     },
   });
 
@@ -355,6 +357,49 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
             )}
           />
 
+          <FormField
+            control={form.control}
+            name="platformFee"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Platform Fee (%)</FormLabel>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {[
+                    { label: "Lekkerslaap", value: "14" },
+                    { label: "Airbnb", value: "23" },
+                    { label: "Booking.com", value: "18" },
+                    { label: "Direct", value: "8" },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => field.onChange(preset.value)}
+                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                        field.value === preset.value
+                          ? "bg-[#1BA3FF] text-white border-[#1BA3FF]"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-[#1BA3FF] hover:text-[#1BA3FF]"
+                      }`}
+                    >
+                      {preset.label} {preset.value}%
+                    </button>
+                  ))}
+                </div>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="e.g. 14"
+                  />
+                </FormControl>
+                <p className="text-sm text-muted-foreground">
+                  The fee charged by the booking platform (Airbnb, Lekkerslaap, etc.)
+                </p>
+              </FormItem>
+            )}
+          />
+
           <div className="space-y-4">
             <Button
               type="submit"
@@ -383,6 +428,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                 shortTermNightly: "2500",
                 annualOccupancy: "65",
                 managementFee: "15",
+                platformFee: "14",
               });
               return 0;
             }

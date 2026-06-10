@@ -73,6 +73,7 @@ export default function RentCompareDetailPage() {
       managementFee:   property?.managementFee
         ? String(Number(property.managementFee) * 100)
         : "",
+      platformFee:     property?.platformFee || "",
     });
     setIsEditing(true);
   };
@@ -84,7 +85,7 @@ export default function RentCompareDetailPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({ ...editForm, platformFee: editForm.platformFee || "" }),
       });
       if (!res.ok) throw new Error();
       await queryClient.invalidateQueries({ queryKey: ["/api/properties", id] });
@@ -309,7 +310,41 @@ export default function RentCompareDetailPage() {
                   onChange={(e) => setEditForm((f) => ({ ...f, managementFee: e.target.value }))}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Enter 0 for no management fee. E.g. enter 20 for 20%. Platform fee (3% or 15%) is set automatically.
+                  Enter 0 for no management fee. E.g. enter 20 for 20%.
+                </p>
+              </div>
+              <div className="col-span-2">
+                <Label>Platform Fee (%)</Label>
+                <div className="flex flex-wrap gap-1.5 mb-2 mt-1">
+                  {[
+                    { label: "Lekkerslaap", value: "14" },
+                    { label: "Airbnb", value: "23" },
+                    { label: "Booking.com", value: "18" },
+                    { label: "Direct", value: "8" },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setEditForm((f) => ({ ...f, platformFee: preset.value }))}
+                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                        editForm.platformFee === preset.value
+                          ? "bg-[#1BA3FF] text-white border-[#1BA3FF]"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-[#1BA3FF] hover:text-[#1BA3FF]"
+                      }`}
+                    >
+                      {preset.label} {preset.value}%
+                    </button>
+                  ))}
+                </div>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={editForm.platformFee || ""}
+                  onChange={(e) => setEditForm((f) => ({ ...f, platformFee: e.target.value }))}
+                  placeholder="e.g. 14"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Fee charged by the booking platform. Defaults to 15% if managed, 3% if self-managed.
                 </p>
               </div>
             </div>

@@ -48,6 +48,7 @@ interface ComparisonData {
   breakEvenOccupancy: number;
   shortTermNightly: number;
   managementFee: number;
+  platformFee: number;
   annualOccupancy: number;
   annualEscalation?: string;
   bedrooms?: string;
@@ -84,7 +85,7 @@ export default function ComparisonChart({
   };
 
   const annualRevenue = calculateAnnualRevenue();
-  const platformFeeAmount = annualRevenue * (data.managementFee > 0 ? 0.15 : 0.03);
+  const platformFeeAmount = annualRevenue * (data.platformFee / 100);
   const afterPlatformFee = annualRevenue - platformFeeAmount;
   const managementFeeAmount = data.managementFee > 0 ? afterPlatformFee * data.managementFee : 0;
   const finalAnnualRevenue = afterPlatformFee - managementFeeAmount;
@@ -110,9 +111,7 @@ export default function ComparisonChart({
     });
     const daysInMonth = new Date(2023, i + 1, 0).getDate();
 
-    // Base nightly rate adjusted for platform fees
-    const platformFee = data.managementFee > 0 ? 0.15 : 0.03;
-    const feeAdjustedRate = data.shortTermNightly * (1 - platformFee);
+    const feeAdjustedRate = data.shortTermNightly * (1 - data.platformFee / 100);
 
     // Calculate revenue based on occupancy scenarios
     const lowRevenue =
@@ -160,6 +159,7 @@ export default function ComparisonChart({
                     shortTermNightly: data.shortTermNightly.toString(),
                     annualOccupancy: data.annualOccupancy.toString(),
                     managementFee: (data.managementFee * 100).toString(),
+                    platformFee: data.platformFee.toString(),
                     longTermMonthly: data.longTermMonthly,
                     longTermAnnual: data.longTermAnnual,
                     shortTermMonthly: data.shortTermMonthly,

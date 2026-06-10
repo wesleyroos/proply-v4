@@ -71,6 +71,7 @@ export const properties = pgTable("properties", {
   shortTermAnnual: decimal("short_term_annual", { precision: 10, scale: 2 }).notNull(),
   shortTermAfterFees: decimal("short_term_after_fees", { precision: 10, scale: 2 }).notNull(),
   breakEvenOccupancy: decimal("break_even_occupancy", { precision: 5, scale: 2 }).notNull(),
+  platformFee: text("platform_fee"),
   shareToken: text("share_token").unique(),
   photos: text("photos"), // JSON array of photo URLs
   createdAt: timestamp("created_at").defaultNow().notNull(),

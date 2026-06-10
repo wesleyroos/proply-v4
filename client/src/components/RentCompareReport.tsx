@@ -31,6 +31,7 @@ export interface RentCompareProperty {
   shortTermNightly: string;
   annualOccupancy: string;
   managementFee: string;
+  platformFee?: string | null;
   longTermMonthly: string;
   longTermAnnual: string;
   shortTermAnnual: string;
@@ -55,7 +56,9 @@ export default function RentCompareReport({ property, onDeletePhoto }: Props) {
 
   // Always recalculate from raw inputs so stale stored values don't affect display
   const occupancyRate  = annualOccupancy / 100;
-  const platformRate   = managementFee > 0 ? 0.15 : 0.03;
+  // Use stored platform fee if set; fall back to legacy default
+  const platformPct  = Number(property.platformFee) || (managementFee > 0 ? 15 : 3);
+  const platformRate = platformPct / 100;
 
   // Weighted day sum across all months using seasonal rate multipliers
   const seasonalDaySum = SEASONALITY_FACTORS.reduce((sum, factor, month) => {
@@ -71,15 +74,12 @@ export default function RentCompareReport({ property, onDeletePhoto }: Props) {
   // Effective average nightly rate (accounts for seasonal pricing)
   const effectiveAvgRate = occupancyRate > 0 ? stAnnual / (365 * occupancyRate) : 0;
 
-  // Break-even using same seasonality-weighted formula for consistency
-  const platformFeeMultiplier   = managementFee > 0 ? 0.85 : 0.97;
   const managementFeeMultiplier = 1 - managementFee;
   const breakEven = stNightly > 0
-    ? (ltAnnual / (stNightly * seasonalDaySum * platformFeeMultiplier * managementFeeMultiplier)) * 100
+    ? (ltAnnual / (stNightly * seasonalDaySum * (1 - platformRate) * managementFeeMultiplier)) * 100
     : 0;
 
-  const platformPct = platformRate * 100;
-  const advantage   = stAfterFees - ltAnnual;
+  const advantage = stAfterFees - ltAnnual;
 
   const analysisDate = new Date(property.createdAt).toLocaleDateString("en-ZA", {
     day: "2-digit", month: "long", year: "numeric",

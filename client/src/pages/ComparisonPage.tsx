@@ -40,6 +40,7 @@ export default function ComparisonPage() {
     breakEvenOccupancy: number;
     shortTermNightly: number;
     managementFee: number;
+    platformFee: number;
     annualOccupancy: number;
     annualEscalation?: string;
     bedrooms?: string;
@@ -64,6 +65,10 @@ export default function ComparisonPage() {
     const occupancyRate = parseFloat(data.annualOccupancy) / 100;
     const managementFee = parseFloat(data.managementFee) / 100;
 
+    // Platform fee: use user-entered value or fall back to default (15% managed / 3% self)
+    const platformFeePct = parseFloat(data.platformFee) || (managementFee > 0 ? 15 : 3);
+    const platformFeeRate = platformFeePct / 100;
+
     const SEASONALITY_FACTORS = [
       2.11, 1.69, 1.27, 1.27, 0.76, 0.68, 0.68, 0.68, 0.76, 0.93, 1.27, 2.03,
     ];
@@ -75,17 +80,13 @@ export default function ComparisonPage() {
     }, 0);
     const shortTermMonthly = shortTermAnnual / 12;
 
-    const platformFeeRate = managementFee > 0 ? 0.15 : 0.03;
-    const platformFeeAmount = shortTermAnnual * platformFeeRate;
     const shortTermAfterPlatformFee = shortTermAnnual * (1 - platformFeeRate);
-
     const managementFeeAmount = managementFee > 0 ? shortTermAfterPlatformFee * managementFee : 0;
     const shortTermAfterFees = shortTermAfterPlatformFee - managementFeeAmount;
 
-    const platformFeeMultiplier = managementFee > 0 ? 0.85 : 0.97;
     const managementFeeMultiplier = 1 - managementFee;
     const netDailyRateNeeded =
-      longTermAnnual / (365 * platformFeeMultiplier * managementFeeMultiplier);
+      longTermAnnual / (365 * (1 - platformFeeRate) * managementFeeMultiplier);
     const breakEvenOccupancy = (netDailyRateNeeded / shortTermNightly) * 100;
 
     setComparisonData({
@@ -98,6 +99,7 @@ export default function ComparisonPage() {
       breakEvenOccupancy: Math.round(breakEvenOccupancy * 10) / 10,
       shortTermNightly,
       managementFee,
+      platformFee: platformFeePct,
       annualOccupancy: parseFloat(data.annualOccupancy),
       annualEscalation: data.annualEscalation,
       bedrooms: data.bedrooms,
@@ -307,12 +309,11 @@ export default function ComparisonPage() {
         doc.text("Short-Term Performance", margin, currentY);
         currentY += 10;
 
-        const platformFee = comparisonData.managementFee > 0 ? 15 : 3;
         const shortTermDetails = [
           ["Annual Revenue", formatter.format(comparisonData.shortTermAnnual)],
           ["Monthly Average", formatter.format(comparisonData.shortTermMonthly)],
           ["Nightly Rate", formatter.format(comparisonData.shortTermNightly)],
-          ["Platform Fee", `${platformFee}%`],
+          ["Platform Fee", `${comparisonData.platformFee}%`],
           ["Annual Occupancy", `${comparisonData.annualOccupancy}%`],
           ["Management Fee", `${comparisonData.managementFee}%`],
         ];
@@ -513,10 +514,10 @@ export default function ComparisonPage() {
                       advantagePercent: comparisonData.longTermAnnual > 0
                         ? ((comparisonData.shortTermAfterFees - comparisonData.longTermAnnual) / comparisonData.longTermAnnual) * 100
                         : 0,
-                      platformFeeRate: comparisonData.managementFee > 0 ? 0.15 : 0.03,
-                      platformFeeAmount: comparisonData.shortTermAnnual * (comparisonData.managementFee > 0 ? 0.15 : 0.03),
+                      platformFeeRate: comparisonData.platformFee / 100,
+                      platformFeeAmount: comparisonData.shortTermAnnual * (comparisonData.platformFee / 100),
                       managementFeeAmount: comparisonData.managementFee > 0
-                        ? comparisonData.shortTermAnnual * (1 - 0.15) * comparisonData.managementFee
+                        ? comparisonData.shortTermAnnual * (1 - comparisonData.platformFee / 100) * comparisonData.managementFee
                         : 0,
                       ...(revenueData?.["50"] ? {
                         marketData: {
