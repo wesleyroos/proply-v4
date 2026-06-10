@@ -232,7 +232,7 @@ export default function ComparisonChart({
                 {formatter.format(data.shortTermNightly)}{" "}
                 <span className="text-base font-normal text-gray-600">
                   ({formatter.format(
-                    data.shortTermNightly * (1 - (data.managementFee > 0 ? 0.15 : 0.03)),
+                    data.shortTermNightly * (1 - data.platformFee / 100),
                   )})
                 </span>
               </p>
@@ -331,7 +331,7 @@ export default function ComparisonChart({
                   </div>
                   <div className="flex justify-between text-red-600">
                     <span>
-                      Less Platform Fee ({data.managementFee > 0 ? "15.0%" : "3.0%"})
+                      Less Platform Fee ({data.platformFee.toFixed(1)}%)
                     </span>
                     <span>-{formatter.format(platformFeeAmount)}</span>
                   </div>
@@ -372,7 +372,7 @@ export default function ComparisonChart({
                 <ul className="list-disc pl-5 space-y-2">
                   <li>Base nightly rate × Days in month × Occupancy rate</li>
                   <li>Apply seasonal multipliers for each month</li>
-                  <li>Deduct platform fees ({data.managementFee > 0 ? "15%" : "3%"})</li>
+                  <li>Deduct platform fees ({data.platformFee}%)</li>
                   {data.managementFee > 0 && <li>Deduct management fees ({(data.managementFee * 100).toFixed(1)}%)</li>}
                 </ul>
               </div>
@@ -554,7 +554,7 @@ export default function ComparisonChart({
                       {formatter.format(
                         getFeeAdjustedRate(
                           getSeasonalNightlyRate(data.shortTermNightly, i),
-                          data.managementFee > 0,
+                          data.platformFee,
                         ),
                       )}
                     </td>
@@ -645,7 +645,7 @@ export default function ComparisonChart({
                     );
                     const feeAdjustedRate = getFeeAdjustedRate(
                       seasonalRate,
-                      data.managementFee > 0,
+                      data.platformFee,
                     );
                     const daysInMonth = new Date(2023, i + 1, 0).getDate();
                     const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
@@ -675,7 +675,7 @@ export default function ComparisonChart({
                         );
                         const feeAdjustedRate = getFeeAdjustedRate(
                           seasonalRate,
-                          data.managementFee > 0,
+                          data.platformFee,
                         );
                         const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
@@ -701,7 +701,7 @@ export default function ComparisonChart({
                         );
                         const feeAdjustedRate = getFeeAdjustedRate(
                           seasonalRate,
-                          data.managementFee > 0,
+                          data.platformFee,
                         );
                         const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.low[i] / 100;
@@ -733,7 +733,7 @@ export default function ComparisonChart({
                     );
                     const feeAdjustedRate = getFeeAdjustedRate(
                       seasonalRate,
-                      data.managementFee > 0,
+                      data.platformFee,
                     );
                     const daysInMonth = new Date(2023, i + 1, 0).getDate();
                     const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
@@ -763,7 +763,7 @@ export default function ComparisonChart({
                         );
                         const feeAdjustedRate = getFeeAdjustedRate(
                           seasonalRate,
-                          data.managementFee > 0,
+                          data.platformFee,
                         );
                         const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
@@ -789,7 +789,7 @@ export default function ComparisonChart({
                         );
                         const feeAdjustedRate = getFeeAdjustedRate(
                           seasonalRate,
-                          data.managementFee > 0,
+                          data.platformFee,
                         );
                         const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.medium[i] / 100;
@@ -821,7 +821,7 @@ export default function ComparisonChart({
                     );
                     const feeAdjustedRate = getFeeAdjustedRate(
                       seasonalRate,
-                      data.managementFee > 0,
+                      data.platformFee,
                     );
                     const daysInMonth = new Date(2023, i + 1, 0).getDate();
                     const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
@@ -851,7 +851,7 @@ export default function ComparisonChart({
                         );
                         const feeAdjustedRate = getFeeAdjustedRate(
                           seasonalRate,
-                          data.managementFee > 0,
+                          data.platformFee,
                         );
                         const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
@@ -877,7 +877,7 @@ export default function ComparisonChart({
                         );
                         const feeAdjustedRate = getFeeAdjustedRate(
                           seasonalRate,
-                          data.managementFee > 0,
+                          data.platformFee,
                         );
                         const daysInMonth = new Date(2023, i + 1, 0).getDate();
                         const occupancyRate = OCCUPANCY_RATES.high[i] / 100;
@@ -1001,10 +1001,8 @@ function getSeasonalNightlyRate(baseRate: number, month: number): number {
   return baseRate * getSeasonalMultiplier(month);
 }
 
-function getFeeAdjustedRate(rate: number, hasManagementFee: boolean): number {
-  return hasManagementFee
-    ? rate * 0.85 // 15% Airbnb fee for professionally managed
-    : rate * 0.97; // 3% fee for self-managed
+function getFeeAdjustedRate(rate: number, platformFeePct: number): number {
+  return rate * (1 - platformFeePct / 100);
 }
 
 function calculateMonthlyRevenue(
