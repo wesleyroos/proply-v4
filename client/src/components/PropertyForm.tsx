@@ -369,6 +369,8 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                     { label: "Airbnb", value: "23" },
                     { label: "Booking.com", value: "18" },
                     { label: "Direct", value: "8" },
+                    { label: "15%", value: "15" },
+                    { label: "18.5%", value: "18.5" },
                   ].map((preset) => (
                     <button
                       key={preset.label}
