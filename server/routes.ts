@@ -3,7 +3,7 @@ import type { Express } from "express";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./auth";
+import { setupAuth, requireAuth, requireAdmin } from "./auth";
 import { db } from "@db";
 import path from "path";
 import fs from "fs";
