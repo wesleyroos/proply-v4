@@ -317,12 +317,12 @@ export default function RentCompareDetailPage() {
                 <Label>Platform Fee (%)</Label>
                 <div className="flex flex-wrap gap-1.5 mb-2 mt-1">
                   {[
-                    { label: "Lekkerslaap", value: "14" },
-                    { label: "Airbnb", value: "23" },
-                    { label: "Booking.com", value: "18" },
-                    { label: "Direct", value: "8" },
-                    { label: "15", value: "15" },
-                    { label: "18.5", value: "18.5" },
+                    { label: "Lekkerslaap 14%", value: "14" },
+                    { label: "Airbnb 23%", value: "23" },
+                    { label: "Booking.com 18%", value: "18" },
+                    { label: "Direct 8%", value: "8" },
+                    { label: "15%", value: "15" },
+                    { label: "18.5%", value: "18.5" },
                   ].map((preset) => (
                     <button
                       key={preset.label}
@@ -334,7 +334,7 @@ export default function RentCompareDetailPage() {
                           : "bg-white text-gray-600 border-gray-200 hover:border-[#1BA3FF] hover:text-[#1BA3FF]"
                       }`}
                     >
-                      {preset.label} {preset.value}%
+                      {preset.label}
                     </button>
                   ))}
                 </div>
