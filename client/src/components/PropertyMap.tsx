@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { initGoogleMaps } from '../lib/maps';
 
 interface PropertyMapProps {
   address: string;
@@ -7,27 +8,74 @@ interface PropertyMapProps {
 }
 
 export default function PropertyMap({ address, onMapLoad, mapClassName }: PropertyMapProps) {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { onMapLoad?.(); }, []);
+  useEffect(() => {
+    let isMounted = true;
 
-  if (!apiKey || !address?.trim()) {
+    const initializeMap = async () => {
+      try {
+        await initGoogleMaps();
+
+        if (!isMounted || !mapRef.current) return;
+
+        const geocoder = new google.maps.Geocoder();
+        const defaultLocation = { lat: -33.918861, lng: 18.4233 };
+
+        const map = new google.maps.Map(mapRef.current, {
+          center: defaultLocation,
+          zoom: 15,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          gestureHandling: 'cooperative'
+        });
+
+        
+
+        geocoder.geocode({ address }, (results, status) => {
+          if (status === "OK" && results?.[0]) {
+            const location = results[0].geometry.location;
+            map.setCenter(location);
+            map.setZoom(16);
+
+            new google.maps.Marker({
+              map,
+              position: location,
+              title: "Property Location"
+            });
+          } else {
+            console.error('Geocoding failed:', status);
+            setError(`Could not find location: ${status}`);
+          }
+        });
+
+      } catch (error) {
+        console.error('Map initialization error:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load map');
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [address, onMapLoad]);
+
+  if (error) {
     return (
-      <div className={`${mapClassName || 'h-[300px] w-full'} rounded-lg overflow-hidden border bg-slate-100 flex items-center justify-center`}>
-        <p className="text-sm text-slate-400">No address provided</p>
+      <div className={`${mapClassName || 'h-[300px] w-full'} rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center`}>
+        <p className="text-red-500">Error: {error}</p>
       </div>
     );
   }
 
   return (
-    <iframe
-      style={{ border: 0 }}
-      loading="lazy"
-      allowFullScreen
-      referrerPolicy="no-referrer-when-downgrade"
-      src={`https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(address)}&zoom=15`}
-      className={`${mapClassName || 'h-[300px] w-full'} rounded-lg`}
-      onLoad={() => onMapLoad?.()}
+    <div 
+      ref={mapRef}
+      className={`${mapClassName || 'h-[300px] w-full'} rounded-lg overflow-hidden border`}
     />
   );
 }
