@@ -22,6 +22,7 @@ import { InfoIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MapView from "./MapView";
 import { formatter } from "../utils/formatting";
+import { generateRentComparePDF } from "../utils/rentComparePDF";
 import {
   Tooltip,
   TooltipContent,
@@ -69,10 +70,44 @@ export default function ComparisonChart({
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [removeSeasonality, setRemoveSeasonality] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false); // Added state for upgrade modal
-  const user = useUser(); // Placeholder for user data
+  const [isExporting, setIsExporting] = useState(false);
+  const { user } = useUser();
 
-  // PDF export functionality has been removed
-  // The export button is now static and non-functional
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateRentComparePDF(
+        {
+          title: data.title,
+          address,
+          bedrooms: data.bedrooms || "",
+          bathrooms: data.bathrooms || "",
+          shortTermNightly: String(data.shortTermNightly),
+          annualOccupancy: String(data.annualOccupancy),
+          managementFee: String(data.managementFee), // decimal, e.g. 0.2
+          platformFee: String(data.platformFee),
+          longTermMonthly: String(data.longTermMonthly),
+          longTermAnnual: String(data.longTermAnnual),
+          shortTermAnnual: String(data.shortTermAnnual),
+          shortTermAfterFees: String(data.shortTermAfterFees),
+          breakEvenOccupancy: String(data.breakEvenOccupancy),
+          annualEscalation: data.annualEscalation || "0",
+          createdAt: new Date().toISOString(),
+        },
+        user?.settings?.companyLogo || undefined,
+      );
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate PDF",
+        duration: 3000,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Calculate annual revenue with or without seasonality
   const calculateAnnualRevenue = () => {
@@ -158,7 +193,7 @@ export default function ComparisonChart({
                     annualEscalation: data.annualEscalation || "0",
                     shortTermNightly: data.shortTermNightly.toString(),
                     annualOccupancy: data.annualOccupancy.toString(),
-                    managementFee: (data.managementFee * 100).toString(),
+                    managementFee: data.managementFee.toString(), // decimal, e.g. 0.2 — report/PDF expect this
                     platformFee: data.platformFee.toString(),
                     longTermMonthly: data.longTermMonthly,
                     longTermAnnual: data.longTermAnnual,
@@ -193,18 +228,18 @@ export default function ComparisonChart({
           >
             Save Property
           </Button>
-          <div className="flex flex-col">
-            <Button
-              className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white opacity-70"
-              disabled={true}
-            >
+          <Button
+            className="bg-[#1BA3FF] hover:bg-[#1BA3FF]/90 text-white"
+            onClick={handleExportPDF}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
               <FileText className="w-4 h-4 mr-2" />
-              Export Report
-            </Button>
-            <p className="text-xs text-muted-foreground mt-1">
-              This feature is currently in development, please export report from Properties Page
-            </p>
-          </div>
+            )}
+            {isExporting ? "Generating…" : "Export Report"}
+          </Button>
         </div>
         <MapView address={address} />
         <div className="p-4 bg-gray-50 rounded-lg">

@@ -114,7 +114,8 @@ export async function generateRentComparePDF(
   // --- Derived values ---
   const stNightly     = Number(property.shortTermNightly  || 0);
   const occupancy     = Number(property.annualOccupancy   || 0);
-  const mgmtFee       = Number(property.managementFee     || 0); // decimal
+  const mgmtFeeRaw    = Number(property.managementFee     || 0);
+  const mgmtFee       = mgmtFeeRaw >= 1 ? mgmtFeeRaw / 100 : mgmtFeeRaw; // decimal; legacy rows stored percent
   const ltMonthly     = Number(property.longTermMonthly   || 0);
   const ltAnnual      = Number(property.longTermAnnual    || 0);
   const stAnnual      = Number(property.shortTermAnnual   || 0);

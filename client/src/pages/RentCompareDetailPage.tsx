@@ -71,7 +71,9 @@ export default function RentCompareDetailPage() {
       shortTermNightly:property?.shortTermNightly || "",
       annualOccupancy: property?.annualOccupancy || "",
       managementFee:   property?.managementFee
-        ? String(Number(property.managementFee) * 100)
+        ? String(Number(property.managementFee) >= 1
+            ? Number(property.managementFee)        // legacy rows stored percent
+            : Number(property.managementFee) * 100) // stored as decimal
         : "",
       platformFee:     property?.platformFee || "",
     });

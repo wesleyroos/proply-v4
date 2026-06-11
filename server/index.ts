@@ -113,8 +113,9 @@ app.use('/api', aiRouter);
 app.use('/static-assets', express.static('public'));
 
 (async () => {
-  // Fix users_id_seq if it has fallen behind the actual max id (can happen after manual inserts or imports)
+  // Fix sequences if they have fallen behind the actual max id (can happen after manual inserts or imports)
   await db.execute(sql`SELECT setval('users_id_seq', GREATEST((SELECT COALESCE(MAX(id), 1) FROM users), nextval('users_id_seq') - 1))`);
+  await db.execute(sql`SELECT setval('properties_id_seq', GREATEST((SELECT COALESCE(MAX(id), 1) FROM properties), nextval('properties_id_seq') - 1))`);
 
   const server = registerRoutes(app);
 

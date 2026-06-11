@@ -50,7 +50,8 @@ interface Props {
 export default function RentCompareReport({ property, onDeletePhoto }: Props) {
   const stNightly       = Number(property.shortTermNightly || 0);
   const annualOccupancy = Number(property.annualOccupancy  || 0);
-  const managementFee   = Number(property.managementFee   || 0); // decimal
+  const managementFeeRaw = Number(property.managementFee  || 0);
+  const managementFee   = managementFeeRaw >= 1 ? managementFeeRaw / 100 : managementFeeRaw; // decimal; legacy rows stored percent
   const ltMonthly       = Number(property.longTermMonthly || 0);
   const ltAnnual        = Number(property.longTermAnnual  || 0);
 
