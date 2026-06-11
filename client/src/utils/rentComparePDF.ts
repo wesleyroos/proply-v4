@@ -22,6 +22,7 @@ export interface RentComparePropertyData {
   shortTermNightly: string;
   annualOccupancy: string;
   managementFee: string;
+  platformFee?: string | null;
   longTermMonthly: string;
   longTermAnnual: string;
   shortTermAnnual: string;
@@ -119,8 +120,8 @@ export async function generateRentComparePDF(
   const stAnnual      = Number(property.shortTermAnnual   || 0);
   const stAfterFees   = Number(property.shortTermAfterFees|| 0);
   const breakEven     = Number(property.breakEvenOccupancy|| 0);
-  const platformRate  = mgmtFee > 0 ? 0.15 : 0.03;
-  const platformPct   = platformRate * 100;
+  const platformPct   = Number(property.platformFee) || (mgmtFee > 0 ? 15 : 3);
+  const platformRate  = platformPct / 100;
   const platformAmt   = stAnnual * platformRate;
   const afterPlatform = stAnnual - platformAmt;
   const mgmtAmt       = mgmtFee > 0 ? afterPlatform * mgmtFee : 0;
@@ -259,7 +260,7 @@ export async function generateRentComparePDF(
     ["Nightly Rate", fmt(stNightly)],
     ["Annual Occupancy", `${occupancy}%`],
     ["Gross Annual Revenue", fmt(stAnnual)],
-    [`Less Platform Fee (${platformPct.toFixed(0)}%)`, fmtDebit(platformAmt)],
+    [`Less Platform Fee (${platformPct % 1 === 0 ? platformPct.toFixed(0) : platformPct.toFixed(1)}%)`, fmtDebit(platformAmt)],
   ];
   if (mgmtFee > 0) {
     stBody.push([`Less Management Fee (${(mgmtFee * 100).toFixed(0)}%)`, fmtDebit(mgmtAmt)]);
