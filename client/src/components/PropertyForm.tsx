@@ -393,6 +393,7 @@ export default function PropertyForm({ onSubmit }: PropertyFormProps) {
                     type="number"
                     min="0"
                     max="100"
+                    step="0.1"
                     placeholder="e.g. 14"
                   />
                 </FormControl>
