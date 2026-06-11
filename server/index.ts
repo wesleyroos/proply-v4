@@ -31,11 +31,11 @@ app.use((_req, res, next) => {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.payfast.co.za https://sandbox.payfast.co.za https://maps.googleapis.com https://maps.gstatic.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.payfast.co.za https://sandbox.payfast.co.za https://maps.googleapis.com https://maps.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://static.hotjar.com https://script.hotjar.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https://api.pricelabs.co https://api.openai.com https://maps.googleapis.com",
+      "connect-src 'self' https://api.pricelabs.co https://api.openai.com https://maps.googleapis.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://*.hotjar.com https://*.hotjar.io wss://*.hotjar.com",
       "frame-src https://www.payfast.co.za https://sandbox.payfast.co.za https://www.google.com",
       "object-src 'none'",
       "base-uri 'self'",
